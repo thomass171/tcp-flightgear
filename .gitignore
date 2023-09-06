@@ -1,0 +1,26 @@
+#IntelliJ Idea
+.idea/
+out/
+local.properties
+*.iml
+*.iws
+*.ipr
+
+#Gradle
+.gradletasknamecache
+.gradle/
+
+# Logs
+*.log
+log/
+logs/
+
+.DS_Store
+buildFromScratch.sh
+*/target
+target
+sceneserver/build
+
+/platform-jme/jmonkeyengine-3.2.4-stable.tar.gz
+/platform-jme/liblwjgl.dylib
+/platform-jme/libopenal.dylib
