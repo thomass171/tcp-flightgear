@@ -31,14 +31,14 @@ import org.junit.jupiter.api.Test;
 public class SimgearTest {
     static Platform platform = FgTestFactory.initPlatformForTest();
 
-    String modelfile = /*"/Users/thomass/Projekte/FlightGear/MyAircraft/My-777/"*/"Models/Instruments/EFIS/efis-ctl1.xml";
-    String testfile777200 = /*"/Users/thomass/Projekte/FlightGear/MyAircraft/My-777/*/"Models/777-200.xml";
+    String modelfile = "models/efis-ctl1.xml";
+    String testfile777200 = "models/777-200.xml";
 
     @Test
     public void testProperties() {
         SGPropertyNode props = new SGPropertyNode("root");
         try {
-            PropsIO.readProperties(new BundleResource(BundleRegistry.getBundle("My-777"),modelfile), props);
+            PropsIO.readProperties(new BundleResource(BundleRegistry.getBundle("test-resources"),modelfile), props);
         } catch (SGException e) {
             throw new RuntimeException(e);
         }
@@ -46,12 +46,12 @@ public class SimgearTest {
         Assertions.assertTrue( props.hasChild("animation"),"animation");
         Assertions.assertFalse( props.hasChild("animationxx"),"animationxx");
     }
-    
+
     @Test
     public void testFindNode() {
         SGPropertyNode props = new SGPropertyNode("");
         try {
-            PropsIO.readProperties(new BundleResource(BundleRegistry.getBundle("My-777"),testfile777200), props);
+            PropsIO.readProperties(new BundleResource(BundleRegistry.getBundle("test-resources"),testfile777200), props);
         } catch (SGException t) {
             throw new RuntimeException(t);
         }
@@ -109,14 +109,18 @@ public class SimgearTest {
         EngineTestFactory.loadBundleSync(SGMaterialLib.BUNDLENAME);
         FlightGearMain.initFG(null, null);
 
-        // Dummy Bundle bauen
-        Bundle bundle = new Bundle("My-777","Models/777-200.ac\n",false);
-        bundle.addResource("Models/777-200.ac",new BundleData(""));
-        FGProperties.fgSetString("/sim/aircraft-dir", "My-777");
-        String path = "Aircraft/My-777/Models/777-200.ac";
+        // Dummy Bundle bauen. Why? Isn't needed/used.
+        //Bundle bundle = new Bundle("My-777","Models/777-200.ac\n",false);
+        //bundle.addResource("Models/777-200.ac",new BundleData(""));
+
+        Bundle bundleTestResources = BundleRegistry.getBundle("test-resources");
+        //FGProperties.fgSetString("/sim/aircraft-dir", "My-777");
+        FGProperties.fgSetString("/sim/aircraft-dir", bundleTestResources.name);
+        //String path = "Aircraft/My-777/Models/777-200.ac";
+        String path = "Aircraft/"+bundleTestResources.name+"/models/777-200.ac";
         BundleResource result  = new AircraftResourceProvider().resolve(path);
-        Assertions.assertEquals( "Models", result.getPath().path);
+        Assertions.assertEquals( "models", result.getPath().path);
         Assertions.assertEquals( "777-200.ac", result.getName());
-        Assertions.assertEquals( "My-777", result.bundle.name);
+        Assertions.assertEquals( bundleTestResources.name, result.bundle.name);
     }
 }

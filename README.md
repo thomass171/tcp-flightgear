@@ -3,6 +3,9 @@ This is an extension of the cross platform 3D graphics meta engine for Java in p
 https://github.com/thomass171/tcp-22 with components of flightgear. Flightgear (https://www.flightgear.org) is a free
 open source flight simulator written in C++ and using OSG under GPL.
 
+Main objective is to have Flightgear scenery and aircraft models 
+available in traveling scenes running in a browser (including VR).
+
 Also this is still WiP!
 
 # Building And Deploying
@@ -54,3 +57,6 @@ Design of migration is:
 Extension of base module 'traffic' with components of flightgear. These components
 should implement generic 'traffic' interfaces with Flightgear logic.
 
+# Credits
+
+Syd Adams, Justin Smithies for the 777.
