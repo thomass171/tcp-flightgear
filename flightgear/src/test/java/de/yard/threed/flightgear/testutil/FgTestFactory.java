@@ -31,8 +31,8 @@ public class FgTestFactory {
 
     public static Platform initPlatformForTest() {
 
-        List bundlelist = new ArrayList(Arrays.asList(new String[]{"engine", "fgdatabasic", FlightGearSettings.FGROOTCOREBUNDLE,
-                "fgdatabasicmodel"}));
+        // "fgdatabasic", "fgdatabasicmodel" and FlightGearSettings.FGROOTCOREBUNDLE currently not needed in tests
+        List bundlelist = new ArrayList(Arrays.asList(new String[]{"engine"}));
         bundlelist.add(SGMaterialLib.BUNDLENAME);
 
         //21.7.21: Headless reicht hier nicht, weil z.B. model geladen werden
