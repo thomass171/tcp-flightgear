@@ -53,10 +53,21 @@ Design of migration is:
   * Move global property trees to ...
 
 
-## traffic-ext
+## traffic-fg
 Extension of base module 'traffic' with components of flightgear. These components
 should implement generic 'traffic' interfaces with Flightgear logic.
 
 # Credits
 
 Syd Adams, Justin Smithies for the 777.
+
+Stewart Andreason (http://seahorseCorral.org/flightgear_aircraft.html) for 'bluebird'
+
+# Implementation Details
+
+## Model
+The preferred model format in Flightgear is 'ac'. This is human readable for the
+price of high system load at runtime. For saving resources, ac-files are converted
+to gltf files during bundle building. Unfortunately the converter still has bugs,
+eg. some special ac features like two sided faces are not yet converted
+correctly.
