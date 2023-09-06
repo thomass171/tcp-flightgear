@@ -234,7 +234,7 @@ public class ModelAssertions {
      */
     public static LoaderBTG loadRefBtg(LoaderOptions boptions) {
         try {
-            BundleResource br = new BundleResource(BundleRegistry.getBundle("data-old"), FlightGear.refbtg);
+            BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), FlightGear.refbtg);
             BundleData ins = br.bundle.getResource(new BundleResource(FlightGear.refbtg));
             LoaderBTG btg = new LoaderBTG(new ByteArrayInputStream(ins.b), null, boptions, br.getFullName());
             return btg;

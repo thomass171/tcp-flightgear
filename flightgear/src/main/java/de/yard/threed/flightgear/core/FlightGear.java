@@ -41,7 +41,7 @@ public class FlightGear {
     //Praktisch zum Testen, weil es Zeit spart
     public static Material simplematerial = null;
     //24.4.17:Nicht mehr gz
-    public static final String refbtg = "flusi/terrain/3056410.btg";
+    public static final String refbtg = "terrain/3056410.btg";
     public static final String refbtggltf = "flusi/terrain/3056410.gltf";
     // center einmal ausgelesen und dann hier hinterlegt. Aus FG Log, da ist es double: 4043285.357099 469612.002095 4893927.379193
     //wegen double public static Vector3 refbtgcenter = new Vector3(4043285.2, 469612.0, 4893927.5);
