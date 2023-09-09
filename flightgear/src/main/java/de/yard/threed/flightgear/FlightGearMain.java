@@ -19,6 +19,9 @@ import de.yard.threed.traffic.geodesy.GeoCoordinate;
 
 import java.util.List;
 
+import static de.yard.threed.traffic.WorldGlobal.eddkoverview;
+import static de.yard.threed.traffic.WorldGlobal.fleddkoverview;
+
 /**
  * Alternative/Successor/Extension to class FlightGear.
  *
@@ -27,10 +30,7 @@ import java.util.List;
 public class FlightGearMain {
     private static Log logger = Platform.getInstance().getLog(FlightGearMain.class);
 
-    // 27.12.21:Moved here from WorldGlobal
-    public static FlightLocation eddkoverview =
-            new FlightLocation(new GeoCoordinate(new Degree(50.876611),new Degree(7.128904),150),new Degree(285),new Degree(0));
-    /**
+     /**
      * Die FG Komponenten initen bzw. einhaengen.  Nachbildung des FlightGear.init(7);
      * Die Reihenfolge orientiert sich an FG fgIdleFunction()
      * System swerden hier nocht nicht angelegt.
@@ -66,7 +66,7 @@ public class FlightGearMain {
 
         // Einen Ray ins Center probieren.
         //Das ist mal auf den EDDK Tile ausgelegt. Da muss er einfach was finden.
-        SGGeod geodStart = new SGGeod(/*WorldGlobal.*/eddkoverview.coordinates.getLonRad(), /*WorldGlobal.*/eddkoverview.coordinates.getLatRad(), 10000);
+        SGGeod geodStart = new SGGeod(/*WorldGlobal.*/fleddkoverview.coordinates.getLonRad(), /*WorldGlobal.*/fleddkoverview.coordinates.getLatRad(), 10000);
         Vector3 eddktoppos = geodStart.toCart();
         Ray ray = new Ray(eddktoppos.add(worldadjustment), eddktoppos.negate());
         for (NativeCollision intersection : ray.getIntersections()) {
@@ -81,7 +81,7 @@ public class FlightGearMain {
         }
 
         // Fuer einen Referenzpunkt in EDDK die Elevation ermitteln. Das muesste dann ja auch gehen.
-        double elevation = (double)FlightGearModuleScenery.getInstance().get_scenery().get_elevation_m(SGGeod.fromGeoCoordinate(/*WorldGlobal.*/eddkoverview.coordinates),worldadjustment);
+        double elevation = (double)FlightGearModuleScenery.getInstance().get_scenery().get_elevation_m(SGGeod.fromGeoCoordinate(/*WorldGlobal.*/fleddkoverview.coordinates),worldadjustment);
         logger.debug("Elevation of eddkoverview: " + elevation);
         //Seit double 70.51 statt 71.16?
         RuntimeTestUtil.assertFloat("Elevation EDDK overview", 70.51, elevation, 0.3);

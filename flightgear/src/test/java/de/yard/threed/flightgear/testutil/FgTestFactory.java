@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * 21.7.21 For FG Tests not needing a platform?
- * 6.9.23: Well, a platform is always needed. Tests need some FG specific bundles. Not nice??
+ * 21.7.21 For FG Tests not needing a platform with renderer.
+ *
  */
 public class FgTestFactory {
 
@@ -36,7 +36,8 @@ public class FgTestFactory {
         bundlelist.add(SGMaterialLib.BUNDLENAME);
 
         //21.7.21: Headless reicht hier nicht, weil z.B. model geladen werden
-        Platform platform = EngineTestFactory.initPlatformForTest(/*30.6.21 true,*/ (String[]) bundlelist.toArray(new String[0]), new PlatformFactoryHeadless(), (InitMethod) null,
+        Platform platform = EngineTestFactory.initPlatformForTest(/*30.6.21 true,*/ (String[]) bundlelist.toArray(new String[0]),
+                new PlatformFactoryHeadless(), (InitMethod) null,
                 ConfigurationByEnv.buildDefaultConfigurationWithEnv(new HashMap<String,String>()));
         //EngineHelper platform = TestFactory.initPlatformForTest(true, true, null, true);
 
