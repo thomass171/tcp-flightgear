@@ -2,6 +2,7 @@ package de.yard.threed.flightgear.core;
 
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
+import de.yard.threed.core.geometry.Shape;
 import de.yard.threed.core.platform.NativeDocument;
 import de.yard.threed.core.platform.NativeElement;
 import de.yard.threed.core.platform.NativeNodeList;

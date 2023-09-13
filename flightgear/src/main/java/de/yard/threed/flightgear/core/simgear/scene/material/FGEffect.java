@@ -1,7 +1,7 @@
 package de.yard.threed.flightgear.core.simgear.scene.material;
 
+import de.yard.threed.core.loader.PortableMaterial;
 import de.yard.threed.core.platform.Platform;
-import de.yard.threed.engine.loader.PortableMaterial;
 import de.yard.threed.flightgear.core.PropertyList;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.scene.util.SGReaderWriterOptions;

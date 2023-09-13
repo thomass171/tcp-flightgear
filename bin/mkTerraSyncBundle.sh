@@ -1,13 +1,14 @@
 #!/bin/sh
 #
-# 1.1.18: Neuer Weg TerraSync zu bundeln. Ohne Option geht das Skript alle Dateien in $TERRASYNCDIR durch und uebertraegt/konvertiert sie nach Bundles.
-# Per Option kann man ein alternatives Dir angeben und dann Custom Sceneries bundlen.
-#  - alle Dateien werden kopiert (vermeidet rsync Probleme/Loeschungen)
+# Bundle TerraSync data in the 2018 style. Reads all files in $TERRASYNCDIR (if no option is set)
+# and copies/converts the files.
+# Per Option an alternatives dir can be set for bundling Custom Sceneries.
+#  - just copies (no rsync Probleme/Loeschungen)
 #  - es wird nicht mehr versucht, nur die in stg verwendeten Model zu bundeln, einfach alles
 #  - der Aufbau/die Struktur der Bundle bleibt aber erhalten. Die Terrain und Objects STGs
 #  - kommen ins selbe Bundle.
 #
-# Option -f zum Ueberschreiben (fuer EDDK)
+# Option -f for overwriting (for EDDK)
 #	
 #
 

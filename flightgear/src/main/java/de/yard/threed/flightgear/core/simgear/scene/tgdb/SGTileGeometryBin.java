@@ -2,11 +2,12 @@ package de.yard.threed.flightgear.core.simgear.scene.tgdb;
 
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
+import de.yard.threed.core.geometry.SimpleGeometry;
+import de.yard.threed.core.loader.GeoMat;
+import de.yard.threed.core.loader.PortableMaterial;
+import de.yard.threed.core.loader.PortableModelDefinition;
+import de.yard.threed.core.loader.PortableModelList;
 import de.yard.threed.core.platform.Platform;
-import de.yard.threed.engine.loader.GeoMat;
-import de.yard.threed.engine.loader.PortableMaterial;
-import de.yard.threed.engine.loader.PortableModelDefinition;
-import de.yard.threed.engine.loader.PortableModelList;
 import de.yard.threed.flightgear.core.CppHashMap;
 import de.yard.threed.flightgear.core.osg.Group;
 import de.yard.threed.flightgear.core.osg.Node;
@@ -18,8 +19,6 @@ import de.yard.threed.flightgear.LoaderBTG;
 
 
 import de.yard.threed.core.platform.Log;
-
-import de.yard.threed.engine.platform.common.SimpleGeometry;
 
 import java.util.ArrayList;
 import java.util.List;

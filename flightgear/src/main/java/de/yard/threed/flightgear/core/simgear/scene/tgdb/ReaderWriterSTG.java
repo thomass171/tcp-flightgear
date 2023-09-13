@@ -1,6 +1,7 @@
 package de.yard.threed.flightgear.core.simgear.scene.tgdb;
 
 import de.yard.threed.core.Degree;
+import de.yard.threed.core.loader.StringReader;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
@@ -24,7 +25,6 @@ import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleData;
 import de.yard.threed.core.platform.Config;
 import de.yard.threed.core.resource.ResourcePath;
-import de.yard.threed.engine.platform.common.StringReader;
 import de.yard.threed.core.StringUtils;
 
 import java.util.ArrayList;

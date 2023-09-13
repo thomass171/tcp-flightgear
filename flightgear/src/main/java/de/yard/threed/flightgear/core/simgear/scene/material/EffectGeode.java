@@ -1,15 +1,17 @@
 package de.yard.threed.flightgear.core.simgear.scene.material;
 
+import de.yard.threed.core.geometry.SimpleGeometry;
+import de.yard.threed.core.loader.PortableMaterial;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.engine.GenericGeometry;
 import de.yard.threed.engine.Material;
 import de.yard.threed.engine.Mesh;
-import de.yard.threed.engine.loader.PortableMaterial;
+import de.yard.threed.engine.loader.PortableModelBuilder;
 import de.yard.threed.flightgear.core.osg.Geode;
 
 
 import de.yard.threed.core.resource.ResourcePath;
-import de.yard.threed.engine.platform.common.SimpleGeometry;
+
 
 /**
  * Created by thomass on 05.08.16.
@@ -122,7 +124,7 @@ public class EffectGeode extends Geode {
         Material mat;
         if (material != null) {
             // mat = material;
-            mat = PortableMaterial.buildMaterial(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),
+            mat = PortableModelBuilder.buildMaterial(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),
                     material, (material.texture != null) ? material.texture : null/*obj.texture*/, new ResourcePath(""/*texturebasepath*/),geometry.getNormals()!=null);
 
         } else {
@@ -131,7 +133,7 @@ public class EffectGeode extends Geode {
                 mat = null;//Material.buildBasicMaterial(Color.YELLOW);
             } else {
                 PortableMaterial lmat = _effect.getMaterialDefinition();
-                mat = PortableMaterial.buildMaterial(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),
+                mat = PortableModelBuilder.buildMaterial(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),
                         lmat, (lmat.texture != null) ? lmat.texture : null/*obj.texture*/, new ResourcePath(""/*texturebasepath*/),geometry.getNormals()!=null);
 
             }

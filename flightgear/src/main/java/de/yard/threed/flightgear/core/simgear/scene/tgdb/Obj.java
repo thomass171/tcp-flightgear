@@ -1,11 +1,11 @@
 package de.yard.threed.flightgear.core.simgear.scene.tgdb;
 
+import de.yard.threed.core.loader.AbstractLoader;
+import de.yard.threed.core.loader.InvalidDataException;
+import de.yard.threed.core.loader.LoaderGLTF;
+import de.yard.threed.core.loader.PortableModelList;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleResource;
-import de.yard.threed.engine.loader.AbstractLoader;
-import de.yard.threed.engine.loader.InvalidDataException;
-import de.yard.threed.engine.loader.LoaderGLTF;
-import de.yard.threed.engine.loader.PortableModelList;
 import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.flightgear.core.osg.Group;

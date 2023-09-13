@@ -19,6 +19,7 @@
 
     <modules>
         <module>flightgear</module>
+        <module>tools-fg</module>
     </modules>
 
     <build>

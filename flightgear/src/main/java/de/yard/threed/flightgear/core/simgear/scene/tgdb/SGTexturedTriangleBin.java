@@ -2,11 +2,11 @@ package de.yard.threed.flightgear.core.simgear.scene.tgdb;
 
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
+import de.yard.threed.core.geometry.GeometryHelper;
+import de.yard.threed.core.geometry.SimpleGeometry;
 import de.yard.threed.core.platform.Log;
 
 import de.yard.threed.core.platform.Platform;
-import de.yard.threed.engine.geometry.GeometryHelper;
-import de.yard.threed.engine.platform.common.SimpleGeometry;
 
 import java.util.ArrayList;
 import java.util.List;

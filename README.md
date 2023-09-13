@@ -51,6 +51,10 @@ Flightgear should be a kind of plugin to module 'traffic'.
 Design of migration is:
   * Replace OSG by ...
   * Move global property trees to ...
+  * TODO: BTG model loading is part of tools, so only available for converting aso.
+
+TODO: extract a core module without engine dependency to have tools-fg without engine dependency.
+## tools-fg
 
 
 ## traffic-fg

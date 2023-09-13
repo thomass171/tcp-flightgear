@@ -1,13 +1,15 @@
 package de.yard.threed.flightgear.testutil;
 
+import de.yard.threed.core.geometry.SimpleGeometry;
+import de.yard.threed.core.loader.PortableMaterial;
+import de.yard.threed.core.loader.PortableModelDefinition;
+import de.yard.threed.core.loader.PortableModelList;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
-import de.yard.threed.engine.loader.PortableMaterial;
-import de.yard.threed.engine.loader.PortableModelDefinition;
-import de.yard.threed.engine.loader.PortableModelList;
+
 import de.yard.threed.flightgear.LoaderBTG;
 import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.flightgear.core.FlightGear;
@@ -16,7 +18,7 @@ import de.yard.threed.flightgear.core.osg.Node;
 import de.yard.threed.core.Vector2Array;
 import de.yard.threed.core.resource.BundleData;
 import de.yard.threed.core.Color;
-import de.yard.threed.engine.platform.common.SimpleGeometry;
+
 import de.yard.threed.engine.test.testutil.TestUtil;
 import de.yard.threed.core.buffer.ByteArrayInputStream;
 
@@ -227,20 +229,6 @@ public class ModelAssertions {
         TestUtil.assertEquals("materialname",  "ROOF_DEFAULT" , ppfile.materials.get(3).name);
     }
 
-    /**
-     * 10.3.21: Nur mal hier geparkt.
-     * @param boptions
-     * @return
-     */
-    public static LoaderBTG loadRefBtg(LoaderOptions boptions) {
-        try {
-            BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), FlightGear.refbtg);
-            BundleData ins = br.bundle.getResource(new BundleResource(FlightGear.refbtg));
-            LoaderBTG btg = new LoaderBTG(new ByteArrayInputStream(ins.b), null, boptions, br.getFullName());
-            return btg;
-        } catch (Exception e) {
-            throw new RuntimeException("Error opening or reading btg file", e);
-        }
-    }
+
 
 }

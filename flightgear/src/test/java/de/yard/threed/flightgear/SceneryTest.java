@@ -1,10 +1,10 @@
 package de.yard.threed.flightgear;
 
+import de.yard.threed.core.loader.InvalidDataException;
+import de.yard.threed.core.loader.LoaderGLTF;
+import de.yard.threed.core.loader.PortableModelList;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.testutil.TestUtils;
-import de.yard.threed.engine.loader.InvalidDataException;
-import de.yard.threed.engine.loader.LoaderGLTF;
-import de.yard.threed.engine.loader.PortableModelList;
 import de.yard.threed.engine.testutil.EngineTestFactory;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.core.resource.BundleRegistry;
@@ -73,16 +73,18 @@ public class SceneryTest {
         //FlightGear.init(7, FlightGear.argv);
         //FlightGearModuleBasic.init(null, null);
         //FlightGearModuleScenery.init(false);
-        //erst als BTG
+        //12.9.23: BTG should no longer considered a use case in Obj.SGLoadBTG()?
         LoaderOptions loaderoptions = new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib());
         loaderoptions.usegltf=false;
-        Node node = Obj.SGLoadBTG(new BundleResource(BundleRegistry.getBundle("data-old"), FlightGear.refbtg), null, loaderoptions);
-        ModelAssertions.assertRefbtgNode(node, "flusi/terrain/3056410.btg");
+        Node node = Obj.SGLoadBTG(new BundleResource(BundleRegistry.getBundle("test-resources"), FlightGear.refbtg), null, loaderoptions);
+        assertNotNull(node);
+        ModelAssertions.assertRefbtgNode(node, "terrain/3056410.btg");
 
-        //und jetzt GLTF. Der Suffix bleibt aber ".btg"
+        //und jetzt GLTF. Suffix remains ".btg"
         loaderoptions.usegltf = true;
-        node = Obj.SGLoadBTG(new BundleResource(BundleRegistry.getBundle("data-old"), FlightGear.refbtg), null, loaderoptions);
-        ModelAssertions.assertRefbtgNode(node, "flusi/terrain/3056410.gltf");
+        node = Obj.SGLoadBTG(new BundleResource(BundleRegistry.getBundle("test-resources"), FlightGear.refbtg), null, loaderoptions);
+        assertNotNull(node);
+        ModelAssertions.assertRefbtgNode(node, "terrain/3056410.gltf");
     }
 
     @Test
@@ -95,7 +97,7 @@ public class SceneryTest {
         //FlightGearModuleScenery.init(false);
 
         SGReaderWriterOptions options = new SGReaderWriterOptions();
-        SceneNode result = SGReaderWriterBTG.loadBTG(new BundleResource(BundleRegistry.getBundle("data-old"), "flusi/terrain/3056410.btg"), options, null);
+        SceneNode result = SGReaderWriterBTG.loadBTG(new BundleResource(BundleRegistry.getBundle("test-resources"), "terrain/3056410.btg"), options, null);
         assertNotNull(result);
     }
 
@@ -108,7 +110,7 @@ public class SceneryTest {
         //FlightGear.init(7, FlightGear.argv);
        // FlightGearModuleBasic.init(null, null);
        // FlightGearModuleScenery.init(false);
-        BundleResource br = new BundleResource(BundleRegistry.getBundle("data-old"), "flusi/terrain/3072816.btg");
+        BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "terrain/3072816.btg");
         BundleData ins = br.bundle.getResource(br);
         try {
             PortableModelList ppfile = new LoaderBTG(new ByteArrayInputStream(ins.b), null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()), br.getFullName()).preProcess();
