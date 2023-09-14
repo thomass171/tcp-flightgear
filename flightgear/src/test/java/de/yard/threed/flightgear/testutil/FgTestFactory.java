@@ -16,6 +16,7 @@ import de.yard.threed.engine.testutil.PlatformFactoryHeadless;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.javacommon.ConfigurationByEnv;
 import de.yard.threed.javacommon.DefaultResourceReader;
+import de.yard.threed.javacommon.SimpleHeadlessPlatformFactory;
 import de.yard.threed.outofbrowser.SyncBundleLoader;
 
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class FgTestFactory {
 
         //21.7.21: Headless reicht hier nicht, weil z.B. model geladen werden
         Platform platform = EngineTestFactory.initPlatformForTest(/*30.6.21 true,*/ (String[]) bundlelist.toArray(new String[0]),
-                new PlatformFactoryHeadless(), (InitMethod) null,
+                new SimpleHeadlessPlatformFactory(), (InitMethod) null,
                 ConfigurationByEnv.buildDefaultConfigurationWithEnv(new HashMap<String,String>()));
         //EngineHelper platform = TestFactory.initPlatformForTest(true, true, null, true);
 

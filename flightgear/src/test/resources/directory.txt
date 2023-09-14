@@ -1,6 +1,8 @@
 models/efis-ctl1.xml
 models/777-200.xml
 models/777-200.ac
+models/ControlLight.ac
+models/FuelOilAmps.ac
 terrain/3056410.btg
 terrain/3056410.gltf
 terrain/3056410.bin

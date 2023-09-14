@@ -28,33 +28,28 @@ import java.util.List;
 /**
  * 21.7.21 For FG Tests that need a platform with renderer (where headless isn't sufficient).
  * But why? For intersections?Darum in opengl? Maybe for btg terrain building
- * Aber was heisst das? Reicht ein SceneRunnerForTesting nicht aus?
+ *
  * 13.9.23: Currently SimpleHeadless seems sufficient.
  */
 public class FgFullTestFactory {
 
     public static Platform initPlatformForTest(HashMap<String, String> properties) {
 
-        // 29.12.21: Manche Bundle koennen erst nach dem Init geladen werden
-        // 12.9.23:TODO fix bundles
+        // 29.12.21: Some bundles need to be loaded after init()
+        // 12.9.23: "fgdatabasic", FlightGearSettings.FGROOTCOREBUNDLE might be needed in future for aircraft loading (apparently not needed for bluebird)
+        // 12.9.23: "fgdatabasicmodel" might be needed in future. Or will be a separate module.
+        // "sgmaterial" occupies 493 MB
         List bundlelist = new ArrayList(Arrays.asList(new String[]{"engine",
-                "fgdatabasicmodel", "fgdatabasic", "sgmaterial",/*10.9.23 "c172p",*/
-                /*BundleRegistry.FGHOMECOREBUNDLE,*/ FlightGearSettings.FGROOTCOREBUNDLE,
-                /*zu frueh FlightGear.getBucketBundleName("model")*/}));
+                /*,*/  "sgmaterial",
+                }));
         //bundlelist.add(SGMaterialLib.BUNDLENAME);
 
-        //21.7.21: Headless reicht hier nicht, weil z.B. model geladen werden.  //headless also has a mesh
-        //PlatformHomeBrew without renderer?
-        //new PlatformFactoryHomeBrewDummyRenderer()
-
-                PlatformFactory platformFactory= new SimpleHeadlessPlatformFactory();
-
-        Platform platform = EngineTestFactory.initPlatformForTest(/*30.6.21 true,*/ (String[]) bundlelist.toArray(new String[0]), platformFactory,
+        Platform platform = EngineTestFactory.initPlatformForTest((String[]) bundlelist.toArray(new String[0]),
+                new SimpleHeadlessPlatformFactory(),
                 null,
                 ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties));
-        //EngineHelper platform = TestFactory.initPlatformForTest(true, true, null, true);
 
-        //14.9.21: Das koennte fuer manche Tests wohl zu spaet sein.
+        //14.9.21: Too late for some tests?
         platform.addBundleResolver(new TerraSyncBundleResolver());
 
         EngineTestFactory.loadBundleSync("Terrasync-model");
