@@ -540,7 +540,7 @@ public class LoaderBTG extends BinaryLoader {
             matcache = matlib.generateMatCache(geodPos);
             if (matcache.cache.size() == 0) {
                 // das ist doch vielleicht ein Warning wert, weil es weiter unten dann eine NPE gibt.
-                logger.warn("matcache isType empty fpr position "+geodPos+". matlib.size="+matlib.matlib.size());
+                logger.warn("matcache is empty for position "+geodPos+". matlib.size="+matlib.matlib.size());
             }
         }
         logger.debug("SGLoadBTG gbs_center=" + center);

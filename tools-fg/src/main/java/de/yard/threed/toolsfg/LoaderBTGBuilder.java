@@ -26,9 +26,10 @@ public class LoaderBTGBuilder implements AbstractLoaderBuilder {
 
     @Override
     public AbstractLoader buildAbstractLoader(byte[] data, String filenameForInfo) throws InvalidDataException {
-        LoaderOptions boptions = new LoaderOptions();
 
-        LoaderBTG btg = new LoaderBTG(new ByteArrayInputStream(new SimpleByteBuffer(data)), null, boptions, filenameForInfo);
+        LoaderOptions loaderoptions = new LoaderOptions(SGMaterialLibWrapper.getInstance().getSGMaterialLib());
+
+        LoaderBTG btg = new LoaderBTG(new ByteArrayInputStream(new SimpleByteBuffer(data)), null, loaderoptions, filenameForInfo);
 
         return btg;
     }

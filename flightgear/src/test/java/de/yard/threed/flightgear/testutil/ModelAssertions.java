@@ -23,8 +23,8 @@ import de.yard.threed.engine.test.testutil.TestUtil;
 import de.yard.threed.core.buffer.ByteArrayInputStream;
 
 /**
- * wird auch aus desktop/tools verwendet.
- * 9.3.21: Da es sehr FG lastig ist, nach traffic-ext.
+ * better in tools-fg?
+ *
  */
 public class ModelAssertions {
     public static void assertEgkkTower(PortableModelList ppfile, int vertices, int indices, boolean shadedmaterial, boolean builtbyblender) {
@@ -118,6 +118,8 @@ public class ModelAssertions {
             TestUtil.assertTrue("geolistmaterial0.wrapt", ppfile.materials.get(5).wrapt);
 
         } else {
+            // Without matlib the models do not contain any material. But the material names still exist as a kind
+            // of attribute.
             TestUtil.assertEquals("materials", 0, ppfile.materials.size());
             // landclasses are material names
             TestUtil.assertEquals("materials0.name", "Grassland", ppobj.geolistmaterial.get(0));

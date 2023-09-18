@@ -24,6 +24,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  *
@@ -42,8 +44,10 @@ public class LoaderBTGBuilderTest {
                 "-l", "de.yard.threed.toolsfg.LoaderBTGBuilder"
         };
         Log log = Platform.getInstance().getLog(this.getClass());
-        log.debug("Running in "+System.getProperty("user.dir"));
-        GltfProcessor.runMain(argv);
+        String workingDir=System.getProperty("user.dir");
+        log.debug("Running in "+workingDir);
+        assertTrue(workingDir.endsWith("tools-fg"), "wrong workingdir:"+workingDir);
+        new GltfProcessor().runMain(argv);
         try {
             String gltfFilename = StringUtils.substringAfterLast(FlightGear.refbtggltf,"/");
 
@@ -52,7 +56,8 @@ public class LoaderBTGBuilderTest {
             // eigentlich geht das Laden ueber die Platform. Nur wegen Test werden die dahinterliegenden Klassen hier direkt aufgerufen.
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, null);
             PortableModelList ppfile = lf1.ppfile;
-            ModelAssertions.assertRefbtg(ppfile, false);
+            // LoaderBTGBuilder should provide matlib
+            ModelAssertions.assertRefbtg(ppfile, true);
         } catch (Exception e) {
             throw new RuntimeException("Error opening or reading gltf file", e);
         }

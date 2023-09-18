@@ -47,6 +47,7 @@ public class FlightGearModuleScenery extends FlightGearModule {
         /*FGGlobals.globals.*/
         set_matlib(new SGMaterialLib());
         // das ist natuerlich irgendwie nicht sehr elegant, einfach ein Event dafuer zu nutzen. Aber naja.
+        // 17.9.23: Seems outdated. matlib should only be needed for btg to gltf conversion.
         Platform.getInstance().getEventBus().publish(new Event(EVENT_MATLIBCREATED, null));
 
         SGModelLib.init(FGGlobals.globals.get_fg_root(), FGGlobals.globals.get_props());
