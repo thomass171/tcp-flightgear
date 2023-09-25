@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>module-flightgear</artifactId>
+    <artifactId>module-platform-jme-ext</artifactId>
     <packaging>jar</packaging>
     <version>1.0.0-SNAPSHOT</version>
-    <name>flightgear</name>
+    <name>platform-jme-ext</name>
 
     <parent>
         <groupId>de.yard.tcp-flightgear</groupId>
@@ -20,6 +20,19 @@
             <artifactId>module-core</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
+        <!-- engine needed for now until FG has 'core' and loaderBTG is in tools-fg-->
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-engine</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-engine</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>de.yard.tcp-22</groupId>
             <artifactId>module-core</artifactId>
@@ -29,35 +42,20 @@
         </dependency>
         <dependency>
             <groupId>de.yard.tcp-22</groupId>
-            <artifactId>module-engine</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
-        <!--traffic should not be needed. Maybe some parts of traffic should move to core-->
-        <dependency>
-            <groupId>de.yard.tcp-22</groupId>
-            <artifactId>module-traffic</artifactId>
+            <artifactId>module-platform-jme</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>de.yard.tcp-22</groupId>
-            <artifactId>module-engine</artifactId>
+            <groupId>de.yard.tcp-flightgear</groupId>
+            <artifactId>module-flightgear</artifactId>
             <version>1.0.0-SNAPSHOT</version>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <!-- 5.7.21 Tests need an implemented platform (and ConfigurationByEnv for HOSTDIR)  -->
-        <dependency>
-            <groupId>de.yard.tcp-22</groupId>
-            <artifactId>module-java-common</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>de.yard.tcp-22</groupId>
-            <artifactId>module-tools</artifactId>
+            <groupId>de.yard.tcp-flightgear</groupId>
+            <artifactId>module-traffic-fg</artifactId>
             <version>1.0.0-SNAPSHOT</version>
-            <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <build>

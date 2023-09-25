@@ -1,10 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>module-flightgear</artifactId>
+    <!--name 'traffic-ext' is already in use-->
+    <artifactId>module-traffic-fg</artifactId>
     <packaging>jar</packaging>
     <version>1.0.0-SNAPSHOT</version>
-    <name>flightgear</name>
+    <name>traffic-fg</name>
 
     <parent>
         <groupId>de.yard.tcp-flightgear</groupId>
@@ -22,6 +23,28 @@
         </dependency>
         <dependency>
             <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-engine</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-traffic-core</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-traffic</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-traffic</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
             <artifactId>module-core</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <type>test-jar</type>
@@ -31,16 +54,12 @@
             <groupId>de.yard.tcp-22</groupId>
             <artifactId>module-engine</artifactId>
             <version>1.0.0-SNAPSHOT</version>
-        </dependency>
-        <!--traffic should not be needed. Maybe some parts of traffic should move to core-->
-        <dependency>
-            <groupId>de.yard.tcp-22</groupId>
-            <artifactId>module-traffic</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>de.yard.tcp-22</groupId>
-            <artifactId>module-engine</artifactId>
+            <artifactId>module-graph</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <type>test-jar</type>
             <scope>test</scope>
@@ -53,9 +72,15 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>de.yard.tcp-22</groupId>
-            <artifactId>module-tools</artifactId>
+            <groupId>de.yard.tcp-flightgear</groupId>
+            <artifactId>module-flightgear</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-flightgear</groupId>
+            <artifactId>module-flightgear</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <type>test-jar</type>
             <scope>test</scope>
         </dependency>
     </dependencies>

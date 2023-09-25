@@ -56,10 +56,13 @@ Design of migration is:
 TODO: extract a core module without engine dependency to have tools-fg without engine dependency.
 ## tools-fg
 
-
 ## traffic-fg
 Extension of base module 'traffic' with components of flightgear. These components
 should implement generic 'traffic' interfaces with Flightgear logic.
+
+## platform-jme-ext
+Extension of platform-jme as a helper for faster dev cycles. In principle
+everything in project "tcp-flightgear" should be usable as plugin in "tcp-22".
 
 # Credits
 
