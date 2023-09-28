@@ -56,6 +56,8 @@ static    boolean ignoreshared = true;
     //List<_ObjectStatic> _objectStaticList = new ArrayList<_ObjectStatic>();
     //List<_Sign> _signList = new ArrayList<_Sign>();
 
+    public static List<String> btgLoaded = new ArrayList();
+
     public ReaderWriterSTG() {
         //8.6.17 supportsExtension("stg", "SimGear stg database format");
     }
@@ -573,6 +575,7 @@ static    boolean ignoreshared = true;
                     if (node != null) {
                         terrainGroup.attach(node/*.get()*/);
                         logger.debug("BTG node for " + i.resource.getName() + " added to group 'terrain'");
+                        btgLoaded.add(i.resource.getName());
                     } else {
                         logger.info(/*SG_LOG(SG_TERRAIN, SG_ALERT,*/ i._errorLocation + ": Failed to load " + i._token + " '" + i._name + "'");
                     }

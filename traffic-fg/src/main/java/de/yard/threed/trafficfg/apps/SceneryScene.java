@@ -12,12 +12,14 @@ import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
+import de.yard.threed.engine.BaseEventRegistry;
 import de.yard.threed.engine.BaseRequestRegistry;
 import de.yard.threed.engine.DirectionalLight;
 import de.yard.threed.engine.Input;
 import de.yard.threed.engine.KeyCode;
 import de.yard.threed.engine.Light;
 import de.yard.threed.engine.Observer;
+import de.yard.threed.engine.ObserverSystem;
 import de.yard.threed.engine.Scene;
 import de.yard.threed.engine.SceneMode;
 import de.yard.threed.engine.SceneNode;
@@ -29,17 +31,21 @@ import de.yard.threed.engine.ecs.InputToRequestSystem;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.platform.EngineHelper;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
+import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.engine.platform.common.SimpleBundleResourceProvider;
+import de.yard.threed.flightgear.FgTerrainBuilder;
 import de.yard.threed.flightgear.FlightGearMain;
 import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.TerraSyncBundleResolver;
 import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
+import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
+import de.yard.threed.flightgear.core.simgear.scene.model.OpenGlProcessPolicy;
+import de.yard.threed.traffic.AbstractTerrainBuilder;
 import de.yard.threed.traffic.EllipsoidCalculations;
+import de.yard.threed.traffic.EllipsoidConversionsProvider;
 import de.yard.threed.traffic.ScenerySystem;
-import de.yard.threed.traffic.TrafficEventRegistry;
-import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.traffic.flight.FlightLocation;
 import de.yard.threed.trafficfg.FgCalculations;
@@ -80,8 +86,8 @@ public class SceneryScene extends Scene {
     // 17.1.18: Den StgCycler lass ich mal fuer ScneryViewer
     private boolean usestgcycler = false;
     //private StgCycler stgcycler;
-    private EcsEntity userEntity=null;
-    EllipsoidCalculations rbcp;
+    private EcsEntity userEntity = null;
+    EllipsoidCalculations ellipsoidCalculations;
 
     @Override
     public String[] getPreInitBundle() {
@@ -93,14 +99,13 @@ public class SceneryScene extends Scene {
     }
 
     /**
-     *
      * @param sceneMode
      */
     @Override
     public void init(SceneMode sceneMode) {
         logger.debug("init SceneryScene");
 
-        SceneNode  world = new SceneNode();
+        SceneNode world = new SceneNode();
         world.setName("Scenery World");
 
         // Observer can exist before login/join for showing eg. an overview.
@@ -127,11 +132,15 @@ public class SceneryScene extends Scene {
         }
         addToWorld(world);
 
-        rbcp = TrafficHelper.getRoundBodyConversionsProviderByDataprovider();
-         rbcp = new FgCalculations();
 
-        ScenerySystem ts= new ScenerySystem(world);
-        //ts.setTerrainBuilder(new FgTerrainBuilder());
+        ellipsoidCalculations = new FgCalculations();
+        // EllipsoidConversionsProvider needs manual registration without SphereSystem
+        SystemManager.putDataProvider("ellipsoidconversionprovider", new EllipsoidConversionsProvider(ellipsoidCalculations));
+
+        ScenerySystem ts = new ScenerySystem(world);
+        AbstractTerrainBuilder terrainBuilder = new FgTerrainBuilder();
+        terrainBuilder.init(world);
+        ts.setTerrainBuilder(terrainBuilder);
         SystemManager.addSystem(ts);
 
         InputToRequestSystem inputToRequestSystem = new InputToRequestSystem();
@@ -140,13 +149,21 @@ public class SceneryScene extends Scene {
 
         inputToRequestSystem.addKeyMapping(KeyCode.LeftArrow, BaseRequestRegistry.TRIGGER_REQUEST_TURNLEFT);
         inputToRequestSystem.addKeyMapping(KeyCode.RightArrow, BaseRequestRegistry.TRIGGER_REQUEST_TURNRIGHT);
+        inputToRequestSystem.addKeyMapping(KeyCode.UpArrow, BaseRequestRegistry.TRIGGER_REQUEST_TURNUP);
+        inputToRequestSystem.addKeyMapping(KeyCode.DownArrow, BaseRequestRegistry.TRIGGER_REQUEST_TURNDOWN);
+        inputToRequestSystem.addKeyMapping(KeyCode.R, BaseRequestRegistry.TRIGGER_REQUEST_ROLLRIGHT);
+        inputToRequestSystem.addShiftKeyMapping(KeyCode.R, BaseRequestRegistry.TRIGGER_REQUEST_ROLLLEFT);
         SystemManager.addSystem(inputToRequestSystem);
 
         FirstPersonMovingSystem firstPersonMovingSystem = FirstPersonMovingSystem.buildFromConfiguration();
+        firstPersonMovingSystem.firstpersonmovingsystemdebuglog = true;
         SystemManager.addSystem(firstPersonMovingSystem);
+
+        SystemManager.addSystem(new ObserverSystem());
 
         addLight();
 
+        ModelLoader.processPolicy = new ACProcessPolicy(null);
     }
 
     @Override
@@ -190,21 +207,34 @@ public class SceneryScene extends Scene {
         //double currentdelta = getDeltaTime();
         //commonUpdate();
 
-        if (userEntity==null){
+        if (userEntity == null) {
             // just an invisible node
-            SceneNode node=new SceneNode();
+            SceneNode node = new SceneNode();
+
             FirstPersonMovingComponent fpmc = new FirstPersonMovingComponent(node.getTransform());
-            userEntity=new EcsEntity(node,fpmc);
+            fpmc.getFirstPersonTransformer().setMovementSpeed(150);
+            userEntity = new EcsEntity(node, fpmc);
             userEntity.setName("pilot");
 
-            LocalTransform loc = WorldGlobal.eddkoverview.location.toPosRot(rbcp);
+            LocalTransform loc = WorldGlobal.eddkoverview.location.toPosRot(ellipsoidCalculations);
             node.getTransform().setPosition(loc.position);
-            node.getTransform().setRotation(loc.rotation);
+            // Base rotation to make user node a FG model ...
+            Quaternion rotation = Quaternion.buildFromAngles(new Degree(-90), new Degree(180), new Degree(90));
+            rotation = new OpenGlProcessPolicy(null).opengl2fg.extractQuaternion();
+            // .. that is suited for FG geo transformation. Unclear why it is this order of rotation multiply.
+            rotation = loc.rotation.multiply(rotation);
+            node.getTransform().setRotation(rotation);
+            //node.getTransform().setRotation(loc.rotation.multiply(processPolicy.ac2ogl.getInverse().extractQuaternion()));
+
+            // Let ObserverSystem attach observer
+            SystemManager.sendEvent(BaseEventRegistry.buildUserAssembledEvent(userEntity));
 
             // trigger terrain loading
             SystemManager.sendEvent(new Event(EVENT_POSITIONCHANGED, new Payload(new Object[]{loc})));
             //the SphereSystem way SystemManager.sendEvent(TrafficEventRegistry.buildLOCATIONCHANGED(initialPosition, null,                    (initialTile)));
 
+            // No LoginSystem is used, so manually register user as 'acting player'.
+            ((InputToRequestSystem) SystemManager.findSystem(InputToRequestSystem.TAG)).setUserEntityId(userEntity.getId());
 
         }
 
@@ -215,16 +245,12 @@ public class SceneryScene extends Scene {
         }
 
 
-
         if (Input.GetKeyDown(KeyCode.D)) {
             logger.debug("scenegraph:" + dumpSceneGraph());
         }
 
 
-
-
     }
-
 
 
     protected void initSpheres() {

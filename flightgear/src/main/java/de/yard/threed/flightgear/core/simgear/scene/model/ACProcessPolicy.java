@@ -12,12 +12,19 @@ import de.yard.threed.core.MathUtil2;
 import de.yard.threed.engine.platform.ProcessPolicy;
 
 /**
- * Das duerfte der Tausch y und z Achse sein. MAcht Blender auch.
- * 
+ * Transformation from AC model coordinates (-x forward, y up, z right) to FG aircraft model coordinates (-x forward, y right, z up).
+ * That is a switch of y and z axis. (Blender also does it this way).
+ * The reason for negating y is unclear.
+ *
  * Created by thomass on 14.09.16.
  */
 public class ACProcessPolicy implements ProcessPolicy {
      Log logger = Platform.getInstance().getLog(ACProcessPolicy.class);
+
+     public Matrix4 ac2fg = new Matrix4(1, 0, 0, 0,
+             0, 0, -1, 0,
+             0, 1, 0, 0,
+             0, 0, 0, 1);
 
     public ACProcessPolicy(String extension) {
 
@@ -46,11 +53,8 @@ public class ACProcessPolicy implements ProcessPolicy {
             Quaternion rotation= Quaternion.buildFromAngles(new Degree(90),new Degree(0),new Degree(0));
             //rotation= new Quaternion(new Degree(-90),new Degree(0),new Degree(0));
             //in passender column order :
-            m = new Matrix4(1, 0, 0, 0,
-                    0, 0, -1, 0,
-                    0, 1, 0, 0,
-                    0, 0, 0, 1);
-            rotation = (MathUtil2.extractQuaternion(m));
+
+            rotation = (MathUtil2.extractQuaternion(ac2fg));
             transform.getTransform().setRotation(rotation);
         }
         transform.setName("ACProcessPolicy.transform node");

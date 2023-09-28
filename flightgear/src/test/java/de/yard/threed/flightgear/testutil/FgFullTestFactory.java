@@ -26,9 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * 21.7.21 For FG Tests that need a platform with renderer (where headless isn't sufficient).
- * But why? For intersections?Darum in opengl? Maybe for btg terrain building
+ * 21.7.21 For FG Tests that need a platform with additional bundles and inits.
  *
+ * <p>
  * 13.9.23: Currently SimpleHeadless seems sufficient.
  */
 public class FgFullTestFactory {
@@ -39,16 +39,20 @@ public class FgFullTestFactory {
         // 12.9.23: "fgdatabasic", FlightGearSettings.FGROOTCOREBUNDLE might be needed in future for aircraft loading (apparently not needed for bluebird)
         // 12.9.23: "fgdatabasicmodel" might be needed in future. Or will be a separate module.
         // "sgmaterial" occupies 493 MB
-        List bundlelist = new ArrayList(Arrays.asList(new String[]{"engine",
-                /*,*/  "sgmaterial",
-                }));
-        //bundlelist.add(SGMaterialLib.BUNDLENAME);
+        List bundlelist = new ArrayList(Arrays.asList(new String[]{"engine", SGMaterialLib.BUNDLENAME}));
 
         Platform platform = EngineTestFactory.initPlatformForTest((String[]) bundlelist.toArray(new String[0]),
                 new SimpleHeadlessPlatformFactory(),
                 null,
                 ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties));
 
+        postInit();
+
+        return platform;
+    }
+
+    public static void postInit(){
+        Platform platform = Platform.getInstance();
         //14.9.21: Too late for some tests?
         platform.addBundleResolver(new TerraSyncBundleResolver());
 
@@ -69,6 +73,5 @@ public class FgFullTestFactory {
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
 
-        return platform;
     }
 }
