@@ -5,8 +5,16 @@ export VERBOSELOG=0
 
 export CLASSPATH
 
+TCP22DIR=$OWNDIR/../../tcp-22
+source $TCP22DIR/bin/common.sh || exit 1
+PROJECT_HOME=$(dirname $(realpath $OWNDIR))
+echo PROJECT_HOME=$PROJECT_HOME
 
 
+for module in flightgear tools-fg
+do
+  CLASSPATH=$CLASSPATH:$MR/de/yard/tcp-flightgear/module-$module/$VERSION/module-$module-$VERSION.jar
+done
 
 validateHOSTDIRFG() {
   if [ -z "$HOSTDIRFG" ]; then
@@ -23,6 +31,6 @@ validateHOSTDIRFG() {
 preprocessGLTF() {
 	echo "Converting $1 to GLTF"
 	#18.4.17 leaves destdir!cd $GRANADADIR/desktop
-	java -Djava.awt.headless=true de.yard.threed.tools.GltfProcessor -gltf -o $2 "$1"
+	java -Djava.awt.headless=true de.yard.threed.tools.GltfProcessor -gltf -o $2 "$1" -l de.yard.threed.toolsfg.LoaderBTGBuilder
 	return $?
 }

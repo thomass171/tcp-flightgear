@@ -11,13 +11,15 @@ Also this is still WiP!
 # Building And Deploying
 
 This shows the build and installation to a web browser running locally serving from
-directory $HOME/Sites. Set shell variable HOSTDIR, eg.:
+directory $HOME/Sites. Set shell variable HOSTDIRFG (analog to HOSTDIR in tcp-22), eg.:
 
 ```
-export HOSTDIR=$HOME/Sites/tcp-22
+export HOSTDIRFG=$HOME/Sites/tcp-flightgear
 ```
 and create that base directory. Build and install tcp-22 to your local maven repos. The build
 artifacts are needed here. 
+
+Run the following steps either manually or use the script bin/buildAndDeploy.sh for running all.
 
 Maven is needed for building. Run
 
@@ -69,6 +71,22 @@ everything in project "tcp-flightgear" should be usable as plugin in "tcp-22".
 Syd Adams, Justin Smithies for the 777.
 
 Stewart Andreason (http://seahorseCorral.org/flightgear_aircraft.html) for 'bluebird'
+
+# Flightgear data
+Flightgear needs data for
+  * scenery
+  * scenery material
+  * aircraft model
+  * aircraft commons
+  * ground nets
+
+## Scenery data
+This project contains a subset of FG tiles around EDDK for unit testing and illustrating.
+The full set is available via a proxy server...
+
+## Aircraft Model
+This project contains the aircraft model 'bluebird' for unit testing and illustrating.
+More advanced aircraft model are available via a proxy server...
 
 # Implementation Details
 

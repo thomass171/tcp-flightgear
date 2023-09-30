@@ -1,23 +1,16 @@
 package de.yard.threed.trafficfg.apps;
 
-import de.yard.threed.core.InitMethod;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
-import de.yard.threed.core.testutil.SimpleEventBusForTesting;
+import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.engine.ecs.EcsEntity;
-import de.yard.threed.engine.ecs.EcsTestHelper;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.ecs.SystemState;
-import de.yard.threed.engine.test.testutil.TestUtil;
 import de.yard.threed.engine.testutil.SceneRunnerForTesting;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
-import de.yard.threed.flightgear.core.flightgear.scenery.FGTileMgr;
-import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialLib;
 import de.yard.threed.flightgear.core.simgear.scene.tgdb.ReaderWriterSTG;
 import de.yard.threed.flightgear.testutil.FgFullTestFactory;
-import de.yard.threed.javacommon.ConfigurationByEnv;
-import de.yard.threed.javacommon.SimpleHeadlessPlatformFactory;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -46,9 +39,11 @@ public class ScenerySceneTest {
         Vector3 position = userEntity.getSceneNode().getTransform().getPosition();
         logger.debug("position=" + position);
 
+        String[] bundleNames = BundleRegistry.getBundleNames();
+
         // 9 is typical if all tiles are available.
         assertEquals( 9, FlightGearModuleScenery.getInstance().get_scenery().get_terrain_branch().getTransform().getChildCount(),"terraingroup.children");
-        // why  12?
+        // why  12?  EDDK,
         assertEquals( 12, ReaderWriterSTG.btgLoaded.size(),"loaded btgs");
 
     }

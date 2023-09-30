@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Bundle TerraSync data in the 2018 style. Reads all files in $TERRASYNCDIR (if no option is set)
+# Bundle TerraSync data in the '2018 layout style'. Reads all files in $TERRASYNCDIR (if no option is set)
 # and copies/converts the files.
 # Per Option an alternatives dir can be set for bundling Custom Sceneries.
 #  - just copies (no rsync Probleme/Loeschungen)
@@ -13,8 +13,7 @@
 #
 
 OWNDIR=`dirname $0`
-TCP22DIR=$OWNDIR/../../tcp-22
-source $TCP22DIR/bin/common.sh || exit 1
+
 source $OWNDIR/common.sh || exit 1
 
 validateHOSTDIRFG
@@ -79,6 +78,8 @@ processTerraSyncFile() {
 					preprocessGLTF $TMPFILE $DESTDIR
 					checkrc preprocessGLTF
 					rm -f $TMPFILE
+					mv $DESTDIR/$BASENAME-tmp.gltf $DESTDIR/$BASENAME.gltf
+					mv $DESTDIR/$BASENAME-tmp.bin $DESTDIR/$BASENAME.bin
 					relax
 				fi
 				;;
@@ -117,37 +118,51 @@ then
 fi
 validateTERRASYNCDIR
 cd $TERRASYNCDIR && checkrc
-echo "Processing files in:" `pwd`
 echo "CLASSPATH="$CLASSPATH
+echo "Ready to process files in:" `pwd` "to $TERRASYNCBUNDLEDIR. Hit CR"
+read
 
 # process files and directories
 find Models Objects Terrain | egrep -v ".svn|.dirindex|.hashes|.DS_Store" | while read filename
 do
 	processTerraSyncFile $filename
+	# exit via checkrc only terminates the while loop!
+	checkrc processTerraSyncFile
 done
+if [ $? != 0 ]
+then
+    # already reported
+    exit 1
+fi
 
-echo "Completed. Building model directory"
+
 
 #jetzt das model directory. Frueher waren da auch model aus Objects drin. Jetzt erstmal nicht mehr
 #19.5.18: Was passiert hier jetzt? Die Dateien sind jetzt alle in die Bundleverzeichnisse
-#kopiert. Jetzt werden noch die drietory.txt erstellt, erst der generischen model und
-#dann pro stg.
+#kopiert.
+# Now create directory files ('directory[-no].txt'), first for generic model ...
+echo "Completed. Building generic model directory..."
 MODELDIRECTORY=$TERRASYNCBUNDLEDIR/directory-model.txt
 cd $TERRASYNCBUNDLEDIR && checkrc
 find Models -type f  > $MODELDIRECTORY
+echo "... completed."
 
-echo "Completed. Building not existing STG directories"
-
-#und die stg directories
+echo "Building not existing STG directories..."
+# ... and now build directory for each stg
 cd $TERRASYNCBUNDLEDIR && checkrc
 find . -name "*.stg" | awk -F"/" '{print $5}' | awk -F"." '{print $1}' | while read filename
 do
 	if [ ! -r directory-$filename.txt ]
 	then
 		echo STG:$filename
-		$GRANADADIR/bin/mkStgBundle.sh $filename
+		sh $PROJECT_HOME/bin/mkStgBundle.sh $filename || exit 1
 	fi
 done
-echo "Completed."
+if [ $? != 0 ]
+then
+    # already reported
+    exit 1
+fi
+echo "... completed."
 exit 0
 
