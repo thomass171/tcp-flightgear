@@ -47,7 +47,7 @@ public class SceneryPager {//extends lic osgDB::DatabasePager
             Bundle bundle = BundleRegistry.getBundle(bundlename);
             if (bundle == null) {
                 AbstractSceneRunner.instance.loadBundle(bundlename, (Bundle b1) -> {
-                    if (Config.terrainloaddebuglog) {
+                    if (ReaderWriterSTG.terrainloaddebuglog) {
                         logger.debug("bundle loaded for " + fileName);
                     }
                     SGLoaderOptions opt = new SGLoaderOptions();

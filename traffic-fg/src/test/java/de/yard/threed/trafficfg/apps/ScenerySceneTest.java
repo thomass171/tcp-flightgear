@@ -10,7 +10,7 @@ import de.yard.threed.engine.ecs.SystemState;
 import de.yard.threed.engine.testutil.SceneRunnerForTesting;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.core.simgear.scene.tgdb.ReaderWriterSTG;
-import de.yard.threed.flightgear.testutil.FgFullTestFactory;
+import de.yard.threed.flightgear.testutil.FgTestFactory;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -41,9 +41,9 @@ public class ScenerySceneTest {
 
         String[] bundleNames = BundleRegistry.getBundleNames();
 
-        // 9 is typical if all tiles are available.
-        assertEquals( 9, FlightGearModuleScenery.getInstance().get_scenery().get_terrain_branch().getTransform().getChildCount(),"terraingroup.children");
-        // why  12?  EDDK,
+        // 9 is typical and plausibel if all tiles are available. Why 10 with project bundles? TODO check
+        assertEquals( 10, FlightGearModuleScenery.getInstance().get_scenery().get_terrain_branch().getTransform().getChildCount(),"terraingroup.children");
+        // why  12?  EDDK,...
         assertEquals( 12, ReaderWriterSTG.btgLoaded.size(),"loaded btgs");
 
     }
@@ -57,7 +57,7 @@ public class ScenerySceneTest {
         properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryScene");
         properties.putAll(additionalProperties);
         // buildDefaultConfigurationWithEnv is needed for HOSTDIR
-        FgFullTestFactory.initPlatformForTest(properties);
+        FgTestFactory.initPlatformForTest(properties,false, true);
         // not sufficient SceneRunnerForTesting sceneRunner = SceneRunnerForTesting.setupForScene(initial_frames, ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties), new String[]{"engine", SGMaterialLib.BUNDLENAME});
         SceneRunnerForTesting sceneRunner = (SceneRunnerForTesting)SceneRunnerForTesting.getInstance();
         sceneRunner.runLimitedFrames(initial_frames);

@@ -66,8 +66,8 @@ public class SGMaterial extends BVHMaterial {
     double building_spacing;
 
     // building texture & lightmap
-    /*String*/BundleResource building_texture;
-    /*String*/BundleResource building_lightmap;
+    /*String*/ BundleResource building_texture;
+    /*String*/ BundleResource building_lightmap;
 
     // Ratio of the 3 random building sizes
     double building_small_ratio;
@@ -147,7 +147,7 @@ public class SGMaterial extends BVHMaterial {
     CppHashMap<String, /*SGSharedPtr<*/SGMaterialGlyph> glyphs = new CppHashMap<String, SGMaterialGlyph>(new SGMaterialGlyphFactory());
 
     // Tree texture, typically a strip of applicable tree textures
-    /*String*/BundleResource tree_texture;
+    /*String*/ BundleResource tree_texture;
 
     // Object mask, a simple RGB texture used as a mask when placing
     // random vegetation, objects and buildings
@@ -191,8 +191,8 @@ public class SGMaterial extends BVHMaterial {
     }
 
     SGMaterial(Options options, SGPropertyNode props, SGPropertyNode prop_root, AreaList a, SGCondition c) {
-        if (Config.materiallibdebuglog) {
-            logger.debug("Building SGMaterial");
+        if (SGMaterialLib.materiallibdebuglog) {
+            logger.debug("Building SGMaterial with condition " + c);
         }
         SGReaderWriterOptions opt;
         opt = SGReaderWriterOptions.copyOrCreate(options);
@@ -260,7 +260,7 @@ public class SGMaterial extends BVHMaterial {
 
     /**
      * Never returns null.
-     * 
+     *
      * @param name
      * @return
      */
@@ -276,7 +276,7 @@ public class SGMaterial extends BVHMaterial {
         List<SGPropertyNode> textures = props.getChildren("texture");
         for (int i = 0; i < textures.size(); i++) {
             String tname = textures.get(i).getStringValue();
-            if (Config.materiallibdebuglog) {
+            if (SGMaterialLib.materiallibdebuglog) {
                 logger.debug("SGMaterial.read_properties:props.name=" + props.getName() + ",props.value=" + props.getStringValue());
             }
 
@@ -290,7 +290,8 @@ public class SGMaterial extends BVHMaterial {
             //String fullTexPath = SGModelLib.findDataFile(tpath.str(), options);
             BundleResource fullTexPath = buildTextureBundleResource("Textures/" + tname);
             if (!fullTexPath.bundle.exists(fullTexPath)) {
-                logger.error(/*SG_LOG(SG_GENERAL, SG_ALERT,*/ "Cannot find texture \"" + tname + "\" in Textures folders.");
+                // material name not yet available for logging. Just a warning, because there might be further textures.
+                logger.warn("Cannot find texture '" + tname + "' in Textures folders.");
             } else {
 
             /*DDS ??if (tpath.lower_extension().equals("dds")) {
@@ -357,15 +358,15 @@ public class SGMaterial extends BVHMaterial {
             String omname = masks.get(i).getStringValue();
 
             if (!StringUtils.empty(omname)) {
-                if (Config.materiallibdebuglog) {
-                    logger.debug("Building object mask "+omname);
+                if (SGMaterialLib.materiallibdebuglog) {
+                    logger.debug("Building object mask " + omname);
                 }
                 //12.6.17: Umgestellt auf Bundle
                 //SGPath ompath = new SGPath("Textures");
                 //ompath.append(omname);
                 //String fullMaskPath = SGModelLib.findDataFile(ompath.str(), options);
                 //Bundle bundle = BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME);
-                
+
                 BundleResource fullMaskPath = buildTextureBundleResource("Textures/" + omname);
 
                 if (!fullMaskPath.bundle.exists(fullMaskPath)) {
@@ -423,7 +424,7 @@ public class SGMaterial extends BVHMaterial {
         building_spacing = props.getDoubleValue("building-spacing-m", 5.0);
 
         //28.6.17 Wegen Komponentiserung keine Pfadsuche mehr.
-                 
+
         String bt = props.getStringValue("building-texture", "Textures/buildings.png");
         //building_texture = SGModelLib.findDataFile(bt, options);
         building_texture = buildTextureBundleResource(bt);
@@ -664,7 +665,7 @@ public class SGMaterial extends BVHMaterial {
         int i = texIndex % _status.size();
         //FG-DIFF Java kann auch negative Werte liefern.
         i = Math.abs(i);
-        if (Config.materiallibdebuglog) {
+        if (SGMaterialLib.materiallibdebuglog) {
             logger.debug("texIndex=" + texIndex + ",size=" + _status.size() + ",i=" + i);
         }
         return get_effect(i);
@@ -702,7 +703,7 @@ public class SGMaterial extends BVHMaterial {
     }*/
 
     void buildEffectProperties(SGReaderWriterOptions options) {
-        if (Config.materiallibdebuglog) {
+        if (SGMaterialLib.materiallibdebuglog) {
             logger.debug("buildEffectProperties ");
         }
         //TODO ref_ptr<SGMaterialUserData> user = new SGMaterialUserData(this);

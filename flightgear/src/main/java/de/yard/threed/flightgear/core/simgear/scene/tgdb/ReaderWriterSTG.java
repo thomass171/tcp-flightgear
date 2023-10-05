@@ -57,6 +57,7 @@ static    boolean ignoreshared = true;
     //List<_Sign> _signList = new ArrayList<_Sign>();
 
     public static List<String> btgLoaded = new ArrayList();
+    public static boolean terrainloaddebuglog = true;
 
     public ReaderWriterSTG() {
         //8.6.17 supportsExtension("stg", "SimGear stg database format");
@@ -179,7 +180,7 @@ static    boolean ignoreshared = true;
     public /*BuildResult*/Group build(/*10.6.17 BundleResource bpath*/String fileName, Options options, LoaderOptions boptions) {
         //filename isType a pathless stg filename
         //String fileName = bpath.getName();
-        if (Config.terrainloaddebuglog) {
+        if (terrainloaddebuglog) {
             logger.debug("ReaderWriterSTG.readNode from bundle: " + fileName);
         }
         if (!StringUtils.endsWith(fileName, ".stg")) {
@@ -195,12 +196,12 @@ static    boolean ignoreshared = true;
         String bundlename = BundleRegistry.TERRAYSYNCPREFIX + stgname;
         Bundle bundle = BundleRegistry.getBundle(bundlename);
         if (bundle == null) {
-            logger.error("Bundle for stg " + stgname + " not found in " + BundleRegistry.TERRAYSYNCPREFIX);
+            logger.error("Bundle for stg '" + stgname + "' not found in " + BundleRegistry.TERRAYSYNCPREFIX);
             return null;//BuildResult.ERROR_IN_READING_FILE;
         }
         modelbundle = BundleRegistry.getBundle(BundleRegistry.TERRAYSYNCPREFIX + "model");
         if (modelbundle == null) {
-            logger.error("terrasync model bundle not found.");
+            logger.error("terrasync 'model' bundle not found.");
             return null;//BuildResult.ERROR_IN_READING_FILE;
         }
 
@@ -308,7 +309,7 @@ static    boolean ignoreshared = true;
                 filePath = osgDB.getFilePath(absoluteFileName);
                 logger.info(/*SG_LOG(SG_TERRAIN, SG_INFO,* / "Loading stg file " + absoluteFileName + ", filePath=" + filePath);*/
             } else {
-                if (Config.terrainloaddebuglog) {
+                if (terrainloaddebuglog) {
                     logger.debug("ReaderWriterSTG.read:Trying bpath" + bpath);
                 }
                 //RourcePath equals bundle name
@@ -383,7 +384,7 @@ static    boolean ignoreshared = true;
                             objectresource = new BundleResource(BundleRegistry.getBundle("TerrasyncModels"), name);
                         }
                     }*/
-                    if (Config.terrainloaddebuglog) {
+                    if (terrainloaddebuglog) {
                         logger.debug("objectresource=" + objectresource);
                     }
                 } else {
@@ -555,7 +556,7 @@ static    boolean ignoreshared = true;
 
 
         public Group/*Node*/ load(SGBucket bucket, Options opt, LoaderOptions bopt) {
-            if (Config.terrainloaddebuglog) {
+            if (terrainloaddebuglog) {
                 logger.debug("ReaderWriterSTG.load:  " + bucket);
             }
 

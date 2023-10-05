@@ -1,7 +1,6 @@
 package de.yard.threed.toolsfg;
 
 import de.yard.threed.core.platform.Platform;
-import de.yard.threed.flightgear.testutil.FgFullTestFactory;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import org.junit.jupiter.api.Test;
 

@@ -46,7 +46,8 @@ public class SGReaderWriterBTG /*15.9.17 extends ReaderWriter*/ {
         sgOptions = (SGReaderWriterOptions) options;
         //Node result = null;
         try {
-            SceneNode result = Obj.SGLoadBTG(bpath,/*fileName*/ sgOptions, boptions);
+            Obj obj = new Obj();
+            SceneNode result = obj.SGLoadBTG(bpath,/*fileName*/ sgOptions, boptions);
             return result;
             //if (result == null)
             //    return ReadResult.FILE_NOT_HANDLED;

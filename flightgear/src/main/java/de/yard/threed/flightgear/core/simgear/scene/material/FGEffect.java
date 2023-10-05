@@ -81,7 +81,7 @@ public class FGEffect /*extends Effect*/ {
      */
     public boolean realizeTechniques(SGReaderWriterOptions options/*, SGMaterial mat*/) {
         //material
-        if (Config.materiallibdebuglog) {
+        if (SGMaterialLib.materiallibdebuglog) {
             logger.debug("Effec:realizeTechniques.");
         }
         /*if (_isRealized)

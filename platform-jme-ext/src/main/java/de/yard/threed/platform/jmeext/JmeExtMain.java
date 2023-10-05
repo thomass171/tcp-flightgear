@@ -1,5 +1,15 @@
 package de.yard.threed.platform.jmeext;
 
+import de.yard.threed.core.configuration.Configuration;
+import de.yard.threed.core.platform.Platform;
+import de.yard.threed.core.platform.PlatformFactory;
+import de.yard.threed.core.platform.PlatformInternals;
+import de.yard.threed.flightgear.TerraSyncBundleResolver;
+import de.yard.threed.javacommon.DefaultResourceReader;
+import de.yard.threed.outofbrowser.SimpleBundleResolver;
+import de.yard.threed.platform.jme.JmePlatformFactory;
+import de.yard.threed.platform.jme.PlatformJme;
+
 import java.util.HashMap;
 
 /**
@@ -49,5 +59,19 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryScene");
 
         return properties;
+    }
+
+    @Override
+    protected PlatformFactory getPlatformFactory(Configuration configuration) {
+        return new PlatformFactory() {
+            @Override
+            public PlatformInternals createPlatform(Configuration configuration) {
+                PlatformInternals platformInternals = PlatformJme.init(configuration);
+                Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver());
+                Platform.getInstance().addBundleResolver(new SimpleBundleResolver(configuration.getString("HOSTDIRFG") + "/bundles", new DefaultResourceReader()));
+                return platformInternals;
+            }
+        };
+
     }
 }

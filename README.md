@@ -81,8 +81,16 @@ Flightgear needs data for
   * ground nets
 
 ## Scenery data
+Flightgear scenery data is stored by 'TerraySync' in a directory tree.
 This project contains a subset of FG tiles around EDDK for unit testing and illustrating.
 The full set is available via a proxy server...
+
+Bundle building for scenery differs from other bundles (mkTerraSyncBundle.sh). The original TerraSync
+directory structure is retained and just directory files are added in the root of the tree.
+So the bundles are a kind of overlay on the TerraSync structure.
+
+btg-files are converted to gltf files during bundle building. Even though converted to gltf, the bundle directory will still list the filename with
+suffix 'btg'.
 
 ## Aircraft Model
 This project contains the aircraft model 'bluebird' for unit testing and illustrating.
@@ -96,3 +104,6 @@ price of high system load at runtime. For saving resources, ac-files are convert
 to gltf files during bundle building. Unfortunately the converter still has bugs,
 eg. some special ac features like two sided faces are not yet converted
 correctly.
+
+Even though converted to gltf, the bundle directory will still list the filename with
+suffix 'ac'.

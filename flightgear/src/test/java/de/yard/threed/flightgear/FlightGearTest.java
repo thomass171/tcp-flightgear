@@ -23,7 +23,7 @@ import de.yard.threed.core.platform.NativeSceneNode;
 import de.yard.threed.engine.testutil.EngineTestFactory;
 
 
-import de.yard.threed.flightgear.testutil.FgFullTestFactory;
+import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.traffic.VehicleLauncher;
 import de.yard.threed.traffic.VehicleLoaderResult;
 import de.yard.threed.traffic.config.ConfigHelper;
@@ -44,7 +44,7 @@ import java.util.List;
  * Created by thomass on 31.05.16.
  */
 public class FlightGearTest {
-    static Platform platform = FgFullTestFactory.initPlatformForTest(new HashMap<String, String>());
+    static Platform platform = FgTestFactory.initPlatformForTest(new HashMap<String, String>());
     //String aircraftdir = "My-777";
     static Log logger = Platform.getInstance().getLog(FlightGearTest.class);
     
@@ -57,7 +57,8 @@ public class FlightGearTest {
 
         FlightGearModuleBasic.init(null, null);
         FlightGearModuleScenery.init(false);
-        TestUtil.assertEquals("matlib.size", /*FG 3.4 284*/288, FlightGearModuleScenery.getInstance().get_matlib().matlib.size());
+        // 1.10.23 was 288 from Granada bundle, 283 now from project might be correct
+        TestUtil.assertEquals("matlib.size", /*FG 3.4 284*/283, FlightGearModuleScenery.getInstance().get_matlib().matlib.size());
     }
     
 

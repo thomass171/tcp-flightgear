@@ -11,7 +11,7 @@ import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.engine.test.testutil.TestUtil;
 
 import de.yard.threed.flightgear.core.FlightGear;
-import de.yard.threed.flightgear.testutil.FgFullTestFactory;
+import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.flightgear.testutil.ModelAssertions;
 import de.yard.threed.javanative.FileReader;
 import de.yard.threed.tools.GltfMemoryBundle;
@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  */
 public class LoaderBTGBuilderTest {
-    static Platform platform = FgFullTestFactory.initPlatformForTest(new HashMap<String, String>());
+    static Platform platform = FgTestFactory.initPlatformForTest(new HashMap<String, String>());
 
 
     /**

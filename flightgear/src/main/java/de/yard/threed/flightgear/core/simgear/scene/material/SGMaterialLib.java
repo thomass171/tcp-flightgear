@@ -32,7 +32,7 @@ import java.util.List;
 public class SGMaterialLib {
     public static final String BUNDLENAME = "sgmaterial";
     static Log logger = Platform.getInstance().getLog(SGMaterialLib.class);
- 
+    static public boolean materiallibdebuglog = false;
 
     //class MatLibPrivate    ;   std::    auto_ptr<MatLibPrivate> d;
 
@@ -61,11 +61,11 @@ public class SGMaterialLib {
     // Constructor
     public SGMaterialLib() {
     }
-    
+
     // Load a library of material properties
     public boolean load(/*String fg_root*/ String mpath, SGPropertyNode prop_root) {
         SGPropertyNode materialblocks = new SGPropertyNode();
-        if (Config.materiallibdebuglog) {
+        if (materiallibdebuglog) {
             logger.debug("load:Reading materials from " + mpath);
         }
         Bundle bundle = BundleRegistry.getBundle(BUNDLENAME);
@@ -77,7 +77,7 @@ public class SGMaterialLib {
         try {
             PropsIO.readProperties(new BundleResource(bundle, mpath), materialblocks);
         } catch (SGException ex) {
-            logger.error(/*SG_LOG( SG_INPUT, SG_ALERT*/ "Error reading materials in "+mpath+": " + ex.getMessage());
+            logger.error(/*SG_LOG( SG_INPUT, SG_ALERT*/ "Error reading materials in " + mpath + ": " + ex.getMessage());
             return false;
         }
         Options options = new Options();
@@ -112,7 +112,7 @@ public class SGMaterialLib {
                         Math.abs(x2 - x1),
                         Math.abs(y2 - y1));
                 arealist.add(rect);
-                if (Config.materiallibdebuglog) {
+                if (materiallibdebuglog) {
                     logger.debug(/*SG_LOG( SG_TERRAIN, SG_INFO,*/ " Area (" + rect.x() + "," + rect.y() + ") width:" + rect.width() + " height:" + rect.height());
                 }
             }
@@ -140,7 +140,10 @@ public class SGMaterialLib {
                     // cerr << "Material " << name << endl;
                     matlib.get(name).add(m);
                     m.add_name(name);
-                    if (Config.materiallibdebuglog) {
+                    if (m._status.size() == 0) {
+                        logger.warn("No effect(texture?) for material " + name);
+                    }
+                    if (materiallibdebuglog) {
                         logger.debug(/*(SG_TERRAIN,*/ "Built material for name " + name);
                     }
                 }
@@ -167,8 +170,8 @@ public class SGMaterialLib {
                 iter++;
             }
         }*/
-        if (material.equals("Grassland")){
-            result=null;
+        if (material.equals("Grassland")) {
+            result = null;
         }
         List<SGMaterial> it = matlib.get(material);
         for (int i = it.size() - 1; i >= 0; i--) {
@@ -177,7 +180,7 @@ public class SGMaterialLib {
                 return result;
             }
         }
-        logger.warn("no material "+material+" for center "+center);
+        logger.warn("no material " + material + " for center " + center);
         return null;
     }
 
@@ -213,7 +216,7 @@ public class SGMaterialLib {
     }
 
     public SGMaterialCache generateMatCache(SGGeod center) {
-            /*SGVec2f*/
+        /*SGVec2f*/
         Vector2 c = new Vector2((float) center.getLongitudeDeg().getDegree(), (float) center.getLatitudeDeg().getDegree());
         return generateMatCache(c);
     }

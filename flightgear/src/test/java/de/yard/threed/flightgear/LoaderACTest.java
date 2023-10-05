@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
  * Test for AC loader with some FG models.
  */
 public class LoaderACTest {
-    static Platform platform = FgTestFactory.initPlatformForTest();
+    static Platform platform = FgTestFactory.initPlatformForTest(true,false);
 
 
     @Test

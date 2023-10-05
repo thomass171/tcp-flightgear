@@ -1,5 +1,7 @@
 package de.yard.threed.flightgear;
 
+import de.yard.threed.core.StringUtils;
+import de.yard.threed.core.loader.AbstractLoader;
 import de.yard.threed.core.loader.InvalidDataException;
 import de.yard.threed.core.loader.LoaderGLTF;
 import de.yard.threed.core.loader.PortableModelList;
@@ -21,7 +23,9 @@ import de.yard.threed.flightgear.core.flightgear.scenery.TileCache;
 import de.yard.threed.flightgear.core.osg.Group;
 import de.yard.threed.flightgear.core.osg.Node;
 import de.yard.threed.flightgear.core.osgdb.Options;
-import de.yard.threed.flightgear.testutil.FgFullTestFactory;
+import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialCache;
+import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialLib;
+import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.flightgear.testutil.ModelAssertions;
 
 import de.yard.threed.flightgear.core.simgear.geodesy.FgMath;
@@ -34,13 +38,13 @@ import de.yard.threed.flightgear.core.simgear.scene.tgdb.SGReaderWriterBTG;
 import de.yard.threed.flightgear.core.simgear.scene.util.SGReaderWriterOptions;
 
 
-
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleData;
 import de.yard.threed.core.buffer.ByteArrayInputStream;
 import de.yard.threed.core.testutil.Assert;
 import de.yard.threed.traffic.WorldGlobal;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -48,26 +52,32 @@ import java.util.HashMap;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests oberhalb von material und SGTileGeometry, z.B. Obj, SGBucket, ReaderWriterSTG,FGTileMgrScheduler, SQQaut, OsgMath
+ * High Level Tests for material und SGTileGeometry, z.B. Obj, SGBucket, ReaderWriterSTG,FGTileMgrScheduler, SQQaut, OsgMath
  * <p>
  * FGTileMgr ist in FlightGeartest, weil er zu stark eingebunden ist.
  * <p>
  * Geht auch auf die echte Installation, nicht src/test/resources. "3056410" ist das Referenz BTG (Dahlem). Erfordert, dass FG dort mal gestartet wurde, damit es da ist.
  * 6.7.17: Wegene Entkopplung geht es jetzt - zumindest teilweise - doch auf src/test/resources.
  * <p>
- * Auch fuer Tests der Scenery Bundles
+ * Also for tests of Scenery Bundles
  * 30.9.19: TestFactory laedt schon FG Teile.
  *
  * <p>
  * Created by thomass on 09.08.16.
  */
 public class SceneryTest {
-    static Platform platform = FgFullTestFactory.initPlatformForTest(new HashMap<String, String>());
+
+    @BeforeAll
+    static void setup() {
+        FgTestFactory.initPlatformForTest(true,true);
+    }
 
     /**
+     *
      */
     @Test
     public void testLoadBTG1() {
+        Obj obj = new Obj();
         //TestFactory.loadBundleSync(SGMaterialLib.BUNDLENAME);
         // bis 7, weil dort das Material geladen wird.
         //FlightGear.init(7, FlightGear.argv);
@@ -75,14 +85,14 @@ public class SceneryTest {
         //FlightGearModuleScenery.init(false);
         //12.9.23: BTG should no longer considered a use case in Obj.SGLoadBTG()?
         LoaderOptions loaderoptions = new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib());
-        loaderoptions.usegltf=false;
-        Node node = Obj.SGLoadBTG(new BundleResource(BundleRegistry.getBundle("test-resources"), FlightGear.refbtg), null, loaderoptions);
+        loaderoptions.usegltf = false;
+        Node node = obj.SGLoadBTG(new BundleResource(BundleRegistry.getBundle("test-resources"), FlightGear.refbtg), null, loaderoptions);
         assertNotNull(node);
         ModelAssertions.assertRefbtgNode(node, "terrain/3056410.btg");
 
-        //und jetzt GLTF. Suffix remains ".btg"
+        // And now as GLTF. Suffix remains ".btg"
         loaderoptions.usegltf = true;
-        node = Obj.SGLoadBTG(new BundleResource(BundleRegistry.getBundle("test-resources"), FlightGear.refbtg), null, loaderoptions);
+        node = obj.SGLoadBTG(new BundleResource(BundleRegistry.getBundle("test-resources"), FlightGear.refbtg), null, loaderoptions);
         assertNotNull(node);
         ModelAssertions.assertRefbtgNode(node, "terrain/3056410.gltf");
     }
@@ -108,8 +118,8 @@ public class SceneryTest {
     public void testLoadBTG3072816() {
         //TestFactory.loadBundleSync(SGMaterialLib.BUNDLENAME);
         //FlightGear.init(7, FlightGear.argv);
-       // FlightGearModuleBasic.init(null, null);
-       // FlightGearModuleScenery.init(false);
+        // FlightGearModuleBasic.init(null, null);
+        // FlightGearModuleScenery.init(false);
         BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "terrain/3072816.btg");
         BundleData ins = br.bundle.getResource(br);
         try {
@@ -126,28 +136,28 @@ public class SceneryTest {
     public void testSGBucket() {
         SGBucket bucket = new SGBucket(2958154);
         // Wert 2958154 ohne Prüfung einfach als Referenzgenommen.
-        assertEquals( "2958154", bucket.gen_index_str(),"gen_index_str");
-        assertEquals( "e000n50/e000n51", bucket.gen_base_path(),"gen_base_path");
+        assertEquals("2958154", bucket.gen_index_str(), "gen_index_str");
+        assertEquals("e000n50/e000n51", bucket.gen_base_path(), "gen_base_path");
         bucket = new SGBucket(SGGeod.fromGeoCoordinate(WorldGlobal.elsdorf0));
-        assertEquals( "3056442", bucket.gen_index_str(),"gen_index_str");
+        assertEquals("3056442", bucket.gen_index_str(), "gen_index_str");
         // Bucket für refbtg
         SGGeod pos = SGGeod.fromCart(FlightGear.refbtgcenter);
         bucket = new SGBucket(pos.getLongitudeDeg(), pos.getLatitudeDeg());
-        assertEquals( "3056410", bucket.gen_index_str(),"gen_index_str");
+        assertEquals("3056410", bucket.gen_index_str(), "gen_index_str");
         //Dahlem liegt auch knapp da drin
         SGBucket unterrefbtg = bucket.sibling(0, -1);
-        assertEquals( "3056402", unterrefbtg.gen_index_str(),"gen_index_str");
+        assertEquals("3056402", unterrefbtg.gen_index_str(), "gen_index_str");
         // Dahlem Viewpoint liegt auch suedlich ((6.531), 50.374))
         pos = SGGeod.fromGeoCoordinate(WorldGlobal.dahlem1300.location.coordinates);
         bucket = new SGBucket(pos.getLongitudeDeg(), pos.getLatitudeDeg());
-        assertEquals( "3056402", bucket.gen_index_str(),"gen_index_str");
+        assertEquals("3056402", bucket.gen_index_str(), "gen_index_str");
         // in unseren Breiten gibt wohl vier horizontale Tiles pro Degree. Dahlem ist in beide Richtungen das Zweite.
-        assertEquals( (int) Math.round(Math.floor(0.531f / (1f / 4))), bucket.get_x(),"dahlem grid.x");
-        assertEquals(13914.938f, (float) bucket.get_height_m(),"dahlem height");
-        assertEquals( (int) Math.round(Math.floor(0.374f / (1f / 8))), bucket.get_y(),"dahlem grid.y");
-        assertEquals( 50 + ((2f + 1f) / 8), (float) bucket.get_highest_lat(),"dahlem highest lat");
-        assertEquals( 17748.787f, (float) bucket.get_width_m(),"dahlem width");
-        assertEquals( "50.3125, 6.625, 0.0 m", bucket.get_center().toString(),"dahlem center");
+        assertEquals((int) Math.round(Math.floor(0.531f / (1f / 4))), bucket.get_x(), "dahlem grid.x");
+        assertEquals(13914.938f, (float) bucket.get_height_m(), "dahlem height");
+        assertEquals((int) Math.round(Math.floor(0.374f / (1f / 8))), bucket.get_y(), "dahlem grid.y");
+        assertEquals(50 + ((2f + 1f) / 8), (float) bucket.get_highest_lat(), "dahlem highest lat");
+        assertEquals(17748.787f, (float) bucket.get_width_m(), "dahlem width");
+        assertEquals("50.3125, 6.625, 0.0 m", bucket.get_center().toString(), "dahlem center");
 
     }
 
@@ -160,26 +170,26 @@ public class SceneryTest {
         EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("3072816"));
         EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("model"));
         Bundle bundle3072816 = BundleRegistry.getBundle("Terrasync-3072816");
-        assertNotNull( bundle3072816,"bundle3072816");
+        assertNotNull(bundle3072816, "bundle3072816");
         Bundle bundlemodel = BundleRegistry.getBundle("Terrasync-model");
-        assertNotNull( bundlemodel,"bundlemodel");
-        assertNotNull( bundle3072816.getResource("Objects/e000n50/e007n50/moffett-hangar-n-211.xml"),"moffett-hangar-n-211");
+        assertNotNull(bundlemodel, "bundlemodel");
+        assertNotNull(bundle3072816.getResource("Objects/e000n50/e007n50/moffett-hangar-n-211.xml"), "moffett-hangar-n-211");
 
         EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("3072856"));
         Bundle bundle3072856 = BundleRegistry.getBundle("Terrasync-3072856");
-        assertNotNull( bundle3072856,"bundle3072816");
-        assertNotNull( bundle3072856.getResource("Objects/e000n50/e007n51/vfl_stadion.xml"),"vfl_stadion.xml");
+        assertNotNull(bundle3072856, "bundle3072816");
+        assertNotNull(bundle3072856.getResource("Objects/e000n50/e007n51/vfl_stadion.xml"), "vfl_stadion.xml");
         //der Suffix gz kommt nicht mit ins directory
         if (FlightGearSettings.customTerraSync) {
-            assertTrue( bundle3072856.exists("Terrain/e000n50/e007n51/3072856.gltf"),"3072856.btg.gz");
+            assertTrue(bundle3072856.exists("Terrain/e000n50/e007n51/3072856.gltf"), "3072856.btg.gz");
         } else {
-            assertTrue( bundle3072856.exists("Terrain/e000n50/e007n51/3072856.btg"),"3072856.btg.gz");
+            assertTrue(bundle3072856.exists("Terrain/e000n50/e007n51/3072856.btg"), "3072856.btg.gz");
         }
         // Bundle 3072824 ist nicht geeignet zum Test, weil es evtl. durch EDDK Custom ueberschrieben wird. Darum 3072856. Ist aber schon oben. 
         //TestFactory.loadBundleSync(FlightGear.getBucketBundleName("3072856"));
         //Bundle bundle3072856 = BundleRegistry.getBundle("Terrasync-3072856");
-        assertNotNull( bundle3072856.getResource("Objects/e000n50/e007n51/vfl_stadion.gltf"),"vfl_stadion.gltf");
-        BundleResource br = new BundleResource(bundle3072856,"Objects/e000n50/e007n51/vfl_stadion.gltf");
+        assertNotNull(bundle3072856.getResource("Objects/e000n50/e007n51/vfl_stadion.gltf"), "vfl_stadion.gltf");
+        BundleResource br = new BundleResource(bundle3072856, "Objects/e000n50/e007n51/vfl_stadion.gltf");
         LoaderGLTF lf1 = null;
         try {
             lf1 = LoaderGLTF.buildLoader(br, br.path);
@@ -190,8 +200,9 @@ public class SceneryTest {
 
         LoaderOptions opt = new LoaderOptions();
         opt.usegltf = true;
-        Node node = Obj.SGLoadBTG(new BundleResource(bundle3072816, "Terrain/e000n50/e007n50/3072816.btg"), null, opt);
-        assertNotNull( node);
+        Obj obj = new Obj();
+        Node node = obj.SGLoadBTG(new BundleResource(bundle3072816, "Terrain/e000n50/e007n50/3072816.btg"), null, opt);
+        assertNotNull(node);
 
         // Das 3072816.stg hat ein paar mehr Zeilen als bloss das btg. Gibt es einmal in Objects und einmal in Terrain. 
         // Beide muessen gelesen werden.
@@ -216,7 +227,7 @@ public class SceneryTest {
         double duration = 1;
         fgTileMgrScheduler.schedule_scenery(elsdorf, _maxTileRangeM, duration);
         // Mit der dustance oben so austariert, dass 3x3 geladen werden.
-        assertEquals( 9, tile_cache.get_size());
+        assertEquals(9, tile_cache.get_size());
 
         SceneryPager sceneryPager = new SceneryPager();
         //MA17ModelRegistry.getInstance().registerCallbacks();
@@ -244,7 +255,7 @@ public class SceneryTest {
         //matrix.preMultRotate(osg::Quat (SGMiscd::deg2rad (i._hdg), osg::Vec3 (0, 0, 1)));
         //matrix.preMultRotate(osg::Quat (SGMiscd::deg2rad (i._pitch), osg::Vec3 (0, 1, 0)));
         //matrix.preMultRotate(osg::Quat (SGMiscd::deg2rad (i._roll), osg::Vec3 (1, 0, 0)));
-        Quaternion q = Quaternion.buildQuaternionFromAngleAxis((float)new Degree( 180).toRad(), new Vector3(0, 0, 1));
+        Quaternion q = Quaternion.buildQuaternionFromAngleAxis((float) new Degree(180).toRad(), new Vector3(0, 0, 1));
         rotation = rotation.multiply((q));
         Matrix4 m = Matrix4.buildTransformationMatrix(location.toCart(), rotation);
         
@@ -271,7 +282,7 @@ public class SceneryTest {
      */
     @Test
     public void testSTG3072816() {
-       //30.9.19  FlightGear.setupRegistry();
+        //30.9.19  FlightGear.setupRegistry();
         EngineTestFactory.loadBundleSync(BundleRegistry.TERRAYSYNCPREFIX + "3072816");
         EngineTestFactory.loadBundleSync(BundleRegistry.TERRAYSYNCPREFIX + "model");
         SceneryPager sceneryPager = new SceneryPager();
@@ -283,5 +294,34 @@ public class SceneryTest {
 
     }
 
+    /**
+     * Testing the internal main steps done in "Obj.java".
+     */
+    @Test
+    public void testLoadRefBtgAsGltf() throws InvalidDataException {
 
+        BundleResource bpath = new BundleResource(BundleRegistry.getBundle("test-resources"), "terrain/3056410.btg");
+        assertNotNull(bpath);
+
+        String basename = StringUtils.substringBeforeLast(bpath.getFullName(), ".btg");
+        bpath = new BundleResource(bpath.bundle, basename + ".gltf");
+
+        AbstractLoader tile = LoaderGLTF.buildLoader(bpath, null);
+
+        PortableModelList ppfile = tile.preProcess();
+
+        ModelAssertions.assertRefbtg(ppfile, false);
+
+        SGMaterialLib matlib = SGMaterialTest.initSGMaterialLib();
+        SGMaterialCache matcache = null;
+        matcache = matlib.generateMatCache(SGGeod.fromCart(FlightGear.refbtgcenter));
+
+        Obj obj = new Obj();
+        //The GLTF itself does not contain material.
+        Node node = obj.getSurfaceGeometryPart2(ppfile/*.gml*/, false, matcache);
+
+        assertEquals(17, obj.foundMaterial.size());
+        assertEquals(0, obj.notFoundMaterial.size());
+        assertTrue(obj.foundMaterial.contains("DryCrop"), "DryCrop");
+    }
 }

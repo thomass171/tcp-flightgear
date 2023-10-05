@@ -71,7 +71,8 @@ public class FlightGear {
         if (!materialsloaded && simplematerial == null) {
             loadMaterials();
         }
-        Node n = Obj.SGLoadBTG( file, null, null);
+        Obj obj = new Obj();
+        Node n = obj.SGLoadBTG( file, null, null);
         return n;
         /*LoadedFile loader = ModelFactory.loadModel(file);
         LoadedObject btg = loader.objects.get(0);

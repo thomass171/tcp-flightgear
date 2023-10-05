@@ -23,7 +23,7 @@ import de.yard.threed.engine.test.testutil.TestUtil;
 import de.yard.threed.core.buffer.ByteArrayInputStream;
 
 /**
- * better in tools-fg?
+ * better in tools-fg? Only parts.
  *
  */
 public class ModelAssertions {
@@ -87,6 +87,10 @@ public class ModelAssertions {
         TestUtil.assertFalse("unshadedMaterial_4.shaded",unshadedMaterial_4.shaded);
     }
 
+    /**
+     * Used for both btg- and gltf loading.
+     * "ppfile" will be different with/without matlib.
+     */
     public static void assertRefbtg(PortableModelList ppfile, boolean hadmatlib) {
         // preprocess liefert ein Object mit 17 geos.
         TestUtil.assertEquals("objects", 1, ppfile.getObjectCount());
@@ -125,6 +129,8 @@ public class ModelAssertions {
             TestUtil.assertEquals("materials0.name", "Grassland", ppobj.geolistmaterial.get(0));
             TestUtil.assertEquals("materials4.name", "OpenMining", ppobj.geolistmaterial.get(4));
             TestUtil.assertEquals("materials9.name", "Scrub", ppobj.geolistmaterial.get(9));
+            TestUtil.assertEquals("materials14.name", "CropGrass", ppobj.geolistmaterial.get(14));
+            TestUtil.assertEquals("materials16.name", "MixedForest", ppobj.geolistmaterial.get(16));
         }
     }
 

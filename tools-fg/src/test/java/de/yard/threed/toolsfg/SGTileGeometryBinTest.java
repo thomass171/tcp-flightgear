@@ -28,7 +28,8 @@ import static org.junit.jupiter.api.Assertions.fail;
  * Created by thomass on 05.08.16.
  */
 public class SGTileGeometryBinTest {
-    static Platform platform = FgTestFactory.initPlatformForTest();
+    // 'fullFG' needed for sgmaterial via bundle
+    static Platform platform = FgTestFactory.initPlatformForTest(true,true);
 
     @Test
     public void testSurfaceGeometryOhneMaterial() {

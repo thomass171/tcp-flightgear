@@ -30,7 +30,8 @@ import java.util.Optional;
  * Created by thomass on 06.12.17.
  */
 public class GltfBuildingTest {
-    static Platform platform = FgTestFactory.initPlatformForTest();
+    // 'fullFG' needed for sgmaterial via bundle.
+    static Platform platform = FgTestFactory.initPlatformForTest(true,true);
 
     /**
      *

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!-- Extract of FlightGear Materials File.  -->
+
+<PropertyList>
+
+<!-- Base materials -->
+<region include="Materials/regions/global.xml"/>
+<region include="Materials/regions/global-summer.xml"/>
+
+<!-- Europe -->
+<region include="Materials/regions/europe.xml"/>
+
+
+</PropertyList>

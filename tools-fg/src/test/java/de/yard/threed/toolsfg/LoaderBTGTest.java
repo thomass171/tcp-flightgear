@@ -9,7 +9,7 @@ import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.engine.test.testutil.TestUtil;
 import de.yard.threed.flightgear.LoaderBTG;
 import de.yard.threed.flightgear.core.FlightGear;
-import de.yard.threed.flightgear.testutil.FgFullTestFactory;
+import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.flightgear.testutil.ModelAssertions;
 import de.yard.threed.toolsfg.testutil.BtgModelAssertions;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,8 @@ import java.util.HashMap;
  * Created by thomass on 08.02.16.
  */
 public class LoaderBTGTest {
-    static Platform platform = FgFullTestFactory.initPlatformForTest(new HashMap<String, String>());
+    // 'fullFG' needed for sgmaterial via bundle
+    static Platform platform = FgTestFactory.initPlatformForTest(true,true);
 
     /**
      * also see SGTileGeometryBinTest and Wiki
