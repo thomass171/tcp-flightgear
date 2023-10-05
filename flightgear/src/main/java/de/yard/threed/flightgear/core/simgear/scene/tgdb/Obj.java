@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * aus obj.cxx
+ * From obj.cxx
  * 30.9.23: Methods no longer static.
  * <p/>
  * Created by thomass on 04.08.16.
@@ -70,7 +70,7 @@ public class Obj {
         //if (!tile.read_bin(path))
         //    return NULL;
         if (bpath == null) {
-            throw new RuntimeException("bpath isType null");
+            throw new RuntimeException("bpath is null");
             //tile = (LoaderBTG) ModelFactory.readModel(new FileSystemResource(path));
         } else {
 

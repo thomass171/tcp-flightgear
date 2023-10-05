@@ -162,6 +162,8 @@ public class LoaderBTG extends BinaryLoader {
     public Vector3 center;
     String source;
 
+    public SGTileGeometryBin tileGeometryBin;
+
     /**
      * Anscheinend ist das ganze ein einziges Object.
      */
@@ -199,6 +201,7 @@ public class LoaderBTG extends BinaryLoader {
         //normals = new ArrayList();
         //texcoords = new ArrayList<Vector2>();
 
+        // points
         pts_v = new ArrayList<List<Integer>>();
         pts_n = new ArrayList<List<Integer>>();
         pts_c = new ArrayList<List<Integer>>();
@@ -206,6 +209,7 @@ public class LoaderBTG extends BinaryLoader {
         pts_vas = new ArrayList<List<List<Integer>>>();
         pt_materials = new ArrayList<String>();
 
+        // triangles
         tris_v = new ArrayList<List<Integer>>();
         tris_n = new ArrayList<List<Integer>>();
         tris_c = new ArrayList<List<Integer>>();
@@ -489,7 +493,7 @@ public class LoaderBTG extends BinaryLoader {
     }
 
     /**
-     * Sonderimplementierung für BTG. Das ist der Code aus Obj.java
+     * Implementation for BTG. Moved from Obj.cxx/java to here.
      *
      * @return
      */
@@ -563,7 +567,7 @@ public class LoaderBTG extends BinaryLoader {
 
         // tile surface    
         /*osg::ref_ptr<*/
-        SGTileGeometryBin tileGeometryBin = new SGTileGeometryBin();
+        tileGeometryBin = new SGTileGeometryBin();
 
         if (!tileGeometryBin.insertSurfaceGeometry(this, matcache))
             return null;

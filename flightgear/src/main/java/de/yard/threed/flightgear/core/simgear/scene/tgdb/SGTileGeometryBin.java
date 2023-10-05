@@ -35,6 +35,7 @@ public class SGTileGeometryBin extends SGTriangleBin {
     static Log logger = Platform.getInstance().getLog(SGTileGeometryBin.class);
     // Enthaelt die Triangles pro Material. public zum Testen
     /*SGMaterialTriangleMap*/public CppHashMap<String, SGTexturedTriangleBin> materialTriangleMap = new CppHashMap<String, SGTexturedTriangleBin>(new SGTexturedTriangleBinFactory());
+    public List<String> materialNotFound = new ArrayList<String>();
 
     public SGTileGeometryBin() {
 
@@ -342,8 +343,14 @@ public class SGTileGeometryBin extends SGTriangleBin {
                     // darf sowas vorkommen?
                     logger.warn("no material found in matcache for " + ii + ". matcache.size=" + matcache.cache.size());
                 } else {
-                    PortableMaterial pmat = mat.getEffectMaterialByTextureIndex(ii, textureindex);
+                    PortableMaterial pmat = mat.getEffectMaterialByTextureIndex(textureindex);
                     //geos.add(new GeoMat(geometry, (mat != null) ? (mat.get_one_effect(textureindex).getMaterialDefinition()) : null));
+                    if (pmat == null) {
+                        logger.warn("No material effect available for '" + ii + "' with index " + textureindex);
+                        if (!materialNotFound.contains(ii)) {
+                            materialNotFound.add(ii);
+                        }
+                    }
                     GeoMat geoMat = new GeoMat(geometry, pmat);
                     // landclass is used for logging. Not working
                     // geoMat.landclass = ii;

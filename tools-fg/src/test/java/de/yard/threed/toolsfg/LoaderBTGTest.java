@@ -17,6 +17,7 @@ import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.core.simgear.scene.tgdb.SGReaderWriterBTG;
+import de.yard.threed.flightgear.core.simgear.scene.tgdb.SGTileGeometryBin;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.flightgear.testutil.FgTestUtils;
 import de.yard.threed.flightgear.testutil.ModelAssertions;
@@ -34,6 +35,7 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
@@ -78,7 +80,7 @@ public class LoaderBTGTest {
     }
 
     /**
-     * 5.10.23
+     * 5.10.23: 4 materials are missing. We keep these missings for testing error handling.
      */
     @Test
     public void testEddkBtg() throws Exception {
@@ -88,8 +90,19 @@ public class LoaderBTGTest {
         byte[] buf = FileReader.readFully(ins);
         ByteArrayInputStream b = new ByteArrayInputStream(new SimpleByteBuffer(buf));
 
-        PortableModelList ppfile = new LoaderBTG(b, null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()), "EDDK.btg").preProcess();
-        // TODO validate results. Material is logged to be missing.
+        LoaderBTG loaderBTG = new LoaderBTG(b, null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()), "EDDK.btg");
+        // 4070 just taken as reference
+        assertEquals(4070, loaderBTG.tris_v.size());
+        assertEquals(4070, loaderBTG.tris_n.size());
+        assertEquals(4070, loaderBTG.tri_materials.size());
+
+        PortableModelList ppfile = loaderBTG.preProcess();
+        SGTileGeometryBin tileGeometryBin = loaderBTG.tileGeometryBin;
+        // 34 just taken as reference
+        assertEquals(34, tileGeometryBin.materialTriangleMap.size());
+        // 4 materials are missing: pc_taxiway, pa_stopway, pa_centerline, pc_stopway
+        assertEquals(30, ppfile.materials.size());
+        assertEquals(4, tileGeometryBin.materialNotFound.size());
 
     }
 }

@@ -791,10 +791,9 @@ public class SGMaterial extends BVHMaterial {
         return it->getSecond;
     }*/
 
-    public PortableMaterial getEffectMaterialByTextureIndex(String matname, int textureindex) {
+    public PortableMaterial getEffectMaterialByTextureIndex(int textureindex) {
         FGEffect oneEffect = get_one_effect(textureindex);
         if (oneEffect == null) {
-            logger.warn("No effect available at " + textureindex + " for " + matname);
             return null;
         } else {
             return oneEffect.getMaterialDefinition();
