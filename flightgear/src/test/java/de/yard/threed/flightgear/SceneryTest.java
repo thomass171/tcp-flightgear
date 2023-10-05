@@ -76,7 +76,7 @@ public class SceneryTest {
      *
      */
     @Test
-    public void testLoadBTG1() {
+    public void testLoadRefBTG() {
         Obj obj = new Obj();
         //TestFactory.loadBundleSync(SGMaterialLib.BUNDLENAME);
         // bis 7, weil dort das Material geladen wird.

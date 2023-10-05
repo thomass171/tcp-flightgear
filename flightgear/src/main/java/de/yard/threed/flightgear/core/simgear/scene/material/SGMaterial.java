@@ -1,5 +1,6 @@
 package de.yard.threed.flightgear.core.simgear.scene.material;
 
+import de.yard.threed.core.loader.PortableMaterial;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
@@ -26,7 +27,6 @@ import de.yard.threed.flightgear.core.simgear.structure.SGException;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.Color;
-import de.yard.threed.core.platform.Config;
 import de.yard.threed.core.StringUtils;
 
 import java.util.ArrayList;
@@ -791,5 +791,13 @@ public class SGMaterial extends BVHMaterial {
         return it->getSecond;
     }*/
 
-
+    public PortableMaterial getEffectMaterialByTextureIndex(String matname, int textureindex) {
+        FGEffect oneEffect = get_one_effect(textureindex);
+        if (oneEffect == null) {
+            logger.warn("No effect available at " + textureindex + " for " + matname);
+            return null;
+        } else {
+            return oneEffect.getMaterialDefinition();
+        }
+    }
 }

@@ -1,20 +1,40 @@
 package de.yard.threed.toolsfg;
 
+import de.yard.threed.core.buffer.ByteArrayInputStream;
+import de.yard.threed.core.buffer.SimpleByteBuffer;
+import de.yard.threed.core.loader.InvalidDataException;
 import de.yard.threed.core.loader.LoadedObject;
 import de.yard.threed.core.loader.LoaderGLTF;
 import de.yard.threed.core.loader.PortableModelList;
 import de.yard.threed.core.platform.Platform;
+import de.yard.threed.core.resource.BundleData;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.test.testutil.TestUtil;
 import de.yard.threed.flightgear.LoaderBTG;
+import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.flightgear.core.FlightGear;
+import de.yard.threed.flightgear.core.FlightGearModuleScenery;
+import de.yard.threed.flightgear.core.simgear.scene.tgdb.SGReaderWriterBTG;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
+import de.yard.threed.flightgear.testutil.FgTestUtils;
 import de.yard.threed.flightgear.testutil.ModelAssertions;
+import de.yard.threed.javacommon.FileReader;
+import de.yard.threed.tools.GltfBuilderResult;
+import de.yard.threed.tools.GltfProcessor;
 import de.yard.threed.toolsfg.testutil.BtgModelAssertions;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Optional;
+import java.util.zip.GZIPInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 /**
@@ -24,7 +44,7 @@ import java.util.HashMap;
  */
 public class LoaderBTGTest {
     // 'fullFG' needed for sgmaterial via bundle
-    static Platform platform = FgTestFactory.initPlatformForTest(true,true);
+    static Platform platform = FgTestFactory.initPlatformForTest(true, true);
 
     /**
      * also see SGTileGeometryBinTest and Wiki
@@ -55,5 +75,21 @@ public class LoaderBTGTest {
         PortableModelList ppfile = btg.preProcess();
         // die 17 materials sind aber alle null, weil es keine Materiallib gibt. Ob das ideal ist, naja, so ist es jetzt aber.
         ModelAssertions.assertRefbtg(ppfile, false);
+    }
+
+    /**
+     * 5.10.23
+     */
+    @Test
+    public void testEddkBtg() throws Exception {
+
+        String btgfile = "fg-raw-data/terrasync/Terrain/e000n50/e007n50/EDDK.btg.gz";
+        InputStream ins = new GZIPInputStream(new FileInputStream(FgTestUtils.locatedTestFile(btgfile)));
+        byte[] buf = FileReader.readFully(ins);
+        ByteArrayInputStream b = new ByteArrayInputStream(new SimpleByteBuffer(buf));
+
+        PortableModelList ppfile = new LoaderBTG(b, null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()), "EDDK.btg").preProcess();
+        // TODO validate results. Material is logged to be missing.
+
     }
 }

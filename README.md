@@ -21,15 +21,19 @@ artifacts are needed here.
 
 Run the following steps either manually or use the script bin/buildAndDeploy.sh for running all.
 
-Maven is needed for building. Run
+Maven is needed for building. And bundles are needed for unit testing.
+So the first build is without testing for having tools available. Run
 
 ```
-mvn clean install
+mvn clean install -DskipTests=true
+
+sh bin/deployBundles.sh
+sh bin/mkTerraSyncBundle.sh    
+
+mvn install
 ```
 
 for building.
-
-TODO what about ADDITIONALBUNDLES?
 
 # Running
 ## Browser

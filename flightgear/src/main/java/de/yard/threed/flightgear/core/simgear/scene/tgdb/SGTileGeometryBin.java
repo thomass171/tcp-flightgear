@@ -77,9 +77,9 @@ public class SGTileGeometryBin extends SGTriangleBin {
     }
 
     private void addTriangleGeometry(SGTexturedTriangleBin triangles,
-                         /*SGBinObject&*/LoaderBTG obj, int grp,
-                         /*SGVec2f&*/Vector2 tc0Scale,
-                         /*SGVec2f&*/Vector2 tc1Scale) {
+            /*SGBinObject&*/LoaderBTG obj, int grp,
+            /*SGVec2f&*/Vector2 tc0Scale,
+            /*SGVec2f&*/Vector2 tc1Scale) {
         /*const std::vector<SGVec3d>& */
         List<Vector3> vertices = obj.get_wgs84_nodes();
         /*const std::vector<SGVec3f>&*/
@@ -335,17 +335,23 @@ public class SGTileGeometryBin extends SGTriangleBin {
             /*osg::Geometry**/
             SimpleGeometry geometry = i/*->getSecond*/.buildGeometry(useVBOs);
             SGMaterial mat = null;
-            int textureindex=i.getTextureIndex();
+            int textureindex = i.getTextureIndex();
             if (matcache != null) {
                 mat = matcache.find(ii/*->getFirst*/);
-                if (mat == null){
+                if (mat == null) {
                     // darf sowas vorkommen?
-                    logger.warn("no material found in matcache for "+ii+". matcache.size="+matcache.cache.size());
+                    logger.warn("no material found in matcache for " + ii + ". matcache.size=" + matcache.cache.size());
+                } else {
+                    PortableMaterial pmat = mat.getEffectMaterialByTextureIndex(ii, textureindex);
+                    //geos.add(new GeoMat(geometry, (mat != null) ? (mat.get_one_effect(textureindex).getMaterialDefinition()) : null));
+                    GeoMat geoMat = new GeoMat(geometry, pmat);
+                    // landclass is used for logging. Not working
+                    // geoMat.landclass = ii;
+                    geos.add(geoMat);
                 }
-                geos.add(new GeoMat(geometry, (mat != null) ? (mat.get_one_effect(textureindex).getMaterialDefinition()) : null));
             } else {
                 //save landclass name as material name
-                geos.add(new GeoMat(geometry, ii,textureindex));
+                geos.add(new GeoMat(geometry, ii, textureindex));
             }
 
 

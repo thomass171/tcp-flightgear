@@ -185,7 +185,7 @@ public class LoaderBTG extends BinaryLoader {
         int i, k;
         /*size_t*/
         int j;
-       /* unsigned int*/
+        /* unsigned int*/
         int nbytes;
         //sgSimpleBuffer buf;// (32768);  // 32 Kb
 
@@ -246,7 +246,7 @@ public class LoaderBTG extends BinaryLoader {
         }
 
         // read creation time
-       /* unsigned*/
+        /* unsigned*/
         int foo_calendar_time;
         foo_calendar_time = buf.readUInt();//sgReadUInt(fp);
 /*
@@ -540,7 +540,7 @@ public class LoaderBTG extends BinaryLoader {
             matcache = matlib.generateMatCache(geodPos);
             if (matcache.cache.size() == 0) {
                 // das ist doch vielleicht ein Warning wert, weil es weiter unten dann eine NPE gibt.
-                logger.warn("matcache is empty for position "+geodPos+". matlib.size="+matlib.matlib.size());
+                logger.warn("matcache is empty for position " + geodPos + ". matlib.size=" + matlib.matlib.size());
             }
         }
         logger.debug("SGLoadBTG gbs_center=" + center);
@@ -570,7 +570,7 @@ public class LoaderBTG extends BinaryLoader {
 
 
         List<GeoMat> gml = tileGeometryBin.getSurfaceGeometryPart1(matcache, useVBOs);
-        PortableModelList ppfile = new PortableModelList(null,(List<GeoMat>)null/*gml*/);
+        PortableModelList ppfile = new PortableModelList(null, (List<GeoMat>) null/*gml*/);
         ppfile.setName(source);
         // eine Objectliste oder geoliste? Mal doch lieber geoliste. Scheint irgendwie passender.
         PortableModelDefinition ppo = new PortableModelDefinition();
@@ -589,7 +589,12 @@ public class LoaderBTG extends BinaryLoader {
                 ppo.geolistmaterial.add("" + index);
                 //LoadedMaterial ppm = new LoadedMaterial(gm.mat);
                 //das Material selber hat auch noch keinen Namen. Ohne matlib ist mat aber null
-                ppfile.materials.add(gm.mat.duplicate("" + index));
+                //5.10.23: Is there a solution if mat is null? Maybe just don't add it. 'gm.landclass' is not set properly.
+                if (gm.mat == null) {
+                    logger.error("No material for land class '?'. Will lead to hole in tile!");
+                }else {
+                    ppfile.materials.add(gm.mat.duplicate("" + index));
+                }
             }
             //27.12.17: textureindex gibt es nicht mehr? TODO: Doch, fuer landclasses schon. Setzen bzw. klären
             index++;
@@ -613,14 +618,13 @@ public class LoaderBTG extends BinaryLoader {
 
 
     /**
-     *
      * @return
      */
     /*SGVec3d*/
     private Vector3 readVec3d(ByteArrayInputStream buf) {
-        double f1 =  buf.readDouble();
-        double f2 =  buf.readDouble();
-        double f3 =  buf.readDouble();
+        double f1 = buf.readDouble();
+        double f2 = buf.readDouble();
+        double f3 = buf.readDouble();
         return new Vector3(f1, f2, f3);
         //return new SGVec3d(f1, f2, f3);
     }
@@ -650,7 +654,7 @@ public class LoaderBTG extends BinaryLoader {
                              group_tci_list texCoords,
                              List<List<List<Integer>>> /*group_vai_list&*/vertexAttribs,
                              List<String> /*string_list&*/materials) throws InvalidDataException {
-       /* unsigned int*/
+        /* unsigned int*/
         int nbytes;
         /*unsigned*/
         int idx_mask;
@@ -796,18 +800,18 @@ public class LoaderBTG extends BinaryLoader {
     }
 
     void read_indices(/*char*buffer* /sgSimpleBuffer*/ByteArrayInputStream buffer,
-                             /*size_t*/long bytes,
-                      int indexMask,
-                      int vaMask,
-                      List<Integer> vertices,
-                      List<Integer> /*int_list&*/normals,
-                      List<Integer> /*int_list&*/colors,
-                      tci_list texCoords,
-                      tci_list  /*vai_list&*/vas, boolean isshort
+            /*size_t*/long bytes,
+                                                      int indexMask,
+                                                      int vaMask,
+                                                      List<Integer> vertices,
+                                                      List<Integer> /*int_list&*/normals,
+                                                      List<Integer> /*int_list&*/colors,
+                                                      tci_list texCoords,
+                                                      tci_list  /*vai_list&*/vas, boolean isshort
     ) {
         int indexSize = ((isshort) ? 2 : 4) * bitsset(indexMask);//std::bitset < 32 > ((int) indexMask).count();
         int vaSize = ((isshort) ? 2 : 4) * bitsset(vaMask);//std::bitset < 32 > ((int) vaMask).count();
-         /*int*/
+        /*int*/
         long count = bytes / (indexSize + vaSize);
 
         // fix endian-ness of the whole lot, if required

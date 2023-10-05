@@ -251,6 +251,7 @@ public class Obj {
                 if (ppfile.materials.size() == 0 && matcache != null) {
                     SGMaterial sgmat = matcache.find(matname);
                     //31.12.17: TODO textureindx mal klaeren!
+                    //5.10.23: TODO use getEffectMaterialByTextureIndex
                     int textureindex = 0;
                     FGEffect oneEffect = sgmat.get_one_effect(textureindex);
                     if (oneEffect == null) {
