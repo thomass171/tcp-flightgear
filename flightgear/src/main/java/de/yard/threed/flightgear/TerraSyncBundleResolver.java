@@ -12,6 +12,11 @@ import de.yard.threed.engine.platform.common.Settings;
 public class TerraSyncBundleResolver extends BundleResolver {
 
     public static String TERRAYSYNCPREFIX = "Terrasync-";
+    String basePath;
+
+    public TerraSyncBundleResolver(String basePath) {
+        this.basePath = basePath;
+    }
 
     @Override
     public ResourcePath resolveBundle(String bundleName) {
@@ -25,10 +30,10 @@ public class TerraSyncBundleResolver extends BundleResolver {
                     return "TerraSync";
                 }
             }*/
-            if (FlightGearSettings.customTerraSync){
+            if (FlightGearSettings.customTerraSync) {
                 //return Platform.getInstance().bundledir + "/TerraSync";
-                return new ResourcePath("/Users/thomas/Projekte/Granada/bundles" + "/TerraSync");
-            }else {
+                return new ResourcePath(basePath + "/TerraSync");
+            } else {
                 // 25.7.21: Dieser Zweig soll wohl seit 2018 gar nicht mehr genutzt werden.
                 String fghome = Platform.getInstance().getConfiguration().getString("FG_HOME");
                 if (fghome == null) {

@@ -33,7 +33,6 @@ public class FlightGear {
     static Log logger = Platform.getInstance().getLog(FlightGear.class);
     //jetzt In system prop final static String resources = "/Applications/FlightGear.app/Contents/Resources";
     //jetzt In system prop public final static String fgroot = resources + "/data";
-    final static String terrasync = "/Users/thomas/flightgearhome/TerraSync";
     // Dasselbe Material kann unter verschiedenen Namen auftauchen (z.B. Road und Freeway)
     static MaterialPool materials = new MaterialPool();
     //static EngineHelper pf = ((Platform)Platform.getInstance());

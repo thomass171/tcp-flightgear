@@ -14,6 +14,7 @@ This shows the build and installation to a web browser running locally serving f
 directory $HOME/Sites. Set shell variable HOSTDIRFG (analog to HOSTDIR in tcp-22), eg.:
 
 ```
+git clone https://github.com/thomass171/tcp-flightgear.git 
 export HOSTDIRFG=$HOME/Sites/tcp-flightgear
 ```
 and create that base directory. Build and install tcp-22 to your local maven repos. The build
@@ -43,8 +44,21 @@ http://localhost/<youruserdir>/???
 ```
 in your browser.
 
-# Modules 
-## flightgear
+# Development
+The most convenient way is to develop for a Java platform like JME (or homebrew) initially and later test it on other platforms
+like ThreeJs and Unity. Thats because the other platforms need converting which reduces
+roundtrip time.
+
+In your IDE you might create a launch configuration like the following.
+
+![](docs/IDErunConfiguration.png)
+
+For running Java 3D software native libraries like 'lwjgl' are required.
+These are typically located in the current working directory or via LD_LIBRARY_PATH.
+
+# Technical Details
+## Modules 
+### flightgear
 Migration of some components of FlightGear to Java:
 
   + simgear property tree including SGExpressions
@@ -60,13 +74,13 @@ Design of migration is:
   * TODO: BTG model loading is part of tools, so only available for converting aso.
 
 TODO: extract a core module without engine dependency to have tools-fg without engine dependency.
-## tools-fg
+### tools-fg
 
-## traffic-fg
+### traffic-fg
 Extension of base module 'traffic' with components of flightgear. These components
 should implement generic 'traffic' interfaces with Flightgear logic.
 
-## platform-jme-ext
+### platform-jme-ext
 Extension of platform-jme as a helper for faster dev cycles. In principle
 everything in project "tcp-flightgear" should be usable as plugin in "tcp-22".
 

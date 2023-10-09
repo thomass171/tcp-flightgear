@@ -175,6 +175,7 @@ public class SceneryTest {
         assertNotNull(bundlemodel, "bundlemodel");
         assertNotNull(bundle3072816.getResource("Objects/e000n50/e007n50/moffett-hangar-n-211.xml"), "moffett-hangar-n-211");
 
+        /* 8.10.23:Commented because tile 3072856 isn't content of project
         EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("3072856"));
         Bundle bundle3072856 = BundleRegistry.getBundle("Terrasync-3072856");
         assertNotNull(bundle3072856, "bundle3072816");
@@ -203,10 +204,13 @@ public class SceneryTest {
         Obj obj = new Obj();
         Node node = obj.SGLoadBTG(new BundleResource(bundle3072816, "Terrain/e000n50/e007n50/3072816.btg"), null, opt);
         assertNotNull(node);
+        end of tile3072856 test */
 
         // Das 3072816.stg hat ein paar mehr Zeilen als bloss das btg. Gibt es einmal in Objects und einmal in Terrain. 
         // Beide muessen gelesen werden.
         Options options = new Options();
+        LoaderOptions opt = new LoaderOptions();
+        opt.usegltf = true;
 
         Group rr = new ReaderWriterSTG().build("3072816.stg", options, opt);
         if (rr/*.getNode()*/ == null) {

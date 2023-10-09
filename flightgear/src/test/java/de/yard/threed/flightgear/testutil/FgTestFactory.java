@@ -83,7 +83,7 @@ public class FgTestFactory {
                 configuration1 -> {
                     PlatformInternals platformInternals = SimpleHeadlessPlatform.init(configuration1, null);
                     if (fullFG) {
-                        Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver());
+                        Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver(configuration1.getString("HOSTDIRFG") + "/bundles"));
                         Platform.getInstance().addBundleResolver(new SimpleBundleResolver(configuration1.getString("HOSTDIRFG") + "/bundles", new DefaultResourceReader()));
                     }
                     return platformInternals;

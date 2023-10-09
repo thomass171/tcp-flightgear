@@ -67,7 +67,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
             @Override
             public PlatformInternals createPlatform(Configuration configuration) {
                 PlatformInternals platformInternals = PlatformJme.init(configuration);
-                Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver());
+                Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver(configuration.getString("HOSTDIRFG") + "/bundles"));
                 Platform.getInstance().addBundleResolver(new SimpleBundleResolver(configuration.getString("HOSTDIRFG") + "/bundles", new DefaultResourceReader()));
                 return platformInternals;
             }

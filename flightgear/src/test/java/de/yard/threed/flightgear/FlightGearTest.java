@@ -1,5 +1,6 @@
 package de.yard.threed.flightgear;
 
+import de.yard.threed.core.Degree;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
@@ -31,6 +32,7 @@ import de.yard.threed.traffic.config.ConfigHelper;
 import de.yard.threed.traffic.config.VehicleConfig;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.engine.testutil.TestHelper;
+import de.yard.threed.traffic.geodesy.GeoCoordinate;
 import de.yard.threed.trafficcore.model.Vehicle;
 import org.junit.jupiter.api.Test;
 
@@ -60,8 +62,10 @@ public class FlightGearTest {
         // 1.10.23 was 288 from Granada bundle, 283 now from project might be correct
         TestUtil.assertEquals("matlib.size", /*FG 3.4 284*/283, FlightGearModuleScenery.getInstance().get_matlib().matlib.size());
     }
-    
 
+    /**
+     * 8.10.23: Was using 'greenwichtilecenter' once, but greenwichs tile is not content of project. Switched to refbtg.
+     */
     @Test
     public void testFGTileMgr() {
         //PropertyTree und FGScenery is needed. Den FGTileMgr gibt es dann auch schon
@@ -77,13 +81,15 @@ public class FlightGearTest {
         tilemgr.init();
         TestUtil.assertEquals("terraingroup.children", 0, FlightGearModuleScenery.getInstance().get_scenery().get_terrain_branch().getTransform().getChildCount());
 
-        //center des tile von Greenwich und range, so wie es von FG gelogged wurde. Gelogged wurden 32000, das braucht mit echten
+        //range, so wie es von FG gelogged wurde. Gelogged wurden 32000, das braucht mit echten
         // Reader zuviel Heap und dauert zu lang. Darum der dummyreader. TODO: wieder Dummy verwenden?
         //MA17 Registry.getInstance().replaceReaderWriter("stg", new DummyReaderBTG());
         //Muss 2-mal aufgerufen werden!
         double range_m = 32000;
-        tilemgr.schedule_tiles_at(SGGeod.fromGeoCoordinate(WorldGlobal.greenwichtilecenter), range_m);
-        tilemgr.schedule_tiles_at(SGGeod.fromGeoCoordinate(WorldGlobal.greenwichtilecenter), range_m);
+
+        GeoCoordinate positionNearEddk = new GeoCoordinate(new Degree(50.843675),new Degree(7.109709),1150);
+        tilemgr.schedule_tiles_at(SGGeod.fromGeoCoordinate(positionNearEddk), range_m);
+        tilemgr.schedule_tiles_at(SGGeod.fromGeoCoordinate(positionNearEddk), range_m);
         // das eigentliche (async) Laden anstossen (geht dann im SceneryPager).
         // Hier werden wohl viele Fehler protokolliert, weil die stg tiles nicht vorliegen.
         tilemgr.update_queues(false);
@@ -102,13 +108,13 @@ public class FlightGearTest {
         TestUtil.assertEquals("", /*1*/2, scenerynodes.size());
         SceneNode scenerynode = new SceneNode(scenerynodes.get(0));
         TestUtil.assertEquals("", "FGScenery", scenerynode.getName());
-        Ray ray = FGScenery.getVerticalRay(SGGeod.fromGeoCoordinate(WorldGlobal.greenwichtilecenter),new Vector3());
+        Ray ray = FGScenery.getVerticalRay(SGGeod.fromGeoCoordinate(positionNearEddk),new Vector3());
         // Depends on intersection calculation and thus depends on the platform
-        Double elevation = scenery.get_elevation_m(SGGeod.fromGeoCoordinate(WorldGlobal.greenwichtilecenter),new Vector3());
+        Double elevation = scenery.get_elevation_m(SGGeod.fromGeoCoordinate(positionNearEddk),new Vector3());
         TestUtil.assertNotNull("elevation", elevation);
         // There is no exact correct value, it depends on ellipsoid calculation. So use a quite large tolerance.
-        // Just should be plausible.
-        TestUtil.assertFloat("elevation", 45.99812f, elevation, 1f);
+        // Just should be plausible. Greenwich '45.99812f' replaced with convincing '56.673577656'
+        TestUtil.assertFloat("elevation", 56.673577656, elevation, 1f);
         //TODO check double loading.
     }
 
