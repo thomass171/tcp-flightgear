@@ -93,8 +93,8 @@ public class SceneryScene extends Scene {
     public String[] getPreInitBundle() {
 
         //29.3.18: Das 777 Bundle wird eh später geladen, allerdings nicht delayed. 11.10.18: kein data mehr
-        return new String[]{"engine",FlightGear.getBucketBundleName("model"), /*2.10.23 "data-old", "data", "fgdatabasic", "fgdatabasicmodel",FlightGear.getBucketBundleName("model"),FlightGearSettings.FGROOTCOREBUNDLE*/ "sgmaterial"
-                  /*BundleRegistry.FGHOMECOREBUNDLE,*/ };
+        return new String[]{"engine", FlightGear.getBucketBundleName("model"), /*2.10.23 "data-old", "data", "fgdatabasic", "fgdatabasicmodel",FlightGear.getBucketBundleName("model"),FlightGearSettings.FGROOTCOREBUNDLE*/ "sgmaterial"
+                /*BundleRegistry.FGHOMECOREBUNDLE,*/};
     }
 
     /**
@@ -143,15 +143,27 @@ public class SceneryScene extends Scene {
         SystemManager.addSystem(ts);
 
         InputToRequestSystem inputToRequestSystem = new InputToRequestSystem();
-        inputToRequestSystem.addKeyMapping(KeyCode.W, BaseRequestRegistry.TRIGGER_REQUEST_FORWARD);
-        inputToRequestSystem.addKeyMapping(KeyCode.S, BaseRequestRegistry.TRIGGER_REQUEST_BACK);
+        // use continuous movement
+        inputToRequestSystem.addKeyMapping(KeyCode.W, BaseRequestRegistry.TRIGGER_REQUEST_START_FORWARD);
+        inputToRequestSystem.addKeyReleaseMapping(KeyCode.W, BaseRequestRegistry.TRIGGER_REQUEST_STOP_FORWARD);
 
-        inputToRequestSystem.addKeyMapping(KeyCode.LeftArrow, BaseRequestRegistry.TRIGGER_REQUEST_TURNLEFT);
-        inputToRequestSystem.addKeyMapping(KeyCode.RightArrow, BaseRequestRegistry.TRIGGER_REQUEST_TURNRIGHT);
-        inputToRequestSystem.addKeyMapping(KeyCode.UpArrow, BaseRequestRegistry.TRIGGER_REQUEST_TURNUP);
-        inputToRequestSystem.addKeyMapping(KeyCode.DownArrow, BaseRequestRegistry.TRIGGER_REQUEST_TURNDOWN);
-        inputToRequestSystem.addKeyMapping(KeyCode.R, BaseRequestRegistry.TRIGGER_REQUEST_ROLLRIGHT);
-        inputToRequestSystem.addShiftKeyMapping(KeyCode.R, BaseRequestRegistry.TRIGGER_REQUEST_ROLLLEFT);
+        inputToRequestSystem.addKeyMapping(KeyCode.S, BaseRequestRegistry.TRIGGER_REQUEST_START_BACK);
+        inputToRequestSystem.addKeyReleaseMapping(KeyCode.S, BaseRequestRegistry.TRIGGER_REQUEST_STOP_BACK);
+
+        inputToRequestSystem.addKeyMapping(KeyCode.LeftArrow, BaseRequestRegistry.TRIGGER_REQUEST_START_TURNLEFT);
+        inputToRequestSystem.addKeyReleaseMapping(KeyCode.LeftArrow, BaseRequestRegistry.TRIGGER_REQUEST_STOP_TURNLEFT);
+        inputToRequestSystem.addKeyMapping(KeyCode.RightArrow, BaseRequestRegistry.TRIGGER_REQUEST_START_TURNRIGHT);
+        inputToRequestSystem.addKeyReleaseMapping(KeyCode.RightArrow, BaseRequestRegistry.TRIGGER_REQUEST_STOP_TURNRIGHT);
+
+        inputToRequestSystem.addKeyMapping(KeyCode.UpArrow, BaseRequestRegistry.TRIGGER_REQUEST_START_TURNUP);
+        inputToRequestSystem.addKeyReleaseMapping(KeyCode.UpArrow, BaseRequestRegistry.TRIGGER_REQUEST_STOP_TURNUP);
+        inputToRequestSystem.addKeyMapping(KeyCode.DownArrow, BaseRequestRegistry.TRIGGER_REQUEST_START_TURNDOWN);
+        inputToRequestSystem.addKeyReleaseMapping(KeyCode.DownArrow, BaseRequestRegistry.TRIGGER_REQUEST_STOP_TURNDOWN);
+
+        inputToRequestSystem.addKeyMapping(KeyCode.R, BaseRequestRegistry.TRIGGER_REQUEST_START_ROLLLEFT);
+        inputToRequestSystem.addKeyReleaseMapping(KeyCode.R, BaseRequestRegistry.TRIGGER_REQUEST_STOP_ROLLLEFT);
+        inputToRequestSystem.addShiftKeyMapping(KeyCode.R, BaseRequestRegistry.TRIGGER_REQUEST_START_ROLLRIGHT);
+        inputToRequestSystem.addShiftKeyReleaseMapping(KeyCode.R, BaseRequestRegistry.TRIGGER_REQUEST_STOP_ROLLRIGHT);
         SystemManager.addSystem(inputToRequestSystem);
 
         FirstPersonMovingSystem firstPersonMovingSystem = FirstPersonMovingSystem.buildFromConfiguration();
@@ -244,7 +256,7 @@ public class SceneryScene extends Scene {
         }
 
 
-        if (Input.GetKeyDown(KeyCode.D)) {
+        if (Input.getKeyDown(KeyCode.D)) {
             logger.debug("scenegraph:" + dumpSceneGraph());
         }
 
