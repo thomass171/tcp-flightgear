@@ -92,7 +92,7 @@ public class SceneryScene extends Scene {
     @Override
     public String[] getPreInitBundle() {
 
-        //29.3.18: Das 777 Bundle wird eh später geladen, allerdings nicht delayed. 11.10.18: kein data mehr
+        //TerraSync-model cannot be loaded in preinit because of required custom resolver?
         return new String[]{"engine", FlightGear.getBucketBundleName("model"), /*2.10.23 "data-old", "data", "fgdatabasic", "fgdatabasicmodel",FlightGear.getBucketBundleName("model"),FlightGearSettings.FGROOTCOREBUNDLE*/ "sgmaterial"
                 /*BundleRegistry.FGHOMECOREBUNDLE,*/};
     }

@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>tcp-flightgear</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="description" content="A flightgear extension of tcp-22">
+    <!--Viewport from w3.css-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+</head>
+
+<body class="w3-light-grey">
+
+<!-- Start Content -->
+<div id="home" class="w3-content">
+
+    <header class="w3-container w3-center w3-padding-32 w3-grey">
+        <h1 class="">tcp-flightgear</h1>
+        <p class="">A flightgear extension of <a href="https://github.com/thomass171/tcp-22" target="_blank">tcp-22</a>
+        </p>
+        <p class="">(still WiP on <a href="https://github.com/thomass171/tcp-flightgear" target="_blank">Github</a>!)
+        </p>
+        <p id="debuginfo" style="font-size:8px;color:yellow"></p>
+    </header>
+
+    <div class="w3-container" style="padding:32px">
+
+
+        <div class="w3-panel w3-padding-large w3-section w3-white">
+            <h1>Examples</h1>
+
+            <div class="">
+                <div class="">Scenery Scene</div>
+            </div>
+            <div id="row8" class="w3-panel">
+                <div>
+                    <div class="">
+                        <button class=" w3-button  w3-round w3-khaki "
+                                onclick="launchSceneryScene(false,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
+                            Launch
+                        </button>
+                        <button class=" w3-button  w3-round w3-khaki " onclick="launchSceneryScene(true,false,false)">
+                            Launch VR
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w3-panel w3-padding-large w3-section  w3-white">
+            <h1 class="">User Controls</h1>
+            <p class="">Controlling depends on the platform. In general, keys x/y/z can be used to fine tune the cameras
+                position.</p>
+
+        </div>
+
+        <div class="w3-panel w3-padding-large w3-section  w3-white">
+            <h1 class="">Launch Settings</h1>
+            <p class="">Common settings for the scenes launched via the above buttons</p>
+            <div id="row21" class="w3-panel">
+                <div>
+                    <table>
+                        <tr>
+                            <td>Dev Mode</td>
+                            <td><input type="checkbox" class=" w3-check" id="chk_devMode"></td>
+                        </tr>
+                        <tr>
+                            <td>HUD</td>
+                            <td><input type="checkbox" class=" w3-check" id="chk_hud"></td>
+                        </tr>
+                        <tr>
+                            <td>NearView</td>
+                            <td><input type="checkbox" class=" w3-check" id="chk_nearView"></td>
+                        </tr>
+                        <tr>
+                            <td>VR Control Panel</td>
+                            <td><input class=" " id="inp_ctrlPanel"></td>
+                        </tr>
+                        <tr>
+                            <td>offsetVR</td>
+                            <td><input class=" " id="inp_offsetVR"></td>
+                        </tr>
+                        <tr>
+                            <td>Team size</td>
+                            <td><input class=" " id="inp_teamSize"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="w3-panel w3-padding-large w3-section w3-white">
+            <h1 class="">Credits</h1>
+            <ul class="w3-ul">
+                <li>The team of <a href="https://flightgear.org" target="_blank">flightgear</a> for their great free
+                    flight simulator.
+                </li>
+                <li>Thanks to the team of <a href="https://threejs.org" target="_blank">ThreeJs</a> for their fantastic
+                    WebGl graphics engine.
+                </li>
+                <li>Thanks to the team of <a href="https://jmonkeyengine.org" target="_blank">JMonkeyEngine</a> for
+                    their native Java 3D engine and to the team of <a href="http://legacy.lwjgl.org" target="_blank">LWJGL</a>
+                    for making it all possible.
+                </li>
+                <li>Unity is copyrighted by <a href="https://unity.com/" target="_blank">Unity Technologies</a>.
+                </li>
+                <li>Stewart Andreason (http://seahorseCorral.org/flightgear_aircraft.html) for 'bluebird'
+                </li>
+            </ul>
+        </div>
+    </div>
+    <!-- End Content -->
+
+    <footer class="w3-container w3-padding-32 w3-grey">
+        <div class="">
+            <div id="versionInfo"></div>
+        </div>
+    </footer>
+</div>
+
+<script src="util.js"></script>
+<script src="sceneutil.js"></script>
+<script src="tcp-flightgear.js"></script>
+
+<script>$(document).ready(function(){init();});</script>
+
+</body>
+</html>

@@ -23,6 +23,7 @@
         <!-- extensions of tcp-22 modules, name 'traffic-ext' is already in use -->
         <module>traffic-fg</module>
         <module>platform-jme-ext</module>
+        <module>platform-webgl-ext</module>
     </modules>
 
     <build>

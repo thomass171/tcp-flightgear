@@ -1,0 +1,269 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>module-platform-webgl-ext</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>platform-webgl-ext</name>
+    <url>http://maven.apache.org</url>
+
+    <parent>
+        <groupId>de.yard.tcp-flightgear</groupId>
+        <artifactId>main</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+        <gwt.version>2.10.0</gwt.version>
+        <!-- for version.html -->
+        <fullVersion>${project.version}-${maven.build.timestamp}</fullVersion>
+    </properties>
+
+    <dependencies>
+        <!-- junit comes from parent -->
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-user</artifactId>
+            <version>${gwt.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- The embedded jetty in gwt 2.8.x doesn't like log4j 2.x because its incompatible with JEP-238 (MultiRelease) jar files. Leads to "MultiException..."-->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.12</version>
+        </dependency>
+        <!-- "gwt:run" uses slf4j-->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+        <!-- own project dependencies-->
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-core</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-engine</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-maze</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-graph</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-traffic-core</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-traffic</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-flightgear</groupId>
+            <artifactId>module-traffic-fg</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-platform-webgl</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+
+        <!-- and below also the sources -->
+
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-core</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <classifier>sources</classifier>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-engine</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <classifier>sources</classifier>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-maze</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <classifier>sources</classifier>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-graph</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <classifier>sources</classifier>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-traffic-core</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <classifier>sources</classifier>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-traffic</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <classifier>sources</classifier>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-flightgear</groupId>
+            <artifactId>module-flightgear</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <classifier>sources</classifier>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-flightgear</groupId>
+            <artifactId>module-traffic-fg</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <classifier>sources</classifier>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-22</groupId>
+            <artifactId>module-platform-webgl</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <classifier>sources</classifier>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <!-- "surefire", "source" and "jar"(for tests.jar) come from parent-->
+        <plugins>
+            <!-- 11.10.18: Laut https://gwt-maven-plugin.github.io/gwt-maven-plugin/ ist das Mojo GWT pluginn
+            veraltet und soll nicht mehr genutzt werden. Stattdessen soll das "TBroyer" verwendet werden.
+            https://tbroyer.github.io/gwt-maven-plugin/. Ich bleib aber erstmal beim alten. -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>gwt-maven-plugin</artifactId>
+                <!-- GWT Version, not the plugin version -->
+                <version>${gwt.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <!--goal>generateAsync</goal-->
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <hostedWebapp>
+                        ${project.build.directory}/${project.build.finalName}
+                    </hostedWebapp>
+                    <!--
+                    <module>de.yard.homeserver.Gwt</module>
+                    module>de.yard.homeserver.Common</module>
+                    -->
+                    <runTarget>
+                        webgl-ext.html
+                    </runTarget>
+                    <logLevel>DEBUG</logLevel>
+                    <!-- systemProperties sind nur f�r den Hosted mode -->
+                    <!--<systemProperties>
+                        <log4j.configuration>file:${project.build.directory}/test-classes/log4j.properties</log4j.configuration>
+                    </systemProperties>-->
+
+                    <!--30.4.21 Try without standalone Jetty. But thats not possible, weil er dann die Bundle nicht vom Apache holen kann.-->
+                    <!--20.9.21 Try again with bundle path .-->
+                    <noServer>false</noServer>
+                    <style>DETAILED</style>
+                    <!--11.10.21 even with jvm set, GWT compile fails with JAVA_HOME pointing to Java17-->
+                    <!--25.8.23 <jvm>/Library/Java/JavaVirtualMachines/jdk1.8.0_201.jdk/Contents/Home/bin/java</jvm>-->
+                </configuration>
+            </plugin>
+            <!-- 10.10.18: Java compile (class files) wird doch gar nicht gebraucht. Der legt aber den Sparchlevel fest. Doch nicht verzichtbar?-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <!-- assemble webapp from this project and tcp-22 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.7</version>
+                <executions>
+                    <!-- copy webapp (only a subset, the rest comes from tcp-22; see below)-->
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/module-platform-webgl-ext-${project.version}
+                            </outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/webapp</directory>
+                                    <!-- filter for adding build timestamp to version.html-->
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!-- copy webapp files from tcp-22: threejs/**,js/**,.htaccess-->
+                    <execution>
+                        <id>copy-resources-from-tcp-22</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/module-platform-webgl-ext-${project.version}
+                            </outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/../../tcp-22/platform-webgl/src/main/webapp
+                                    </directory>
+                                    <!-- filtering everything might be a risk. So no filter used. -->
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>js/**</include>
+                                        <include>threejs/**</include>
+                                        <include>.htaccess</include>
+                                        <!--Reusing webgl.html is difficult due to hard coded source path "webgl/webgl.nocache.js". But
+                                        currently the module name 'webgl' is used here too.-->
+                                        <include>webgl.html</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+
