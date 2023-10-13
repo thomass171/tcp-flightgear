@@ -6,6 +6,7 @@ import de.yard.threed.core.resource.BundleResource;
 //import de.yard.threed.flightgear.core.FileSystemResource;
 import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector3;
+import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.misc.SgResourceManager;
 import de.yard.threed.flightgear.core.simgear.structure.SGException;
@@ -185,7 +186,7 @@ public class PropsIO {
                 /*SGPath*/
                 NativeResource path;
                 if (bpath != null) {
-                    BundleResource includepath = BundleRegistry.findPath(attval, bpath);
+                    BundleResource includepath = FgBundleHelper.findPath(attval, bpath);
                     readProperties(includepath, null/*.str()*/, target/*_root*/, 0, extended, readbyecs);
                 } else {
                     Util.nomore();
@@ -289,7 +290,7 @@ public class PropsIO {
                     //try {
                     /*SGPath*/
                     if (bpath != null) {
-                        BundleResource includepath = BundleRegistry.findPath(val, bpath);
+                        BundleResource includepath = FgBundleHelper.findPath(val, bpath);
                         if (includepath == null) {
                             logger.error("Failed to resolve " + val + " in " + bpath);
                         } else {

@@ -12,7 +12,6 @@ import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.apps.ModelSamples;
 import de.yard.threed.engine.ecs.SystemManager;
-import de.yard.threed.engine.platform.common.SimpleBundleResourceProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.core.flightgear.scenery.FGTileMgr;
@@ -42,9 +41,9 @@ public class FgTerrainBuilder implements AbstractTerrainBuilder {
         this.world = destinationNode;
 
         FlightGearMain.initFG(new FlightLocation(WorldGlobal.equator020000, new Degree(0), new Degree(0)), null);
-        BundleRegistry.addProvider(new SimpleBundleResourceProvider("fgdatabasicmodel"));
+        FgBundleHelper.addProvider(new SimpleBundleResourceProvider("fgdatabasicmodel"));
         //4.1.18:TerraSync-model. Ob das hier gut ist?
-        BundleRegistry.addProvider(new SimpleBundleResourceProvider(FlightGear.getBucketBundleName("model")));
+        FgBundleHelper.addProvider(new SimpleBundleResourceProvider(FlightGear.getBucketBundleName("model")));
         // FG, Position ist initialisiert.
 
         // Following from TerrainSystem.init:

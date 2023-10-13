@@ -8,6 +8,7 @@ import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.PropertyList;
@@ -295,7 +296,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
                         logger.warn("modelpath found isType empty. Missung ResourceProvider?");
                     }
                 } else {
-                    bmodelpath = BundleRegistry.findPath(modelPathStr, bpath);
+                    bmodelpath = FgBundleHelper.findPath(modelPathStr, bpath);
                     if (bmodelpath == null) {
                         logger.error("Failed to resolve " + modelPathStr + " in " + bpath);
                         return null;
@@ -494,7 +495,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
                     continue;
                 }
             } else {
-                bsubmodelpath = BundleRegistry.findPath(subPathStr, bpath);
+                bsubmodelpath = FgBundleHelper.findPath(subPathStr, bpath);
                 if (bsubmodelpath == null) {
                     logger.error("Failed (sub model path isType null) to load file: \"" + subPathStr + "\"");
                     continue;

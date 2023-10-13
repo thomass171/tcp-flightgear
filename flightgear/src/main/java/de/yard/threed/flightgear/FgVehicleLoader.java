@@ -65,7 +65,7 @@ public class FgVehicleLoader implements VehicleLoader {
         AbstractSceneRunner.instance.loadBundle(config.getBundlename(), (Bundle bundle) -> {
             SGPropertyNode destinationProp = new SGPropertyNode(config.getName() + "-root");/*FGGlobals.getInstance().get_props()*/
             //arp.setAircraftDir(aircraft.aircraftdir);
-            BundleRegistry.addProvider(new AircraftResourceProvider(config.getAircraftdir()));
+            FgBundleHelper.addProvider(new AircraftResourceProvider(config.getAircraftdir()));
             //} else {
             //  FlightScene.initFG(null, aircraft.aircraftdir/*fgname/*"My-777"*/);
             //Mit state 9 ist 777-200 schon geladen, aber wer weiss wo positioniert?.
@@ -127,7 +127,7 @@ public class FgVehicleLoader implements VehicleLoader {
             // 4.4.18. Darum jetzt oben fuer jedes submodel
 
             loaddelegate.vehicleLoaded(nn,  new FgVehicleLoaderResult(animationList, opt.getPropertyNode()), lowresNode);
-            BundleRegistry.removeAircraftSpecific();
+            FgBundleHelper.removeAircraftSpecific();
 
             logger.debug("vehicle " + config.getName()+" loaded");
 

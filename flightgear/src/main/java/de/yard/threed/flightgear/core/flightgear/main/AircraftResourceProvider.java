@@ -3,11 +3,11 @@ package de.yard.threed.flightgear.core.flightgear.main;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.flightgear.BundleResourceProvider;
 import de.yard.threed.flightgear.core.StringList;
 import de.yard.threed.flightgear.core.simgear.misc.SGPath;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.resource.Bundle;
-import de.yard.threed.core.resource.BundleResourceProvider;
 import de.yard.threed.core.StringUtils;
 
 /**

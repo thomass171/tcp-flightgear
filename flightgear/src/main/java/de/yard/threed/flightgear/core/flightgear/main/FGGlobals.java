@@ -4,8 +4,10 @@ import de.yard.threed.core.Util;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.Degree;
+import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.FlightGearMain;
 import de.yard.threed.flightgear.FlightGearSettings;
+import de.yard.threed.flightgear.SimpleBundleResourceProvider;
 import de.yard.threed.flightgear.core.StringList;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
@@ -15,7 +17,6 @@ import de.yard.threed.flightgear.core.simgear.props.PropertyObjectBase;
 
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.resource.Bundle;
-import de.yard.threed.engine.platform.common.SimpleBundleResourceProvider;
 
 /**
  * Aus globals.cxx
@@ -283,8 +284,8 @@ public class FGGlobals {
 
         //29.6.17: wegen Bundle mal nicht mehr als basepath. 
         //SgResourceManager.getInstance().addBasePath(new SGPath(fg_root)/*, ResourceManager::PRIORITY_DEFAULT*/);
-        BundleRegistry.addProvider(new SimpleBundleResourceProvider("fgdatabasic"));
-        BundleRegistry.addProvider(new SimpleBundleResourceProvider(FlightGearSettings.FGROOTCOREBUNDLE));
+        FgBundleHelper.addProvider(new SimpleBundleResourceProvider("fgdatabasic"));
+        FgBundleHelper.addProvider(new SimpleBundleResourceProvider(FlightGearSettings.FGROOTCOREBUNDLE));
     }
 
     public Bundle get_fg_root() {

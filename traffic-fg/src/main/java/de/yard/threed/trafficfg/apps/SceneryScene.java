@@ -33,10 +33,11 @@ import de.yard.threed.engine.platform.EngineHelper;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.platform.common.Settings;
-import de.yard.threed.engine.platform.common.SimpleBundleResourceProvider;
+import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.FgTerrainBuilder;
 import de.yard.threed.flightgear.FlightGearMain;
 import de.yard.threed.flightgear.FlightGearSettings;
+import de.yard.threed.flightgear.SimpleBundleResourceProvider;
 import de.yard.threed.flightgear.TerraSyncBundleResolver;
 import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
@@ -92,7 +93,7 @@ public class SceneryScene extends Scene {
     @Override
     public String[] getPreInitBundle() {
 
-        //TerraSync-model cannot be loaded in preinit because of required custom resolver?
+        //TerraSync-model is loaded in preinit to avoid async issues if done later. Needs required custom resolver be available in plaform setup
         return new String[]{"engine", FlightGear.getBucketBundleName("model"), /*2.10.23 "data-old", "data", "fgdatabasic", "fgdatabasicmodel",FlightGear.getBucketBundleName("model"),FlightGearSettings.FGROOTCOREBUNDLE*/ "sgmaterial"
                 /*BundleRegistry.FGHOMECOREBUNDLE,*/};
     }
@@ -112,10 +113,11 @@ public class SceneryScene extends Scene {
         Observer observer = Observer.buildForDefaultCamera();
 
         FlightGearMain.initFG(new FlightLocation(WorldGlobal.equator020000, new Degree(0), new Degree(0)), null);
-        BundleRegistry.addProvider(new SimpleBundleResourceProvider("fgdatabasicmodel"));
+        // BundleResourceProvider are FG specific (not mix up with BundleResolver) and currently not yet needed(?)
+        FgBundleHelper.addProvider(new SimpleBundleResourceProvider("fgdatabasicmodel"));
         //4.1.18:TerraSync-model. Ob das hier gut ist?
-        BundleRegistry.addProvider(new SimpleBundleResourceProvider(FlightGear.getBucketBundleName("model")));
-        // FG, Position ist initialisiert. 
+        FgBundleHelper.addProvider(new SimpleBundleResourceProvider(FlightGear.getBucketBundleName("model")));
+        // FG, Position is initialisiert.
 
         // A elevation provider is needed for calculating 3D coordinates from geo coordinates. To keep is simple, use a fix one for now.
         TerrainElevationProvider tep = TerrainElevationProvider.buildForStaticAltitude(80);

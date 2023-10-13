@@ -6,6 +6,7 @@ import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.engine.ecs.EcsEntity;
+import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.core.flightgear.main.AircraftResourceProvider;
 import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
@@ -113,9 +114,9 @@ public class FlightGearAircraft {
         //4.8.17: FlightGear.init(5, FlightGear.argv);
         //21.10.17: jetzt ohne initFG.
        // if (usearp) {
-            BundleRegistry.removeAircraftSpecific();
+        FgBundleHelper.removeAircraftSpecific();
             //arp.setAircraftDir(aircraft.aircraftdir);
-            BundleRegistry.addProvider(new AircraftResourceProvider(aircraft.aircraftdir));
+        FgBundleHelper.addProvider(new AircraftResourceProvider(aircraft.aircraftdir));
         //} else {
           //  FlightScene.initFG(null, aircraft.aircraftdir/*fgname/*"My-777"*/);
             //Mit state 9 ist 777-200 schon geladen, aber wer weiss wo positioniert?.
