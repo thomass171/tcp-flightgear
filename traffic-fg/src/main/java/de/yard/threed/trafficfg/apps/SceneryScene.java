@@ -93,7 +93,7 @@ public class SceneryScene extends Scene {
     @Override
     public String[] getPreInitBundle() {
 
-        //TerraSync-model is loaded in preinit to avoid async issues if done later. Needs required custom resolver be available in plaform setup
+        //'TerraSync-model' is loaded in preinit to avoid async issues if done later. Needs required custom resolver be available in plaform setup
         return new String[]{"engine", FlightGear.getBucketBundleName("model"), /*2.10.23 "data-old", "data", "fgdatabasic", "fgdatabasicmodel",FlightGear.getBucketBundleName("model"),FlightGearSettings.FGROOTCOREBUNDLE*/ "sgmaterial"
                 /*BundleRegistry.FGHOMECOREBUNDLE,*/};
     }

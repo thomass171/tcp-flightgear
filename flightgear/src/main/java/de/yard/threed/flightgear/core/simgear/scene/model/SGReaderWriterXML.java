@@ -9,6 +9,7 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.flightgear.FgBundleHelper;
+import de.yard.threed.flightgear.FgModelHelper;
 import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.PropertyList;
@@ -620,7 +621,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         if (pendingbmodelpath != null) {
             // das eigentliche Modelfile (z.B. ac) wieder async laden.
             BundleResource finalpendingbmodelpath = pendingbmodelpath;
-            EngineHelper.buildNativeModel(pendingbmodelpath, btexturepath, (BuildResult result) -> {
+            FgModelHelper.buildNativeModel(pendingbmodelpath, btexturepath, (BuildResult result) -> {
                 // result sollte es immer geben. 
                 if (result != null && result.getNode() != null) {
 

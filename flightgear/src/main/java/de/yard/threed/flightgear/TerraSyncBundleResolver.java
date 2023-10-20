@@ -32,7 +32,9 @@ public class TerraSyncBundleResolver extends BundleResolver {
             }*/
             if (FlightGearSettings.customTerraSync) {
                 //return Platform.getInstance().bundledir + "/TerraSync";
-                return new ResourcePath(basePath + "/TerraSync");
+                ResourcePath bundlePath = new ResourcePath(basePath + "/TerraSync");
+                Platform.getInstance().getLog(TerraSyncBundleResolver.class).debug("bundlePath=" + bundlePath.getPath());
+                return bundlePath;
             } else {
                 // 25.7.21: Dieser Zweig soll wohl seit 2018 gar nicht mehr genutzt werden.
                 String fghome = Platform.getInstance().getConfiguration().getString("FG_HOME");

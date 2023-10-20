@@ -8,6 +8,7 @@ import de.yard.threed.core.platform.PlatformInternals;
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.ResourcePath;
+import de.yard.threed.engine.testutil.AdvancedHeadlessPlatform;
 import de.yard.threed.engine.testutil.EngineTestFactory;
 import de.yard.threed.flightgear.TerraSyncBundleResolver;
 import de.yard.threed.flightgear.core.FlightGearModuleBasic;
@@ -45,7 +46,7 @@ public class FgTestFactory {
 
     @Deprecated
     public static Platform initPlatformForTest() {
-        return initPlatformForTest(new HashMap<>(), true,false);
+        return initPlatformForTest(new HashMap<>(), true, false);
     }
 
     @Deprecated
@@ -81,7 +82,8 @@ public class FgTestFactory {
         // Special platform factory for adding bundle resolver
         Platform platform = EngineTestFactory.initPlatformForTest(bundlelist,
                 configuration1 -> {
-                    PlatformInternals platformInternals = SimpleHeadlessPlatform.init(configuration1, null);
+                    // use AdvancedHeadlessPlatform to have AsyncHelper and thus model loading
+                    PlatformInternals platformInternals = AdvancedHeadlessPlatform.init(configuration1, null);
                     if (fullFG) {
                         Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver(configuration1.getString("HOSTDIRFG") + "/bundles"));
                         Platform.getInstance().addBundleResolver(new SimpleBundleResolver(configuration1.getString("HOSTDIRFG") + "/bundles", new DefaultResourceReader()));

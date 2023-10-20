@@ -1,6 +1,6 @@
 models/efis-ctl1.xml
 models/777-200.xml
-models/777-200.ac
+models/777-200.ac.gz
 models/ControlLight.ac
 models/FuelOilAmps.ac
 models/followme.ac

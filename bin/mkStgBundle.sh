@@ -29,9 +29,10 @@ extractacfile() {
 	grep "\\.ac" $TERRASYNCDIR/$1 | awk -F'>' '{print $2}' | awk -F'<' '{print $1}'
 	checkrc grep
 }
- 
+
+# Extract texture names from an 'ac' file for adding to the directory.
 # $1=dir
-# $2=modelfile
+# $2='ac' modelfile
 # $3=directory
 extracttexturefiles() {
 	DP1=$1
@@ -52,14 +53,18 @@ processStaticObject() {
 }
 
 #
-# Fuer ein einzelnes Modelfile: Wenn xml, um ac. ergaenzen, wenn ac, um Texturen ergaenzen
+# Process a single model file: if xml, add ac files, if ac, add textures. The files are taken from the
+# STG file, so if a XML is listed, the STG won't list the 'ac' file additionally.
+# For XML this method is called recursively for handling the corresponding 'ac'.
 # $1=modelfile
-# $2=directory
-# Erst hier erfolgt fuers directory die Umbenennung nach gltf
+# $2=directory file
+# Only here is the renaming from 'ac' to 'gltf' for the directory.
+#
 #
 processSingleModelfile() {
 	FILE=$1
-	#echo $FILE 
+	[ "$VERBOSE" = 1 ] && echo processSingleModelfile: $FILE
+	# Adding gltfs here might lead to duplicates, but these are removed later
 	echo $FILE | sed 's/.ac$/.gltf/' >> $2
 	echo $FILE | sed 's/.ac$/.bin/' >> $2
 	fileext=${FILE##*.}
@@ -92,10 +97,15 @@ STGNO=$1
 STGFILE=$STGNO.stg
 shift
 
-# make sure we are in a terrasync directory
+# make sure we are in a terrasync directory. Should
+# be in the destination directory where directory...txt is to be created.
 if [ ! -d Terrain -o ! -d Objects -o ! -d Models ]
 then
 	error "not in TerraSync dir"
+fi
+if [ -z "$TERRASYNCDIR" ]
+then
+  error "TERRASYNCDIR not set"
 fi
 
 CURRENTDIR=`pwd`
@@ -103,9 +113,10 @@ DIRECTORY=$CURRENTDIR/directory-$STGNO.txt
 export DIRECTORY TERRASYNCDIR
 rm -f $DIRECTORY
 
+# process all STG files with that name. There might be multiple
 find . -name $STGFILE | awk '{print substr($1,3)}' | while read filename
 do
-	#echo $filename
+	[ "$VERBOSE" = 1 ] && echo "found STG " $filename
 	DIRNAME=`dirname $filename`
 	export DIRNAME
 	#echo "dirname=$DIRNAME"
@@ -135,6 +146,7 @@ done
 sort -u $DIRECTORY -o $DIRECTORY
 
 cat $DIRECTORY
+chmod 755 $DIRECTORY
 
 exit 0
 

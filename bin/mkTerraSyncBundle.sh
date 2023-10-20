@@ -19,7 +19,7 @@ source $OWNDIR/common.sh || exit 1
 validateHOSTDIRFG
 
 usage() {
-	echo "usage: $0 [-f] [<terrasyncdir>]"
+	echo "usage: $0 [-f] [-v] [<terrasyncdir>]"
 	exit 1
 }
 
@@ -109,8 +109,14 @@ then
 	FORCE=1
 	shift
 fi
+if [ "$1" = "-v" ]
+then
+	export VERBOSE=1
+	shift
+fi
 
-TERRASYNCDIR=$OWNDIR/../fg-raw-data/terrasync
+# TERRASYNCDIR is the source for this conversion, which is the destination of terry sync.
+export TERRASYNCDIR=$PROJECT_HOME/fg-raw-data/terrasync
 if [ ! -z "$1" ]
 then
 	TERRASYNCDIR=$1
@@ -154,7 +160,7 @@ find . -name "*.stg" | awk -F"/" '{print $5}' | awk -F"." '{print $1}' | while r
 do
 	if [ ! -r directory-$filename.txt ]
 	then
-		echo STG:$filename
+		echo "Building directory for STG" $filename from $TERRASYNCDIR
 		sh $PROJECT_HOME/bin/mkStgBundle.sh $filename || exit 1
 	fi
 done

@@ -117,10 +117,10 @@ public class SimgearTest {
         //FGProperties.fgSetString("/sim/aircraft-dir", "My-777");
         FGProperties.fgSetString("/sim/aircraft-dir", bundleTestResources.name);
         //String path = "Aircraft/My-777/Models/777-200.ac";
-        String path = "Aircraft/"+bundleTestResources.name+"/models/777-200.ac";
+        String path = "Aircraft/"+bundleTestResources.name+"/models/777-200.ac.gz";
         BundleResource result  = new AircraftResourceProvider().resolve(path);
         Assertions.assertEquals( "models", result.getPath().path);
-        Assertions.assertEquals( "777-200.ac", result.getName());
+        Assertions.assertEquals( "777-200.ac.gz", result.getName());
         Assertions.assertEquals( bundleTestResources.name, result.bundle.name);
     }
 }

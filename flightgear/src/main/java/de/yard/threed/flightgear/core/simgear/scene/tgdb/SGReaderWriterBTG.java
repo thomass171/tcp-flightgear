@@ -53,7 +53,7 @@ public class SGReaderWriterBTG /*15.9.17 extends ReaderWriter*/ {
             //    return ReadResult.FILE_NOT_HANDLED;
         } catch (/*SG*/java.lang.Exception e) {
             // TODO hhandling, am besten keine catch wegen z.B. NPE, ArrayIndexOutOfBoundsException, oder?
-            logger.error( "error reading " + bpath.getFullName() + ":" + e.getMessage(),e);
+            logger.error( "error reading " + bpath/*.getFullName()*/ + ":" + e.getMessage(),e);
             return null;//ReadResult.ERROR_IN_READING_FILE;
         }
     }
