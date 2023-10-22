@@ -181,7 +181,7 @@
                     module>de.yard.homeserver.Common</module>
                     -->
                     <runTarget>
-                        webgl-ext.html
+                        webgl.html
                     </runTarget>
                     <logLevel>DEBUG</logLevel>
                     <!-- systemProperties sind nur f�r den Hosted mode -->
@@ -190,7 +190,9 @@
                     </systemProperties>-->
 
                     <!--30.4.21 Try without standalone Jetty. But thats not possible, weil er dann die Bundle nicht vom Apache holen kann.-->
-                    <!--20.9.21 Try again with bundle path .-->
+                    <!--20.9.21 Try again with bundle path (ADDITIONALMODULE?).-->
+                    <!--21.10.23: But that might lead to false positives in bundle lookup. Alternatively copy directory 'bundles'
+                       from FGHOSTDIR to 'target/module-platform-webgl-ext-1.0.0-SNAPSHOT' -->
                     <noServer>false</noServer>
                     <style>DETAILED</style>
                     <!--11.10.21 even with jvm set, GWT compile fails with JAVA_HOME pointing to Java17-->

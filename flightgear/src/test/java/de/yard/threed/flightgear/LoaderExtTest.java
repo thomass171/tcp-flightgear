@@ -142,7 +142,7 @@ public class LoaderExtTest {
         BundleResource resource = new BundleResource(bundlemodel, "Models/Power/windturbine.gltf");
         // eigentlich geht das Laden ueber die Platform. Nur wegen Test werden die dahinterliegenden Klassen hier direkt aufgerufen.
         LoaderGLTF lf1 = LoaderGLTF.buildLoader(resource, null);
-        PortableModelList ppfile = lf1.ppfile;
+        PortableModelList ppfile = lf1.getPortableModelList();
         // 18.19.23 1->2 ??
         ModelAssertions.assertWindturbine(ppfile, 2);
     }

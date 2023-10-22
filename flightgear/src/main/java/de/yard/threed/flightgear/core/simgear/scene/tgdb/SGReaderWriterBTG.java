@@ -40,21 +40,16 @@ public class SGReaderWriterBTG /*15.9.17 extends ReaderWriter*/ {
      * 22.3.18: Simply returns SceneNode now instead of ReadResult. Wraps possible exceptions.
      * Errors are logged already.
      */
-    public static SceneNode/*ReadResult*/ loadBTG(BundleResource bpath, Options options, LoaderOptions boptions){
-        
+    public static SceneNode/*ReadResult*/ loadBTG(BundleResource bpath, Options options, LoaderOptions boptions) {
+
         SGReaderWriterOptions sgOptions;
         sgOptions = (SGReaderWriterOptions) options;
         //Node result = null;
-        try {
-            Obj obj = new Obj();
-            SceneNode result = obj.SGLoadBTG(bpath,/*fileName*/ sgOptions, boptions);
-            return result;
-            //if (result == null)
-            //    return ReadResult.FILE_NOT_HANDLED;
-        } catch (/*SG*/java.lang.Exception e) {
-            // TODO hhandling, am besten keine catch wegen z.B. NPE, ArrayIndexOutOfBoundsException, oder?
-            logger.error( "error reading " + bpath/*.getFullName()*/ + ":" + e.getMessage(),e);
-            return null;//ReadResult.ERROR_IN_READING_FILE;
-        }
+
+        Obj obj = new Obj();
+        SceneNode result = obj.SGLoadBTG(bpath,/*fileName*/ sgOptions, boptions);
+        return result;
+        //if (result == null)
+        //    return ReadResult.FILE_NOT_HANDLED;
     }
 }
