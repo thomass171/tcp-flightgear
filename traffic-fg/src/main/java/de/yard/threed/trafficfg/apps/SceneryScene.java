@@ -162,10 +162,11 @@ public class SceneryScene extends Scene {
         inputToRequestSystem.addKeyMapping(KeyCode.DownArrow, BaseRequestRegistry.TRIGGER_REQUEST_START_TURNDOWN);
         inputToRequestSystem.addKeyReleaseMapping(KeyCode.DownArrow, BaseRequestRegistry.TRIGGER_REQUEST_STOP_TURNDOWN);
 
-        inputToRequestSystem.addKeyMapping(KeyCode.R, BaseRequestRegistry.TRIGGER_REQUEST_START_ROLLLEFT);
-        inputToRequestSystem.addKeyReleaseMapping(KeyCode.R, BaseRequestRegistry.TRIGGER_REQUEST_STOP_ROLLLEFT);
-        inputToRequestSystem.addShiftKeyMapping(KeyCode.R, BaseRequestRegistry.TRIGGER_REQUEST_START_ROLLRIGHT);
-        inputToRequestSystem.addShiftKeyReleaseMapping(KeyCode.R, BaseRequestRegistry.TRIGGER_REQUEST_STOP_ROLLRIGHT);
+        // use a/d for rolling, which will also be available in VR by default
+        inputToRequestSystem.addKeyMapping(KeyCode.A, BaseRequestRegistry.TRIGGER_REQUEST_START_ROLLLEFT);
+        inputToRequestSystem.addKeyReleaseMapping(KeyCode.A, BaseRequestRegistry.TRIGGER_REQUEST_STOP_ROLLLEFT);
+        inputToRequestSystem.addKeyMapping(KeyCode.D, BaseRequestRegistry.TRIGGER_REQUEST_START_ROLLRIGHT);
+        inputToRequestSystem.addKeyReleaseMapping(KeyCode.D, BaseRequestRegistry.TRIGGER_REQUEST_STOP_ROLLRIGHT);
         SystemManager.addSystem(inputToRequestSystem);
 
         FirstPersonMovingSystem firstPersonMovingSystem = FirstPersonMovingSystem.buildFromConfiguration();
