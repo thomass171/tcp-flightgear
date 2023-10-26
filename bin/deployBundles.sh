@@ -12,3 +12,9 @@ cd $PROJECT_HOME/fg-raw-data || checkrc
 export HOSTDIR=$HOSTDIRFG
 
 sh $TCP22DIR/bin/deployBundle.sh sgmaterial || checkrc
+
+sh $TCP22DIR/bin/deployBundle.sh bluebird || checkrc
+
+# temporary soltution for bundle engine
+cp -rp $HOSTDIRFG/../tcp-22/bundles/engine $HOSTDIRFG/bundles
+

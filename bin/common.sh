@@ -26,14 +26,4 @@ validateHOSTDIRFG() {
   fi
 }
 
-#
-# Convert a ?? file to GLTF
-#
-preprocessGLTF() {
-	echo "Converting $1 to GLTF"
-	#18.4.17 leaves destdir!cd $GRANADADIR/desktop
-	# needs a 'sgmaterial' bundle
-	export ADDITIONALBUNDLE=$HOSTDIRFG/bundles
-	java -Djava.awt.headless=true de.yard.threed.tools.GltfProcessor -gltf -o $2 "$1" -l de.yard.threed.toolsfg.LoaderBTGBuilder
-	return $?
-}
+

@@ -8,17 +8,18 @@ source $OWNDIR/common.sh || exit 1
 
 validateHOSTDIRFG
 
-#sh bin/deployBundle.sh data
-#checkrc deployBundle
+# Some unit tests need deployed bundles, so first build without tests.
+mvn clean install -DskipTests=true
+checkrc mvn
+
+sh bin/deployBundles.sh
+sh bin/mkTerraSyncBundle.sh
 
 mvn install
 checkrc mvn
 
-#sh bin/deploy.sh
-#checkrc deploy
-
-#sh bin/deployBundle.sh  -m engine
-#checkrc deployBundle
+sh bin/deploy.sh
+checkrc deploy
 
 # No C# for now
 #for m in ...

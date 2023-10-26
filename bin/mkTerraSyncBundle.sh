@@ -59,14 +59,14 @@ processTerraSyncFile() {
 			"ac")
 				if [ ! -r $DESTDIR/$BASENAME.gltf -o $FORCE = "1" ]
 				then
-					preprocessGLTF $filename $DESTDIR
+					sh $PROJECT_HOME/bin/convertModel.sh $filename $DESTDIR
 					relax
 				fi
 				;;
 			"btg")
 				if [ ! -r $DESTDIR/$BASENAME.gltf -o $FORCE = "1" ]
 				then
-					preprocessGLTF $filename $DESTDIR
+					sh $PROJECT_HOME/bin/convertModel.sh $filename $DESTDIR
 					relax
 				fi
 				;;
@@ -75,8 +75,8 @@ processTerraSyncFile() {
 				then
 					TMPFILE=$DESTDIR/$BASENAME-tmp.btg
 					cat $filename | gunzip > $TMPFILE
-					preprocessGLTF $TMPFILE $DESTDIR
-					checkrc preprocessGLTF
+					sh $PROJECT_HOME/bin/convertModel.sh $TMPFILE $DESTDIR
+					checkrc $PROJECT_HOME/bin/convertModel.sh
 					rm -f $TMPFILE
 					mv $DESTDIR/$BASENAME-tmp.gltf $DESTDIR/$BASENAME.gltf
 					mv $DESTDIR/$BASENAME-tmp.bin $DESTDIR/$BASENAME.bin
