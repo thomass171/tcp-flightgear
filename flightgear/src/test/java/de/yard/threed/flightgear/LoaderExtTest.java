@@ -76,6 +76,7 @@ public class LoaderExtTest {
         //18.10.23: set defaulttexturebasepath to make check happy. TODO check intention and fix
         ac.defaulttexturebasepath = new ResourcePath("flusi");
         check777200(ac, !ignoreacworld);
+        checksplitMultiMaterialModel(ac);
     }
 
     /**
@@ -145,6 +146,50 @@ public class LoaderExtTest {
         PortableModelList ppfile = lf1.getPortableModelList();
         // 18.19.23 1->2 ??
         ModelAssertions.assertWindturbine(ppfile, 2);
+    }
+
+    /*
+     * was a standalone test once
+     */
+    private void checksplitMultiMaterialModel(PortableModelList loadedfile) {
+
+        try {
+            // 28.10.23 loadedfile = ModelLoader.readModelFromBundle(new BundleResource(BundleRegistry.getBundle("data-old"),"flusi/777-200.ac"), false,0);
+        } catch (Exception e) {
+            throw new RuntimeException("Error opening or reading ac file", e);
+        }
+
+        PortableModelDefinition lflap4 = loadedfile.findObject("Lflap4");
+        // Es gibt mat 1 und 4 sowie shaded und unshaded in 3 Facelists
+        TestUtil.assertEquals("lflap4 facelistmaterial", 3, lflap4.geolistmaterial.size());
+        TestUtil.assertEquals("lflap4", "unshadedPaint", lflap4.geolistmaterial.get(0));
+        TestUtil.assertEquals("lflap4", "shadedrubber", lflap4.geolistmaterial.get(1));
+        TestUtil.assertEquals("lflap4", "shadedPaint", lflap4.geolistmaterial.get(2));
+        PortableMaterial unshadedmaterial = loadedfile.findMaterial(lflap4.geolistmaterial.get(0));
+        PortableMaterial shadedmaterial = loadedfile.findMaterial(lflap4.geolistmaterial.get(1));
+        TestUtil.assertEquals("lflap4 geos", 3, lflap4.geolist.size());
+
+        /*ist schon trianguliert TestUtil.assertEquals("lflap4 faces", 6, lflap4.geolist.get(0).faces.size());
+        //76 mal rubber
+        TestUtil.assertEquals("lflap4 faces", 76, lflap4.geolist.get(1).faces.size());
+        TestUtil.assertEquals("lflap4 faces", 14, lflap4.geolist.get(2).faces.size());
+        List<SimpleGeometry> geolist = GeometryHelper.prepareGeometry(lflap4.vertices, lflap4.faces, null, true);
+        TestUtil.assertEquals("lflap4 geolist", 3, geolist.size());
+
+        List<Face3List> checkfacelist = GeometryHelper.triangulate(lflap4.faces);*/
+        TestUtil.assertEquals("lflap4 faces3", 12 * 3, lflap4.geolist.get(0).getIndices().length);
+        TestUtil.assertEquals("lflap4 faces3", 136 * 3, lflap4.geolist.get(1).getIndices().length);
+        TestUtil.assertEquals("lflap4 faces3", 20 * 3, lflap4.geolist.get(2).getIndices().length);
+        //ist auch scvhon List<Vector3> checknormals = GeometryHelper.calculateSmoothVertexNormals(lflap4.vertices, checkfacelist, null);
+        //TestUtil.assertEquals("checknormals", lflap4.vertices.size(), checknormals.size());
+
+        // Pruefen, ob die Normalen beim split richtig uebertragen wurden
+        // geht aber nicht so einfach
+        // die eigentlichen Flaps, nicht das rubber und nicht das was drunterhaengt
+        //SimpleGeometry flap = geolist.get(2);
+        for (int i = 0; i < 14; i++) {
+            //    TestUtil.assertVector3("normal down" + i, checknormals.get(checkfacelist.get(0).faces.size() * 3 + checkfacelist.get(1).faces.size() * 3 + i), flap.normals.get(i));
+        }
     }
 
 
