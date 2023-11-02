@@ -40,6 +40,8 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
             properties.put("argv.yoffsetVR", "0.3");
         }
 
+        properties.put("logging.level.de.yard.threed","DEBUG");
+
         //properties.put("argv.initialVehicle", "c172p");
         //Evtl. Bluebird statt c172p wegen sonst verdecktem menu.
         //properties.put("argv.initialVehicle", "bluebird");
@@ -57,6 +59,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         //properties.put("argv.vehiclelist","GenericRoad");
 
         properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryScene");
+        //properties.put("scene", "de.yard.threed.trafficfg.apps.RailingScene");
 
         return properties;
     }

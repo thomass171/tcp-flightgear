@@ -66,7 +66,7 @@ public class LoaderExtTest {
 
         String acfile = "flightgear/src/test/resources/models/777-200.ac.gz";
 
-        InputStream inputStream = new GZIPInputStream(new FileInputStream(FgTestUtils.locatedTestFile(acfile)));
+        InputStream inputStream = new GZIPInputStream(new FileInputStream(TestUtils.locatedTestFile(acfile)));
         String rawac = new String(IOUtils.toByteArray(inputStream), StandardCharsets.ISO_8859_1);
 
         boolean ignoreacworld = true;

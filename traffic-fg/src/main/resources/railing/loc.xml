@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<PropertyList>
+
+    <path>loc.gltf</path>
+
+    <offsets>
+        <pitch-deg>0</pitch-deg>
+        <z-m>0</z-m>
+    </offsets>
+
+    <model>
+        <name>Asi</name>
+        <path>asi.xml</path>
+        <!-- // Werte durch Probieren in Unity
+        Vector3 position = new Vector3(0, 0.845f, 0.52f);
+        Quaternion rot =  Quaternion.buildFromAngles(new Degree(-90), new Degree(270), new Degree(0));
+        float scale = 1.5f; Die Orientierung ist aber anders als vom Java Code-->
+       
+        <offsets>
+            <x-m>0.52</x-m>
+            <y-m>0.845</y-m>
+            <z-m>0</z-m>
+            <roll-deg>-90</roll-deg>
+            <pitch-deg>0</pitch-deg>
+            <!-- sclae gibts in FG eigentlich nicht-->
+            <x-scale>1.5</x-scale>
+            <y-scale>1.5</y-scale>
+            <z-scale>1.5</z-scale>
+        </offsets>
+    </model>
+
+    <!--<animation>
+        <type>scale</type>
+        <object-name>Asi</object-name>
+        <x-offset>1.5</x-offset>
+        <y-offset>1.5</y-offset>
+        <z-offset>1.5</z-offset>
+    </animation>-->
+
+</PropertyList>

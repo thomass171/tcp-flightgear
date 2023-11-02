@@ -15,6 +15,7 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.ResourcePath;
+import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.platform.EngineHelper;
 import de.yard.threed.engine.platform.common.AsyncHelper;
@@ -63,7 +64,7 @@ public class LoaderExtTest {
 
         String acfile = "flightgear/src/test/resources/models/CDU-777-boeing.ac";
 
-        LoaderAC ac = new LoaderAC(new StringReader(FileReader.readAsString(new File(FgTestUtils.locatedTestFile(acfile)))), true);
+        LoaderAC ac = new LoaderAC(new StringReader(FileReader.readAsString(new File(TestUtils.locatedTestFile(acfile)))), true);
 
         System.out.println(ac.loadedfile.dumpMaterial("\n"));
         assertEquals(84, ac.loadedfile.objects.size());
@@ -85,7 +86,7 @@ public class LoaderExtTest {
 
         String acfile = "flightgear/src/test/resources/models/777-200.ac.gz";
 
-        InputStream inputStream = new GZIPInputStream(new FileInputStream(FgTestUtils.locatedTestFile(acfile)));
+        InputStream inputStream = new GZIPInputStream(new FileInputStream(TestUtils.locatedTestFile(acfile)));
         String rawac = new String(IOUtils.toByteArray(inputStream), StandardCharsets.ISO_8859_1);
 
         boolean ignoreacworld = true;

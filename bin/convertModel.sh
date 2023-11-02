@@ -4,6 +4,7 @@
 # Convert a 'ac' or 'btg' file to GLTF
 # $1=inputfile
 # $2=destination directory
+# The bundle directory.txt isn't handled here.
 #
 
 OWNDIR=`dirname $0`

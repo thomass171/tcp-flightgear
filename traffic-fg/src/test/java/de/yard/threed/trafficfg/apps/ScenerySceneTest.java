@@ -4,6 +4,7 @@ import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
+import de.yard.threed.engine.ObserverComponent;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.ecs.SystemState;
@@ -15,8 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class ScenerySceneTest {
@@ -29,7 +29,7 @@ public class ScenerySceneTest {
      */
     @Test
     public void testLaunch() {
-        sceneRunner = buildSceneRunner(new HashMap<>(), INITIAL_FRAMES);
+        sceneRunner = buildSceneRunner("de.yard.threed.trafficfg.apps.SceneryScene",new HashMap<>(), INITIAL_FRAMES);
         Log logger = Platform.getInstance().getLog(ScenerySceneTest.class);
 
         EcsEntity userEntity = SystemManager.findEntities(e -> "pilot".equals(e.getName())).get(0);
@@ -38,6 +38,8 @@ public class ScenerySceneTest {
 
         Vector3 position = userEntity.getSceneNode().getTransform().getPosition();
         logger.debug("position=" + position);
+
+        assertNull(ObserverComponent.getObserverComponent(userEntity));
 
         String[] bundleNames = BundleRegistry.getBundleNames();
 
@@ -48,13 +50,13 @@ public class ScenerySceneTest {
 
     }
 
-    public static SceneRunnerForTesting buildSceneRunner(HashMap<String, String> additionalProperties, int initial_frames) {
+    public static SceneRunnerForTesting buildSceneRunner(String scene, HashMap<String, String> additionalProperties, int initial_frames) {
 
         SystemState.state = 0;
         SystemManager.reset();
 
         HashMap<String, String> properties = new HashMap<String, String>();
-        properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryScene");
+        properties.put("scene", scene);
         properties.putAll(additionalProperties);
         // buildDefaultConfigurationWithEnv is needed for HOSTDIR
         FgTestFactory.initPlatformForTest(properties,false, true);

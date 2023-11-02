@@ -7,6 +7,7 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.ResourcePath;
 import de.yard.threed.core.testutil.Assert;
+import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
@@ -40,7 +41,7 @@ public class GltfBuildingTest {
     public void testCreateWindturbineGltf() throws IOException {
 
         String acfile = "fg-raw-data/terrasync/Models/Power/windturbine.ac";
-        GltfBuilderResult lf = new GltfProcessor().convertToGltf(FgTestUtils.locatedTestFile(acfile), Optional.empty());
+        GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(acfile), Optional.empty());
         NativeJsonValue gltf = platform.parseJson(lf.gltfstring);
         Assertions.assertNotNull(gltf, "parsedgltf");
         BundleResource gltfbr = new BundleResource(new GltfMemoryBundle("windturbine", lf.gltfstring, lf.bin), "windturbine.gltf");
@@ -59,7 +60,7 @@ public class GltfBuildingTest {
     public void testCreateEgkkTowerGltf() throws IOException {
 
         String acfile = "fg-raw-data/terrasync/Objects/e000n50/e007n50/egkk_tower.ac";
-        GltfBuilderResult lf = new GltfProcessor().convertToGltf(FgTestUtils.locatedTestFile(acfile), Optional.empty());
+        GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(acfile), Optional.empty());
         BundleResource gltfbr = new BundleResource(new GltfMemoryBundle("egkk_tower", lf.gltfstring, lf.bin), "egkk_tower.gltf");
         try {
             // Den texturebasepath einfach mal so setzen
@@ -78,7 +79,7 @@ public class GltfBuildingTest {
     public void testCreateCDU777() throws IOException {
 
         String acfile = "flightgear/src/test/resources/models/CDU-777-boeing.ac";
-        GltfBuilderResult lf = new GltfProcessor().convertToGltf(FgTestUtils.locatedTestFile(acfile), Optional.empty());
+        GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(acfile), Optional.empty());
 
         BundleResource gltfbr = new BundleResource(new GltfMemoryBundle("boeing", lf.gltfstring, lf.bin), "boeing.gltf");
         try {
@@ -97,7 +98,7 @@ public class GltfBuildingTest {
 
         try {
             String btgfile = "tools-fg/src/test/resources/" + FlightGear.refbtg;
-            GltfBuilderResult lf = new GltfProcessor().convertToGltf(FgTestUtils.locatedTestFile(btgfile), Optional.of("de.yard.threed.toolsfg.LoaderBTGBuilder"));
+            GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(btgfile), Optional.of("de.yard.threed.toolsfg.LoaderBTGBuilder"));
             BundleResource gltfbr = new BundleResource(new GltfMemoryBundle("3056410", lf.gltfstring, lf.bin), "3056410.gltf");
             try {
                 // Den texturebasepath einfach mal so setzen
@@ -122,7 +123,7 @@ public class GltfBuildingTest {
         String btgfile = "tools-fg/src/test/resources/" + FlightGear.refbtg;
         // remove matlib
         SGMaterialLibWrapper.getInstance().disableSGMaterialLib();
-        GltfBuilderResult lf = new GltfProcessor().convertToGltf(FgTestUtils.locatedTestFile(btgfile), Optional.of("de.yard.threed.toolsfg.LoaderBTGBuilder"));
+        GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(btgfile), Optional.of("de.yard.threed.toolsfg.LoaderBTGBuilder"));
         BundleResource gltfbr = new BundleResource(new GltfMemoryBundle("3056410", lf.gltfstring, lf.bin), "3056410.gltf");
         try {
             // Den texturebasepath einfach mal so setzen
@@ -143,7 +144,7 @@ public class GltfBuildingTest {
     public void testCreateFollowmeGltf() throws IOException {
 
         String acfile = "flightgear/src/test/resources/models/followme.ac";
-        GltfBuilderResult lf = new GltfProcessor().convertToGltf(FgTestUtils.locatedTestFile(acfile), Optional.empty());
+        GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(acfile), Optional.empty());
 
         NativeJsonValue gltf = platform.parseJson(lf.gltfstring);
         Assertions.assertNotNull(gltf, "parsedgltf");

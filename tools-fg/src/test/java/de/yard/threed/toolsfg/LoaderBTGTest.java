@@ -10,6 +10,7 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleData;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.test.testutil.TestUtil;
 import de.yard.threed.flightgear.LoaderBTG;
@@ -86,7 +87,7 @@ public class LoaderBTGTest {
     public void testEddkBtg() throws Exception {
 
         String btgfile = "fg-raw-data/terrasync/Terrain/e000n50/e007n50/EDDK.btg.gz";
-        InputStream ins = new GZIPInputStream(new FileInputStream(FgTestUtils.locatedTestFile(btgfile)));
+        InputStream ins = new GZIPInputStream(new FileInputStream(TestUtils.locatedTestFile(btgfile)));
         byte[] buf = FileReader.readFully(ins);
         ByteArrayInputStream b = new ByteArrayInputStream(new SimpleByteBuffer(buf));
 

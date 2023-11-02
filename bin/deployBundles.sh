@@ -18,3 +18,7 @@ sh $TCP22DIR/bin/deployBundle.sh bluebird || checkrc
 # temporary soltution for bundle engine
 cp -rp $HOSTDIRFG/../tcp-22/bundles/engine $HOSTDIRFG/bundles
 
+cd $PROJECT_HOME || checkrc
+
+sh $TCP22DIR/bin/deployBundle.sh -m traffic-fg || checkrc
+

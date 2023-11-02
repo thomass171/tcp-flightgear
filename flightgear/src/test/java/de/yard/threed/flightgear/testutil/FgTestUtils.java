@@ -5,9 +5,6 @@ import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleData;
 
 public class FgTestUtils {
-    public static String locatedTestFile(String relFilenameToProjectHome) {
-        return System.getProperty("user.dir") + "/../" + relFilenameToProjectHome;
-    }
 
     /**
      * Dummy Bundle bauen

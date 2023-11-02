@@ -1,0 +1,9 @@
+railing/asi.ac
+railing/asi.png
+railing/asi.xml
+railing/loc.pcm
+railing/loc.xml
+railing/loc-lowres.pcm
+railing/loc-lowres.xml
+railing/Railing.xml
+railing/locomotive.xml
