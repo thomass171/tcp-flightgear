@@ -29,24 +29,62 @@
     <div class="w3-container" style="padding:32px">
 
 
-        <div class="w3-panel w3-padding-large w3-section w3-white">
-            <h1>Examples</h1>
+        <div class=" w3-padding-large w3-section w3-white">
+            <h1 class="">Use Case Traffic</h1>
 
-            <div class="">
-                <div class="">Scenery Scene</div>
-            </div>
-            <div id="row8" class="w3-panel">
-                <div>
-                    <div class="">
-                        <button class=" w3-button  w3-round w3-khaki "
-                                onclick="launchSceneryScene(false,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
-                            Launch
-                        </button>
-                        <button class=" w3-button  w3-round w3-khaki " onclick="launchSceneryScene(true,false,false)">
-                            Launch VR
-                        </button>
+            <p class="w3-xlarge"></p>
+            <br>
+
+            <div class="w3-row-padding w3-padding-16">
+                <!--Scenery-->
+                <div class="w3-third">
+                    <div class="w3-card-2">
+                        <div class="w3-container">
+                            <h3>Scenery</h3>
+                            <div class="w3-container w3-center">
+                                <img src="Scenery-Preview.png" style="width:100%">
+                            </div>
+                            <p>An overview on EDDK.</p>
+
+                            <p></p>
+
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchSceneryScene(false,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
+                                Launch
+                            </button>
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchSceneryScene(true,false,false)">
+                                Launch VR
+                            </button>
+
+                            <p></p>
+                        </div>
                     </div>
                 </div>
+                <!--Railing-->
+                <div class="w3-third">
+                    <div class="w3-card-2">
+                        <div class="w3-container">
+                            <h3>Railing</h3>
+                            <div class="w3-container w3-center">
+                                <img src="Railing-Preview.png" style="width:100%">
+                            </div>
+                            <p></p>
+
+                            <p></p>
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchRailingScene(false,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
+                                Launch
+                            </button>
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchRailingScene(true,false,false)">
+                                Launch VR
+                            </button>
+                            <p></p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 

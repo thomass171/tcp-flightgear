@@ -36,7 +36,7 @@ mvn install
 
 for building.
 
-Bundle 'engine' needs to be deployed (copied) manually currently to avoid the need of ADDITIONALBUNDLE.
+Bundles 'engine' and 'data' need to be deployed (copied) manually currently to avoid the need of ADDITIONALBUNDLE.
 
 # Running
 ## Browser
