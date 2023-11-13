@@ -101,7 +101,7 @@ public class LoaderExtTest {
         //System.out.println(lf.gltfstring);
         BundleResource gltfbr = new BundleResource(new GltfMemoryBundle("777-200", lf.gltfstring, lf.bin), "777-200.gltf");
 
-        PortableModelList pml = AsyncHelper.readGltfModelFromBundle(gltfbr, false, 0);
+        PortableModelList pml = ModelLoader.readGltfModelFromBundle(gltfbr, false, 0);
 
         //18.10.23: set defaulttexturebasepath to make check happy. TODO check intention and fix
         pml.defaulttexturebasepath = new ResourcePath("flusi");
