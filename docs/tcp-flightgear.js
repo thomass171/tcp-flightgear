@@ -2,7 +2,7 @@
  * JS part of tcp-flightgear.html
  */
 
-var host = "https://ts171.de/tcp-flightgear";
+var host = "https://yard.de/tcp-flightgear";
 
 function addPanel(label, contentProvider, optionalElement) {
     //console.log("addPanel " + label);
