@@ -14,8 +14,8 @@ import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.flightgear.testutil.ModelAssertions;
 import de.yard.threed.javanative.FileReader;
-import de.yard.threed.tools.GltfMemoryBundle;
 import de.yard.threed.tools.GltfProcessor;
+import de.yard.threed.tools.testutil.ToolsTestUtil;
 import de.yard.threed.toolsfg.testutil.BtgModelAssertions;
 import org.junit.jupiter.api.Test;
 
@@ -51,7 +51,7 @@ public class LoaderBTGBuilderTest {
         try {
             String gltfFilename = StringUtils.substringAfterLast(FlightGear.refbtggltf,"/");
 
-            BundleResource gltfbr = new BundleResource(GltfMemoryBundle.buildFromFilesystem("src/test/resources/tmp/"+gltfFilename,gltfFilename.replace(".gltf","")), gltfFilename);
+            BundleResource gltfbr = new BundleResource(ToolsTestUtil.buildFromFilesystem("src/test/resources/tmp/"+gltfFilename,gltfFilename.replace(".gltf","")), gltfFilename);
 
             // eigentlich geht das Laden ueber die Platform. Nur wegen Test werden die dahinterliegenden Klassen hier direkt aufgerufen.
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, null);

@@ -71,10 +71,10 @@ import java.util.List;
 
 /**
  * Wie OSM in der x/y Ebene. Nee, mal in y=0 Ebene versuchen. Das spart eine Menge Rotationen und sichert die Orientierungsunabhängigkeit
- * des Graphen. 17.7.17: Darum für Groundservice ähnliche Funktionen besser OsmScene verwenden.
+ * des Graphen.
  * <p>
- * Zunächst mal für ECS Tests. Das Runterskalieren auf H0 wird nicht mehr gemacht, weil die near plane für Unity dann zu
- * klein wird (0.01). Darum erstmal trackwidth 1.
+ * Intentionally not extending BasicTravelScene to be config independent and demonstrate several options.
+ * No scale down to 'H0', just trackwidth 1.
  * <p>
  * 29.10.2017: Statt Viewpointsystem Teleport mit Avatar verwenden (z.B. fuer VR)
  * 11.05.2021: Gibt jetzt Observer. Avatar wird hier nicht mehr gebraucht. Stoert aber auch nicht.

@@ -5,9 +5,11 @@ models/ControlLight.ac
 models/FuelOilAmps.ac
 models/followme.ac
 models/CDU-777-boeing.ac
+models/CDU-777-boeing.xml
 terrain/3056410.btg
 terrain/3056410.gltf
 terrain/3056410.bin
 terrain/3072816.btg
 terrain/3072816.gltf
 terrain/3072816.bin
+effects/model-combined.eff

@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class FgBundleHelper {
 
-    static Log logger= Platform.getInstance().getLog(FgBundleHelper.class);
+    Log logger= Platform.getInstance().getLog(FgBundleHelper.class);
 
     //Ueber Provider lassen sich relative Resourcen über Bundle hinweg suchen.
     static private List<BundleResourceProvider> providerlist = new ArrayList<BundleResourceProvider>();

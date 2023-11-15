@@ -15,6 +15,7 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.ResourcePath;
+import de.yard.threed.core.testutil.InMemoryBundle;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.platform.EngineHelper;
@@ -30,7 +31,6 @@ import de.yard.threed.flightgear.testutil.ModelAssertions;
 import de.yard.threed.javanative.FileReader;
 import de.yard.threed.tools.GltfBuilder;
 import de.yard.threed.tools.GltfBuilderResult;
-import de.yard.threed.tools.GltfMemoryBundle;
 import de.yard.threed.tools.GltfProcessor;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
@@ -99,7 +99,7 @@ public class LoaderExtTest {
         NativeJsonValue gltf = platform.parseJson(lf.gltfstring);
         Assertions.assertNotNull(gltf, "parsedgltf");
         //System.out.println(lf.gltfstring);
-        BundleResource gltfbr = new BundleResource(new GltfMemoryBundle("777-200", lf.gltfstring, lf.bin), "777-200.gltf");
+        BundleResource gltfbr = new BundleResource(new InMemoryBundle("777-200", lf.gltfstring, lf.bin), "777-200.gltf");
 
         PortableModelList pml = ModelLoader.readGltfModelFromBundle(gltfbr, false, 0);
 

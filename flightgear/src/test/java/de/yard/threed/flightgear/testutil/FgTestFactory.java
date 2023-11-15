@@ -10,6 +10,7 @@ import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.ResourcePath;
 import de.yard.threed.engine.testutil.AdvancedHeadlessPlatform;
 import de.yard.threed.engine.testutil.EngineTestFactory;
+import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.TerraSyncBundleResolver;
 import de.yard.threed.flightgear.core.FlightGearModuleBasic;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
@@ -63,6 +64,8 @@ public class FgTestFactory {
      * FG Resolver are probably not needed or trigger false positive results in tools.
      */
     public static Platform initPlatformForTest(HashMap<String, String> properties, boolean addTestResourcesBundle, boolean fullFG) {
+
+        FgBundleHelper.clear();
 
         // 29.12.21: Some bundles need to be loaded after init()
         // 12.9.23: "fgdatabasic", FlightGearSettings.FGROOTCOREBUNDLE might be needed in future for aircraft loading (apparently not needed for bluebird)

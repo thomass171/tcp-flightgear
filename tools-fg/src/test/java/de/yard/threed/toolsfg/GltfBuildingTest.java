@@ -7,6 +7,7 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.ResourcePath;
 import de.yard.threed.core.testutil.Assert;
+import de.yard.threed.core.testutil.InMemoryBundle;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
@@ -15,7 +16,6 @@ import de.yard.threed.flightgear.testutil.FgTestUtils;
 import de.yard.threed.flightgear.testutil.ModelAssertions;
 import de.yard.threed.tools.GltfBuilder;
 import de.yard.threed.tools.GltfBuilderResult;
-import de.yard.threed.tools.GltfMemoryBundle;
 import de.yard.threed.tools.GltfProcessor;
 import de.yard.threed.tools.ToolsPlatform;
 import org.junit.jupiter.api.Assertions;
@@ -44,7 +44,7 @@ public class GltfBuildingTest {
         GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(acfile), Optional.empty());
         NativeJsonValue gltf = platform.parseJson(lf.gltfstring);
         Assertions.assertNotNull(gltf, "parsedgltf");
-        BundleResource gltfbr = new BundleResource(new GltfMemoryBundle("windturbine", lf.gltfstring, lf.bin), "windturbine.gltf");
+        BundleResource gltfbr = new BundleResource(new InMemoryBundle("windturbine", lf.gltfstring, lf.bin), "windturbine.gltf");
         try {
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, null);
             ModelAssertions.assertWindturbine(lf1.ploadedfile, 2);
@@ -61,7 +61,7 @@ public class GltfBuildingTest {
 
         String acfile = "fg-raw-data/terrasync/Objects/e000n50/e007n50/egkk_tower.ac";
         GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(acfile), Optional.empty());
-        BundleResource gltfbr = new BundleResource(new GltfMemoryBundle("egkk_tower", lf.gltfstring, lf.bin), "egkk_tower.gltf");
+        BundleResource gltfbr = new BundleResource(new InMemoryBundle("egkk_tower", lf.gltfstring, lf.bin), "egkk_tower.gltf");
         try {
             // Den texturebasepath einfach mal so setzen
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, new ResourcePath("flusi"));
@@ -81,7 +81,7 @@ public class GltfBuildingTest {
         String acfile = "flightgear/src/test/resources/models/CDU-777-boeing.ac";
         GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(acfile), Optional.empty());
 
-        BundleResource gltfbr = new BundleResource(new GltfMemoryBundle("boeing", lf.gltfstring, lf.bin), "boeing.gltf");
+        BundleResource gltfbr = new BundleResource(new InMemoryBundle("boeing", lf.gltfstring, lf.bin), "boeing.gltf");
         try {
             // Den texturebasepath einfach mal so setzen
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, new ResourcePath("flusi"));
@@ -99,7 +99,7 @@ public class GltfBuildingTest {
         try {
             String btgfile = "tools-fg/src/test/resources/" + FlightGear.refbtg;
             GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(btgfile), Optional.of("de.yard.threed.toolsfg.LoaderBTGBuilder"));
-            BundleResource gltfbr = new BundleResource(new GltfMemoryBundle("3056410", lf.gltfstring, lf.bin), "3056410.gltf");
+            BundleResource gltfbr = new BundleResource(new InMemoryBundle("3056410", lf.gltfstring, lf.bin), "3056410.gltf");
             try {
                 // Den texturebasepath einfach mal so setzen
                 LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, new ResourcePath("flusi/terrain/3056410-gltf"));
@@ -124,7 +124,7 @@ public class GltfBuildingTest {
         // remove matlib
         SGMaterialLibWrapper.getInstance().disableSGMaterialLib();
         GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(btgfile), Optional.of("de.yard.threed.toolsfg.LoaderBTGBuilder"));
-        BundleResource gltfbr = new BundleResource(new GltfMemoryBundle("3056410", lf.gltfstring, lf.bin), "3056410.gltf");
+        BundleResource gltfbr = new BundleResource(new InMemoryBundle("3056410", lf.gltfstring, lf.bin), "3056410.gltf");
         try {
             // Den texturebasepath einfach mal so setzen
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, new ResourcePath("flusi/terrain/3056410-gltf"));
@@ -149,7 +149,7 @@ public class GltfBuildingTest {
         NativeJsonValue gltf = platform.parseJson(lf.gltfstring);
         Assertions.assertNotNull(gltf, "parsedgltf");
         //System.out.println(lf.gltfstring);
-        BundleResource gltfbr = new BundleResource(new GltfMemoryBundle("followme", lf.gltfstring, lf.bin), "followme.gltf");
+        BundleResource gltfbr = new BundleResource(new InMemoryBundle("followme", lf.gltfstring, lf.bin), "followme.gltf");
         try {
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, null);
             ModelAssertions.assertFollowMe(lf1.ploadedfile, 38);

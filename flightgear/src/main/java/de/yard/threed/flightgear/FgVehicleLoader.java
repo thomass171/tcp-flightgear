@@ -48,6 +48,7 @@ public class FgVehicleLoader implements VehicleLoader {
      * <p>
      * Erstellt noch keine Entity, das ist ein separater Schritt.
      * 9.11.21 Moved here from static FgVehicleLauncher
+     *
      * @return
      */
     @Override
@@ -63,57 +64,60 @@ public class FgVehicleLoader implements VehicleLoader {
         List<SGAnimation> animationList = new ArrayList<SGAnimation>();
 
         AbstractSceneRunner.instance.loadBundle(config.getBundlename(), (Bundle bundle) -> {
-            SGPropertyNode destinationProp = new SGPropertyNode(config.getName() + "-root");/*FGGlobals.getInstance().get_props()*/
-            //arp.setAircraftDir(aircraft.aircraftdir);
-            FgBundleHelper.addProvider(new AircraftResourceProvider(config.getAircraftdir()));
-            //} else {
-            //  FlightScene.initFG(null, aircraft.aircraftdir/*fgname/*"My-777"*/);
-            //Mit state 9 ist 777-200 schon geladen, aber wer weiss wo positioniert?.
-            //Der read777200 liest auch nur das eine ac file;oder? Nee, er liest komplett. Aber zeigt nichts an.
-            //}
-            BundleResource br = BundleResource.buildFromFullString(config.getModelfile());
-            br.bundle = bundle;
-            if (config.getModelfile().equals("Models/777-200.xml") && FlightGearModuleBasic.inited) {
-                //27.3.18:Auch die Teile oberhalb des reinen Models laden. Das ist ein Provisorium, erstmal nur fuer Tests genutzt.
-                //Ob und wie das braucht, ist voellig unklar. Immerhin liegen da aber z.B. View und das FDM.
-                //30.9.19: Ich lass das mal weg. FDM nutz ich eh nicht, und die Views? Wohl auch nicht.
-                // Aber es geht hier generell um das "-set.xml". Wär vielleicht ganz huebsch. TODO pruefen.
-                //30.9.19. Ich lass das lieber noch mal drin.
-                FgInit.fgInitAircraft(false, true/*loadaircraft*/, "777-200", config.getAircraftdir(), destinationProp);
-            }
-            // PropertyTree isType needed for animations. 3.4.18: Fuer jedes Vehicle einen eigenen PropertyTree anlegen.
-            SGLoaderOptions opt = new SGLoaderOptions();
-            opt.setPropertyNode(destinationProp);
-            SceneNode currentaircraft;
-            //ModelFactory kann man hier wegen der optionals nicht so einfach nehmen.
-
-            // 9.11.21: Can also load pure GLTF, not only XML
-            BuildResult buildresult = SGReaderWriterXML.buildModelFromBundleXML(br, opt, (bpath, alist) -> {
-                // das wird evtl zu oft aufgerufen?? 2.3.18: laut Debugger schon. Ist die for schleife nicht OK?
-                // vleiiehct ist das Model auch noch nicht ganz geladen. Hmmm, wer weiß.
-                // 4.4.18: Der modeldelegate wird doch fuer jedes submodel aufgerufen!
-                for (String o : config.getOptionals()) {
-                    SceneNode.removeSceneNodeByName(o);
+            if (bundle == null) {
+                logger.error("bundle not loaded. Not building vehicle ...");
+            } else {
+                SGPropertyNode destinationProp = new SGPropertyNode(config.getName() + "-root");/*FGGlobals.getInstance().get_props()*/
+                //arp.setAircraftDir(aircraft.aircraftdir);
+                FgBundleHelper.addProvider(new AircraftResourceProvider(config.getAircraftdir()));
+                //} else {
+                //  FlightScene.initFG(null, aircraft.aircraftdir/*fgname/*"My-777"*/);
+                //Mit state 9 ist 777-200 schon geladen, aber wer weiss wo positioniert?.
+                //Der read777200 liest auch nur das eine ac file;oder? Nee, er liest komplett. Aber zeigt nichts an.
+                //}
+                BundleResource br = BundleResource.buildFromFullString(config.getModelfile());
+                br.bundle = bundle;
+                if (config.getModelfile().equals("Models/777-200.xml") && FlightGearModuleBasic.inited) {
+                    //27.3.18:Auch die Teile oberhalb des reinen Models laden. Das ist ein Provisorium, erstmal nur fuer Tests genutzt.
+                    //Ob und wie das braucht, ist voellig unklar. Immerhin liegen da aber z.B. View und das FDM.
+                    //30.9.19: Ich lass das mal weg. FDM nutz ich eh nicht, und die Views? Wohl auch nicht.
+                    // Aber es geht hier generell um das "-set.xml". Wär vielleicht ganz huebsch. TODO pruefen.
+                    //30.9.19. Ich lass das lieber noch mal drin.
+                    FgInit.fgInitAircraft(false, true/*loadaircraft*/, "777-200", config.getAircraftdir(), destinationProp);
                 }
-                if (alist != null) {
-                    animationList.addAll(alist);//  xmlloaddelegate.modelComplete( animationList);
-                }
-            });
-            currentaircraft = new SceneNode(buildresult.getNode());
+                // PropertyTree isType needed for animations. 3.4.18: Fuer jedes Vehicle einen eigenen PropertyTree anlegen.
+                SGLoaderOptions opt = new SGLoaderOptions();
+                opt.setPropertyNode(destinationProp);
+                SceneNode currentaircraft;
+                //ModelFactory kann man hier wegen der optionals nicht so einfach nehmen.
 
-            SceneNode lowresNode = null;
-            String lowresfile = config.getLowresFile();
-            if (lowresfile != null) {
-                BundleResource lowresbr = BundleResource.buildFromFullString(lowresfile);
-                lowresbr.bundle = bundle;
-                SGPropertyNode lowresdestinationProp = new SGPropertyNode(config.getName() + "LowRes-root");
-                List<SGAnimation> lowresanimationList = new ArrayList<SGAnimation>();
-                lowresNode = de.yard.threed.flightgear.traffic.ModelFactory.buildModelFromBundleXml(lowresbr, lowresdestinationProp, animationList);
-            }
-            // In der base node KANN auch eine Rotation sein (manche AIs). Darum ist es doch unbrauchbar
-            // und wird gekapselt.
-            SceneNode nn = SimpleVehicleLoader.buildVehicleNode(currentaircraft, config.getZoffset());
-            SceneNode basenode = VehicleLauncher.getModelNodeFromVehicleNode(nn);
+                // 9.11.21: Can also load pure GLTF, not only XML
+                BuildResult buildresult = SGReaderWriterXML.buildModelFromBundleXML(br, opt, (bpath, alist) -> {
+                    // das wird evtl zu oft aufgerufen?? 2.3.18: laut Debugger schon. Ist die for schleife nicht OK?
+                    // vleiiehct ist das Model auch noch nicht ganz geladen. Hmmm, wer weiß.
+                    // 4.4.18: Der modeldelegate wird doch fuer jedes submodel aufgerufen!
+                    for (String o : config.getOptionals()) {
+                        SceneNode.removeSceneNodeByName(o);
+                    }
+                    if (alist != null) {
+                        animationList.addAll(alist);//  xmlloaddelegate.modelComplete( animationList);
+                    }
+                });
+                currentaircraft = new SceneNode(buildresult.getNode());
+
+                SceneNode lowresNode = null;
+                String lowresfile = config.getLowresFile();
+                if (lowresfile != null) {
+                    BundleResource lowresbr = BundleResource.buildFromFullString(lowresfile);
+                    lowresbr.bundle = bundle;
+                    SGPropertyNode lowresdestinationProp = new SGPropertyNode(config.getName() + "LowRes-root");
+                    List<SGAnimation> lowresanimationList = new ArrayList<SGAnimation>();
+                    lowresNode = de.yard.threed.flightgear.traffic.ModelFactory.buildModelFromBundleXml(lowresbr, lowresdestinationProp, animationList);
+                }
+                // In der base node KANN auch eine Rotation sein (manche AIs). Darum ist es doch unbrauchbar
+                // und wird gekapselt.
+                SceneNode nn = SimpleVehicleLoader.buildVehicleNode(currentaircraft, config.getZoffset());
+                SceneNode basenode = VehicleLauncher.getModelNodeFromVehicleNode(nn);
             /*SceneNode basenode = new SceneNode(currentaircraft);
             basenode.setName("basenode");
             SceneNode node = new SceneNode(basenode);
@@ -123,14 +127,14 @@ public class FgVehicleLoader implements VehicleLoader {
             node.getTransform().setPosition(p);
             SceneNode nn = new SceneNode(node);*/
 
-            // Eigentlich ist es zu frueh, das Model ist vielleicht noch nicht komplett geladen
-            // 4.4.18. Darum jetzt oben fuer jedes submodel
+                // Eigentlich ist es zu frueh, das Model ist vielleicht noch nicht komplett geladen
+                // 4.4.18. Darum jetzt oben fuer jedes submodel
 
-            loaddelegate.vehicleLoaded(nn,  new FgVehicleLoaderResult(animationList, opt.getPropertyNode()), lowresNode);
-            FgBundleHelper.removeAircraftSpecific();
+                loaddelegate.vehicleLoaded(nn, new FgVehicleLoaderResult(animationList, opt.getPropertyNode()), lowresNode);
+                FgBundleHelper.removeAircraftSpecific();
 
-            logger.debug("vehicle " + config.getName()+" loaded");
-
+                logger.debug("vehicle " + config.getName() + " loaded");
+            }
         });
     }
 }
