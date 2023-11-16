@@ -11,6 +11,8 @@ import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.StringUtils;
 
 /**
+ * See README.md for more details.
+ *
  * Created by thomass on 30.05.16.
  * 22.10.17: Kann jetzt auch ohne Property "/sim/aircraft-dir" arbeiten.
  * 02.10.19: Das ist doch Bundle bezogen. TODO Darum die Constructor mal deprecated oder aendern.
@@ -106,6 +108,7 @@ public class AircraftResourceProvider implements /*30.9.19ResourceProvider,*/ Bu
                 r.append(pieces.get(i));
             }
 
+            // 'r' is now the relative path inside the aircraft bundle (or other bundle?)
             if (bundle.exists(new BundleResource(r.str()))) {
                 //logger.debug("found aircraft path "+r.str());
                 return new BundleResource(bundle/*bundle.name*/, r.str());

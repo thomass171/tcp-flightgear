@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
  *
  */
 public class OpenGlProcessPolicyTest {
-    static Platform platform = FgTestFactory.initPlatformForTest();
+    Platform platform = FgTestFactory.initPlatformForTest();
 
     @Test
     public void testAC2FG() {

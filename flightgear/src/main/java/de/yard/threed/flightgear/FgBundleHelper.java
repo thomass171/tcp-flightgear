@@ -1,11 +1,9 @@
 package de.yard.threed.flightgear;
 
-import de.yard.threed.core.platform.Config;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
-import de.yard.threed.engine.platform.EngineHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +15,7 @@ public class FgBundleHelper {
 
     Log logger= Platform.getInstance().getLog(FgBundleHelper.class);
 
-    //Ueber Provider lassen sich relative Resourcen über Bundle hinweg suchen.
+    //Locating relative resources across bundles.
     static private List<BundleResourceProvider> providerlist = new ArrayList<BundleResourceProvider>();
 
     /**
@@ -84,8 +82,12 @@ public class FgBundleHelper {
         }
     }
 
-    public static int getProviderCount() {
-        return providerlist.size();
+    /**
+     * Only for testing
+     * @return
+     */
+    public static List<BundleResourceProvider> getProvider() {
+        return providerlist;
     }
 
     public static void clear() {

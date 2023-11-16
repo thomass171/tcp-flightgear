@@ -37,8 +37,9 @@ public class FgVehicleLoader implements VehicleLoader {
     private static Log logger = Platform.getInstance().getLog(FgVehicleLoader.class);
 
     /**
-     * Laden eines konfigurierten Vehicles (z.B. FG Aircraft). Das Bundle muss nicht schon da sein, evtl. wird async geladen. Darum kein Returnwert,
-     * sondern Delegate.
+     * Loads a configured vehicle (eg. a FG Aircraft).
+     * The bundle needed is loaded async if not yet available. Also model build is async, so use a delegate
+     * instead of return value.
      * Das Model wird eh async geladen. Der Delegate wird fuer jedes submodel aufgerufen. 22.10.19: Wirklich?
      * <p>
      * Model laden ohne neu zu orientieren, Offsets aus XML beachten, zoffset dazu und kapseln.

@@ -72,8 +72,8 @@ public class FgTestFactory {
         // 12.9.23: "fgdatabasicmodel" might be needed in future. Or will be a separate module.
         // "sgmaterial" occupies 493 MB
 
-        // "fgdatabasic", "fgdatabasicmodel" and FlightGearSettings.FGROOTCOREBUNDLE currently not needed in tests
-        String[] bundlelist = new String[]{"engine"};
+        // "fgdatabasicmodel" and FlightGearSettings.FGROOTCOREBUNDLE currently not needed in tests
+        String[] bundlelist = new String[]{"engine", "fgdatabasic"};
 
         Configuration configuration = ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties);
 
@@ -89,8 +89,8 @@ public class FgTestFactory {
                     PlatformInternals platformInternals = AdvancedHeadlessPlatform.init(configuration1, null);
                     if (fullFG) {
                         Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver(configuration1.getString("HOSTDIRFG") + "/bundles"));
-                        Platform.getInstance().addBundleResolver(new SimpleBundleResolver(configuration1.getString("HOSTDIRFG") + "/bundles", new DefaultResourceReader()));
                     }
+                    Platform.getInstance().addBundleResolver(new SimpleBundleResolver(configuration1.getString("HOSTDIRFG") + "/bundles", new DefaultResourceReader()));
                     return platformInternals;
                 }, (InitMethod) null, configuration);
 

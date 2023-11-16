@@ -19,6 +19,7 @@ sh $TCP22DIR/bin/deployBundle.sh bluebird || checkrc
 cp -rp $HOSTDIRFG/../tcp-22/bundles/engine $HOSTDIRFG/bundles
 
 cd $PROJECT_HOME || checkrc
-
 sh $TCP22DIR/bin/deployBundle.sh -m traffic-fg || checkrc
 
+cd $PROJECT_HOME/fg-raw-data || checkrc
+sh $TCP22DIR/bin/deployBundle.sh fgdatabasic || checkrc

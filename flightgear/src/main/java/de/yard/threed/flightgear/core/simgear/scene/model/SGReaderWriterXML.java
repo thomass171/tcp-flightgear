@@ -60,6 +60,9 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
     static Log logger = Platform.getInstance().getLog(SGReaderWriterXML.class);
     private static boolean async = true;
     public static boolean fgmodelloaddebug = false;
+    // two helper for tests
+    public static int errorCnt = 0;
+    public static List<String> loadedList = new ArrayList<String>();
 
     public SGReaderWriterXML() {
         //MA17 supportsExtension("xml", "");
@@ -100,12 +103,10 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
     public static BuildResult buildModelFromBundleXML(BundleResource modelfile, LoaderOptions options) {
         return buildModelFromBundleXML(modelfile, options, null);
     }
-    
+
     //@Override
     private BuildResult build(BundleResource bpath, LoaderOptions opt, XmlModelCompleteDelegate modeldelegate) {
-        if (Config.modelloaddebuglog) {
-            logger.debug("load: name=" + bpath.getFullName());
-        }
+        logger.debug("load: name=" + bpath.getFullName());
         return sgLoad3DModel_internal(bpath/*, null, null, null*/, opt, modeldelegate);
     }
 
@@ -114,9 +115,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
      * 5.10.17: Als Animation werden die aber auch nochmal angelegt. Irgendwie unklar.
      */
     private void makeEffectAnimations(PropertyList animation_nodes, PropertyList effect_nodes) {
-        if (Config.modelloaddebuglog) {
-            logger.debug("makeEffectAnimations");
-        }
+        logger.debug("makeEffectAnimations");
         //for (PropertyList::iterator itr = animation_nodes.begin(); itr != animation_nodes.end();++itr) {
         for (int i = 0; i < animation_nodes.size(); ++i) {
             SGPropertyNode animProp = animation_nodes.get(i);//itr->ptr();
@@ -161,12 +160,11 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
     }
 
     /**
-     *
      * 26.12.18: Muss bei Fehler leeres BuildResult liefern.
      */
     private BuildResult sgLoad3DModel_internal(BundleResource bpath, LoaderOptions bdbOptions, XmlModelCompleteDelegate modeldelegate) {
         BuildResult result = sgLoad3DModel_internal_async(bpath, bdbOptions, modeldelegate);
-        if (result==null){
+        if (result == null) {
             //already logged. 28.9.19 ob der Constructor so gut ist?
             result = new BuildResult("load failed");
         }
@@ -188,20 +186,19 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         de.yard.threed.flightgear.core.osgdb.Options dbOptions = null;
         SGPropertyNode overlay = null;
 
-        if (Config.modelloaddebuglog) {
-            logger.debug("sgLoad3DModel_internal");
-        }
+
+        logger.debug("sgLoad3DModel_internal");
+
         if (path != null) {
             if (!path.exists()) {
                 logger.error("Failed (!path.exists) to load file: \"" + path + "\"");
                 return null;
             }
-            if (Config.modelloaddebuglog) {
-                logger.debug("SGReaderWriterXML::sgLoad3DModel_internal. path=" + path.file_base());
-            }
+            logger.debug("SGReaderWriterXML::sgLoad3DModel_internal. path=" + path.file_base());
+
         }
 
-        
+
         /*osg::ref_ptr <*/
         // 4.1.18: das mit dem copy isType doch Driss
         SGReaderWriterOptions options = SGReaderWriterOptions.copyOrCreate(dbOptions);
@@ -223,7 +220,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         } else {
             isxml = bpath.getExtension().equals("xml");
         }
-        
+
         /*SGSharedPtr<*/
         // Ueber die Options kann DER PropertyTree reinkommen. Den brauchen z.B. die Animationen.
         // 7.6.18: Mittlerweile ist das aber ein z.B. Vehicle spezifischer Tree. Aber nicht fuer "-set.xml", der
@@ -238,7 +235,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         SGPropertyNode final_prop_root = prop_root;
 
         // The model data appear to be only used in the topmost model
-         /*osg::ref_ptr <*/
+        /*osg::ref_ptr <*/
         SGModelData data = options.getModelData();
         options.setModelData(null);
 
@@ -254,9 +251,8 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         // Check for an XML wrapper
 
         if (isxml) {
-            if (Config.modelloaddebuglog) {
-                logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: found nodelpath xml. modelpath=" + modelpath + ",modelDir=" + modelDir);
-            }
+            logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: found nodelpath xml. modelpath=" + modelpath + ",modelDir=" + modelDir);
+
             if (bpath != null) {
                 try {
                     PropsIO.readProperties(bpath, props);
@@ -284,9 +280,8 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
             if (props.hasValue("/path")) {
 
                 String modelPathStr = props.getStringValue("/path");
-                if (Config.modelloaddebuglog) {
-                    logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: found path prop. value=" + modelPathStr);
-                }
+                logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: found path prop. value=" + modelPathStr);
+
                 if (bpath == null) {
                     modelpath = new SGPath(SGModelLib.findDataFile(modelPathStr, null, modelDir));
                     if (modelpath.isNull()) {
@@ -300,6 +295,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
                     bmodelpath = FgBundleHelper.findPath(modelPathStr, bpath);
                     if (bmodelpath == null) {
                         logger.error("Failed to resolve " + modelPathStr + " in " + bpath);
+                        errorCnt++;
                         return null;
                     }
                 }
@@ -317,9 +313,9 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
                             //Total heikel. Was soll denn "Aircraft/Instruments-3d/yoke" sein? Relativ vom AC? Wohl nicht. Hier muss wohl nochmal ein resolve gemacht
                             //werden. Aber wie, nur auf den Pfad? Kann ich nicht. Das ist so eine FG Sonderlocke. Erstmal so nachbilden.
                             //Das ist total krampfig. TODO dabrauchts auch Tests zu.
-                            if (StringUtils.startsWith(texturePathStr,"Aircraft/")){
-                                btexturepath = new ResourcePath( texturePathStr);
-                            }else{
+                            if (StringUtils.startsWith(texturePathStr, "Aircraft/")) {
+                                btexturepath = new ResourcePath(texturePathStr);
+                            } else {
                                 //2.10.10:modelpath statt bpath führt zu AI Fliegern ohne Textur.
                                 btexturepath = new ResourcePath(bpath/*bpath*/.getPath().path + "/" + texturePathStr);
                             }
@@ -352,20 +348,16 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
                     if (!StringUtils.empty(texturepath.extension()))
                         texturepath = texturepath.dir();
 
-                    if (Config.modelloaddebuglog) {
-                        logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading textures(?) or model from modelpath " + ((bpath == null) ? modelpath.str() : bpath.getFullName()) + ",texturepath=" + texturepath.str());
-                    }
+                    logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading textures(?) or model from modelpath " + ((bpath == null) ? modelpath.str() : bpath.getFullName()) + ",texturepath=" + texturepath.str());
                     options.setDatabasePath(texturepath.str());
                 }
             } else {
                 if (btexturepath != null) {
-                    if (Config.modelloaddebuglog) {
-                        logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading textures(?) or model from modelpath " + bpath.getFullName() + ",texturepath=" + (btexturepath.path));
-                    }
+                    logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading textures(?) or model from modelpath " + bpath.getFullName() + ",texturepath=" + (btexturepath.path));
                     boptions.setDatabasePath(new ResourcePath(btexturepath.path));
                 }
             }
-           /* osgDB::ReaderWriter::*/
+            /* osgDB::ReaderWriter::*/
 
             if (bmodelpath != null) {
                 String extension = bmodelpath.getExtension();
@@ -418,6 +410,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         }
         if (model != null) {
             if (bpath != null) {
+                // keep suffix like ".xml" in node name.
                 model.setName(bpath.getFullName());
             } else {
                 model.setName(modelpath.str());
@@ -430,9 +423,8 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         // Set up the alignment node if needed
         SGPropertyNode offsets = props.getNode("offsets", false);
         if (offsets != null) {
-            if (Config.modelloaddebuglog) {
-                logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: found offsets");
-            }
+            logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: found offsets");
+
             needTransform = true;
             /*osg::MatrixTransform **/
             //Matrix4 alignmainmodel = new Matrix4();//osg::MatrixTransform;
@@ -463,7 +455,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
             // group = alignmainmodel;
             //15.9.17 spaeter group.attach(model);
         } else {
-        /*if (group == null) {*/
+            /*if (group == null) {*/
             //group = new /*osg::*/Group();
             //15.9.17 spaeter group.attach/*addChild*/(model/*.get()*/);
         }
@@ -472,9 +464,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         // Load sub-models
         PropertyList /*Vector<SGPropertyNode_ptr>*/ model_nodes = props.getChildren("model");
 
-        if (Config.modelloaddebuglog) {
-            logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading sub models. cnt=" + model_nodes.size());
-        }
+        logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading sub models. cnt=" + model_nodes.size());
         for (int i = 0; i < model_nodes.size(); i++) {
             SGPropertyNode/*_ptr*/ sub_props = model_nodes.get(i);
 
@@ -484,9 +474,8 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
             SceneNode submodel;
 
             String subPathStr = sub_props.getStringValue("path");
-            if (Config.modelloaddebuglog) {
-                logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading sub model " + subPathStr + " at " + i);
-            }
+            logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading sub model " + subPathStr + " at " + i);
+
             SGPath submodelPath = null;
             BundleResource bsubmodelpath = null;
             if (bpath == null) {
@@ -662,11 +651,9 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
             osgDB::writeNodeFile ( * returngroup, outputfile);
         }*/
 
-        if (Config.modelloaddebuglog) {
-            logger.debug("sgLoad3DModel_internal completed");
-        }
+        logger.debug("sgLoad3DModel_internal completed");
 
-
+        loadedList.add(bpath.getName());
         return xmlresult;//group;//returngroup/*.release()*/;
     }
 
@@ -686,16 +673,15 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         }
         // Some material animations (eventually all) are actually effects.
         makeEffectAnimations(animation_nodes, effect_nodes);
-        
-            /*ref_ptr<*/
+
+        /*ref_ptr<*/
         //die group aendert sich durch den Aufruf eigentlich nicht.
         Node modelWithEffects = Model.instantiateEffects(group/*.get()*/, effect_nodes, options/*.get()*/);
         group = /*static_cast < Group * > (*/(Group) modelWithEffects/*.get()*/;
 
 
-        if (Config.modelloaddebuglog) {
-            logger.debug("Building animations for "+bpath.name+". nodecount=" + animation_nodes.size());
-        }
+        logger.debug("Building animations for " + bpath.name + ". nodecount=" + animation_nodes.size());
+
         for (int i = 0; i < animation_nodes.size(); ++i) {
             if (previewMode && animation_nodes.get(i).hasChild("nopreview")) {
                 /*TODOPropertyList names (animation_nodes.get(i).getChildren("object-name"));
@@ -720,7 +706,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
                     animationList.add(anim);
                 }*/
             }
-             if (bpath != null) {
+            if (bpath != null) {
                 SGAnimation anim = SGAnimation.animate(group, animation_nodes.get(i), prop_root, options, null, i);
                 if (anim != null) {
                     animationList.add(anim);
@@ -1260,6 +1246,11 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         Vector3 v = new Vector3(offs.getFloatValue("x-scale", 1), offs.getFloatValue("y-scale", 1), offs.getFloatValue("z-scale", 1));
         return v;
 
+    }
+
+    public static void clearStatistics() {
+        errorCnt = 0;
+        loadedList = new ArrayList<String>();
     }
 }
 

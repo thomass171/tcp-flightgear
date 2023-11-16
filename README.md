@@ -129,3 +129,13 @@ correctly.
 
 Even though converted to gltf, the bundle directory will still list the filename with
 suffix 'ac'.
+
+FG uses XML configuration for aircraft model and has two specific ways of component lookup:
+* Some aircraft reference components in some global directory ($FG_ROOT/aircraft(?) in FG).
+* Some aircraft reference components in their own directory/bundle by using a prefix "Aircraft", that isn't part of any path.
+
+The AircraftResourceProvider helps finding these components independent from a specific installation directory and bundle.
+Eg. 'bluebirds' 'YOKE' references 'Aircraft/bluebird/Instruments-3d/yoke/yoke.xml', which
+could be found in either FG_ROOT/Aircraft or in bluebirds own directory
+with prefix 'Aircraft' removed.
+A 'Aircraft/Instruments-3d/yoke/yoke.ac' path however points to FG_ROOT.

@@ -1,46 +1,27 @@
 package de.yard.threed.flightgear;
 
-import de.yard.threed.core.Vector3;
 import de.yard.threed.core.XmlException;
-import de.yard.threed.core.loader.LoaderAC;
-import de.yard.threed.core.loader.LoaderGLTF;
-import de.yard.threed.core.loader.PortableMaterial;
-import de.yard.threed.core.loader.PortableModelDefinition;
-import de.yard.threed.core.loader.PortableModelList;
-import de.yard.threed.core.loader.StringReader;
 import de.yard.threed.core.platform.NativeDocument;
 import de.yard.threed.core.platform.NativeNode;
 import de.yard.threed.core.platform.NativeSceneNode;
 import de.yard.threed.core.platform.Platform;
-import de.yard.threed.core.resource.Bundle;
-import de.yard.threed.core.resource.BundleRegistry;
-import de.yard.threed.core.resource.BundleResource;
-import de.yard.threed.core.resource.ResourcePath;
-import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
+import de.yard.threed.engine.Texture;
 import de.yard.threed.engine.test.testutil.TestUtil;
-import de.yard.threed.engine.testutil.EngineTestFactory;
 import de.yard.threed.engine.testutil.TestHelper;
-import de.yard.threed.flightgear.core.FlightGear;
+import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
-import de.yard.threed.flightgear.testutil.ModelAssertions;
 import de.yard.threed.traffic.VehicleLoaderResult;
 import de.yard.threed.traffic.config.VehicleConfig;
 import de.yard.threed.traffic.config.XmlVehicleConfig;
 import de.yard.threed.trafficcore.model.Vehicle;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -59,22 +40,37 @@ public class FgVehicleLoaderTest {
                 "            <aircraftdir>bluebird</aircraftdir>\n" +
                 "        </vehicle>";
         VehicleConfig config = new XmlVehicleConfig(getNodeFromXML(configXML));
-        //Das muesste genau der eine fuer FGData sein. Ja, aber auch fgroot. (Aber nicht sgmaterial, dafuer gibts keinen Provider,oder?).
-        assertEquals( 2, FgBundleHelper.getProviderCount(),"provider.size");
-        new FgVehicleLoader()/*FgVehicleLauncher*/.loadVehicle(new Vehicle(config.getName()), config, (SceneNode container, VehicleLoaderResult loaderResult/*List<SGAnimation> animationList, SGPropertyNode propertyNode,*/, SceneNode lowresNode) -> {
+        //"fgdatabasic" and "fgrootcore"(but not sgmaterial, dafuer gibts keinen Provider,oder?).
+        assertEquals(2, FgBundleHelper.getProvider().size(), "provider.size");
+
+        SGReaderWriterXML.clearStatistics();
+        new FgVehicleLoader().loadVehicle(new Vehicle(config.getName()), config, (SceneNode container, VehicleLoaderResult loaderResult, SceneNode lowresNode) -> {
 
 
         });
         for (int i = 0; i < 30; i++) {
             TestHelper.processAsync();
         }
-        //Die Texture muss aus FGDATA gelesen werden.
-        //7.7.21 TestUtil.assertTrue("yoke.texture",platform.hasTexture("yoke.png"));
+
+        assertEquals(0, SGReaderWriterXML.errorCnt, "errorCnt ");
+        // should load bluebird, yoke, ,display-screens, 6 spheres
+        assertEquals(9, SGReaderWriterXML.loadedList.size(), "loadedList ");
+        // original ac-file referenced 'yoke.rgb', but was mapped to 'png' in ACLoader.
+        assertTrue(Texture.hasTexture("yoke.png"), "yoke.texture");
         List<NativeSceneNode> yokes = SceneNode.findByName("Yoke");
-        //2.10.19:TODO Warum finder der den denn nicht? Wegen openGL?
-        //TestUtil.assertEquals("yokes.size", 1, yokes.size());
-        //AircraftProvider muss wieder weg sein.
-        TestUtil.assertEquals("provider.size", 2, FgBundleHelper.getProviderCount());
+        // why 2?
+        assertEquals(2, yokes.size(), "yokes.size");
+
+        // TODO pedals
+
+        //AircraftProvider must have been removed. Only "fgdatabasic" and "fgrootcore" stay.
+        assertEquals( 2, FgBundleHelper.getProvider().size(),"provider.size");
+        assertFalse(  FgBundleHelper.getProvider().get(0).isAircraftSpecific(),"provider.isAircraftSpecific");
+        assertTrue( FgBundleHelper.getProvider().get(0) instanceof SimpleBundleResourceProvider);
+        assertEquals( "fgdatabasic",((SimpleBundleResourceProvider)FgBundleHelper.getProvider().get(0)).bundlename);
+        assertFalse(  FgBundleHelper.getProvider().get(1).isAircraftSpecific(),"provider.isAircraftSpecific");
+        assertTrue( FgBundleHelper.getProvider().get(1) instanceof SimpleBundleResourceProvider);
+        assertEquals( "fgrootcore",((SimpleBundleResourceProvider)FgBundleHelper.getProvider().get(1)).bundlename);
 
     }
 
@@ -90,7 +86,7 @@ public class FgVehicleLoaderTest {
                 "            <aircraftdir>corruptedVehicleModel</aircraftdir>\n" +
                 "        </vehicle>";
         VehicleConfig config = new XmlVehicleConfig(getNodeFromXML(configXML));
-        new FgVehicleLoader()/*FgVehicleLauncher*/.loadVehicle(new Vehicle(config.getName()),config, (SceneNode container, VehicleLoaderResult loaderResult/*List<SGAnimation> animationList, SGPropertyNode propertyNode,*/, SceneNode lowresNode) -> {
+        new FgVehicleLoader()/*FgVehicleLauncher*/.loadVehicle(new Vehicle(config.getName()), config, (SceneNode container, VehicleLoaderResult loaderResult/*List<SGAnimation> animationList, SGPropertyNode propertyNode,*/, SceneNode lowresNode) -> {
 
 
         });
@@ -112,7 +108,7 @@ public class FgVehicleLoaderTest {
 
         VehicleConfig config = new XmlVehicleConfig(getNodeFromXML(configXML));
         config.getBundlename();
-        new FgVehicleLoader()/*FgVehicleLauncher*/.loadVehicle(new Vehicle(config.getName()),config, (SceneNode container, VehicleLoaderResult loaderResult/*List<SGAnimation> animationList, SGPropertyNode propertyNode,*/, SceneNode lowresNode) -> {
+        new FgVehicleLoader()/*FgVehicleLauncher*/.loadVehicle(new Vehicle(config.getName()), config, (SceneNode container, VehicleLoaderResult loaderResult/*List<SGAnimation> animationList, SGPropertyNode propertyNode,*/, SceneNode lowresNode) -> {
         });
         TestHelper.processAsync();
     }
