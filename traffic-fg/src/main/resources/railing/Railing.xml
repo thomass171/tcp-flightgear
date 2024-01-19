@@ -3,7 +3,7 @@
 <!-- This is the original 'Railing.xml' converted to XSD layout.-->
 
 <c:config xmlns:c="http://www.example.org/tcp-22" name="a">
-    <!-- 30.10.23: locomotive definition extracted to locomotive.xml-->
+    <!-- 30.10.23: locomotive definition extracted to locomotive.xml. No 'include' here, its loaded explicitly by RailingScene. -->
     <vehicle name="locomotive" delayedload="false" automove="false" location="*:firstEdge"/>
 
     <trafficgraph graphfactory="RailSample1"></trafficgraph>

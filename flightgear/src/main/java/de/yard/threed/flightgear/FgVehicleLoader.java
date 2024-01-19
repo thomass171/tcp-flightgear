@@ -20,7 +20,7 @@ import de.yard.threed.traffic.SimpleVehicleLoader;
 import de.yard.threed.traffic.VehicleLauncher;
 import de.yard.threed.traffic.VehicleLoadedDelegate;
 import de.yard.threed.traffic.VehicleLoader;
-import de.yard.threed.traffic.config.VehicleConfig;
+import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.trafficcore.model.Vehicle;
 
 import java.util.ArrayList;
@@ -38,9 +38,9 @@ public class FgVehicleLoader implements VehicleLoader {
 
     /**
      * Loads a configured vehicle (eg. a FG Aircraft).
-     * The bundle needed is loaded async if not yet available. Also model build is async, so use a delegate
+     * The bundle needed is loaded async if not yet available. Also model build and load is async, so use a delegate
      * instead of return value.
-     * Das Model wird eh async geladen. Der Delegate wird fuer jedes submodel aufgerufen. 22.10.19: Wirklich?
+     * Der Delegate wird fuer jedes submodel aufgerufen. 22.10.19: Wirklich?
      * <p>
      * Model laden ohne neu zu orientieren, Offsets aus XML beachten, zoffset dazu und kapseln.
      * irgendwie redundant zu FlightGear.loadFgModel()
@@ -53,7 +53,7 @@ public class FgVehicleLoader implements VehicleLoader {
      * @return
      */
     @Override
-    public void loadVehicle(Vehicle vehicle, VehicleConfig config, VehicleLoadedDelegate loaddelegate/*, XmlModelCompleteDelegate xmlloaddelegate*/) {
+    public void loadVehicle(Vehicle vehicle, VehicleDefinition config, VehicleLoadedDelegate loaddelegate/*, XmlModelCompleteDelegate xmlloaddelegate*/) {
         //FGinit kann erst nach laden des Bundle gemacht werden.
         //ach, direkt oben anfangen wie FG
         //27.4.17: brauchts den fginit immer noch? Warum eigentlich? Zumindest mal fuer den AircraftPRovider und damit auch FgGlobals
@@ -66,7 +66,7 @@ public class FgVehicleLoader implements VehicleLoader {
 
         AbstractSceneRunner.instance.loadBundle(config.getBundlename(), (Bundle bundle) -> {
             if (bundle == null) {
-                logger.error("bundle not loaded. Not building vehicle ...");
+                logger.error("bundle not loaded. Not building vehicle " + config.getName());
             } else {
                 SGPropertyNode destinationProp = new SGPropertyNode(config.getName() + "-root");/*FGGlobals.getInstance().get_props()*/
                 //arp.setAircraftDir(aircraft.aircraftdir);

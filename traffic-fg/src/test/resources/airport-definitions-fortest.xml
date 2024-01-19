@@ -1,0 +1,21 @@
+<!--
+20.11.23: Extracted from TrafficWorld.xml. For testing only.
+Dateinamen fuer Groundnet und Runway muessen nicht angegeben werden, die ergeben sich aus
+    Konventionen. Und es sollte alles im selben Bundle sein
+-->
+
+<c:config xmlns:c="http://www.example.org/tcp-22" name="a">
+    <airportdefinition icao="EDDK">
+        <home>A20</home>
+        <parking>C_4</parking>
+        <vehicle name="747 KLM">
+            <location>parkpos:B_2</location>
+        </vehicle>
+        <vehicle name="737-800 AB">
+            <location>parkpos:B_8</location>
+        </vehicle>
+        <vehicle name="738">
+            <location>parkpos:C_4</location>
+        </vehicle>
+    </airportdefinition>
+</c:config>

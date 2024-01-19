@@ -8,7 +8,7 @@ import de.yard.threed.core.platform.PlatformInternals;
 import de.yard.threed.engine.Scene;
 import de.yard.threed.flightgear.TerraSyncBundleResolver;
 import de.yard.threed.platform.webgl.PlatformWebGl;
-import de.yard.threed.platform.webgl.WebGlBundleResolver;
+import de.yard.threed.trafficadvanced.apps.FlatAirportScene;
 import de.yard.threed.trafficfg.apps.RailingScene;
 import de.yard.threed.trafficfg.apps.SceneryScene;
 
@@ -22,6 +22,8 @@ public class WebglExtMain extends de.yard.threed.platform.webgl.Main {
             return new SceneryScene();
         if (name.equals("RailingScene"))
             return new RailingScene();
+        if (name.equals("FlatAirportScene"))
+            return new FlatAirportScene();
 
         logger.error("Scene " + name + " not found");
         return null;

@@ -12,8 +12,8 @@ import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.traffic.VehicleLoaderResult;
-import de.yard.threed.traffic.config.VehicleConfig;
-import de.yard.threed.traffic.config.XmlVehicleConfig;
+import de.yard.threed.traffic.config.VehicleDefinition;
+import de.yard.threed.traffic.config.XmlVehicleDefinition;
 import de.yard.threed.trafficcore.model.Vehicle;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
@@ -39,7 +39,7 @@ public class FgVehicleLoaderTest {
                 "            <modelfile>Models/bluebird.xml</modelfile>\n" +
                 "            <aircraftdir>bluebird</aircraftdir>\n" +
                 "        </vehicle>";
-        VehicleConfig config = new XmlVehicleConfig(getNodeFromXML(configXML));
+        VehicleDefinition config = new XmlVehicleDefinition(getNodeFromXML(configXML));
         //"fgdatabasic" and "fgrootcore"(but not sgmaterial, dafuer gibts keinen Provider,oder?).
         assertEquals(2, FgBundleHelper.getProvider().size(), "provider.size");
 
@@ -53,8 +53,8 @@ public class FgVehicleLoaderTest {
         }
 
         assertEquals(0, SGReaderWriterXML.errorCnt, "errorCnt ");
-        // should load bluebird, yoke, ,display-screens, 6 spheres
-        assertEquals(9, SGReaderWriterXML.loadedList.size(), "loadedList ");
+        // should load bluebird, yoke, pedals,display-screens, 6 spheres
+        assertEquals(1 + 1 + 1 + 1 + 6, SGReaderWriterXML.loadedList.size(), "loadedList ");
         // original ac-file referenced 'yoke.rgb', but was mapped to 'png' in ACLoader.
         assertTrue(Texture.hasTexture("yoke.png"), "yoke.texture");
         List<NativeSceneNode> yokes = SceneNode.findByName("Yoke");
@@ -64,13 +64,13 @@ public class FgVehicleLoaderTest {
         // TODO pedals
 
         //AircraftProvider must have been removed. Only "fgdatabasic" and "fgrootcore" stay.
-        assertEquals( 2, FgBundleHelper.getProvider().size(),"provider.size");
-        assertFalse(  FgBundleHelper.getProvider().get(0).isAircraftSpecific(),"provider.isAircraftSpecific");
-        assertTrue( FgBundleHelper.getProvider().get(0) instanceof SimpleBundleResourceProvider);
-        assertEquals( "fgdatabasic",((SimpleBundleResourceProvider)FgBundleHelper.getProvider().get(0)).bundlename);
-        assertFalse(  FgBundleHelper.getProvider().get(1).isAircraftSpecific(),"provider.isAircraftSpecific");
-        assertTrue( FgBundleHelper.getProvider().get(1) instanceof SimpleBundleResourceProvider);
-        assertEquals( "fgrootcore",((SimpleBundleResourceProvider)FgBundleHelper.getProvider().get(1)).bundlename);
+        assertEquals(2, FgBundleHelper.getProvider().size(), "provider.size");
+        assertFalse(FgBundleHelper.getProvider().get(0).isAircraftSpecific(), "provider.isAircraftSpecific");
+        assertTrue(FgBundleHelper.getProvider().get(0) instanceof SimpleBundleResourceProvider);
+        assertEquals("fgdatabasic", ((SimpleBundleResourceProvider) FgBundleHelper.getProvider().get(0)).bundlename);
+        assertFalse(FgBundleHelper.getProvider().get(1).isAircraftSpecific(), "provider.isAircraftSpecific");
+        assertTrue(FgBundleHelper.getProvider().get(1) instanceof SimpleBundleResourceProvider);
+        assertEquals("fgrootcore", ((SimpleBundleResourceProvider) FgBundleHelper.getProvider().get(1)).bundlename);
 
     }
 
@@ -85,7 +85,7 @@ public class FgVehicleLoaderTest {
                 "            <modelfile>Models/bluebird.xml</modelfile>\n" +
                 "            <aircraftdir>corruptedVehicleModel</aircraftdir>\n" +
                 "        </vehicle>";
-        VehicleConfig config = new XmlVehicleConfig(getNodeFromXML(configXML));
+        VehicleDefinition config = new XmlVehicleDefinition(getNodeFromXML(configXML));
         new FgVehicleLoader()/*FgVehicleLauncher*/.loadVehicle(new Vehicle(config.getName()), config, (SceneNode container, VehicleLoaderResult loaderResult/*List<SGAnimation> animationList, SGPropertyNode propertyNode,*/, SceneNode lowresNode) -> {
 
 
@@ -106,7 +106,7 @@ public class FgVehicleLoaderTest {
                 "            <aircraftdir>bluebird</aircraftdir>\n" +
                 "        </vehicle>";
 
-        VehicleConfig config = new XmlVehicleConfig(getNodeFromXML(configXML));
+        VehicleDefinition config = new XmlVehicleDefinition(getNodeFromXML(configXML));
         config.getBundlename();
         new FgVehicleLoader()/*FgVehicleLauncher*/.loadVehicle(new Vehicle(config.getName()), config, (SceneNode container, VehicleLoaderResult loaderResult/*List<SGAnimation> animationList, SGPropertyNode propertyNode,*/, SceneNode lowresNode) -> {
         });

@@ -14,14 +14,13 @@
         <!-- 42 kmh -->
         <maximumspeed>11.7</maximumspeed>
         <acceleration>0.9</acceleration>
-        <viewpoints>
-            <viewpoint name="Driver">
-                <transform>
-                    <position>1, 1, 0</position>
-                    <angle>0,90,0</angle>
-                </transform>
-            </viewpoint>
-        </viewpoints>
+        <viewpoint name="Driver">
+            <transform>
+                <position>1, 1, 0</position>
+                <angle>0,90,0</angle>
+            </transform>
+        </viewpoint>
+        <!-- has no 'Backside' like loc in 'tcp-22'-->
         <initialcount>1</initialcount>
     </vehicledefinition>
 

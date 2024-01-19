@@ -7,3 +7,8 @@ railing/loc-lowres.pcm
 railing/loc-lowres.xml
 railing/Railing.xml
 railing/locomotive.xml
+flight/EDDK.groundnet.xml
+flight/EDDF.groundnet.xml
+flight/EHAM.groundnet.xml
+flight/vehicle-definitions.xml
+flight/Demo.xml

@@ -45,6 +45,7 @@
     <!-- from tcp-flightgear: -->
     <source path='flightgear'/>
     <source path='trafficfg'/>
+    <source path='trafficadvanced'/>
 
     <!-- no need to add source path "platform/webglext", maybe causing nasty errors actually -->
 </module>

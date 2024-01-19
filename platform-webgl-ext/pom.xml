@@ -80,6 +80,11 @@
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
+            <groupId>de.yard.tcp-flightgear</groupId>
+            <artifactId>module-traffic-advanced</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>de.yard.tcp-22</groupId>
             <artifactId>module-platform-webgl</artifactId>
             <version>1.0.0-SNAPSHOT</version>
@@ -139,6 +144,13 @@
         <dependency>
             <groupId>de.yard.tcp-flightgear</groupId>
             <artifactId>module-traffic-fg</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <classifier>sources</classifier>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.yard.tcp-flightgear</groupId>
+            <artifactId>module-traffic-advanced</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <classifier>sources</classifier>
             <scope>compile</scope>

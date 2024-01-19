@@ -50,11 +50,11 @@
                             <p></p>
 
                             <button class=" w3-button  w3-round w3-khaki "
-                                    onclick="launchSceneryScene(false,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
+                                    onclick="launchSingleScene('SceneryScene',false,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
                                 Launch
                             </button>
                             <button class=" w3-button  w3-round w3-khaki "
-                                    onclick="launchSceneryScene(true,false,false)">
+                                    onclick="launchSingleScene('SceneryScene',true,false,false)">
                                 Launch VR
                             </button>
 
@@ -70,15 +70,15 @@
                             <div class="w3-container w3-center">
                                 <img src="Railing-Preview.png" style="width:100%">
                             </div>
-                            <p></p>
+                            <p>Like the railing demo scene in tcp-22, but with a speed indicator from FG. Key 't' teleports, 'a' starts move, '+/-' adjust speed.</p>
 
                             <p></p>
                             <button class=" w3-button  w3-round w3-khaki "
-                                    onclick="launchRailingScene(false,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
+                                    onclick="launchSingleScene('RailingScene',false,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
                                 Launch
                             </button>
                             <button class=" w3-button  w3-round w3-khaki "
-                                    onclick="launchRailingScene(true,false,false)">
+                                    onclick="launchSingleScene('RailingScene',true,false,false)">
                                 Launch VR
                             </button>
                             <p></p>
@@ -89,11 +89,46 @@
             </div>
         </div>
 
+        <div class=" w3-padding-large w3-section w3-white">
+            <h1 class="">Use Case Traffic (advanced)</h1>
+
+            <p>Also uses models from external host.</p>
+            <br>
+
+            <div class="w3-row-padding w3-padding-16">
+                <!--Groundservice-->
+                <div class="w3-third">
+                    <div class="w3-card-2">
+                        <div class="w3-container">
+                            <h3>Scenery</h3>
+                            <div class="w3-container w3-center">
+                                <img src="FlatAirport-Preview.png" style="width:100%">
+                            </div>
+                            <p>A flat EDDK scenery showing ground services. Key 't' teleports, '5' starts service for selected aircraft (enable HUD for selecting), '9' starts automove.</p>
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchSingleScene('FlatAirportScene',false,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
+                                Launch
+                            </button>
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchSingleScene('FlatAirportScene',true,false,false)">
+                                Launch VR
+                            </button>
+
+                            <p></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="w3-panel w3-padding-large w3-section  w3-white">
             <h1 class="">User Controls</h1>
             <p class="">Controlling depends on the platform and the scene. In general, keys x/y/z can be used to fine tune the cameras
                 position. In VR there is a control panel at the left wrist. The thumstick of a VR controller triggers key codes
-                (left trigger 'wasd', right trigger cursor keys). </p>
+                (left trigger 'wasd', right trigger cursor keys).
+                <br>
+            Key 't' teleports.
+            </br>
 
         </div>
 

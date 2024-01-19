@@ -18,7 +18,7 @@ import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.javacommon.ConfigurationByEnv;
 import de.yard.threed.javacommon.DefaultResourceReader;
 import de.yard.threed.javacommon.SimpleHeadlessPlatformFactory;
-import de.yard.threed.outofbrowser.SyncBundleLoader;
+
 
 import java.util.ArrayList;
 import java.util.Arrays;

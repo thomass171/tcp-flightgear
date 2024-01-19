@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Tile Definition for former 'TrafficScene' 3D EDDK
+
+  main scene setup
+-->
+
+<c:config xmlns:c="http://www.example.org/tcp-22" name="a">
+
+    <trafficgraph graphfile="traffic:  groundnet    tiles/RailingSimple.xml"></trafficgraph>
+
+    <airportdefinition icao="EDDK">
+        <home>A20</home>
+        <parking>C_4</parking>
+        <vehicle name="747 KLM">
+            <location>parkpos:B_2</location>
+        </vehicle>
+        <vehicle name="737-800 AB">
+            <location>parkpos:B_8</location>
+        </vehicle>
+        <vehicle name="738">
+            <location>parkpos:C_4</location>
+        </vehicle>
+        <!-- 4.10.18: Shuttle ist zu gross. Braucht XML Wrapper und GLTF. Darum vorerst unbrauchbar-->
+        <!--<vehicle name="simpleShuttle">
+            <location>parkpos:B_2</location>
+        </vehicle>-->
+
+        <!-- die fuer c172p? -->
+        <location>groundnet:184-183</location>
+        <!-- die fuer 777? -->
+        <location>groundnet:128-129</location>
+    </airportdefinition>
+
+    <!-- From  <scene name="Flight"> -->
+    <!--6.10.18: Warum er hier keine Roation braucht ist irgendwie unklar.-->
+    <!--18.10.19: Wahrscheinlich weil die ja nicht fix ist, sondern Geod abhängig immer neu berechnet wird-->
+    <!-- avoid mix with including configs, so comment uneeded tags <BaseTransformForVehicleOnGraph>
+        </BaseTransformForVehicleOnGraph>-->
+
+</c:config>
+
+
+

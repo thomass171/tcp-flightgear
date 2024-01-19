@@ -1,6 +1,7 @@
 package de.yard.threed.flightgear;
 
 
+import de.yard.threed.core.CharsetException;
 import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
@@ -596,7 +597,7 @@ public class LoaderBTG extends BinaryLoader {
                 //5.10.23: Is there a solution if mat is null? Maybe just don't add it. 'gm.landclass' is not set properly.
                 if (gm.mat == null) {
                     logger.error("No material for land class '?'. Will lead to hole in tile!");
-                }else {
+                } else {
                     ppfile.materials.add(gm.mat.duplicate("" + index));
                 }
             }
@@ -695,7 +696,12 @@ public class LoaderBTG extends BinaryLoader {
                     }
                     //strncpy(material, ptr, nbytes);
                     //material[nbytes] = '\0';
-                    material = StringUtils.buildString(buf1.getBuffer());
+                    try {
+                        material = StringUtils.buildString(buf1.getBuffer());
+                    } catch (CharsetException e) {
+                        // TODO improved eror handling
+                        throw new RuntimeException(e);
+                    }
                     if (Config.loaderdebuglog) {
                         logger.debug("material=" + material);
                     }

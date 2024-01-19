@@ -1,0 +1,304 @@
+<!--
+20.11.23: External hosted model. Extracted from TrafficWorld.xml.
+Does not contain project model like 'bluebird'.
+
+Hat Analogien zur groundservices.xml, aber trotzdem ist sie eigenstaendig. Im Zweifel werden Daten hierhin dupliziert,
+einfach um die Uabhängigkeit zu wahren.
+12.7.17: Die gab737 nicht mehr weil deplaziert und zu speziell für 737.
+1.3.18: Die Abgrenzung Vehicle/Aircraft wirkt passend, führt im Code aber zu unschönen Dopplungen.
+Auch gibt es keinen passenden Oberbegriff. Lauf leo heisst vehicle aber nicht Flugzeug, wohl aber Gefährt.
+Das passt wieder. Also doch vehicle als Oberbegriff. Und aircraft kommt wieder weg. Stattdessen ein Attribut isarircraft?
+Ist ein Shuttle ein aircraft?
+27.12.18: Nur vehicle scheint mit Bezug auf Verallgemeinerung (z.B railing) wirklich sinnvoll. Wichtig ist eher die Frage, ob
+es ein Cockpit gibt. Dass ein AI Vehicle sehr schlank im Vergleich zu einem FullFeatures Aircraft mir Cockpit ist, ist zwar
+für die Resourcen bedeutend, aber nicht unbedingt für die Konfiguration. In der Tat sollte es aber nur ein FF vehicle in einer Scene
+geben. "aircrafts" entählt keine Vehiclee, sondern Aicraft Properties!
+24.1.19: Die Vehicle Model sollen/muessen alle dieselbe Orientierung haben.
+
+simple bezeichnet alle FG AI aircraft, 777 und c172p sind FlightgearAircraft".
+    ich lass das mit simple. Stattdessen attribute "ai".
+
+"B_2:::747-400:747 KLM:0",
+        "B_8:fgdatabasicmodel:AI/Aircraft/737/737-AirBerlin.xml:738: AB:3",
+        "C_4:fgdatabasicmodel::738:738:0"};
+        Die Viewpoints sind immer Model bezogen ohne zoffset.
+
+    Die "90,0,90" Rotationen für die Cockpitposition sind eigentlich immer gleich und auch plausibel, weil die Vehicle ja
+    dieselbe Orientierung haben.
+
+      Doorpositinen sind offembar schwer zu bekommen. Ich definiere den z-Wert mal als die Unterkante der door,
+      wobei z=0 der Ground ist. Das mit z muss sich aber noch bewähren.
+      door positions aus tag "<door>"
+
+-->
+
+
+<c:config xmlns:c="http://www.example.org/tcp-22" name="a">
+
+
+    <vehicledefinition name="747 KLM" modeltype="747-400" ai="true" type="aircraft">
+        <bundlename>https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool/fgdatabasicmodel</bundlename>
+        <modelfile>AI/Aircraft/747/744-KLM.xml</modelfile>
+        <zoffset>0</zoffset>
+        <unscheduledmoving>0</unscheduledmoving>
+        <wingspread>64.4</wingspread>
+        <wingpassingpoint>-3,40</wingpassingpoint>
+        <leftwingapproachpoint>13,-16</leftwingapproachpoint>
+        <!--first door is expected to be front left-->
+        <door>-20.38,-2.89,-0.24</door>
+        <!--  a.addDoor(new Vector3(-11.32f, -3.21f, -0.24f), "ml");
+        a.addDoor(new Vector3(0.55f, -3.21f, -0.24f), "rl");
+     -->
+    </vehicledefinition>
+    <!-- 30.10.17: Die 3m Z Offset fuer die 737 sind nur mal so geschaetzt. Die 738 braucht keinen Offset-->
+    <!--// das genaue - vor allem Doorangaben - schwer zu bekommen sind, nehm ich die 738 als Default. Das passt werstmal fuer alle kleineren, solange kein Vehicle exakt anfährt.-->
+    <!--
+     // from 737-300 (https://sourceforge.net/p/flightgear/fgaddon/HEAD/tree/trunk/Aircraft/737-300/737-300-set.xml)
+        /* welche door soll das denn sein. Eine hintere? Ich nehm erstmal Scätzwerte <door>
+           <position-x-m type="float">5.08373</position-x-m>
+           <position-y-m type="float">-1.6024</position-y-m>
+           <position-z-m type="float">0.11167</position-z-m>
+           <jetway-hood-deg type="float">5</jetway-hood-deg>
+          </door>             */
+        // wingpassingpoint must be far enough outside for avoiding door approach turn artefacts. No longer: dooredge is shorter now
+        //Vorsicht bei Wertaenderungen. Da haengen Tests dran.
+        //16.11. Die Werte (-9.49, -1.6024, 3) sind für die AI AirBerlin 738 einigermassen bestätigt (plus/minus ein paar Zentimeter)
+
+    -->
+    <vehicledefinition name="737-800 AB" modeltype="738" ai="true" type="aircraft">
+        <bundlename>https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool/fgdatabasicmodel</bundlename>
+        <modelfile>AI/Aircraft/737/737-AirBerlin.xml</modelfile>
+        <zoffset>3</zoffset>
+        <unscheduledmoving>0</unscheduledmoving>
+        <wingspread>35.79</wingspread>
+        <wingpassingpoint>4,19</wingpassingpoint>
+        <leftwingapproachpoint>8,-8.9475</leftwingapproachpoint>
+        <!--first door is expected to be front left-->
+        <door>-9.49,-1.6024,3</door>
+    </vehicledefinition>
+    <vehicledefinition name="738" modeltype="738" ai="true" type="aircraft">
+        <bundlename>https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool/fgdatabasicmodel</bundlename>
+        <modelfile>AI/Aircraft/738/738-AirBerlin.xml</modelfile>
+        <zoffset>0</zoffset>
+        <unscheduledmoving>0</unscheduledmoving>
+        <!-- 42 kmh erstmal nur fuer Taxiing-->
+        <maximumspeed>11.7</maximumspeed>
+        <acceleration>0.9</acceleration>
+
+        <viewpoint name="BackSide">
+            <transform>
+                <position>90,20,15</position>
+                <angle>0, 90, 90</angle>
+            </transform>
+        </viewpoint>
+    </vehicledefinition>
+
+    <!-- Jetzt die mit Interior. Wobei das keine klare Abgrenzung ist. Followme hat auch Interior.-->
+    <vehicledefinition name="c172p" type="aircraft">
+        <bundlename>https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool/c172p</bundlename>
+        <modelfile>Models/c172p.xml</modelfile>
+        <zoffset>1.2</zoffset>
+        <unscheduledmoving>0</unscheduledmoving>
+        <!-- 233 km/h, 125 kn -->
+        <maximumspeed>64.7</maximumspeed>
+        <acceleration>14.5</acceleration>
+        <!-- 55 kn, vr brauch ich eigentlich nicht
+        <vr>28.3</vr> 20.11.23 dann lass ich es mal weg -->
+
+
+        <!--26.10.18 "Captain" is not just a label but used in code. -->
+        <viewpoint name="Captain">
+            <!-- 6.3.18: Jetzt nach der Konsolidierung scheint die Position wieder etwas zu hoch. 5.4.18 eigentlich nicht unbedingt
+            man sieht aber die oebere Reihe Instrumente nicht. Mal 20cm zurueck. Das scheint jetzt eine gute Kopfposition zu sein-->
+            <!--<location>0.16, -0.14, 0.236</location>-->
+            <transform>
+                <position>0.36, -0.14, 0.236</position>
+                <angle>90, 0, 90</angle>
+            </transform>
+        </viewpoint>
+        <!--24.10.19 Backside jetzt hier statt im Code -->
+        <!--"BackSide", modelNode, new LocalTransform(new Vector3(90, 20, 15), Quaternion.buildFromAngles(new Degree(0), new Degree(90), new Degree(90))));-->
+        <viewpoint name="BackSide">
+            <transform>
+                <position>90,20,15</position>
+                <angle>0, 90, 90</angle>
+            </transform>
+        </viewpoint>
+
+        <aircraftdir>c172p</aircraftdir>
+        <optional>TaxiLightCone</optional>
+        <optional>LandingLightCone</optional>
+        <optional>nav-light-right</optional>
+        <optional>nav-light-left</optional>
+        <optional>nav-light-tail</optional>
+        <optional>BeaconOff</optional>
+        <optional>BeaconOffX</optional>
+        <optional>strobe1</optional>
+        <optional>strobe2</optional>
+        <optional>glas</optional>
+        <optional>glas_interior</optional>
+        <optional>glas_interior_sides</optional>
+        <optional>leftwindow</optional>
+        <optional>leftwindow_interior</optional>
+        <optional>rightwindow</optional>
+        <optional>rightwindow_interior</optional>
+    </vehicledefinition>
+    <vehicledefinition name="777" type="aircraft">
+        <bundlename>https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool/777</bundlename>
+        <!--7.6.18: Ueber set file laden weil da die Views drin sind und da gibt es tests fuer. Bruahcs nicht, weil es in loadVehicle ne Kruecke dafuer gibt-->
+        <modelfile>Models/777-200.xml</modelfile>
+        <!--<modelfile>777-200-set.xml</modelfile>-->
+        <zoffset>6</zoffset>
+        <unscheduledmoving>0</unscheduledmoving>
+
+
+        <viewpoint name="Captain">
+            <transform>
+                <position>-22.60, -0.5, 0.8</position>
+                <angle>90, 0, 90</angle>
+            </transform>
+        </viewpoint>
+
+        <aircraftdir>777</aircraftdir>
+
+        <optional>TaxiLightCone</optional>
+        <optional>LandingLightCone</optional>
+        <optional>Dome light</optional>
+        <optional>LandingLightCone_R</optional>
+        <optional>LandingLightCone_L</optional>
+        <optional>LandingLightCone_C</optional>
+        <optional>LandingLights</optional>
+        <optional>LHLND.spot</optional>
+        <optional>RHLND.spot</optional>
+    </vehicledefinition>
+    <!-- A320 only rudimentary for holding some old values -->
+    <vehicledefinition name="A320" modeltype="A320" ai="true" type="aircraft">
+        <!-- // from A320 (https://sourceforge.net/p/flightgear/fgaddon/HEAD/tree/trunk/Aircraft/A320-family/A320-main.xml#l43):-->
+
+        <!-- a = new GroundServiceAircraftConfig(34.10f,new Vector2(-3,34.10f / 2 + 8),new Vector2(13,-34.10f / 4));
+            a.addDoor(new Vector3(-5.08373f, -1.6024f, 0.11167f), "fl");
+            instance.aircrafts.put("A320", a);-->
+        <wingspread>34.10</wingspread>
+        <wingpassingpoint>-3,25</wingpassingpoint>
+        <leftwingapproachpoint>13,-8.5</leftwingapproachpoint>
+        <!--first door is expected to be front left-->
+        <door>-5,-1.6,0.11</door>
+    </vehicledefinition>
+
+    <!--Service Vehicles. -->
+    <!--  // speed ist zu hoch, einfach damit es schneller geht. Jetzt mit Beschleunigung doch reale Werte.
+        // kann dann in der Scene ganz allgemein beschleunigt werden.
+        // 17.8.17: Tempo 25 ist egentlich schon zu schnell. Typische Beschleunigung eines PKW ist 3-7. https://de.wikipedia.org/wiki/Größenordnung_(Beschleunigung)
+        // 14.11.17: Catering und fuel zwei statt eins, damit schedules parallel laufen.
+     13.3.19: type jetzt immer car. Der service Type steht in modeltype.
+        -->
+    <vehicledefinition name="Goldhofert" type="car" modeltype="pushback">
+        <bundlename>https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool/fgdatabasicmodel</bundlename>
+        <modelfile>Models/Airport/Pushback/Goldhofert.xml</modelfile>
+        <!-- 42 kmh-->
+        <maximumspeed>11.7</maximumspeed>
+        <acceleration>0.9</acceleration>
+        <approachoffset>0</approachoffset>
+        <initialcount>1</initialcount>
+    </vehicledefinition>
+
+    <!--// Das aircraftdire fuer followme duerfte nicht stimmen, oder.-->
+    <vehicledefinition name="FollowMe" type="car" modeltype="followme">
+        <bundlename>https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool/fgdatabasicmodel</bundlename>
+        <!--29.12.21: Hier stand 'ewig' ein 'w', aber wohl nie ein initialcount-->
+        <modelfile>Followmeausfgaddonkopiert/followme.xml</modelfile>
+        <maximumspeed>21.3</maximumspeed>
+        <acceleration>4.5</acceleration>
+
+        <viewpoint name="Captain">
+            <transform>
+                <position>1.91, -0.33, 1.3</position>
+                <angle>90, 0, 90</angle>
+            </transform>
+        </viewpoint>
+
+        <aircraftdir>followme</aircraftdir>
+    </vehicledefinition>
+
+    <vehicledefinition name="VolvoFuel" type="car" modeltype="fueltruck">
+        <bundlename>https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool/fgdatabasicmodel</bundlename>
+        <modelfile>FuelTruck/Fuel_Truck_Short_VolvoFM.xml</modelfile>
+        <!-- 56 kmh-->
+        <maximumspeed>15.5</maximumspeed>
+        <acceleration>1.3</acceleration>
+        <approachoffset>0</approachoffset>
+        <initialcount>2</initialcount>
+    </vehicledefinition>
+
+    <vehicledefinition name="LSG" type="car" modeltype="catering">
+        <bundlename>https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool/fgdatabasicmodel</bundlename>
+        <modelfile>Catering6620KopiertAusTerrasync/catruckmed-lsg1.xml</modelfile>
+        <!-- 63 kmh-->
+        <maximumspeed>17.5</maximumspeed>
+        <acceleration>1.5</acceleration>
+        <approachoffset>2.9</approachoffset>
+
+        <!--24.10.19 Backside jetzt hier statt im Code -->
+        <!--"BackSide", modelNode, new LocalTransform(new Vector3(90, 20, 15), Quaternion.buildFromAngles(new Degree(0), new Degree(90), new Degree(90))));-->
+        <viewpoint name="BackSide">
+            <transform>
+                <position>90,20,15</position>
+                <angle>0, 90, 90</angle>
+            </transform>
+        </viewpoint>
+
+        <initialcount>2</initialcount>
+    </vehicledefinition>
+
+    <vehicledefinition name="Douglas" type="car" modeltype="pushback">
+        <bundlename>https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool/fgdatabasicmodel</bundlename>
+        <modelfile>Models/Airport/Pushback/Douglas.xml</modelfile>
+        <maximumspeed>13</maximumspeed>
+        <acceleration>1.1</acceleration>
+        <approachoffset>0</approachoffset>
+        <initialcount>1</initialcount>
+    </vehicledefinition>
+
+    <vehicledefinition name="Bravo" type="aircraft">
+        <bundlename>https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool/fgdatabasicmodel</bundlename>
+        <modelfile>AI/Aircraft/Citation-Bravo/Models/Bravo-ai.xml</modelfile>
+        <zoffset>0</zoffset>
+        <!-- 42 kmh-->
+        <maximumspeed>11.7</maximumspeed>
+        <acceleration>0.9</acceleration>
+        <initialcount>1</initialcount>
+    </vehicledefinition>
+
+
+
+    <vehicles name="GenericRoad">
+        <vehicle name="FollowMe" initialcount="2"/>
+        <vehicle name="LSG" initialcount="2"/>
+    </vehicles>
+    <vehicles name="VehiclesWithCockpit">
+        <vehicle name="c172p"></vehicle>
+        <!-- definition of bluebird is in other modules XML file. So better don't mention it here but there
+        <vehicle name="bluebird"></vehicle>-->
+        <vehicle name="777"></vehicle>
+        <vehicle name="FollowMe"></vehicle>
+        <!-- referenceing other configs here might be q&d-->
+        <vehicle name="Locomotive"></vehicle>
+    </vehicles>
+    <vehicles name="GroundServices">
+        <!--Die c172P weiter vorne an die Runway um damit einen Rundflug zu machen.
+        Der macht z.Z. immer auch einen Turnloop.doof. Darum rückwärts starten. Das ist weniger doof.-->
+        <vehicle name="c172p" delayedload="true"/>
+        <!--14.5.19    <location>groundnet:184-183</location>-->
+
+        <vehicle name="777" delayedload="true"/>
+        <!--14.5.19      <location>groundnet:128-129</location>-->
+
+        <vehicle name="FollowMe"/>
+        <vehicle name="VolvoFuel"/>
+        <vehicle name="LSG"/>
+        <vehicle name="Goldhofert"/>
+        <vehicle name="Douglas"/>
+        <vehicle name="Bravo"/>
+    </vehicles>
+
+</c:config>

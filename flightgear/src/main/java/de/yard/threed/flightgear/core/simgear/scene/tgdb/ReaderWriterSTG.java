@@ -1,5 +1,6 @@
 package de.yard.threed.flightgear.core.simgear.scene.tgdb;
 
+import de.yard.threed.core.CharsetException;
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.loader.StringReader;
 import de.yard.threed.core.platform.Platform;
@@ -50,7 +51,7 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
     String basePath;
     //26.10.18: die shared mal ignorieren, weil das viele sind und das noch nicht wirklich geshared wird
     //String[] blacklist = new String[]{"Models/Power/generic_pylon_50m.ac"};
-static    boolean ignoreshared = true;
+    static boolean ignoreshared = true;
     //boolean _foundBase;
     //List<_Object> _objectList = new ArrayList<_Object>();
     //List<_ObjectStatic> _objectStaticList = new ArrayList<_ObjectStatic>();
@@ -318,7 +319,12 @@ static    boolean ignoreshared = true;
                     return false;
                 }
                 BundleData bd = bpath.bundle.getResource(bpath);
-                stream = new StringReader(bd.getContentAsString());
+                try {
+                    stream = new StringReader(bd.getContentAsString());
+                } catch (CharsetException e) {
+                    // TODO improved eror handling
+                    throw new RuntimeException(e);
+                }
                 bfilePath = bpath.getPath();
             }
 
@@ -536,9 +542,9 @@ static    boolean ignoreshared = true;
         }
 
         double elevation(Group group, SGGeod geod) {
-        /*SGVec3d*/
+            /*SGVec3d*/
             Vector3 start = /*SGVec3d::fromGeod(*/SGGeod.fromGeodM(geod, 10000).toCart();
-        /*SGVec3d*/
+            /*SGVec3d*/
             Vector3 end = /*SGVec3d::fromGeod(*/SGGeod.fromGeodM(geod, -1000).toCart();
 
             /*TODO osg::ref_ptr < osgUtil::LineSegmentIntersector > intersector;
@@ -549,7 +555,7 @@ static    boolean ignoreshared = true;
             if (!intersector.containsIntersections())
                 return 0;*/
 
-        /*SGVec3d*/
+            /*SGVec3d*/
             Vector3 cart = start;//TODO toSG(intersector.getFirstIntersection().getWorldIntersectPoint());
             return SGGeod.fromCart(cart).getElevationM();
         }
@@ -560,7 +566,7 @@ static    boolean ignoreshared = true;
                 logger.debug("ReaderWriterSTG.load:  " + bucket);
             }
 
-        /*osg::ref_ptr <*/
+            /*osg::ref_ptr <*/
             SGReaderWriterOptions options;
             options = SGReaderWriterOptions.copyOrCreate(opt);
 
@@ -678,7 +684,7 @@ static    boolean ignoreshared = true;
         }
 
         private SGReaderWriterOptions staticOptions(String filePath, BundleResource objectresource, Options options) {
-       /* osg::ref_ptr < */
+            /* osg::ref_ptr < */
             SGReaderWriterOptions staticOptions;
             staticOptions = SGReaderWriterOptions.copyOrCreate(options);
             staticOptions.getDatabasePathList().clear();

@@ -10,6 +10,8 @@ import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.NativeSceneNode;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.platform.PlatformHelper;
+import de.yard.threed.core.resource.BundleRegistry;
+import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.testutil.RuntimeTestUtil;
 import de.yard.threed.engine.Camera;
 import de.yard.threed.engine.DirectionalLight;
@@ -60,11 +62,13 @@ import de.yard.threed.traffic.FlatTerrainSystem;
 import de.yard.threed.traffic.GraphTerrainSystem;
 import de.yard.threed.traffic.RailingVisualizer;
 import de.yard.threed.traffic.SphereSystem;
+import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficSystem;
 import de.yard.threed.traffic.config.ConfigHelper;
 import de.yard.threed.traffic.config.SceneConfig;
 import de.yard.threed.traffic.config.VehicleConfigDataProvider;
+import de.yard.threed.traffic.config.XmlVehicleDefinition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -240,10 +244,18 @@ public class RailingScene extends /*Graph*/Scene /*29.10.17, EventNotify*/ {
         });
         SystemManager.addSystem(trafficSystem);
 
-        XmlDocument xmlRailingConfig = XmlDocument.buildFromBundle("traffic-fg", "railing/Railing.xml");
-        TrafficSystem.baseTransformForVehicleOnGraph = ConfigHelper.getBaseTransformForVehicleOnGraph(xmlRailingConfig.nativedocument);
-        XmlDocument xmlVehicleConfig = XmlDocument.buildFromBundle("traffic-fg", "railing/locomotive.xml");
-        SystemManager.putDataProvider("vehicleconfig", new VehicleConfigDataProvider(xmlVehicleConfig.nativedocument));
+        //XmlDocument xmlRailingConfig = XmlDocument.buildFromBundle("traffic-fg", "railing/Railing.xml");
+        TrafficConfig xmlRailingConfig = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"),
+                new BundleResource("railing/Railing.xml"));
+        TrafficSystem.baseTransformForVehicleOnGraph = xmlRailingConfig.getBaseTransformForVehicleOnGraph();
+        //XmlDocument xmlVehicleConfig = XmlDocument.buildFromBundle("traffic-fg", "railing/locomotive.xml");
+        TrafficConfig xmlVehicleConfig = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"),
+                new BundleResource("railing/locomotive.xml"));
+        //Provided by TrafficSystem now
+        /*SystemManager.putDataProvider("vehicleconfig", new VehicleConfigDataProvider(
+                XmlVehicleDefinition.convertVehicleDefinitions(xmlVehicleConfig.getVehicleDefinitions())));*/
+        // TODO add vehicle via event.
+        TrafficSystem.knownVehicles.add(XmlVehicleDefinition.convertVehicleDefinitions(xmlVehicleConfig.getVehicleDefinitions()).get(0));
 
         SystemManager.addSystem(new AvatarSystem(false));
 

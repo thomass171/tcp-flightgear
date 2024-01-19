@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Tile Definition for former 'TrafficScene' projected EDDF
+
+  main scene setup
+-->
+
+<c:config xmlns:c="http://www.example.org/tcp-22" name="a">
+
+
+    <!-- 19.10.19 erstmal nur so. Not yet in XSD -->
+    <!--<sphere name="Solar System"></sphere>
+    <spheres>
+
+        <sphere name="Sun" type="sun"></sphere>
+        <sphere name="Earth" type="terrestrial">
+            <orbit parent="sun" distance="149600000"/>
+        </sphere>
+        <sphere name="Moon" type="terrestrial">
+            <orbit parent="earth" distance="384400"/>
+        </sphere>
+    </spheres>-->
+</c:config>
+
+
+

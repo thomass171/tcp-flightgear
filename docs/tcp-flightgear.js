@@ -19,24 +19,14 @@ function addPanel(label, contentProvider, optionalElement) {
 
 }
 
-function launchSceneryScene(vr,nearview,hud) {
+function launchSingleScene(scene,vr,nearview,hud) {
 
     var args = new Map();
     addCommonArgs(args, "");
     args.set("enableVR",vr);
     args.set("enableHud",hud);
     args.set("enableNearView",nearview);
-    launchScene("SceneryScene",args);
-}
-
-function launchRailingScene(vr,nearview,hud) {
-
-    var args = new Map();
-    addCommonArgs(args, "");
-    args.set("enableVR",vr);
-    args.set("enableHud",hud);
-    args.set("enableNearView",nearview);
-    launchScene("RailingScene",args);
+    launchScene(scene,args);
 }
 
 /**

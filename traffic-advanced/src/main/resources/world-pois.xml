@@ -1,0 +1,33 @@
+<!--
+20.11.23: Extracted from TrafficWorld.xml
+-->
+
+
+<c:config xmlns:c="http://www.example.org/tcp-22" name="a">
+
+    <include>EDDK.xml</include>
+
+    <!-- Nach vorne kippen ist negativer Pitch-->
+    <!-- 28:11:23 removed sphere="Solar System" -->
+    <poi name="equator20000">0,0, 28000000,0,-90</poi>
+    <poi name="equator5000indiocean">90,0, 11000000,0,-90</poi>
+    <poi name="equator5000eastafrica">45,0, 11000000,0,-90</poi>
+
+    <poi name="Dahlem 1300"
+         description="etwas südlich Dahlemer Binz mit Blick auf refbtg bzw. Flugfeld Dahlemer Binz ( Norden)">6.531,
+        50.374, 1300,0,-25
+    </poi>
+    <poi name="EDDK Overview" description="mit Blick auf Vorfeld">7.128904,50.876611,150,285,0</poi>
+    <poi name="EDDK Overview Far" description="weiter weg mit Blick von Süden">7.109709,50.843675,1150,25,-15</poi>
+    <poi name="EDDK Overview Far High" description="wieter weg und von weit oben">7.109709,50.843675,11150,25,-65
+    </poi>
+    <poi name="elsdorf2000" description="2000m ueber Elsdorf, Blick Richtung Osten">6.580982,50.937770, 700,67,0
+    </poi>
+
+    <poi name="greenwich500"
+         description="500m ueber Greenwich (etwas östlich vom Observatorium), Blick nach Westen Richtung Observatorium">
+        0,51.477524, 500,270,0
+    </poi>
+    <poi name="Nordpol">0, 90, 6000100, 20, 0</poi>
+
+</c:config>

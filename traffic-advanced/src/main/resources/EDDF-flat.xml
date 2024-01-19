@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Tile Definition for former 'TrafficScene' projected EDDF
+
+  main scene setup
+-->
+
+<c:config xmlns:c="http://www.example.org/tcp-22" name="a">
+
+    <include>EDDF.xml</include>
+
+    <!-- <projection></projection>-->
+
+    <viewpoint name="TopView00">
+        <transform>
+            <position>-0,0,700</position>
+        </transform>
+    </viewpoint>
+
+    <viewpoint name="TopView">
+        <transform>
+            <position>0, 500, 900</position>
+        </transform>
+    </viewpoint>
+</c:config>
+
+
+

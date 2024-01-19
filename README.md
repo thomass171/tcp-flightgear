@@ -84,9 +84,16 @@ TODO: extract a core module without engine dependency to have tools-fg without e
 Extension of base module 'traffic' with components of flightgear. These components
 should implement generic 'traffic' interfaces with Flightgear logic.
 
+### traffic-advanced
+Use cases that use the traffic implementations of 'traffic-fg'. The setup including unit
+tests also uses externally hosted bundles.
+
 ### platform-jme-ext
 Extension of platform-jme as a helper for faster dev cycles. In principle
 everything in project "tcp-flightgear" should be usable as plugin in "tcp-22".
+
+### platform-webgl-ext
+Extension of platform-webgl.
 
 # Credits
 
@@ -102,6 +109,8 @@ Flightgear needs data for
   * aircraft commons
   * ground nets
 
+See also 'fg-raw-data/Readme.md' about data. 
+
 ## Scenery data
 Flightgear scenery data is stored by 'TerraySync' in a directory tree.
 This project contains a subset of FG tiles around EDDK for unit testing and illustrating.
@@ -116,7 +125,11 @@ suffix 'btg'.
 
 ## Aircraft Model
 This project contains the aircraft model 'bluebird' for unit testing and illustrating.
-More advanced aircraft model are available via a proxy server...
+
+The bundle fgdatabasic (build from fg-raw-data) is a subset of the $FGROOT/Aircraft directory.
+
+More advanced aircraft model are used in module traffic-advanced. These are loaded from an external server, which is a temporary solution
+until there is a full FG proxy set up.
 
 # Implementation Details
 

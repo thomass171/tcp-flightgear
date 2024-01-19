@@ -5,6 +5,7 @@ import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.engine.ObserverComponent;
 import de.yard.threed.engine.ecs.EcsEntity;
+import de.yard.threed.engine.ecs.EcsTestHelper;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.testutil.SceneRunnerForTesting;
 import org.junit.jupiter.api.Test;
@@ -44,6 +45,12 @@ public class RailingSceneTest {
 
         assertNotNull(ObserverComponent.getObserverComponent(userEntity));
         // TODO validate brachselector
+
+        sceneRunner.runLimitedFrames(50);
+        // loc should still be not moving
+        // TODO check autostart mode
+        // should start in vehicle. TODO: Check why 0,0,0 is correct position
+        EcsTestHelper.assertTeleportComponent(userEntity, 1 + 3, 3, new Vector3());
 
     }
 

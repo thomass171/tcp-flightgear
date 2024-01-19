@@ -8,7 +8,7 @@ import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialLib;
 import de.yard.threed.javacommon.DefaultResourceReader;
 import de.yard.threed.outofbrowser.NativeResourceReader;
-import de.yard.threed.outofbrowser.SyncBundleLoader;
+import de.yard.threed.tools.SyncBundleLoader;
 
 /**
  * Extracted from FlightGearModuleScenery for better dependency reduction
@@ -22,8 +22,8 @@ public class SGMaterialLibWrapper {
 
         ResourcePath bundlebasedir = BundleResolver.resolveBundle(SGMaterialLib.BUNDLENAME, Platform.getInstance().bundleResolver);
 
-        SyncBundleLoader.loadBundleSyncInternal(SGMaterialLib.BUNDLENAME, null, false,
-                new DefaultResourceReader(), bundlebasedir);
+        SyncBundleLoader.loadBundleAndWait(SGMaterialLib.BUNDLENAME/*, null, false,
+                new DefaultResourceReader(), bundlebasedir*/);
 
         matlib = new SGMaterialLib();
         String mpath;// = FGProperties.fgGetString("/sim/rendering/materials-file");

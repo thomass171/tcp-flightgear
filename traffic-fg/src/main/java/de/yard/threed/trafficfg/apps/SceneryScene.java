@@ -59,19 +59,13 @@ import static de.yard.threed.engine.ecs.TeleporterSystem.EVENT_POSITIONCHANGED;
  * Derived from TravelScene.
  * No login/avatar (so no user or AvatarSystem), just an entity with simple node that is FPS moved.
  * <p>
- * Views:
- * 1) Blick über Elsdorf auf Ufo/Pilot und Landschaft
- * 2) Blick aus Ufo (attached)
- * 3) ...
  * <p>
  * The origin of this coordinate system is the center of the earth. The X axis runs along a line from the center of the earth
  * out to the equator at the zero meridian. The Z axis runs along a line between the north and south poles with north being positive.
  * The Y axis isType parallel to a line running through the center of the earth out through the equator somewhere in the Indian Ocean.
  * <p>
  * Keys:
- * v cyclen der verschiedenen Views. Pilot bleibt nicht unbedingt an seinem Model, aber Model an seinem Platz.
- * p cyclen position des Models. Das aktuelle Model bewegt sich mitsamt Pilot an andere Position. (11.1.17: Navigator setzt ausser Start auch POI List)
- * t teleport zweistufig (mit CTRL). Nutzt auch die POI Liste.
+ * w/a/s/d, cursor
  * <p>
  */
 public class SceneryScene extends Scene {
@@ -80,8 +74,6 @@ public class SceneryScene extends Scene {
     private static final int WIDTH = 1024;
     private static final int HEIGHT = 768;
 
-    // freecam ist mal für Tests
-    //22.10.21 boolean freecam = false;
     // erste Position. 6/17: 3=equator,4=Dahlem ,5=EDDK
     int startpos = 5;
     // 17.1.18: Den StgCycler lass ich mal fuer ScneryViewer
@@ -145,28 +137,8 @@ public class SceneryScene extends Scene {
         SystemManager.addSystem(ts);
 
         InputToRequestSystem inputToRequestSystem = new InputToRequestSystem();
-        // use continuous movement
-        inputToRequestSystem.addKeyMapping(KeyCode.W, BaseRequestRegistry.TRIGGER_REQUEST_START_FORWARD);
-        inputToRequestSystem.addKeyReleaseMapping(KeyCode.W, BaseRequestRegistry.TRIGGER_REQUEST_STOP_FORWARD);
 
-        inputToRequestSystem.addKeyMapping(KeyCode.S, BaseRequestRegistry.TRIGGER_REQUEST_START_BACK);
-        inputToRequestSystem.addKeyReleaseMapping(KeyCode.S, BaseRequestRegistry.TRIGGER_REQUEST_STOP_BACK);
-
-        inputToRequestSystem.addKeyMapping(KeyCode.LeftArrow, BaseRequestRegistry.TRIGGER_REQUEST_START_TURNLEFT);
-        inputToRequestSystem.addKeyReleaseMapping(KeyCode.LeftArrow, BaseRequestRegistry.TRIGGER_REQUEST_STOP_TURNLEFT);
-        inputToRequestSystem.addKeyMapping(KeyCode.RightArrow, BaseRequestRegistry.TRIGGER_REQUEST_START_TURNRIGHT);
-        inputToRequestSystem.addKeyReleaseMapping(KeyCode.RightArrow, BaseRequestRegistry.TRIGGER_REQUEST_STOP_TURNRIGHT);
-
-        inputToRequestSystem.addKeyMapping(KeyCode.UpArrow, BaseRequestRegistry.TRIGGER_REQUEST_START_TURNUP);
-        inputToRequestSystem.addKeyReleaseMapping(KeyCode.UpArrow, BaseRequestRegistry.TRIGGER_REQUEST_STOP_TURNUP);
-        inputToRequestSystem.addKeyMapping(KeyCode.DownArrow, BaseRequestRegistry.TRIGGER_REQUEST_START_TURNDOWN);
-        inputToRequestSystem.addKeyReleaseMapping(KeyCode.DownArrow, BaseRequestRegistry.TRIGGER_REQUEST_STOP_TURNDOWN);
-
-        // use a/d for rolling, which will also be available in VR by default
-        inputToRequestSystem.addKeyMapping(KeyCode.A, BaseRequestRegistry.TRIGGER_REQUEST_START_ROLLLEFT);
-        inputToRequestSystem.addKeyReleaseMapping(KeyCode.A, BaseRequestRegistry.TRIGGER_REQUEST_STOP_ROLLLEFT);
-        inputToRequestSystem.addKeyMapping(KeyCode.D, BaseRequestRegistry.TRIGGER_REQUEST_START_ROLLRIGHT);
-        inputToRequestSystem.addKeyReleaseMapping(KeyCode.D, BaseRequestRegistry.TRIGGER_REQUEST_STOP_ROLLRIGHT);
+        FirstPersonMovingSystem.addDefaultKeyBindings(inputToRequestSystem);
         SystemManager.addSystem(inputToRequestSystem);
 
         FirstPersonMovingSystem firstPersonMovingSystem = FirstPersonMovingSystem.buildFromConfiguration();
@@ -282,7 +254,7 @@ public class SceneryScene extends Scene {
     }
 
     protected SceneNode getDestinationNode() {
-        return world;
+        return getWorld();
     }
 
 

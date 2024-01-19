@@ -1,0 +1,213 @@
+{
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "type": "VEC3",
+      "count": 14
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "type": "VEC3",
+      "count": 14
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "type": "VEC2",
+      "count": 14
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "type": "SCALAR",
+      "count": 30
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "type": "VEC3",
+      "count": 14
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5126,
+      "type": "VEC3",
+      "count": 14
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5126,
+      "type": "VEC2",
+      "count": 14
+    },
+    {
+      "bufferView": 7,
+      "componentType": 5125,
+      "type": "SCALAR",
+      "count": 30
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 56,
+      "byteOffset": 0
+    },
+    {
+      "buffer": 0,
+      "byteLength": 56,
+      "byteOffset": 168
+    },
+    {
+      "buffer": 0,
+      "byteLength": 56,
+      "byteOffset": 336
+    },
+    {
+      "buffer": 0,
+      "byteLength": 120,
+      "byteOffset": 448
+    },
+    {
+      "buffer": 0,
+      "byteLength": 56,
+      "byteOffset": 568
+    },
+    {
+      "buffer": 0,
+      "byteLength": 56,
+      "byteOffset": 736
+    },
+    {
+      "buffer": 0,
+      "byteLength": 56,
+      "byteOffset": 904
+    },
+    {
+      "buffer": 0,
+      "byteLength": 120,
+      "byteOffset": 1016
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Pedal.1",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 1
+        }
+      ]
+    },
+    {
+      "name": "Pedal.2",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 4,
+            "NORMAL": 5,
+            "TEXCOORD_0": 6
+          },
+          "indices": 7,
+          "material": 1
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Pedal.1",
+      "translation": [
+        0.16079899668693542,
+        0.8226360082626343,
+        -0.288657009601593
+      ],
+      "mesh": 0
+    },
+    {
+      "name": "Pedal.2",
+      "translation": [
+        0.16079899668693542,
+        0.8226360082626343,
+        -0.288657009601593
+      ],
+      "mesh": 1
+    }
+  ],
+  "materials": [
+    {
+      "name": "shadedNoName",
+      "emissiveFactor": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "metallicFactor": 0.72
+      }
+    },
+    {
+      "name": "unshadedNoName",
+      "emissiveFactor": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "metallicFactor": 0.72,
+        "baseColorTexture": {
+          "index": 0,
+          "texCoord": 0
+        }
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "name": "Scene",
+      "nodes": [
+        0,
+        1
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0,
+      "sampler": 0
+    }
+  ],
+  "images": [
+    {
+      "uri": "pedals.png"
+    }
+  ],
+  "samplers": [
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ]
+}

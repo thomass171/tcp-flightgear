@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Tile Definition for former 'TrafficScene' 3D EDDF
+
+  main scene setup
+-->
+
+<c:config xmlns:c="http://www.example.org/tcp-22" name="a">
+
+    <!--
+    <object></object>
+
+    <trafficgraph graphfile="traffic:tiles/RailingSimple.xml"></trafficgraph>
+
+    <light color="white" direction="3,3,3"/>
+    <light color="white"/>
+
+    <viewpoint name="Sideview">
+        <transform>
+            <position>-80,100,-100</position>
+            <angle>-40,-90,0</angle>
+        </transform>
+    </viewpoint>
+
+    <vehicle name="loc" delayedload="false" automove="true" location="*:firstEdge"/>
+-->
+
+</c:config>
+
+
+

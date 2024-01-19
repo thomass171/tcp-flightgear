@@ -74,6 +74,9 @@ public class ModelTest {
     @Test
     public void testWindturbineGltfByAc() throws Exception {
 
+        AsyncHelper.cleanup();
+        AbstractSceneRunner.getInstance().cleanup();
+
         EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("model"));
 
         Bundle bundlemodel = BundleRegistry.getBundle("Terrasync-model");
@@ -87,6 +90,8 @@ public class ModelTest {
         // modelbuildvalues not available for checking
 
         TestHelper.processAsync();
+        TestHelper.processAsync();
+        TestHelper.processAsync();
         assertEquals(1, node.findNodeByName("Blade3", true).size());
     }
 
@@ -95,6 +100,8 @@ public class ModelTest {
      */
     @Test
     public void testEgkk_towerGltf() throws Exception {
+
+        AbstractSceneRunner.getInstance().cleanup();
 
         String bundleName = "Terrasync-3072824";
         if (BundleRegistry.getBundle(bundleName) != null) {
@@ -124,10 +131,12 @@ public class ModelTest {
 
         TestUtils.waitUntil(() -> {
             TestHelper.processAsync();
+            TestHelper.processAsync();
             return modelLaunched.getValue();
         }, 10000);
 
         // modelbuildvalues not available for checking
+        TestHelper.processAsync();
         TestHelper.processAsync();
         assertEquals(1, destinationNodes.size());
         //rootnodename is full name instead of just egkk_tower
@@ -149,7 +158,7 @@ public class ModelTest {
         //Bundle erst loeschen fuer klare Startbedinung
         String BUNDLENAMEDELAYED = "datadelayed";
         BundleRegistry.unregister(BUNDLENAMEDELAYED);
-        EngineTestFactory.loadBundleSync("data-old", BUNDLENAMEDELAYED, true);
+        EngineTestFactory.loadBundleSync("data-old"/*21.12.23 , BUNDLENAMEDELAYED, true*/);
         TestUtil.assertNull("", BundleRegistry.getBundle(BUNDLENAMEDELAYED).getResource("flusi/egkk_tower.gltf"));
         TestUtil.assertNull("", BundleRegistry.getBundle(BUNDLENAMEDELAYED).getResource("flusi/egkk_tower.bin"));
         TestUtil.assertTrue("", BundleRegistry.getBundle(BUNDLENAMEDELAYED).exists("flusi/egkk_tower.gltf"));

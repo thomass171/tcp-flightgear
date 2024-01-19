@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Tile Definition for former 'TrafficScene' projected EDDK
+
+  main scene setup
+-->
+
+<c:config xmlns:c="http://www.example.org/tcp-22" name="a">
+
+    <include>EDDK.xml</include>
+
+    <!-- <projection></projection>-->
+
+    <!-- lights taken from default lights in BasicTravelScene -->
+    <light color="white" direction="3,-3,3"/>
+    <light color="white"/>
+
+    <viewpoint name="TopView00">
+        <transform>
+            <position>-0,0,700</position>
+        </transform>
+    </viewpoint>
+
+    <viewpoint name="TopView">
+        <transform>
+            <position>-1500, 1200, 700</position>
+        </transform>
+    </viewpoint>
+
+    <!-- From   <scene name="GroundServices">.
+    alle Vehicle passend fuer den Graph rotieren.
+           * <p>
+           * // Die Defaultorientierung im Graph ist hinten (-z). Und in die Richtung wird sie gedreht 90 Grad nach rechts um y.
+           * // Die FG Aircraft Model haben die Spitze Richtung -x und z nach oben.
+           * // Das FG Model hat die z-Ache nach oben. Das ist im Prinzip schon mal passend, weil wir in der z0 Ebene sind.
+           * // Der Graph wird aber rotieren, weil er von einem y-up Graphen bzw. Default -z ausgeht. Darum
+           * // erstmal nach y-up rotieren (-90 an x). Und noch mal weil er falsch rum steht.
+           * // 2.5.17: Um y jetzt -90 statt 90, damit die Spitze richtig zeigt.
+           * <p>
+           * 1.3.18: Obwohl das die Sache doch unuebersichtlich macht. Warum muss
+           * das sein? Naja, ich lass es erstmal.
+           * 9.1.19: Weil der Z0 Graph selber ja auch schon eine Rotation durchführt.-->
+    <BaseTransformForVehicleOnGraph>
+        <transform>
+            <angle>-90,-90,0</angle>
+        </transform>
+    </BaseTransformForVehicleOnGraph>
+</c:config>
+
+
+

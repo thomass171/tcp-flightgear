@@ -1,0 +1,82 @@
+<!--
+20.11.23: Extracted from TrafficWorld.xml
+
+-->
+
+
+<c:config xmlns:c="http://www.example.org/tcp-22" name="a">
+
+
+    <!-- 4.10.18: Shuttle ist zu gross. Braucht XML Wrapper und GLTF. Darum vorerst unbrauchbar-->
+    <vehicledefinition name="simpleShuttle" modeltype="shuttle" ai="true" type="aircraft">
+        <bundlename>data</bundlename>
+        <modelfile>flusi/shuttle-hi-res/shut.3ds</modelfile>
+        <zoffset>0</zoffset>
+        <unscheduledmoving>0</unscheduledmoving>
+    </vehicledefinition>
+
+    <vehicledefinition name="bluebird" type="aircraft">
+        <bundlename>bluebird</bundlename>
+        <modelfile>Models/bluebird.xml</modelfile>
+        <zoffset>1.2</zoffset>
+        <unscheduledmoving>0</unscheduledmoving>
+        <!-- 233 km/h, 125 kn -->
+        <maximumspeed>64.7</maximumspeed>
+        <acceleration>14.5</acceleration>
+        <!-- 55 kn, vr brauch ich eigentlich nicht
+        <vr>28.3</vr> 20.11.23 dann lass ich es mal weg -->
+
+
+        <viewpoint name="Captain">
+            <!-- -->
+            <transform>
+                <position>-7.26, 0, 1.45</position>
+                <angle>90, 0, 90</angle>
+            </transform>
+        </viewpoint>
+
+        <aircraftdir>bluebird</aircraftdir>
+        <optional>nav_sphere_L1</optional>
+        <optional>nav_sphere_L2</optional>
+        <optional>nav_sphere_R1</optional>
+        <optional>nav_sphere_R2</optional>
+        <optional>strobe_sphere_L</optional>
+        <optional>strobe_sphere_R</optional>
+        <optional>Shadow</optional>
+
+    </vehicledefinition>
+
+    <!--navigator: aircraft oder nicht? -->
+    <vehicledefinition name="Navigator" modeltype="747-400XX" ai="false" type="aircraftXX">
+        <bundlename>engine</bundlename>
+        <!--5.10.21 <modelfile>navigator.xml</modelfile>-->
+        <modelfile>navigator.gltf</modelfile>
+        <zoffset>0</zoffset>
+        <unscheduledmoving>0</unscheduledmoving>
+
+        <!--Die Viewports sind etwas anders als im Code, was aber plausibel scheint-->
+        <viewpoint name="p1">
+            <transform>
+                <position>2,0,1</position>
+                <angle>90, 0, 90</angle>
+            </transform>
+        </viewpoint>
+        <viewpoint name="p2">
+            <transform>
+                <position>10,0,1</position>
+                <angle>90, 0, 90</angle>
+            </transform>
+        </viewpoint>
+        <viewpoint name="p3">
+            <transform>
+                <position>10,3,1</position>
+                <angle>90, 0, 90</angle>
+            </transform>
+        </viewpoint>
+
+    </vehicledefinition>
+
+    <vehicles name="VehiclesWithCockpit">
+        <vehicle name="bluebird"></vehicle>
+    </vehicles>
+</c:config>

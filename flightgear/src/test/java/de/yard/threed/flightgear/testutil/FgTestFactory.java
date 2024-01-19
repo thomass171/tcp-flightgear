@@ -6,8 +6,12 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.platform.PlatformFactory;
 import de.yard.threed.core.platform.PlatformInternals;
 import de.yard.threed.core.resource.Bundle;
+import de.yard.threed.core.resource.BundleLoadDelegate;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.ResourcePath;
+import de.yard.threed.core.testutil.SimpleEventBusForTesting;
+import de.yard.threed.core.testutil.TestUtils;
+import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.testutil.AdvancedHeadlessPlatform;
 import de.yard.threed.engine.testutil.EngineTestFactory;
 import de.yard.threed.flightgear.FgBundleHelper;
@@ -22,7 +26,6 @@ import de.yard.threed.javacommon.DefaultResourceReader;
 import de.yard.threed.javacommon.SimpleHeadlessPlatform;
 import de.yard.threed.javacommon.SimpleHeadlessPlatformFactory;
 import de.yard.threed.outofbrowser.SimpleBundleResolver;
-import de.yard.threed.outofbrowser.SyncBundleLoader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,12 +71,13 @@ public class FgTestFactory {
         FgBundleHelper.clear();
 
         // 29.12.21: Some bundles need to be loaded after init()
-        // 12.9.23: "fgdatabasic", FlightGearSettings.FGROOTCOREBUNDLE might be needed in future for aircraft loading (apparently not needed for bluebird)
+        // 12.9.23: FlightGearSettings.FGROOTCOREBUNDLE might be needed in future for aircraft loading (apparently not needed for bluebird)
         // 12.9.23: "fgdatabasicmodel" might be needed in future. Or will be a separate module.
         // "sgmaterial" occupies 493 MB
 
         // "fgdatabasicmodel" and FlightGearSettings.FGROOTCOREBUNDLE currently not needed in tests
-        String[] bundlelist = new String[]{"engine", "fgdatabasic"};
+        // "fgdatabasic" is needed eg. for yoke and pedals in bluebird.
+        String[] bundlelist = new String[]{"engine", "fgdatabasic", "traffic-fg"};
 
         Configuration configuration = ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties);
 
@@ -86,7 +90,7 @@ public class FgTestFactory {
         Platform platform = EngineTestFactory.initPlatformForTest(bundlelist,
                 configuration1 -> {
                     // use AdvancedHeadlessPlatform to have AsyncHelper and thus model loading
-                    PlatformInternals platformInternals = AdvancedHeadlessPlatform.init(configuration1, null);
+                    PlatformInternals platformInternals = AdvancedHeadlessPlatform.init(configuration1, new SimpleEventBusForTesting());
                     if (fullFG) {
                         Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver(configuration1.getString("HOSTDIRFG") + "/bundles"));
                     }
@@ -115,11 +119,7 @@ public class FgTestFactory {
             }
 
             if (addTestResourcesBundle) {
-                if (BundleRegistry.getBundle("test-resources") == null) {
-                    ResourcePath bundlebasedir = new ResourcePath("src/test/resources");
-                    String e = SyncBundleLoader.loadBundleSyncInternal("test-resources", null,
-                            false, new DefaultResourceReader(), bundlebasedir);
-                }
+                EngineTestFactory.addTestResourcesBundle();
             }
         }
         //not generic FgTestFactory.assertPlatform();

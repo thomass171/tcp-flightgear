@@ -1,3 +1,7 @@
 Aircraft/Instruments-3d/yoke/yoke.ac
 Aircraft/Instruments-3d/yoke/yoke.png
 Aircraft/Instruments-3d/yoke/yoke.xml
+Aircraft/Instruments-3d/pedals/pedals.xml
+Aircraft/Instruments-3d/pedals/pedals.gltf
+Aircraft/Instruments-3d/pedals/pedals.png
+Aircraft/Instruments-3d/pedals/pedals.bin

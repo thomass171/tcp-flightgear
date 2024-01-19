@@ -1,5 +1,6 @@
 package de.yard.threed.flightgear;
 
+import de.yard.threed.core.buffer.SimpleByteBuffer;
 import de.yard.threed.core.platform.NativeJsonValue;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.Bundle;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,6 +93,7 @@ public class EffectTest {
             }
         });
         TestHelper.processAsync();
+        TestHelper.processAsync();
         assertEquals(2, animationList.size(), "animations");
         assertNotNull(((SGRotateAnimation) animationList.get(0)).rotategroup, "rotationgroup");
         assertNotNull(((SGRotateAnimation) animationList.get(1)).rotategroup, "rotationgroup");
@@ -103,6 +106,7 @@ public class EffectTest {
         });
         //MT gibt es im Test nicht. Darum gibt es keine Animation.
         assertEquals(0, animationList.size(), "animations");
+        TestHelper.processAsync();
         TestHelper.processAsync();
         assertNotNull(((SGRotateAnimation) animationList.get(0)).rotategroup, "rotationgroup");
         assertNotNull(((SGRotateAnimation) animationList.get(1)).rotategroup, "rotationgroup");
@@ -130,7 +134,7 @@ public class EffectTest {
         Assertions.assertNotNull(gltf, "parsedgltf");
         InMemoryBundle bundle = new InMemoryBundle("models/CDU-777-boeing", lf.gltfstring, lf.bin);
 
-        bundle.addAdditionalResource("models/CDU-777-boeing.xml", new BundleData(FileReader.readAsString(new File(TestUtils.locatedTestFile(xmlfile)))));
+        bundle.addAdditionalResource("models/CDU-777-boeing.xml", new BundleData(new SimpleByteBuffer(FileReader.readFully(new FileInputStream(new File(TestUtils.locatedTestFile(xmlfile))))), true));
 
         // "*.ac" is not really content, but 'gltf' is OK
         assertTrue(bundle.exists(new BundleResource("models/CDU-777-boeing.ac")));
@@ -143,12 +147,13 @@ public class EffectTest {
         //MT gibt es im Test nicht. Darum gibt es keine Animation.
         assertEquals(0, animationList.size(), "animations");
         TestHelper.processAsync();
+        TestHelper.processAsync();
         //TestUtil.assertNotNull("rotationgroup",((SGRotateAnimation)result.animationList.get(0)).rotategroup);
         //TestUtil.assertNotNull("rotationgroup",((SGRotateAnimation)result.animationList.get(1)).rotategroup);
         SceneNode node = new SceneNode(result.getNode());
         Scene.getCurrent().addToWorld(node);
         //logger.debug(node.dump("  ",1));
-        logger.debug(Scene.getWorld().dump("  ", 1));
+        logger.debug(Scene.getCurrent().getWorld().dump("  ", 1));
         List<NativeSceneNode> lettering = op.findSceneNodeByName("Lettering_Cdu");
         assertEquals(1, lettering.size(), "Lettering_Cdu");
         NativeSceneNode mag = op.findSceneNodeByName("material animation group").get(0);
@@ -188,7 +193,7 @@ public class EffectTest {
         SceneNode node = new SceneNode(result.getNode());
         Scene.getCurrent().addToWorld(node);
         //logger.debug(node.dump("  ",1));
-        logger.debug(Scene.getWorld().dump("  ", 1));
+        logger.debug(Scene.getCurrent().getWorld().dump("  ", 1));
         //die letzte Textur muss eigentlich die der 747 sein
         //7.7.21 Use texturetool?
         //TestUtil.assertTrue("KLM Textur geladen", op.texturelist.size() > 0);

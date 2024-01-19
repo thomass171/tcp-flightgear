@@ -31,7 +31,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
     public HashMap<String, String> getInitialProperties() {
         HashMap<String, String> properties = new HashMap<String, String>();
         properties.put("argv.enableUsermode", "false");
-        properties.put("argv.visualizeTrack", "true");
+        properties.put("visualizeTrack", "true");
         properties.put("argv.enableHud", "true");
 
         boolean emulateVR = false;
@@ -52,14 +52,21 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         //properties.put("argv.enableFPC", "true");
         //18.11.19: NearView geht in VR eh nicht, darum damit üblicherweise auch sonst nicht arbeiten.
         //properties.put("argv.enableNearView", "true");
-        properties.put("argv.initialMaze", "skbn/SokobanWikipedia.txt");
-        properties.put("argv.initialMaze", "maze/Area15x10.txt");
-        //properties.put("argv.initialMaze","skbn/DavidJoffe.txt:1");
 
         //properties.put("argv.vehiclelist","GenericRoad");
 
+        // traffic-fg
         properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryScene");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.RailingScene");
+        boolean demo = false;
+        if (demo) {
+            // t.b.c.
+            properties.put("basename", "trafficfg:flight/Demo.xml");
+            properties.put("scene", "de.yard.threed.traffic.apps.BasicTravelScene");
+        }
+
+        // traffic-advanced
+        properties.put("scene", "de.yard.threed.trafficadvanced.apps.FlatAirportScene");
 
         return properties;
     }

@@ -29,7 +29,7 @@ import de.yard.threed.traffic.VehicleLauncher;
 import de.yard.threed.traffic.VehicleLoaderResult;
 import de.yard.threed.traffic.config.ConfigHelper;
 
-import de.yard.threed.traffic.config.VehicleConfig;
+import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.traffic.geodesy.GeoCoordinate;
