@@ -50,11 +50,11 @@
                             <p></p>
 
                             <button class=" w3-button  w3-round w3-khaki "
-                                    onclick="launchSingleScene('SceneryScene',false,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
+                                    onclick="launchSingleScene('SceneryScene','',$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
                                 Launch
                             </button>
                             <button class=" w3-button  w3-round w3-khaki "
-                                    onclick="launchSingleScene('SceneryScene',true,false,false)">
+                                    onclick="launchSingleScene('SceneryScene','VR',false,false)">
                                 Launch VR
                             </button>
 
@@ -70,15 +70,16 @@
                             <div class="w3-container w3-center">
                                 <img src="Railing-Preview.png" style="width:100%">
                             </div>
-                            <p>Like the railing demo scene in tcp-22, but with a speed indicator from FG. Key 't' teleports, 'a' starts move, '+/-' adjust speed.</p>
+                            <p>Like the railing demo scene in tcp-22, but with a speed indicator from FG. Key 't'
+                                teleports, 'a' starts move, '+/-' adjust speed.</p>
 
                             <p></p>
                             <button class=" w3-button  w3-round w3-khaki "
-                                    onclick="launchSingleScene('RailingScene',false,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
+                                    onclick="launchSingleScene('RailingScene','',$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
                                 Launch
                             </button>
                             <button class=" w3-button  w3-round w3-khaki "
-                                    onclick="launchSingleScene('RailingScene',true,false,false)">
+                                    onclick="launchSingleScene('RailingScene','VR',false,false)">
                                 Launch VR
                             </button>
                             <p></p>
@@ -100,20 +101,69 @@
                 <div class="w3-third">
                     <div class="w3-card-2">
                         <div class="w3-container">
-                            <h3>Scenery</h3>
+                            <h3>Ground Services</h3>
                             <div class="w3-container w3-center">
                                 <img src="FlatAirport-Preview.png" style="width:100%">
                             </div>
-                            <p>A flat EDDK scenery showing ground services. Key 't' teleports, '5' starts service for selected aircraft (enable HUD for selecting), '9' starts automove.</p>
+                            <p>A flat EDDK scenery showing ground services. Key 't' teleports, '5' starts service for
+                                selected aircraft (enable HUD for selecting), '9' starts automove.</p>
                             <button class=" w3-button  w3-round w3-khaki "
-                                    onclick="launchSingleScene('FlatAirportScene',false,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
+                                    onclick="launchSingleScene('FlatAirportScene','',$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
                                 Launch
                             </button>
                             <button class=" w3-button  w3-round w3-khaki "
-                                    onclick="launchSingleScene('FlatAirportScene',true,false,false)">
+                                    onclick="launchSingleScene('FlatAirportScene','VR',false,false)">
                                 Launch VR
                             </button>
 
+                            <p></p>
+                        </div>
+                    </div>
+                </div>
+                <!--HangarScene-->
+                <div class="w3-third">
+                    <div class="w3-card-2">
+                        <div class="w3-container">
+                            <h3>Hangar</h3>
+                            <div class="w3-container w3-center">
+                                <img src="Hangar-Preview.png" style="width:100%">
+                            </div>
+                            <p>A simple scene for viewing aircraft model. Starts with 'c172p'. Use 't' to teleport or
+                                'l' to load next.</p>
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchSingleScene('HangarScene','',$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
+                                Launch
+                            </button>
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchSingleScene('HangarScene','VR',false,false)">
+                                Launch VR
+                            </button>
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchSingleScene('HangarScene','AR',false,false)">
+                                Launch AR
+                            </button>
+                            <p></p>
+                        </div>
+                    </div>
+                </div>
+                <!--TravelScene-->
+                <div class="w3-third">
+                    <div class="w3-card-2">
+                        <div class="w3-container">
+                            <h3>Travel</h3>
+                            <div class="w3-container w3-center">
+                                <img src="Travel-Preview.png" style="width:100%">
+                            </div>
+                            <p>A simple travel scene initially located at EDDK. Use 't' to teleport or
+                                'l' to load aircraft. Might crash the browser due to memory requirements.</p>
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchSingleScene('TravelScene','',$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
+                                Launch
+                            </button>
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchSingleScene('TravelScene','VR',false,false)">
+                                Launch VR
+                            </button>
                             <p></p>
                         </div>
                     </div>

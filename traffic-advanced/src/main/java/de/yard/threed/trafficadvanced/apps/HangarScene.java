@@ -97,8 +97,6 @@ public class HangarScene extends Scene {
     Log logger = Platform.getInstance().getLog(HangarScene.class);
     private double backlightitensity = 0.5f;
     FirstPersonController fps = null;
-    //27.1.22 Avatar avatar = null;
-    //AircraftResourceProvider arp;
     boolean usearp = true;
     int vehicleindex = 0;
     SceneNode currentaircraft = null;
@@ -106,8 +104,6 @@ public class HangarScene extends Scene {
     SceneNode hud;
     List<String> vehiclelist = new ArrayList<String>();
     MenuCycler menuCycler = null;
-    //RequestType REQUEST_CLOSE = new RequestType("close");
-    //4.12.23 SceneConfig sceneConfig;
     boolean enableLoweredAvatar = false;
     Double yoffsetVR;
     boolean avatarInited = false;
@@ -124,23 +120,11 @@ public class HangarScene extends Scene {
         //5.12.23 TrafficWorldConfig railing = new TrafficWorldConfig("railing", "config/Railing.xml");
         tw = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), BundleResource.buildFromFullString("Hangar.xml"));
 
-        //27.12.21 add gibts nicht mehr tw.add(railing);
-        //29.11.21 aber weil das Konzept der CockpitScene eh nochmal refactored werden muss, mach ich erstmal einfach weiter.
-        // Nach followMe wird er dann scheitern. Util.notyet();
-        //5.12.23 sceneConfig = tw.getScene("Cockpit");
-        /*for (int i = 0; i < tw.getAircraftCount(); i++) {
-            aircraftlist.add(tw.getAircraftName(i));
-        }*/
-        /*ConfigNodeList*/
         List<Vehicle> vlist = /*20.11.23 tw*/FlightTravelScene.getVehicleListByName("VehiclesWithCockpit");
 
         for (int i = 0; i < vlist.size(); i++) {
             vehiclelist.add(vlist.get(i).getName());
         }
-        //10.10.19avatar = /*Avatar.*/buildForFlightGearModelOrinetation(camera);
-        /*27.1.21 avatar = Avatar.buildDefault(camera);
-        avatar.enableBody();
-        addToWorld(avatar.getSceneNode());*/
 
         //30.6.21: Observer muss jetzt noch an den Avatar (ausser VR?). Das ist hier wahrscheinlich nicht der beste Platz dafür.
         //27.1.22 wird vielleicht schon irgendwo gemacht Observer.getInstance().getTransform().setParent(avatar.getSceneNode().getTransform());
@@ -213,12 +197,6 @@ public class HangarScene extends Scene {
         ground.getTransform().setPosition(new Vector3(0, 0, 0));
         ground.setName("Ground");
         addToWorld(ground);
-        /*27.1.22 if (yoffsetVR != null) {
-            avatar.setBestPracticeRiftvryoffset((double) yoffsetVR);
-        }*/
-        /*if (enableLoweredAvatar) {
-            avatar.lowerVR();
-        }*/
 
         Observer.buildForDefaultCamera();
 
@@ -253,16 +231,6 @@ public class HangarScene extends Scene {
     public void initSettings(Settings settings) {
         settings.vrready = true;
     }
-
-    /*@Override
-    public void vrDisplayPresentChange(boolean isPresenting) {
-        logger.debug("vrDisplayPresentChange:isPresenting=" + isPresenting);
-        if (isPresenting) {
-            avatar.lowerVR();
-        } else {
-            avatar.raiseVR();
-        }
-    }*/
 
     /**
      * Licht in diesem Sinne gibt es mit dem model-combined shader nicht.
@@ -324,13 +292,6 @@ public class HangarScene extends Scene {
             modelInited = true;
         }
 
-        if (Input.getKeyDown(KeyCode.B)) {
-            //Vector3 p = avatar.getSceneNode().getTransform().getPosition();
-            //p = new Vector3(p.getX() + 1, p.getY(), p.getZ());
-            //avatar.getTransform().setPosition(p);
-            //logger.debug("avatar.pos=" + avatar.getSceneNode().getTransform().getPosition() + ",parent=" + avatar.getSceneNode().getTransform().getParent() + ",avatar.orinetation=" + avatar.getSceneNode().getTransform().getRotation() +
-            //      ",camerapos=" + getDefaultCamera().getCarrierTransform().getPosition() + ",camera.rot=" + getDefaultCamera().getCarrierTransform().getRotation());
-        }
         //1.1.20 N->L
         if (Input.getKeyDown(KeyCode.L)) {
             if (Input.getKey(KeyCode.Shift)) {
@@ -339,16 +300,9 @@ public class HangarScene extends Scene {
                 cycleVehicle(1, vehiclelist.size());
             }
         }
-        /*if (Input.getKeyDown(KeyCode.L)) {
-            Vector3 p = avatar.getTransform().getPosition();
-            p = new Vector3(p.getX() - 1, p.getY(), p.getZ());
-            avatar.getTransform().setPosition(p);
-            logger.debug("avatar.x=" + avatar.getTransform().getPosition().getX());
-        }*/
         Point mouselocation = Input.getMouseDown();
 
         menuCycler.update(mouselocation);
-        //11.5.21avatar.update();
         Observer.getInstance().update();
     }
 
@@ -505,15 +459,6 @@ class CockpitCduMenu implements Menu {
         cduCarrier.getTransform().setRotation(Quaternion.buildFromAngles(new Degree(-90), new Degree(-90), new Degree(0)));
     }
 
-    /*@Override
-    public Request checkForClickedButton(Point mouselocation) {
-        /*List<NativeCollision> hits = hudCube.getHits(mouselocation, FovElement.getDeferredCamera(null));
-        if (hits.size() > 0) {
-            logger.debug("hudCube was clicked");
-        }* /
-        return null;
-    }*/
-
     @Override
     public SceneNode getNode() {
         return cduCarrier;//getDefaultCamera().getCarrier();
@@ -539,64 +484,5 @@ class CockpitCduMenu implements Menu {
         cduCarrier = null;
     }
 
-    /**
-     * Avatar rotieren zu Blickrichtung -x und z up, was die Default FG Aircraft Model Orientierung ist.
-     * TODO: ist die Rotation verfifiziert?
-     * 4.1.22 Moved here from avatar
-     *
-     * @return
-     */
-    /*24.1.22 public static Avatar buildForFlightGearModelOrinetation(Camera camera) {
-        return new Avatar(camera, Quaternion.buildFromAngles(new Degree(90), new Degree(0), new Degree(90)), true);
-    }*/
+
 }
-
-/*class CockpitMainMenuBuilder extends DefaultMenuProvider {
-    CockpitScene rs;
-
-    CockpitMainMenuBuilder(CockpitScene rs) {
-        super(rs.getDefaultCamera());
-        this.rs = rs;
-    }
-
-    @Override
-    public Menu buildMenu() {
-        //Versuchen, ca 3 m vor Avatar statt nearplane, damit es normal und in VR brauchbar ist.
-        //ach, wie CDU 5m.
-        double width = 5.5;
-
-        GuiGrid menu = new GuiGrid(new DimensionF(width, width * 0.7), -5, -4.9, 1, 6, 3, GuiGrid.GREEN_SEMITRANSPARENT);
-        // In der Mitte rechts ein Button mit Image
-        menu.addButton(/*new Request(rs.REQUEST_CLOSE),* / 4, 1, 1, Icon.ICON_CLOSE, () -> {
-            rs.menuCycler.close();
-        });
-        // und unten in der Mitte ein breiter Button mit Text
-        menu.addButton(/*new Request(rs.REQUEST_CLOSE),* / 2, 0, 2, new Text("Load", Color.BLUE, Color.LIGHTBLUE), () -> {
-            //unpraktisch weil man vielleicht weiter möchte rs.menuCycler.close();
-            rs.cycleVehicle(1, rs.vehiclelist.size());
-        });
-
-        IntHolder option = new IntHolder(0);
-        Request request = new Request(UserSystem.USER_REQUEST_TELEPORT, new Payload(option));
-
-        menu.addButton(request, 0, 2, 1, new Text("Teleport", Color.BLUE, Color.LIGHTBLUE), () -> {
-            rs.logger.debug("button delegate Teleport");
-            SystemManager.putRequest(request);
-        });
-
-        menu.addButton(null, 3, 1, 1, Texture.buildBundleTexture("data-old", "images/Dangast.jpg"));
-        menu.addButton(null, 2, 1, 1, Texture.buildBundleTexture("data-old", "images/Dangast.jpg"));
-        return menu;
-    }
-
-
-    /*@Override
-    public Ray getRayForUserClick(Point mouselocation) {
-        if (mouselocation != null) {
-            //Der Viewpoint kann bei Firefox 1.7m hoher sein als das Camera ausweist!
-            return rs.avatar.buildPickingRay(rs.getDefaultCamera(),mouselocation);
-        }
-        Ray ray = rs.avatar.controller1.getRay();
-        return ray;
-    }* /
-}*/
