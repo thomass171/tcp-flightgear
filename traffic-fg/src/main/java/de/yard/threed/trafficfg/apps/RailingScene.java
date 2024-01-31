@@ -324,7 +324,7 @@ public class RailingScene extends /*Graph*/Scene /*29.10.17, EventNotify*/ {
             avatar.update();
         }*/
 
-        Point mouselocation = Input.getMouseClick();
+        Point mouselocation = Input.getMouseDown();
 
         if (menuCycler != null) {
             menuCycler.update(mouselocation);

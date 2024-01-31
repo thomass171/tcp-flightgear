@@ -113,6 +113,7 @@ import static de.yard.threed.engine.ecs.TeleporterSystem.EVENT_POSITIONCHANGED;
  * Idea is: Should be sufiicent to override some methods and rely on the super class for everything else. But that will be a long way to go.
  * <p>
  * Views according to config.
+ * 20.1.24 just a design idea for now.
  * <p>
  */
 public class TrafficScene extends BasicTravelScene {

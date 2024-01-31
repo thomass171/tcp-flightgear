@@ -37,7 +37,7 @@ public class AnimationUpdateSystem extends DefaultEcsSystem {
      */
     @Override
     public void update(EcsEntity entity, EcsGroup group, double tpf) {
-        Point mouselocation = Input.getMouseClick();
+        Point mouselocation = Input.getMouseDown();
 
         //Avatar avatar = /*1.4.21 Player.getInstance()*/AvatarSystem.getAvatar();
         Ray pickingray = null;

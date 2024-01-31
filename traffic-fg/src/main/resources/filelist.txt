@@ -12,3 +12,5 @@ flight/EDDF.groundnet.xml
 flight/EHAM.groundnet.xml
 flight/vehicle-definitions.xml
 flight/Demo.xml
+flight/navigator.xml
+flight/navigator.pcm

@@ -12,7 +12,7 @@ echo PROJECT_HOME=$PROJECT_HOME
 # make TCP22DIR absolute
 TCP22DIR=$PROJECT_HOME/../tcp-22
 
-for module in flightgear tools-fg
+for module in flightgear tools-fg traffic-fg
 do
   CLASSPATH=$CLASSPATH:$MR/de/yard/tcp-flightgear/module-$module/$VERSION/module-$module-$VERSION.jar
 done

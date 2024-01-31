@@ -48,9 +48,9 @@
 
     <!--navigator: aircraft oder nicht? -->
     <vehicledefinition name="Navigator" modeltype="747-400XX" ai="false" type="aircraftXX">
-        <bundlename>engine</bundlename>
-        <!--5.10.21 <modelfile>navigator.xml</modelfile>-->
-        <modelfile>navigator.gltf</modelfile>
+        <bundlename>traffic-fg</bundlename>
+        <!-- 31.1.24: navigator.xml is back after it was lost in 2021-->
+        <modelfile>flight/navigator.xml</modelfile>
         <zoffset>0</zoffset>
         <unscheduledmoving>0</unscheduledmoving>
 
