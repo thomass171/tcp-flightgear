@@ -10,6 +10,7 @@ import de.yard.threed.core.LocalTransform;
 import de.yard.threed.core.Payload;
 import de.yard.threed.core.Point;
 import de.yard.threed.core.Quaternion;
+import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
@@ -35,6 +36,8 @@ import de.yard.threed.engine.Texture;
 import de.yard.threed.engine.Transform;
 import de.yard.threed.engine.avatar.AvatarSystem;
 import de.yard.threed.engine.ecs.EcsEntity;
+import de.yard.threed.engine.ecs.GrabbingComponent;
+import de.yard.threed.engine.ecs.GrabbingSystem;
 import de.yard.threed.engine.ecs.InputToRequestSystem;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.ecs.SystemState;
@@ -42,18 +45,26 @@ import de.yard.threed.engine.ecs.TeleportComponent;
 import de.yard.threed.engine.ecs.TeleporterSystem;
 import de.yard.threed.engine.ecs.UserSystem;
 import de.yard.threed.engine.geometry.ShapeGeometry;
+import de.yard.threed.engine.gui.ButtonDelegate;
+import de.yard.threed.engine.gui.ControlPanel;
+import de.yard.threed.engine.gui.ControlPanelHelper;
+import de.yard.threed.engine.gui.ControlPanelMenu;
 import de.yard.threed.engine.gui.DefaultMenuProvider;
 import de.yard.threed.engine.gui.GuiGrid;
 import de.yard.threed.engine.gui.Icon;
 import de.yard.threed.engine.gui.Menu;
 import de.yard.threed.engine.gui.MenuCycler;
 import de.yard.threed.engine.gui.MenuProvider;
+import de.yard.threed.engine.gui.NumericSpinnerHandler;
+import de.yard.threed.engine.gui.SelectSpinnerHandler;
+import de.yard.threed.engine.gui.SpinnerControlPanel;
 import de.yard.threed.engine.gui.Text;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.engine.vr.VrInstance;
+import de.yard.threed.engine.vr.VrOffsetWrapper;
 import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearSettings;
@@ -69,6 +80,7 @@ import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.trafficcore.model.Vehicle;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -89,9 +101,10 @@ import java.util.Map;
  * m cycle menu (cdu and 'normal')
  * 7.3.21: Dass 'Lok' hier mit drin ist, ist ja doch ein boesses Coupling. Die gehört nach 'railing' und damit fertig. Obwohl, der kann hier Bundle laden
  * wie er möchte.
- *
+ * <p>
  * 4.12.23: Migration from TrafficWorldConfig to TrafficConfig (without sceneconfig).
  * 30.1.24: f.k.a. CockpitScene
+ * 1.2.24: Prepared for AR.
  */
 public class HangarScene extends Scene {
     Log logger = Platform.getInstance().getLog(HangarScene.class);
@@ -104,17 +117,19 @@ public class HangarScene extends Scene {
     SceneNode hud;
     List<String> vehiclelist = new ArrayList<String>();
     MenuCycler menuCycler = null;
-    boolean enableLoweredAvatar = false;
-    Double yoffsetVR;
     boolean avatarInited = false;
     boolean modelInited = false;
+    String vrMode = null;
+    VrInstance vrInstance;
+    Map<String, ButtonDelegate> buttonDelegates = new HashMap<String, ButtonDelegate>();
 
     @Override
     public void init(SceneMode forServer) {
+        vrMode = Platform.getInstance().getConfiguration().getString("vrMode");
+
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
 
-        processArguments();
         //Camera camera = getDefaultCamera();
         //5.12.23 tw = new TrafficWorldConfig("data-old", "TrafficWorld.xml");
         //5.12.23 TrafficWorldConfig railing = new TrafficWorldConfig("railing", "config/Railing.xml");
@@ -126,8 +141,21 @@ public class HangarScene extends Scene {
             vehiclelist.add(vlist.get(i).getName());
         }
 
-        //30.6.21: Observer muss jetzt noch an den Avatar (ausser VR?). Das ist hier wahrscheinlich nicht der beste Platz dafür.
-        //27.1.22 wird vielleicht schon irgendwo gemacht Observer.getInstance().getTransform().setParent(avatar.getSceneNode().getTransform());
+        buttonDelegates.put("up", () -> {
+            logger.info("up");
+            /*avatar*/
+            Observer.getInstance().fineTune(true);
+        });
+        buttonDelegates.put("down", () -> {
+            logger.info("down");
+            /*avatar*/
+            Observer.getInstance().fineTune(false);
+        });
+
+        Observer observer = Observer.buildForDefaultCamera();
+
+        vrInstance = VrInstance.buildFromArguments();
+
         SystemManager.addSystem(new UserSystem());
         SystemManager.addSystem(new AvatarSystem());
 
@@ -136,7 +164,6 @@ public class HangarScene extends Scene {
         ts.setAnimated(false);
         SystemManager.addSystem(ts, 0);
 
-
         ObserverSystem viewingsystem = new ObserverSystem(true);
         SystemManager.addSystem(viewingsystem, 0);
 
@@ -144,12 +171,10 @@ public class HangarScene extends Scene {
         AnimationUpdateSystem animationUpdateSystem = new AnimationUpdateSystem();
         SystemManager.addSystem(animationUpdateSystem, 0);
 
-        addLight();
 
         AbstractSceneRunner.instance.loadBundle("fgdatabasic", (Bundle b1) -> {
-            logger.debug("fgdatabasic loaded. Loading aircraft now");
-            //27.1.22 jetzt spaeter newModel(vehicleindex);
-
+            logger.debug("fgdatabasic loaded.");
+            // initial model is loaded later
         });
         //addToWorld(ModelSamples.buildAxisHelper(200, 1));
 
@@ -158,7 +183,6 @@ public class HangarScene extends Scene {
             // arp = new AircraftResourceProvider();
             // BundleRegistry.addProvider(arp);
         }
-        //menuCycler = new MenuCycler(new MenuProvider[]{new CockpitMenuBuilder(this), new CockpitMainMenuBuilder(this)});
         menuCycler = new MenuCycler(new MenuProvider[]{new CockpitMenuBuilder(this), new DefaultMenuProvider(this.getDefaultCamera(), () -> {
             //Versuchen, ca 3 m vor Avatar statt nearplane, damit es normal und in VR brauchbar ist.
             //ach, wie CDU 5m.
@@ -188,32 +212,48 @@ public class HangarScene extends Scene {
             return menu;
         })});
 
-        SystemManager.addSystem(new InputToRequestSystem(), 0);
-        //1.4.21 Player.init(avatar);
+        InputToRequestSystem inputToRequestSystem = new InputToRequestSystem();
+        SystemManager.addSystem(inputToRequestSystem, 0);
 
-        //Die Plane ist schon in y=0 und muss nicht rotiert werden.
-        Material goundmat = Material.buildLambertMaterial(Color.GRAY);
-        SceneNode ground = new SceneNode(new Mesh(ShapeGeometry.buildPlane(500, 500, 1, 1), goundmat, true, true));
-        ground.getTransform().setPosition(new Vector3(0, 0, 0));
-        ground.setName("Ground");
-        addToWorld(ground);
+        GrabbingSystem grabbingSystem = GrabbingSystem.buildFromConfiguration();
+        GrabbingSystem.addDefaultKeyBindings(inputToRequestSystem);
+        SystemManager.addSystem(grabbingSystem);
 
-        Observer.buildForDefaultCamera();
+        if (!isAR()) {
+            //Die Plane ist schon in y=0 und muss nicht rotiert werden.
+            Material goundmat = Material.buildLambertMaterial(Color.GRAY);
+            SceneNode ground = new SceneNode(new Mesh(ShapeGeometry.buildPlane(500, 500, 1, 1), goundmat, true, true));
+            ground.getTransform().setPosition(new Vector3(0, 0, 0));
+            ground.setName("Ground");
+            addToWorld(ground);
+        }
 
-        // Avatar anlegen (via login)
+
+        if (vrInstance != null) {
+            // Even in VR the observer will be attached to avatar later
+            observer.attach(vrInstance.getController(0));
+            observer.attach(vrInstance.getController(1));
+
+            ControlPanel leftControllerPanel = buildVrControlPanel(buttonDelegates);
+            // position and rotation of VR controlpanel is controlled by property ...
+            inputToRequestSystem.addControlPanel(leftControllerPanel);
+            vrInstance.attachControlPanelToController(vrInstance.getController(0), leftControllerPanel);
+
+        } else {
+            /* TODO 1.2.24: add menucycler to inputToRequestSystem.setControlMenuBuilder(new ShowroomControlMenuBuilder(this));
+            inputToRequestSystem.addKeyMapping(KeyCode.M, InputToRequestSystem.USER_REQUEST_MENU);
+            inputToRequestSystem.setMenuProvider(new DefaultMenuProvider(getDefaultCamera(), () -> {
+                return menu;
+            }));*/
+        }
+
+        addLight();
+
+        // create avatar (via login)
         SystemManager.putRequest(UserSystem.buildLoginRequest("Freds account name", ""));
 
         // 24.1.22: State ready to join now needed for 'login'
         SystemState.state = SystemState.STATE_READY_TO_JOIN;
-
-    }
-
-    protected void processArguments() {
-        Boolean b;
-        if ((b = Platform.getInstance().getConfiguration().getBoolean("argv.enableLoweredAvatar")) != null) {
-            enableLoweredAvatar = b;
-        }
-        yoffsetVR = Platform.getInstance().getConfiguration().getDouble("argv.yoffsetVR");
     }
 
     @Override
@@ -221,8 +261,8 @@ public class HangarScene extends Scene {
         // "fgdatabasic" in project is only a small subset. The external should have 'before' prio to load instead of subset.
         // "data" is needed for taxiway ground texture.
         // "railing" is a relict from using 'loc"
-        Platform.getInstance().addBundleResolver(new HttpBundleResolver("fgdatabasic@https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"),true);
-        return new String[]{"engine","traffic-advanced"/*5.12.23 "data-old"*/,
+        Platform.getInstance().addBundleResolver(new HttpBundleResolver("fgdatabasic@https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"), true);
+        return new String[]{"engine", "traffic-advanced"/*5.12.23 "data-old"*/,
                 "data", /*30.1.24"railing",*//*BundleRegistry.FGHOMECOREBUNDLE,*/
                 FlightGearSettings.FGROOTCOREBUNDLE};
     }
@@ -250,41 +290,31 @@ public class HangarScene extends Scene {
         double tpf = getDeltaTime();
 
         if (Input.getKeyDown(KeyCode.F)) {
+            // TODO replace with system
             if (fps == null) {
-                fps = new FirstPersonController(getDefaultCamera().getCarrierTransform(),true);
+                fps = new FirstPersonController(getDefaultCamera().getCarrierTransform(), true);
                 //fps.setMovementSpeed(100);
             } else {
                 fps = null;
             }
         }
-       /* if (!useteleport) {
-            if (fps != null) {
-                fps.update(tpf);
-            } else {
-                controller.update(tpf);
-            }
-        }*/
 
-        //10.3.22 Avatar avatar = null; AvatarSystem.getAvatar();
         EcsEntity user = UserSystem.getInitialUser();
         if (!avatarInited && user != null && TeleportComponent.getTeleportComponent(user) != null) {
-            //if (avatar == null) {
-            //    logger.warn("no avatar yet");
-            // } else {
             // Outside von rechtem Wing. Bewusst auf Höhe 0, um vertikale Orientierung des Aircraft zu sehen.
             // Avater ist schon fuer FG orinetiert und muss sich nur nach links drehen.
             // 18.10.19: Ist jetzt y=0 Ebene. Dann muss der sich doch gar nicht mehr drehen.
             // Und nicht mehr auf 0, sondern Avatar like etwas höher.
 
-            TeleportComponent.getTeleportComponent(user).addPosition("Wing", new LocalTransform(new Vector3(0, 1.0, 50), Quaternion.buildRotationZ(new Degree(0))));
+            double distanceToModel = 50;
+            if (isAR()) {
+                distanceToModel = 0.5;
+            }
+            TeleportComponent.getTeleportComponent(user).addPosition("Wing", new LocalTransform(new Vector3(0, 1.0, distanceToModel), Quaternion.buildRotationZ(new Degree(0))));
 
-            //4.10.19 verdirbt der Observer VR? Offenbar nicht
-            /*31.10.23 now in ObserverSystem ObserverComponent oc = new ObserverComponent(getDefaultCamera().getCarrierTransform());
-            oc.setRotationSpeed(40);
-            UserSystem.getInitialUser().addComponent(oc);*/
+            //31.10.23 ObserverComponent is now added in ObserverSystem
 
             avatarInited = true;
-            // }
         }
 
         if (avatarInited && !modelInited) {
@@ -306,20 +336,18 @@ public class HangarScene extends Scene {
         Observer.getInstance().update();
     }
 
-
     /**
      * Nicht zu gross machen wegen WebGL. Da muss man sonst scrollen.
      *
      * @return
      */
-    @Override
+    /*1.2.24 @Override
     public Dimension getPreferredDimension() {
         if (((Platform) Platform.getInstance()).isDevmode()) {
             return new Dimension(1024, 768);
         }
         return null;
-    }
-
+    }*/
     public void cycleVehicle(int inc, int cnt) {
         vehicleindex += inc;
         if (vehicleindex < 0) {
@@ -374,13 +402,60 @@ public class HangarScene extends Scene {
                 pc.addPosition(key, basenode.getTransform(), new LocalTransform(viewpoints.get(key).position, viewpoints.get(key).rotation));
             }
 
+            // position will be (0,0,0)?
+            if (isAR()) {
+                double scale = 0.03;
+                currentaircraft.getTransform().setScale(new Vector3(scale, scale, scale));
+                // put it 'on the desk'
+                currentaircraft.getTransform().setPosition(new Vector3(0, 1, 0));
+            }
             addToWorld(currentaircraft);
+            // 1.2.24: Make it an entity to be grabable
+            EcsEntity modelEntity = new EcsEntity(currentaircraft);
+            modelEntity.addComponent(new GrabbingComponent());
 
             logger.debug("teleport positions:" + pc.getPointCount());
             for (int i = 0; i < pc.getPointCount(); i++) {
                 logger.debug("teleport position:" + pc.getPointLabel(i));
             }
         });
+    }
+
+    private boolean isAR() {
+        return vrMode != null && vrMode.equals("AR");
+    }
+
+    /**
+     * A simple control panel permanently attached to the left controller. Consists of
+     * <p>
+     * <p>
+     * top line: vr y offset spinner
+     * medium: spinner for teleport toggle
+     */
+    private ControlPanel buildVrControlPanel(Map<String, ButtonDelegate> buttonDelegates) {
+        Color backGround = Color.LIGHTBLUE;
+        Material mat = Material.buildBasicMaterial(backGround, false);
+
+        double ControlPanelWidth = 0.6;
+        double ControlPanelRowHeight = 0.1;
+        double ControlPanelMargin = 0.005;
+
+        int rows = 2;
+        DimensionF rowsize = new DimensionF(ControlPanelWidth, ControlPanelRowHeight);
+
+        ControlPanel cp = new ControlPanel(new DimensionF(ControlPanelWidth, rows * ControlPanelRowHeight), mat, 0.01);
+
+        // top line: property control for yvroffset
+        cp.add(new Vector2(0, ControlPanelHelper.calcYoffsetForRow(1, rows, ControlPanelRowHeight)), new SpinnerControlPanel(rowsize, ControlPanelMargin, mat, new NumericSpinnerHandler(0.1, new VrOffsetWrapper())));
+        // mid line
+        cp.add(new Vector2(0, ControlPanelHelper.calcYoffsetForRow(0, rows, ControlPanelRowHeight)), new SpinnerControlPanel(rowsize, ControlPanelMargin, mat,
+                new SelectSpinnerHandler(new String[]{"FPS", "Teleport"}, value -> {
+                    logger.debug("Toggle teleport");
+                    //TODO
+                    return null;
+                })));
+
+        return cp;
     }
 }
 

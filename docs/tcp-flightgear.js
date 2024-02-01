@@ -20,17 +20,14 @@ function addPanel(label, contentProvider, optionalElement) {
 }
 
 /*
- * 31.1.24: vr is no longer a boolean but either '','VR' or 'AR'.
+ * 31.1.24: vr is no longer a boolean but either null,'VR' or 'AR'.
  */
 function launchSingleScene(scene,vr,nearview,hud) {
 
     var args = new Map();
     addCommonArgs(args, "");
-    if (vr == 'VR') {
-        args.set("enableVR",vr);
-    }
-    if (vr == 'AR') {
-        args.set("enableAR",vr);
+    if (vr != null) {
+        args.set("vrMode",vr);
     }
     args.set("enableHud",hud);
     args.set("enableNearView",nearview);
