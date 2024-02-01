@@ -18,6 +18,7 @@ import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.HttpBundleResolver;
 import de.yard.threed.core.testutil.RuntimeTestUtil;
+import de.yard.threed.engine.Camera;
 import de.yard.threed.engine.FirstPersonController;
 import de.yard.threed.engine.Input;
 import de.yard.threed.engine.KeyCode;
@@ -31,11 +32,15 @@ import de.yard.threed.engine.apps.ModelSamples;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsSystem;
 import de.yard.threed.engine.ecs.EntityFilter;
+import de.yard.threed.engine.ecs.InputToRequestSystem;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.ecs.TeleportComponent;
 import de.yard.threed.engine.ecs.UserSystem;
 import de.yard.threed.engine.ecs.VelocityComponent;
 import de.yard.threed.engine.geometry.ShapeGeometry;
+import de.yard.threed.engine.gui.ControlMenuBuilder;
+import de.yard.threed.engine.gui.GuiGrid;
+import de.yard.threed.engine.gui.Icon;
 import de.yard.threed.engine.gui.MenuItem;
 import de.yard.threed.engine.gui.Text;
 import de.yard.threed.engine.platform.EngineHelper;
@@ -163,6 +168,9 @@ public class FlatAirportScene extends FlightTravelScene {
                 "traffic-advanced", "traffic-fg"};
     }
 
+    /**
+     * Runs after super.init()
+     */
     @Override
     public void customInit() {
         logger.debug("init FlatTravelScene");
@@ -170,6 +178,13 @@ public class FlatAirportScene extends FlightTravelScene {
         //29.1.23 AbstractSceneRunner.instance.httpClient = new AirportDataProviderMock();
         SystemManager.addSystem(new GroundServicesSystem());
         SystemManager.addSystem(new AutomoveSystem());
+
+        ((InputToRequestSystem)SystemManager.findSystem(InputToRequestSystem.TAG)).setControlMenuBuilder(new ControlMenuBuilder() {
+            @Override
+            public GuiGrid buildControlMenu(Camera camera) {
+                return buildControlMenuForScene(camera);
+            }
+        });
         //31.10.21commoninit();
         //27.3.18 initFG();
         //3.4.18: FGGlobals wird aber fuer Aircraft laden gebraucht
@@ -344,12 +359,14 @@ public class FlatAirportScene extends FlightTravelScene {
         return new MenuItem[]{
                 new MenuItem(null, new Text("Default Trip", Color.RED, Color.LIGHTGRAY), () -> {
                     logger.debug("Default Trip");
-                    //6.10.21 menuCycler.close();
+                    // close menu
+                    InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
                     TravelHelper.startDefaultTrip(getAvatarVehicle());
                 }),
                 new MenuItem(null, new Text("Auto Start", Color.RED, Color.LIGHTGRAY), () -> {
                     SystemManager.putRequest(new Request(UserSystem.USER_REQUEST_AUTOMOVE));
-                    //6.10.21 menuCycler.close();
+                    // close menu
+                    InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
                 }),
                 new MenuItem(null, new Text("Teleport", Color.RED, Color.LIGHTGRAY), () -> {
                     SystemManager.putRequest(new Request(UserSystem.USER_REQUEST_TELEPORT, new Payload(new Object[]{new IntHolder(0)})));
@@ -360,7 +377,16 @@ public class FlatAirportScene extends FlightTravelScene {
                     // no userid known. Might not be user related. Maybe the request via parameter isn't used any more.
                     Request request = RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null);
                     SystemManager.putRequest(request);
-                    //menuCycler.close();
+                    // close menu
+                    InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
+                }),
+                new MenuItem(null, new Text("Service", Color.RED, Color.LIGHTGRAY), () -> {
+                    if (markedaircraft != null) {
+                        markDoor(markedaircraft);
+                        GroundServicesSystem.requestService(markedaircraft);
+                    }
+                    // close menu
+                    InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
                 }),
         };
     }
@@ -997,6 +1023,31 @@ public class FlatAirportScene extends FlightTravelScene {
         //27.10.21 gsw.vehiclelist = tw.getVehicleListByName(vehiclelistname);
         //28.10.21 TrafficSystem.vehiclelist = tw.getVehicleListByName(vehiclelistname);
         //return null;
+    }
+
+    /**
+     * Non VR Control menu.
+     * <p>
+     */
+    public GuiGrid buildControlMenuForScene(Camera camera) {
+
+        GuiGrid controlmenu = GuiGrid.buildForCamera(camera, 2, 4, 1, Color.BLACK_FULLTRANSPARENT, true);
+
+        controlmenu.addButton(0, 0, 1, Icon.ICON_POSITION, () -> {
+            InputToRequestSystem.sendRequestWithId(new Request(UserSystem.USER_REQUEST_TELEPORT, new Payload(new Object[]{new IntHolder(0)})));
+        });
+        controlmenu.addButton(1, 0, 1, Icon.ICON_MENU, () -> {
+            InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
+        });
+        // no better icon?
+        controlmenu.addButton(2, 0, 1, Icon.ICON_VERTICALLINE, () -> {
+            cycleAircraft();
+            updateHud();
+        });
+        controlmenu.addButton(3, 0, 1, Icon.ICON_CLOSE, () -> {
+            InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_CONTROLMENU));
+        });
+        return controlmenu;
     }
 }
 

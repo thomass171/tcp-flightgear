@@ -104,7 +104,7 @@ import java.util.Map;
  * <p>
  * 4.12.23: Migration from TrafficWorldConfig to TrafficConfig (without sceneconfig).
  * 30.1.24: f.k.a. CockpitScene
- * 1.2.24: Prepared for AR.
+ * 1.2.24: Prepared for AR and a new loaded vehicle no longer replaces the current but is located behind.
  */
 public class HangarScene extends Scene {
     Log logger = Platform.getInstance().getLog(HangarScene.class);
@@ -112,7 +112,6 @@ public class HangarScene extends Scene {
     FirstPersonController fps = null;
     boolean usearp = true;
     int vehicleindex = 0;
-    SceneNode currentaircraft = null;
     /*4.12.23 TrafficWorldConfig*/ TrafficConfig tw;
     SceneNode hud;
     List<String> vehiclelist = new ArrayList<String>();
@@ -196,7 +195,7 @@ public class HangarScene extends Scene {
             // und unten in der Mitte ein breiter Button mit Text
             menu.addButton(/*new Request(rs.REQUEST_CLOSE),*/ 2, 0, 2, new Text("Load", Color.BLUE, Color.LIGHTBLUE), () -> {
                 //unpraktisch weil man vielleicht weiter möchte rs.menuCycler.close();
-                cycleVehicle(1, vehiclelist.size());
+                addNextVehicle();
             });
 
             IntHolder option = new IntHolder(0);
@@ -240,11 +239,8 @@ public class HangarScene extends Scene {
             vrInstance.attachControlPanelToController(vrInstance.getController(0), leftControllerPanel);
 
         } else {
-            /* TODO 1.2.24: add menucycler to inputToRequestSystem.setControlMenuBuilder(new ShowroomControlMenuBuilder(this));
-            inputToRequestSystem.addKeyMapping(KeyCode.M, InputToRequestSystem.USER_REQUEST_MENU);
-            inputToRequestSystem.setMenuProvider(new DefaultMenuProvider(getDefaultCamera(), () -> {
-                return menu;
-            }));*/
+            // TODO 1.2.24: add menucycler to inputToRequestSystem
+            inputToRequestSystem.setControlMenuBuilder(camera -> buildControlMenuForScene(camera));
         }
 
         addLight();
@@ -318,17 +314,13 @@ public class HangarScene extends Scene {
         }
 
         if (avatarInited && !modelInited) {
-            newModel(vehicleindex);
+            addNextVehicle();
             modelInited = true;
         }
 
         //1.1.20 N->L
         if (Input.getKeyDown(KeyCode.L)) {
-            if (Input.getKey(KeyCode.Shift)) {
-                cycleVehicle(-1, vehiclelist.size());
-            } else {
-                cycleVehicle(1, vehiclelist.size());
-            }
+            addNextVehicle();
         }
         Point mouselocation = Input.getMouseDown();
 
@@ -348,22 +340,17 @@ public class HangarScene extends Scene {
         }
         return null;
     }*/
-    public void cycleVehicle(int inc, int cnt) {
-        vehicleindex += inc;
-        if (vehicleindex < 0) {
-            vehicleindex = cnt - 1;
+    public void addNextVehicle() {
+        vehicleindex += 1;
+        if (vehicleindex >= vehiclelist.size()) {
+            logger.info("no more vehicles");
+            return;
         }
-        if (vehicleindex >= cnt) {
-            vehicleindex = 0;
-        }
-        newModel(vehicleindex);
+        newModel(vehicleindex - 1);
     }
 
     private void newModel(int index) {
-        if (currentaircraft != null) {
-            SceneNode.removeSceneNode(currentaircraft);
-            currentaircraft = null;
-        }
+
         //FlightGearAircraft aircraft = FlightGearAircraft.aircrafts[index];
         VehicleDefinition config;
         //if (index < vehiclelist.size()){
@@ -384,7 +371,7 @@ public class HangarScene extends Scene {
         new FgVehicleLoader()/*FgVehicleLauncher*/.loadVehicle(new Vehicle(vehiclelist.get(index)), config, (SceneNode container, VehicleLoaderResult loaderResult/*List<SGAnimation> animationList, SGPropertyNode propertyNode,*/, SceneNode lowresNode) -> {
             //SceneNode basenode=container;
             SceneNode basenode = VehicleLauncher.getModelNodeFromVehicleNode(container);
-            currentaircraft = container;
+            SceneNode currentaircraft = container;
 
             LocalTransform vehiclebasetransform = /*5.12.23sceneConfig*/tw.getBaseTransformForVehicleOnGraph();
             if (vehiclebasetransform != null) {
@@ -393,23 +380,28 @@ public class HangarScene extends Scene {
             }
 
             TeleportComponent pc = TeleportComponent.getTeleportComponent(UserSystem.getInitialUser());
-            //TODO besser erkennen , welche alten weg müssen
-            pc.removePosition("Captain");
-            pc.removePosition("Driver");
-            pc.removePosition("BackSide");
             Map<String, LocalTransform> viewpoints = config.getViewpoints();
             for (String key : viewpoints.keySet()) {
                 pc.addPosition(key, basenode.getTransform(), new LocalTransform(viewpoints.get(key).position, viewpoints.get(key).rotation));
             }
 
             // position will be (0,0,0)?
+            Vector3 destination = new Vector3();
             if (isAR()) {
                 double scale = 0.03;
                 currentaircraft.getTransform().setScale(new Vector3(scale, scale, scale));
-                // put it 'on the desk'
-                currentaircraft.getTransform().setPosition(new Vector3(0, 1, 0));
+                // put it 'on the desk'. Stack all together. The user might grab and relocate.
+                destination = new Vector3(0, 1, 0);
+            } else {
+                // locate one by the other
+                destination = new Vector3(0, 0, vehicleindex * -30);
+                // additional front view
+                pc.addPosition("front", new LocalTransform(destination.add(new Vector3(-30, 4, 0)), Quaternion.buildRotationY(new Degree(-90))));
             }
+            currentaircraft.getTransform().setPosition(destination);
             addToWorld(currentaircraft);
+
+
             // 1.2.24: Make it an entity to be grabable
             EcsEntity modelEntity = new EcsEntity(currentaircraft);
             modelEntity.addComponent(new GrabbingComponent());
@@ -431,6 +423,7 @@ public class HangarScene extends Scene {
      * <p>
      * top line: vr y offset spinner
      * medium: spinner for teleport toggle
+     * bottom: load button
      */
     private ControlPanel buildVrControlPanel(Map<String, ButtonDelegate> buttonDelegates) {
         Color backGround = Color.LIGHTBLUE;
@@ -440,23 +433,56 @@ public class HangarScene extends Scene {
         double ControlPanelRowHeight = 0.1;
         double ControlPanelMargin = 0.005;
 
-        int rows = 2;
+        int rows = 3;
         DimensionF rowsize = new DimensionF(ControlPanelWidth, ControlPanelRowHeight);
 
         ControlPanel cp = new ControlPanel(new DimensionF(ControlPanelWidth, rows * ControlPanelRowHeight), mat, 0.01);
 
         // top line: property control for yvroffset
-        cp.add(new Vector2(0, ControlPanelHelper.calcYoffsetForRow(1, rows, ControlPanelRowHeight)), new SpinnerControlPanel(rowsize, ControlPanelMargin, mat, new NumericSpinnerHandler(0.1, new VrOffsetWrapper())));
+        cp.add(new Vector2(0, ControlPanelHelper.calcYoffsetForRow(2, rows, ControlPanelRowHeight)), new SpinnerControlPanel(rowsize, ControlPanelMargin, mat, new NumericSpinnerHandler(0.1, new VrOffsetWrapper())));
         // mid line
-        cp.add(new Vector2(0, ControlPanelHelper.calcYoffsetForRow(0, rows, ControlPanelRowHeight)), new SpinnerControlPanel(rowsize, ControlPanelMargin, mat,
+        cp.add(new Vector2(0, ControlPanelHelper.calcYoffsetForRow(1, rows, ControlPanelRowHeight)), new SpinnerControlPanel(rowsize, ControlPanelMargin, mat,
                 new SelectSpinnerHandler(new String[]{"FPS", "Teleport"}, value -> {
                     logger.debug("Toggle teleport");
                     //TODO
                     return null;
                 })));
-
+        // bottom line:
+        cp.addArea(new Vector2(0, ControlPanelHelper.calcYoffsetForRow(0, rows, ControlPanelRowHeight)),
+                new DimensionF(ControlPanelWidth / 3, ControlPanelRowHeight), () -> {
+                    logger.debug("load clicked");
+                    addNextVehicle();
+                }).setIcon(Icon.ICON_VERTICALLINE);
         return cp;
     }
+
+    /**
+     * Non VR Control menu.
+     * <p>
+     */
+    public GuiGrid buildControlMenuForScene(Camera camera) {
+
+        GuiGrid controlmenu = GuiGrid.buildForCamera(camera, 2, 4, 1, Color.BLACK_FULLTRANSPARENT, true);
+
+        controlmenu.addButton(0, 0, 1, Icon.ICON_POSITION, () -> {
+            InputToRequestSystem.sendRequestWithId(new Request(UserSystem.USER_REQUEST_TELEPORT, new Payload(new Object[]{new IntHolder(0)})));
+        });
+        // no better icon?
+        controlmenu.addButton(1, 0, 1, Icon.ICON_VERTICALLINE, () -> {
+            // load next not yet loaded vehicle.
+            //not working TODO but should SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
+            addNextVehicle();
+        });
+        controlmenu.addButton(2, 0, 1, Icon.ICON_MENU, () -> {
+            // TODO link to menucycler
+            InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
+        });
+        controlmenu.addButton(3, 0, 1, Icon.ICON_CLOSE, () -> {
+            InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_CONTROLMENU));
+        });
+        return controlmenu;
+    }
+
 }
 
 class CockpitMenuBuilder implements MenuProvider {

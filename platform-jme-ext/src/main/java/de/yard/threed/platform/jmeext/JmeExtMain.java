@@ -30,14 +30,14 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
     @Override
     public HashMap<String, String> getInitialProperties() {
         HashMap<String, String> properties = new HashMap<String, String>();
-        properties.put("argv.enableUsermode", "false");
+        properties.put("enableUsermode", "false");
         properties.put("visualizeTrack", "true");
-        properties.put("argv.enableHud", "true");
+        properties.put("enableHud", "true");
 
         boolean emulateVR = false;
         if (emulateVR) {
-            properties.put("argv.emulateVR", "true");
-            properties.put("argv.yoffsetVR", "0.3");
+            properties.put("emulateVR", "true");
+            properties.put("yoffsetVR", "0.3");
         }
 
         properties.put("logging.level.de.yard.threed","DEBUG");
@@ -67,7 +67,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
 
         // traffic-advanced
         properties.put("scene", "de.yard.threed.trafficadvanced.apps.FlatAirportScene");
-        properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
+        //properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         properties.put("scene", "de.yard.threed.trafficadvanced.apps.HangarScene");
 
         return properties;
