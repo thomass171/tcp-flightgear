@@ -3,6 +3,7 @@ package de.yard.threed.trafficadvanced.apps;
 import de.yard.threed.core.Color;
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.Dimension;
+import de.yard.threed.core.DimensionF;
 import de.yard.threed.core.Event;
 import de.yard.threed.core.IntHolder;
 import de.yard.threed.core.LatLon;
@@ -39,15 +40,20 @@ import de.yard.threed.engine.ecs.UserSystem;
 import de.yard.threed.engine.ecs.VelocityComponent;
 import de.yard.threed.engine.geometry.ShapeGeometry;
 import de.yard.threed.engine.gui.ControlMenuBuilder;
+import de.yard.threed.engine.gui.ControlPanel;
+import de.yard.threed.engine.gui.ControlPanelArea;
 import de.yard.threed.engine.gui.GuiGrid;
 import de.yard.threed.engine.gui.Icon;
 import de.yard.threed.engine.gui.MenuItem;
+import de.yard.threed.engine.gui.PanelGrid;
 import de.yard.threed.engine.gui.Text;
+import de.yard.threed.engine.gui.TextTexture;
 import de.yard.threed.engine.platform.EngineHelper;
 import de.yard.threed.engine.platform.ProcessPolicy;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.platform.common.Settings;
+import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.TerrainElevationProvider;
@@ -163,8 +169,8 @@ public class FlatAirportScene extends FlightTravelScene {
         //30.12.23 FlightGearSettings.FGROOTCOREBUNDLE,"fgdatabasic" now have provider for bundlepool, no longer GRANADADIR
         // "fgdatabasic" in project is only a small subset. The external should have 'before' prio to load instead of subset.
         // "data" is needed for taxiway ground texture.
-        Platform.getInstance().addBundleResolver(new HttpBundleResolver("fgdatabasic@https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"),true);
-        return new String[]{"engine", "data",  FlightGearSettings.FGROOTCOREBUNDLE,"fgdatabasic", /*9.12.23 "data-old", "fgdatabasic", "fgdatabasicmodel", FlightGearSettings.FGROOTCOREBUNDLE, "osmscenery",*/
+        Platform.getInstance().addBundleResolver(new HttpBundleResolver("fgdatabasic@https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"), true);
+        return new String[]{"engine", "data", FlightGearSettings.FGROOTCOREBUNDLE, "fgdatabasic", /*9.12.23 "data-old", "fgdatabasic", "fgdatabasicmodel", FlightGearSettings.FGROOTCOREBUNDLE, "osmscenery",*/
                 "traffic-advanced", "traffic-fg"};
     }
 
@@ -179,12 +185,14 @@ public class FlatAirportScene extends FlightTravelScene {
         SystemManager.addSystem(new GroundServicesSystem());
         SystemManager.addSystem(new AutomoveSystem());
 
-        ((InputToRequestSystem)SystemManager.findSystem(InputToRequestSystem.TAG)).setControlMenuBuilder(new ControlMenuBuilder() {
-            @Override
-            public GuiGrid buildControlMenu(Camera camera) {
-                return buildControlMenuForScene(camera);
-            }
-        });
+        if (VrInstance.getInstance() == null) {
+            ((InputToRequestSystem) SystemManager.findSystem(InputToRequestSystem.TAG)).setControlMenuBuilder(new ControlMenuBuilder() {
+                @Override
+                public GuiGrid buildControlMenu(Camera camera) {
+                    return buildControlMenuForScene(camera);
+                }
+            });
+        }
         //31.10.21commoninit();
         //27.3.18 initFG();
         //3.4.18: FGGlobals wird aber fuer Aircraft laden gebraucht
@@ -276,8 +284,6 @@ public class FlatAirportScene extends FlightTravelScene {
 
         initHud();
         updateHud();
-
-        //7.5.19 Asbach TrafficSystem.loadVehicles(tw, -1);
 
         SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, TerrainElevationProvider.buildForStaticAltitude(0));
 
@@ -372,11 +378,7 @@ public class FlatAirportScene extends FlightTravelScene {
                     SystemManager.putRequest(new Request(UserSystem.USER_REQUEST_TELEPORT, new Payload(new Object[]{new IntHolder(0)})));
                 }),
                 new MenuItem(null, new Text("Load", Color.RED, Color.LIGHTGRAY), () -> {
-                    //Request request = new Request(RequestRegistry.TRAFFIC_REQUEST_LOADVEHICLE);
-                    //requestQueue.addRequest(request);
-                    // no userid known. Might not be user related. Maybe the request via parameter isn't used any more.
-                    Request request = RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null);
-                    SystemManager.putRequest(request);
+                    SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
                     // close menu
                     InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
                 }),
@@ -739,6 +741,72 @@ public class FlatAirportScene extends FlightTravelScene {
         return EDDK_CENTER;
     }
 
+    /**
+     * Override the default control panel.
+     * A traffic 3x3 control panel permanently attached to the left controller. Consists of
+     * <p>
+     * 0) load - automove - finetune up
+     * 1) aircraft selector
+     * 2) service - trip - finetune down
+     * teleport not needed because already on VR button.
+     */
+    @Override
+    public ControlPanel buildVrControlPanel() {
+
+        double ControlPanelWidth = 0.3;
+        double ControlPanelRowHeight = 0.1;
+        int ControlPanelRows = 3;
+        double[] ControlPanelColWidth = new double[]{0.1, 0.1, 0.1};
+        double ControlPanelMargin = 0.005;
+        Color controlPanelBackground = Color.LIGHTGREEN;
+
+        ControlPanel cp = new ControlPanel(new DimensionF(ControlPanelWidth, ControlPanelRows * ControlPanelRowHeight), Material.buildBasicMaterial(controlPanelBackground, false), 0.01);
+        PanelGrid panelGrid = new PanelGrid(ControlPanelWidth, ControlPanelRowHeight, ControlPanelRows, ControlPanelColWidth);
+
+        // top line:
+        cp.addArea(panelGrid.getPosition(0, 2), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
+            logger.debug("load clicked");
+            SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
+        }).setIcon(Icon.IconCharacter(11));
+        cp.addArea(panelGrid.getPosition(1, 2), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () ->
+                SystemManager.putRequest(new Request(UserSystem.USER_REQUEST_AUTOMOVE))).setIcon(Icon.IconCharacter(0));
+        cp.addArea(panelGrid.getPosition(2, 2), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), buttonDelegates.get("up")).setIcon(Icon.ICON_UPARROW);
+
+        // mid line
+        //double iconsize = size.height - 2 * margin;
+        double iconareasize = ControlPanelRowHeight;
+        double textareawidth = ControlPanelWidth - 1 * iconareasize;
+
+        // text has no margin yet.
+        TextTexture textTexture = new TextTexture(Color.LIGHTGRAY);
+        ControlPanelArea textArea = cp.addArea(new Vector2(-iconareasize/2, 0), new DimensionF(textareawidth, ControlPanelRowHeight), null);
+        // empty string fails due to length 0
+        textArea.setTexture(textTexture.getTextureForText(" ", Color.RED));
+        updateMarkedAircraft(textArea, textTexture);
+
+        cp.addArea(panelGrid.getPosition(2, 1), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
+            cycleAircraft();
+            //updateHud();
+            updateMarkedAircraft(textArea, textTexture);
+        }).setIcon(Icon.ICON_PLUS);
+
+        // bottom line:
+        cp.addArea(panelGrid.getPosition(0, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
+            if (markedaircraft != null) {
+                markDoor(markedaircraft);
+                GroundServicesSystem.requestService(markedaircraft);
+            }
+        }).setIcon(Icon.IconCharacter(18));
+        cp.addArea(panelGrid.getPosition(1, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
+            TravelHelper.startDefaultTrip(getAvatarVehicle());
+        }).setIcon(Icon.IconCharacter(19));
+        cp.addArea(panelGrid.getPosition(2, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), buttonDelegates.get("down")).setIcon(Icon.ICON_DOWNARROW);
+        return cp;
+    }
+
+    private void updateMarkedAircraft(ControlPanelArea textArea, TextTexture textTexture) {
+        textArea.setTexture(textTexture.getTextureForText(((markedaircraft != null) ? markedaircraft.getName() : " "), Color.RED));
+    }
     /*@Override jetzt in config
     protected Quaternion getBaseRotationForVehicleOnGraph() {
         Quaternion rotationforgraph = Quaternion.buildFromAngles(new Degree(-90), new Degree(-90), new Degree(0));
@@ -1039,8 +1107,7 @@ public class FlatAirportScene extends FlightTravelScene {
         controlmenu.addButton(1, 0, 1, Icon.ICON_MENU, () -> {
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
         });
-        // no better icon?
-        controlmenu.addButton(2, 0, 1, Icon.ICON_VERTICALLINE, () -> {
+        controlmenu.addButton(2, 0, 1, Icon.ICON_PLUS, () -> {
             cycleAircraft();
             updateHud();
         });

@@ -452,7 +452,7 @@ public class HangarScene extends Scene {
                 new DimensionF(ControlPanelWidth / 3, ControlPanelRowHeight), () -> {
                     logger.debug("load clicked");
                     addNextVehicle();
-                }).setIcon(Icon.ICON_VERTICALLINE);
+                }).setIcon(Icon.IconCharacter(11));
         return cp;
     }
 
@@ -467,8 +467,7 @@ public class HangarScene extends Scene {
         controlmenu.addButton(0, 0, 1, Icon.ICON_POSITION, () -> {
             InputToRequestSystem.sendRequestWithId(new Request(UserSystem.USER_REQUEST_TELEPORT, new Payload(new Object[]{new IntHolder(0)})));
         });
-        // no better icon?
-        controlmenu.addButton(1, 0, 1, Icon.ICON_VERTICALLINE, () -> {
+        controlmenu.addButton(1, 0, 1, Icon.ICON_PLUS, () -> {
             // load next not yet loaded vehicle.
             //not working TODO but should SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
             addNextVehicle();
