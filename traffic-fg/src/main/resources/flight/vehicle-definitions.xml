@@ -25,16 +25,13 @@
         <acceleration>14.5</acceleration>
         <!-- 55 kn, vr brauch ich eigentlich nicht
         <vr>28.3</vr> 20.11.23 dann lass ich es mal weg -->
-
-
         <viewpoint name="Captain">
-            <!-- -->
+            <!-- 5.2.24: heads up: position 1.45 seems appx 1.2 too low when attaching wrong node (skipping zoffset).-->
             <transform>
                 <position>-7.26, 0, 1.45</position>
                 <angle>90, 0, 90</angle>
             </transform>
         </viewpoint>
-
         <aircraftdir>bluebird</aircraftdir>
         <optional>nav_sphere_L1</optional>
         <optional>nav_sphere_L2</optional>
@@ -43,7 +40,6 @@
         <optional>strobe_sphere_L</optional>
         <optional>strobe_sphere_R</optional>
         <optional>Shadow</optional>
-
     </vehicledefinition>
 
     <!--navigator: aircraft oder nicht? -->

@@ -21,6 +21,7 @@ import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialLib;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.engine.platform.common.ModelLoader;
+import de.yard.threed.flightgear.core.simgear.scene.tgdb.ReaderWriterSTG;
 import de.yard.threed.javacommon.ConfigurationByEnv;
 import de.yard.threed.javacommon.DefaultResourceReader;
 import de.yard.threed.javacommon.SimpleHeadlessPlatform;
@@ -69,6 +70,7 @@ public class FgTestFactory {
     public static Platform initPlatformForTest(HashMap<String, String> properties, boolean addTestResourcesBundle, boolean fullFG) {
 
         FgBundleHelper.clear();
+        ReaderWriterSTG.btgLoaded.clear();
 
         // 29.12.21: Some bundles need to be loaded after init()
         // 12.9.23: FlightGearSettings.FGROOTCOREBUNDLE might be needed in future for aircraft loading (apparently not needed for bluebird)

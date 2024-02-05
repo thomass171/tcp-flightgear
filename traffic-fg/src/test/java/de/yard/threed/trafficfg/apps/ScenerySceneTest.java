@@ -29,7 +29,20 @@ public class ScenerySceneTest {
      */
     @Test
     public void testLaunch() {
-        sceneRunner = buildSceneRunner("de.yard.threed.trafficfg.apps.SceneryScene",new HashMap<>(), INITIAL_FRAMES);
+        launch(null);
+    }
+
+    @Test
+    public void testLaunchWithVehicle() {
+        launch("bluebird");
+    }
+
+    private void launch(String initialVehicle) {
+        HashMap<String, String> properties = new HashMap<String, String>();
+        if (initialVehicle != null) {
+            properties.put("initialVehicle", initialVehicle);
+        }
+        sceneRunner = buildSceneRunner("de.yard.threed.trafficfg.apps.SceneryScene", properties, INITIAL_FRAMES);
         Log logger = Platform.getInstance().getLog(ScenerySceneTest.class);
 
         EcsEntity userEntity = SystemManager.findEntities(e -> "pilot".equals(e.getName())).get(0);
@@ -44,9 +57,9 @@ public class ScenerySceneTest {
         String[] bundleNames = BundleRegistry.getBundleNames();
 
         // 9 is typical and plausibel if all tiles are available. Why 10 with project bundles? TODO check
-        assertEquals( 10, FlightGearModuleScenery.getInstance().get_scenery().get_terrain_branch().getTransform().getChildCount(),"terraingroup.children");
+        assertEquals(10, FlightGearModuleScenery.getInstance().get_scenery().get_terrain_branch().getTransform().getChildCount(), "terraingroup.children");
         // Was 12 with full scenery. 5 seems convincing with projects tile set.  EDDK,...
-        assertEquals( 5, ReaderWriterSTG.btgLoaded.size(),"loaded btgs");
+        assertEquals(5, ReaderWriterSTG.btgLoaded.size(), "loaded btgs");
 
     }
 
@@ -59,9 +72,9 @@ public class ScenerySceneTest {
         properties.put("scene", scene);
         properties.putAll(additionalProperties);
         // buildDefaultConfigurationWithEnv is needed for HOSTDIR
-        FgTestFactory.initPlatformForTest(properties,false, true);
+        FgTestFactory.initPlatformForTest(properties, false, true);
         // not sufficient SceneRunnerForTesting sceneRunner = SceneRunnerForTesting.setupForScene(initial_frames, ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties), new String[]{"engine", SGMaterialLib.BUNDLENAME});
-        SceneRunnerForTesting sceneRunner = (SceneRunnerForTesting)SceneRunnerForTesting.getInstance();
+        SceneRunnerForTesting sceneRunner = (SceneRunnerForTesting) SceneRunnerForTesting.getInstance();
         sceneRunner.runLimitedFrames(initial_frames);
         return sceneRunner;
     }

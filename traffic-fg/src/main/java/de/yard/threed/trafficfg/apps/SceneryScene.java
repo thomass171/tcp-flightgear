@@ -12,6 +12,7 @@ import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
+import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.engine.BaseEventRegistry;
 import de.yard.threed.engine.BaseRequestRegistry;
 import de.yard.threed.engine.DirectionalLight;
@@ -23,6 +24,7 @@ import de.yard.threed.engine.ObserverSystem;
 import de.yard.threed.engine.Scene;
 import de.yard.threed.engine.SceneMode;
 import de.yard.threed.engine.SceneNode;
+import de.yard.threed.engine.Transform;
 import de.yard.threed.engine.apps.ModelSamples;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.FirstPersonMovingComponent;
@@ -35,6 +37,7 @@ import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.FgTerrainBuilder;
+import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearMain;
 import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.SimpleBundleResourceProvider;
@@ -47,17 +50,26 @@ import de.yard.threed.traffic.AbstractTerrainBuilder;
 import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.EllipsoidConversionsProvider;
 import de.yard.threed.traffic.ScenerySystem;
+import de.yard.threed.traffic.TrafficConfig;
+import de.yard.threed.traffic.VehicleLauncher;
+import de.yard.threed.traffic.VehicleLoaderResult;
 import de.yard.threed.traffic.WorldGlobal;
+import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.flight.FlightLocation;
+import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.FgCalculations;
 
+
+import java.util.List;
+import java.util.Map;
 
 import static de.yard.threed.engine.ecs.TeleporterSystem.EVENT_POSITIONCHANGED;
 
 /**
- * A scene for first person moving through a scenery/terrain. No traffic.
+ * A scene for first person moving through a scenery/terrain. No traffic, no graph, no ground services.
  * Derived from TravelScene.
- * No login/avatar (so no user or AvatarSystem), just an entity with simple node that is FPS moved.
+ * No login/avatar (so no user or AvatarSystem, user is manually registered as 'acting player'), just an entity with simple node that is FPS moved.
+ * Also no teleport.
  * <p>
  * <p>
  * The origin of this coordinate system is the center of the earth. The X axis runs along a line from the center of the earth
@@ -70,24 +82,20 @@ import static de.yard.threed.engine.ecs.TeleporterSystem.EVENT_POSITIONCHANGED;
  */
 public class SceneryScene extends Scene {
     static Log logger = Platform.getInstance().getLog(SceneryScene.class);
-    Light light;
-    private static final int WIDTH = 1024;
-    private static final int HEIGHT = 768;
 
-    // erste Position. 6/17: 3=equator,4=Dahlem ,5=EDDK
-    int startpos = 5;
-    // 17.1.18: Den StgCycler lass ich mal fuer ScneryViewer
-    private boolean usestgcycler = false;
-    //private StgCycler stgcycler;
+    private boolean waitsForInitialVehicle = false;
     private EcsEntity userEntity = null;
     EllipsoidCalculations ellipsoidCalculations;
+    private EcsEntity vehicleEntity = null;
+    private LocalTransform captainPosition;
+    private SceneNode vehicleModelnode = null;
 
     @Override
     public String[] getPreInitBundle() {
 
         //'TerraSync-model' is loaded in preinit to avoid async issues if done later. Needs required custom resolver be available in plaform setup
-        return new String[]{"engine", FlightGear.getBucketBundleName("model"), /*2.10.23 "data-old", "data", "fgdatabasic", "fgdatabasicmodel",FlightGear.getBucketBundleName("model"),FlightGearSettings.FGROOTCOREBUNDLE*/ "sgmaterial"
-                /*BundleRegistry.FGHOMECOREBUNDLE,*/};
+        // "fgdatabasic" and "traffic-fg" are needed for bluebird
+        return new String[]{"engine", FlightGear.getBucketBundleName("model"), "sgmaterial", "fgdatabasic", "traffic-fg"};
     }
 
     /**
@@ -150,6 +158,18 @@ public class SceneryScene extends Scene {
         addLight();
 
         ModelLoader.processPolicy = new ACProcessPolicy(null);
+
+        String initialVehicle = Platform.getInstance().getConfiguration().getString("initialVehicle");
+        if (initialVehicle != null) {
+            waitsForInitialVehicle = true;
+            TrafficConfig tc = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), new BundleResource("flight/vehicle-definitions.xml"));
+            List<VehicleDefinition> vehicleDefinitions = tc.findVehicleDefinitionsByName(initialVehicle);
+            if (vehicleDefinitions.size() == 0) {
+                logger.warn("vehicle not found: " + initialVehicle);
+            } else {
+                loadInitialVehicle(vehicleDefinitions.get(0));
+            }
+        }
     }
 
     @Override
@@ -193,24 +213,37 @@ public class SceneryScene extends Scene {
         //double currentdelta = getDeltaTime();
         //commonUpdate();
 
-        if (userEntity == null) {
-            // just an invisible node
-            SceneNode node = new SceneNode();
+        if (userEntity == null && !waitsForInitialVehicle) {
+            // one time runtime initialization
 
-            FirstPersonMovingComponent fpmc = new FirstPersonMovingComponent(node.getTransform());
-            fpmc.getFirstPersonTransformer().setMovementSpeed(150);
-            userEntity = new EcsEntity(node, fpmc);
+            // just an invisible node
+            SceneNode userNode = new SceneNode();
+            userEntity = new EcsEntity(userNode);
             userEntity.setName("pilot");
 
+            Transform transform;
+            Quaternion rotation;
+            if (vehicleEntity == null) {
+                transform = userNode.getTransform();
+            } else {
+                userNode.getTransform().setParent(vehicleModelnode.getTransform());
+                userNode.getTransform().setPosition(captainPosition.position);
+                userNode.getTransform().setRotation(captainPosition.rotation);
+                // decouple for FirstPersonTransformer
+                transform = new SceneNode(vehicleEntity.getSceneNode()).getTransform();
+            }
+            FirstPersonMovingComponent fpmc = new FirstPersonMovingComponent(transform);
+            fpmc.getFirstPersonTransformer().setMovementSpeed(150);
+            userEntity.addComponent(fpmc);
+
             LocalTransform loc = WorldGlobal.eddkoverview.location.toPosRot(ellipsoidCalculations);
-            node.getTransform().setPosition(loc.position);
+            transform.setPosition(loc.position);
             // Base rotation to make user node a FG model ...
-            Quaternion rotation = Quaternion.buildFromAngles(new Degree(-90), new Degree(180), new Degree(90));
             rotation = new OpenGlProcessPolicy(null).opengl2fg.extractQuaternion();
-            // .. that is suited for FG geo transformation. Unclear why it is this order of rotation multiply.
+            // .. that is suited for FG geo transformation and FirstPersonTransformers OpenGL coordinate system.
+            // Unclear why it is this order of rotation multiply.
             rotation = loc.rotation.multiply(rotation);
-            node.getTransform().setRotation(rotation);
-            //node.getTransform().setRotation(loc.rotation.multiply(processPolicy.ac2ogl.getInverse().extractQuaternion()));
+            transform.setRotation(rotation);
 
             // Let ObserverSystem attach observer
             SystemManager.sendEvent(BaseEventRegistry.buildUserAssembledEvent(userEntity));
@@ -235,7 +268,7 @@ public class SceneryScene extends Scene {
             logger.debug("scenegraph:" + dumpSceneGraph());
         }
 
-
+        Observer.getInstance().update();
     }
 
 
@@ -257,7 +290,34 @@ public class SceneryScene extends Scene {
         return getWorld();
     }
 
+    private void loadInitialVehicle(VehicleDefinition vehicleDefinition) {
+        logger.info("Loading initial vehicle " + vehicleDefinition.getName());
 
+        new FgVehicleLoader().loadVehicle(new Vehicle(vehicleDefinition.getName()), vehicleDefinition, (SceneNode container, VehicleLoaderResult loaderResult/*List<SGAnimation> animationList, SGPropertyNode propertyNode,*/, SceneNode lowresNode) -> {
+
+            vehicleModelnode = VehicleLauncher.getModelNodeFromVehicleNode(container);
+            SceneNode currentaircraft = container;
+
+            // world position is set later
+            // rotate from FG to FirstPersonTransformers coordinate system
+            currentaircraft.getTransform().setRotation(Quaternion.buildFromAngles(new Degree(-90), new Degree(-90), new Degree(0)));
+
+            Map<String, LocalTransform> viewpoints = vehicleDefinition.getViewpoints();
+            for (String key : viewpoints.keySet()) {
+                if (key.equals("Captain")) {
+                    captainPosition = new LocalTransform(viewpoints.get(key).position, viewpoints.get(key).rotation);
+                }
+            }
+
+            addToWorld(currentaircraft);
+
+            // Make it an entity to be ready for FirstPersonMoving
+            vehicleEntity = new EcsEntity(currentaircraft);
+            vehicleEntity.addComponent(new FirstPersonMovingComponent(currentaircraft.getTransform()));
+
+            waitsForInitialVehicle = false;
+        });
+    }
 }
 
 

@@ -74,8 +74,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wie OSM in der x/y Ebene. Nee, mal in y=0 Ebene versuchen. Das spart eine Menge Rotationen und sichert die Orientierungsunabhängigkeit
- * des Graphen.
+ * No longer like OSM in x/y layer but in y=0. Saves many rotations and eases graph using(?).
  * <p>
  * Intentionally not extending BasicTravelScene to be config independent and demonstrate several options.
  * No scale down to 'H0', just trackwidth 1.
@@ -87,21 +86,14 @@ import java.util.List;
  * 29.10.23 Migrating to tcp-flightgear
  * Created by thomass on 14.09.16.
  */
-public class RailingScene extends /*Graph*/Scene /*29.10.17, EventNotify*/ {
+public class RailingScene extends Scene {
     public Log logger = Platform.getInstance().getLog(RailingScene.class);
 
-    //10.1.19 moved to backyard EngineNode enginenode;
-    //MA31 SGPropertyNode rootnode = new SGPropertyNode();
-    int mode = 0;
-    SceneNode ground;
-    //SceneConfig sceneConfig;
     MenuCycler menuCycler = null;
     MenuItem[] menuitems;
     //21.10.19 optional
     NearView nearView = null;
     boolean enableNearView = false;
-    //11.5.21 enableLoweredAvatar = false;
-    Double yoffsetVR;
     //29.10.23 VehicleConfig vc;
 
     @Override
@@ -115,16 +107,6 @@ public class RailingScene extends /*Graph*/Scene /*29.10.17, EventNotify*/ {
         settings.vrready = true;
         settings.aasamples = 4;
     }
-
-    /*@Override
-    public void vrDisplayPresentChange(boolean isPresenting) {
-        logger.debug("vrDisplayPresentChange:isPresenting=" + isPresenting);
-        if (isPresenting) {
-            AvatarSystem.getAvatar().lowerVR();
-        } else {
-            AvatarSystem.getAvatar().raiseVR();
-        }
-    }*/
 
     @Override
     public void init(SceneMode forServer) {
@@ -148,11 +130,6 @@ public class RailingScene extends /*Graph*/Scene /*29.10.17, EventNotify*/ {
             //damit man erkennt, ob alles an home attached ist weg von (0,0,0) und etwas höher
             nearView.setPosition(new Vector3(-30, 10, -10));
         }
-
-        //29.10.23TrafficWorldSystem trafficWorldSystem = new TrafficWorldSystem(0, mode, enableNearView);
-        //29.10.23trafficWorldSystem.setSceneConfig(sceneConfig);
-        //29.10.23SystemManager.addSystem(trafficWorldSystem);
-
         //27.12.21 TODO: fehlt ein Terrainbuilder als Parameter?
         GraphTerrainSystem graphTerrainSystem = new GraphTerrainSystem(/*10.12.21this, getWorld()*/null);
         SystemManager.addSystem(graphTerrainSystem);
@@ -171,37 +148,19 @@ public class RailingScene extends /*Graph*/Scene /*29.10.17, EventNotify*/ {
 
         //jetzt in TrafficWorldSystem TrafficScene.addOutsidePositions(avatar.pc, sceneConfig.getViewpoints());
 
-        //29.10.23 vc = /*railingWorld*/ConfigHelper.getVehicleConfig(railingWorld.tw, "Locomotive");
-
-        // 24.11.20: avatartc nicht mehr reinstecken. Stattdessen ueber load event im AvatarSystem.
-        /* Lok laden ueber TRAFFIC_REQUEST_LOADVEHICLE2. Dafuer muss das aber erst in ein System.
-        VehicleHelper.launchVehicle(vc, TrafficWorldSystem.world.getGraph(), startposition, /*avatartc,* /null, getWorld(), null,
-                sceneConfig.getBaseTransformForVehicleOnGraph(), nearView, (ecsEntity -> {
-                    GraphMovingComponent.getGraphMovingComponent(ecsEntity).keycontrolled = true;
-                    GraphMovingComponent.getGraphMovingComponent(ecsEntity).setSelector(new RailingBranchSelector());
-
-                    // start in locomotive. Weil dann der TeleporterSystem.init schon gelaufen ist, muss auch "needsupdate" gesetzt werden, darum stepTo().
-                    //24.11.20 jetzt in AvatarSystem avatartc.stepTo(avatartc.getPointCount() - 1);
-                    //24.11.20 engine = ecsEntity;
-                }));
-*/
         TeleporterSystem ts = new TeleporterSystem();
-        //anim ist zu ruckelig/fehlerhaft
+        //anim is stuttering
         ts.setAnimated(false);
         SystemManager.addSystem(ts, 0);
-
 
         SystemManager.addSystem(new ObserverSystem(true), 0);
 
         SystemManager.addSystem(new GraphMovingSystem(), 0);
 
-        //12.2.18:Manchmal stört der axishelper einfach
-        //addToWorld(ModelSamples.buildAxisHelper(20));
-
         // Ob das System Setup hier gut ist, muss sich noch zeigen
         SystemManager.addSystem(new AnimationUpdateSystem());
 
-        //23.10.19: Jetzt die Plane mal wirklich unter die Gleise
+        //23.10.19: plane below rails
         Material goundmat = Material.buildLambertMaterial(Color.GREEN);
         double planewidth = 160;
         double planeheight = 640;
@@ -225,14 +184,6 @@ public class RailingScene extends /*Graph*/Scene /*29.10.17, EventNotify*/ {
 
         SystemManager.addSystem(new InputToRequestSystem());
 
-        /*26.11.20 de.yard.threed.ecs.Player.init(avatar);
-
-        if (yoffsetVR != null) {
-            avatar.setBestPracticeRiftvryoffset((double) yoffsetVR);
-        }
-        if (enableLoweredAvatar) {
-            avatar.lowerVR();
-        }*/
         SystemManager.addSystem(new UserSystem());
 
         TrafficSystem trafficSystem = new TrafficSystem();
@@ -276,8 +227,6 @@ public class RailingScene extends /*Graph*/Scene /*29.10.17, EventNotify*/ {
         if (EngineHelper.isEnabled("argv.enableNearView")) {
             enableNearView = true;
         }
-
-        yoffsetVR = Platform.getInstance().getConfiguration().getDouble("argv.yoffsetVR");
     }
 
     @Override
@@ -317,12 +266,6 @@ public class RailingScene extends /*Graph*/Scene /*29.10.17, EventNotify*/ {
                 localState++;
                 break;
         }
-
-        //Avatar avatar = AvatarSystem.getAvatar();
-        /*14.12.21 fuer observer, wird aber schon woanderrs gemacht
-        if (avatar!=null) {
-            avatar.update();
-        }*/
 
         Point mouselocation = Input.getMouseDown();
 

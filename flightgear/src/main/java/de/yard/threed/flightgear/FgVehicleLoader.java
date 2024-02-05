@@ -49,8 +49,8 @@ public class FgVehicleLoader implements VehicleLoader {
      * <p>
      * Erstellt noch keine Entity, das ist ein separater Schritt.
      * 9.11.21 Moved here from static FgVehicleLauncher
+     * 5.2.24: Aren't Vehicle and VehicleDefinition somehow redundant?
      *
-     * @return
      */
     @Override
     public void loadVehicle(Vehicle vehicle, VehicleDefinition config, VehicleLoadedDelegate loaddelegate/*, XmlModelCompleteDelegate xmlloaddelegate*/) {

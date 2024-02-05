@@ -46,7 +46,7 @@ import java.util.List;
  * Created by thomass on 18.08.16.
  */
 public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements ModelBuilder*/ {
-    static Log logger = Platform.getInstance().getLog(ReaderWriterSTG.class);
+    Log logger = Platform.getInstance().getLog(ReaderWriterSTG.class);
     private Bundle modelbundle = null;
     String basePath;
     //26.10.18: die shared mal ignorieren, weil das viele sind und das noch nicht wirklich geshared wird

@@ -45,7 +45,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
 
         //properties.put("argv.initialVehicle", "c172p");
         //Evtl. Bluebird statt c172p wegen sonst verdecktem menu.
-        //properties.put("argv.initialVehicle", "bluebird");
+        //properties.put("initialVehicle", "bluebird");
         //properties.put("argv.basename","B55-B477");
         //properties.put("argv.basename","B55-B477-small");
 
@@ -67,8 +67,8 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         }
 
         // traffic-advanced
-        properties.put("scene", "de.yard.threed.trafficadvanced.apps.FlatAirportScene");
-        properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
+        //properties.put("scene", "de.yard.threed.trafficadvanced.apps.FlatAirportScene");
+        //properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.HangarScene");
 
         return properties;
