@@ -14,6 +14,7 @@ import de.yard.threed.flightgear.core.osg.Group;
 /**
  * Transformation from OpenGL model coordinates (x right, y up, -z forward) to FG aircraft model coordinates (-x forward, y right, z up).
  * This is probably just a convention, especially whether to negate forward.
+ * It depends on the use case viewing/camera or model.
  *
  * Created by thomass on 28.09.23.
  */
@@ -27,5 +28,9 @@ public class OpenGlProcessPolicy  {
              0, 0, 0, 1);
 
     public OpenGlProcessPolicy(String extension) {
+    }
+
+    public Matrix4 fg2opengl(){
+        return opengl2fg.getInverse();
     }
 }

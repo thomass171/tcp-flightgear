@@ -44,8 +44,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         properties.put("logging.level.de.yard.threed","DEBUG");
 
         //properties.put("argv.initialVehicle", "c172p");
-        //Evtl. Bluebird statt c172p wegen sonst verdecktem menu.
-        //properties.put("initialVehicle", "bluebird");
+        properties.put("initialVehicle", "bluebird");
         //properties.put("argv.basename","B55-B477");
         //properties.put("argv.basename","B55-B477-small");
 

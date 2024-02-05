@@ -300,7 +300,7 @@ public class SceneryScene extends Scene {
 
             // world position is set later
             // rotate from FG to FirstPersonTransformers coordinate system
-            currentaircraft.getTransform().setRotation(Quaternion.buildFromAngles(new Degree(-90), new Degree(-90), new Degree(0)));
+            currentaircraft.getTransform().setRotation(new OpenGlProcessPolicy(null).fg2opengl().extractQuaternion());
 
             Map<String, LocalTransform> viewpoints = vehicleDefinition.getViewpoints();
             for (String key : viewpoints.keySet()) {
