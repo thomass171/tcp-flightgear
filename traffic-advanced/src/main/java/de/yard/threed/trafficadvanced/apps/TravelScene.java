@@ -175,7 +175,7 @@ public class TravelScene extends FlightTravelScene {
     VehicleDefinition configShuttle;
     private EcsEntity orbitingvehicle = null;
     private boolean avatarInited = false;
-
+    private boolean enableDoormarker = false;
 
     @Override
     public String[] getPreInitBundle() {
@@ -283,7 +283,9 @@ public class TravelScene extends FlightTravelScene {
         SystemManager.addSystem(new GroundServicesSystem());
 
         SystemManager.registerService("vehicleentitybuilder", new VehicleEntityBuilder());
-        ((TrafficSystem)SystemManager.findSystem(TrafficSystem.TAG)).addVehicleBuiltDelegate(new DoormarkerDelegate());
+        if (enableDoormarker) {
+            ((TrafficSystem) SystemManager.findSystem(TrafficSystem.TAG)).addVehicleBuiltDelegate(new DoormarkerDelegate());
+        }
         //30.11.23 rely on generic provider, but add to TrafficSystem. SystemManager.putDataProvider("aircraftconfig", new AircraftConfigProvider(tw));
         TrafficConfig tw1 = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), new BundleResource("vehicle-definitions.xml"));
 
@@ -298,6 +300,13 @@ public class TravelScene extends FlightTravelScene {
         trafficSystem.destinationNode=getDestinationNode();
         trafficSystem.nearView=nearView;
         trafficSystem.setVehicleLoader(new FgVehicleLoader());
+    }
+
+    @Override
+    protected void customProcessArguments() {
+        if (EngineHelper.isEnabled("enableDoormarker")) {
+            enableDoormarker = true;
+        }
     }
 
     @Override
