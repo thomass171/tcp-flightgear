@@ -102,6 +102,7 @@ import de.yard.threed.trafficfg.flight.GroundServicesSystem;
 import de.yard.threed.trafficfg.flight.RouteBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -282,7 +283,7 @@ public class TravelScene extends FlightTravelScene {
         SystemManager.addSystem(new GroundServicesSystem());
 
         SystemManager.registerService("vehicleentitybuilder", new VehicleEntityBuilder());
-        TrafficSystem.genericVehicleBuiltDelegate = new DoormarkerDelegate();
+        ((TrafficSystem)SystemManager.findSystem(TrafficSystem.TAG)).addVehicleBuiltDelegate(new DoormarkerDelegate());
         //30.11.23 rely on generic provider, but add to TrafficSystem. SystemManager.putDataProvider("aircraftconfig", new AircraftConfigProvider(tw));
         TrafficConfig tw1 = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), new BundleResource("vehicle-definitions.xml"));
 
@@ -381,12 +382,12 @@ public class TravelScene extends FlightTravelScene {
         VehicleDefinition vehicleConfig = getVehicleConfig(trafficConfig.getVehicleDefinitions(), "Navigator");
 
         VehicleLauncher.launchVehicle(new Vehicle("Navigator"), vehicleConfig, null, null, avatarpc, getWorld(), null,
-                /*4.12.23 sceneConfig.getBaseTransformForVehicleOnGraph()*/TrafficSystem.baseTransformForVehicleOnGraph, null/*nearView*/,new VehicleBuiltDelegate[]{ ((ecsEntity, config) -> {
+                /*4.12.23 sceneConfig.getBaseTransformForVehicleOnGraph()*/TrafficSystem.baseTransformForVehicleOnGraph, null/*nearView*/, Arrays.asList(new VehicleBuiltDelegate[]{ ((ecsEntity, config) -> {
 
                     // Weil der TeleporterSystem.init schon gelaufen ist, muss auch "needsupdate" gesetzt werden, darum stepTo().
                     avatarpc.stepTo(0);
                     addPoisToNavigator(ecsEntity);
-                })}, new FgVehicleLoader());
+                })}), new FgVehicleLoader());
     }
 
     private void addPoisToNavigator(EcsEntity navigator) {
@@ -619,7 +620,7 @@ public class TravelScene extends FlightTravelScene {
                 TrafficGraph trafficgraph = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildSimpleTestRouteB8toC4(/*gsw.*/groundnet);
                 VehicleLauncher.launchVehicle(new Vehicle("c172p"), configc172p, trafficgraph, new GraphPosition(trafficgraph.getBaseGraph().getEdge(0)),
                         TeleportComponent.getTeleportComponent(UserSystem.getInitialUser()), world, null,
-                        /*4.12.23 sceneConfig.getBaseTransformForVehicleOnGraph()*/TrafficSystem.baseTransformForVehicleOnGraph, null, new VehicleBuiltDelegate[]{}, new FgVehicleLoader());
+                        /*4.12.23 sceneConfig.getBaseTransformForVehicleOnGraph()*/TrafficSystem.baseTransformForVehicleOnGraph, null, new ArrayList<VehicleBuiltDelegate>(), new FgVehicleLoader());
             }
 
             //gsw.graphloaded = null;

@@ -126,6 +126,8 @@ public class HangarScene extends Scene {
     public void init(SceneMode forServer) {
         vrMode = Platform.getInstance().getConfiguration().getString("vrMode");
 
+        processArguments();
+
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
 
@@ -250,6 +252,10 @@ public class HangarScene extends Scene {
 
         // 24.1.22: State ready to join now needed for 'login'
         SystemState.state = SystemState.STATE_READY_TO_JOIN;
+    }
+
+    protected void processArguments() {
+        // for future use
     }
 
     @Override

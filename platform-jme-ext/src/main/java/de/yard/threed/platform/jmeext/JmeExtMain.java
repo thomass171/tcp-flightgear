@@ -33,6 +33,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         properties.put("enableUsermode", "false");
         properties.put("visualizeTrack", "true");
         properties.put("enableHud", "true");
+        properties.put("enableDoormarker", "true");
 
         boolean emulateVR = false;
         if (emulateVR) {
@@ -68,7 +69,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         // traffic-advanced
         properties.put("scene", "de.yard.threed.trafficadvanced.apps.FlatAirportScene");
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
-        properties.put("scene", "de.yard.threed.trafficadvanced.apps.HangarScene");
+        //properties.put("scene", "de.yard.threed.trafficadvanced.apps.HangarScene");
 
         return properties;
     }

@@ -107,8 +107,9 @@
                             </div>
                             <p>A flat EDDK scenery showing ground services. Key 't' teleports, '5' starts service for
                                 selected aircraft (enable HUD for selecting), '9' starts automove.</p>
+                            <!-- always with hud, because it is really useful -->
                             <button class=" w3-button  w3-round w3-khaki "
-                                    onclick="launchSingleScene('FlatAirportScene',null,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'))">
+                                    onclick="launchSingleScene('FlatAirportScene',null,$('#chk_nearView').prop('checked'),true)">
                                 Launch
                             </button>
                             <button class=" w3-button  w3-round w3-khaki "

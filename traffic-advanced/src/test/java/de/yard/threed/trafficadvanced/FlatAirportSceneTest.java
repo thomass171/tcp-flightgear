@@ -69,9 +69,18 @@ public class FlatAirportSceneTest {
      *
      */
     @Test
-    public void testEDDK() throws Exception {
+    public void testEDDKWithDoormarker() throws Exception {
+        runEDDK(true);
+    }
 
-        setup(FlatAirportScene.DEFAULT_TILENAME);
+    @Test
+    public void testEDDKWithoutDoormarker() throws Exception {
+        runEDDK(false);
+    }
+
+    public void runEDDK(boolean enableDoormarker) throws Exception {
+
+        setup(FlatAirportScene.DEFAULT_TILENAME, enableDoormarker);
 
         /*DefaultTrafficWorld.instance = null;
         assertNull("", DefaultTrafficWorld.getInstance());
@@ -122,7 +131,7 @@ public class FlatAirportSceneTest {
             return entities.size() == expectedNumberOfEntites;
         }, 40000);
 
-        validateStaticEDDK();
+        validateStaticEDDK(enableDoormarker);
 
         EcsEntity entity747 = EcsHelper.findEntitiesByName("747 KLM").get(0);
         assertNotNull(entity747);
@@ -173,7 +182,7 @@ public class FlatAirportSceneTest {
      * Used for both (Flat)TravelScene tests for testing before any vehicle movement but after loading.
      * Auf die Reigenfolge der Tests achten. Zuerst die Basisdinge fuer anderes testen. Sonst hilft es nicht bei der Fehlersuche.
      */
-    public static void validateStaticEDDK() {
+    public static void validateStaticEDDK(boolean enableDoormarker) {
 
 
         EcsEntity entity747 = EcsHelper.findEntitiesByName("747 KLM").get(0);
@@ -184,8 +193,12 @@ public class FlatAirportSceneTest {
         assertNotNull(entityLSG0);
 
         List<NativeSceneNode> doormarkerList = SceneNode.findByName("localdoormarker");
-        // Warum eigentlich nur einer??
-        assertEquals(1, doormarkerList.size(), "number of doormarker");
+        if (enableDoormarker) {
+            // Why one?? And which one is it? Its not the service marker.
+            assertEquals(1, doormarkerList.size(), "number of doormarker");
+        } else {
+            assertEquals(0, doormarkerList.size(), "number of doormarker");
+        }
 //TODO vehicle/aircraft config,
 
         // hat VehicleEntityBuilder gegriffen? Der legt GroundServiceComponent an.
@@ -197,10 +210,11 @@ public class FlatAirportSceneTest {
     /**
      * Needs parameter, so no @Before
      */
-    private void setup(String tileName) throws Exception {
+    private void setup(String tileName, boolean enableDoormarker) throws Exception {
         HashMap<String, String> properties = new HashMap<String, String>();
         properties.put("scene", "de.yard.threed.trafficadvanced.apps.FlatAirportScene");
         properties.put("visualizeTrack", "true");
+        properties.put("enableDoormarker", "" + enableDoormarker);
         if (tileName != null) {
             properties.put("argv.basename", tileName);
         }

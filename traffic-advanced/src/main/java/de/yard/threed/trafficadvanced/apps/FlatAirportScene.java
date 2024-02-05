@@ -126,6 +126,7 @@ import static de.yard.threed.traffic.WorldGlobal.EDDK_CENTER;
  * 25.9.2020: Generel eine flat traffic Darstellung. Damit kann auch mal Railing hierhin kommen.
  * 07.10.21: Ich nutze das mal lieber nur noch fuer die 2D GroundServices wegen FG. Tiles/Railing sollen ueber BasicTravelScene gehen.
  * 9.10.23: Renamed from FlatTravelScene to FlatAirportScene.
+ * 3.2.24: doormarker only optional
  * <p>
  * Created by thomass on 14.09.16.
  */
@@ -160,7 +161,7 @@ public class FlatAirportScene extends FlightTravelScene {
     //
     //public static Quaternion cockpitcameraorientation = Quaternion.buildFromAngles(new Degree(90), new Degree(0), new Degree(90));
     EcsEntity markedaircraft = null;
-
+    private boolean enableDoormarker = false;
 
     @Override
     public String[] getPreInitBundle() {
@@ -179,7 +180,7 @@ public class FlatAirportScene extends FlightTravelScene {
      */
     @Override
     public void customInit() {
-        logger.debug("init FlatTravelScene");
+        logger.debug("customInit FlatAirportScene");
 
         //29.1.23 AbstractSceneRunner.instance.httpClient = new AirportDataProviderMock();
         SystemManager.addSystem(new GroundServicesSystem());
@@ -297,7 +298,9 @@ public class FlatAirportScene extends FlightTravelScene {
         initialTile.nearestairport = gsw.getNearestAirport();*/
 
         SystemManager.registerService("vehicleentitybuilder", new VehicleEntityBuilder());
-        TrafficSystem.genericVehicleBuiltDelegate = new DoormarkerDelegate();
+        if (enableDoormarker) {
+            ((TrafficSystem)SystemManager.findSystem(TrafficSystem.TAG)).addVehicleBuiltDelegate(new DoormarkerDelegate());
+        }
         // 24.11.23: AircraftConfigProvider replaced by the more generic VehicleConfigDataProvider
         // but for now with same name and maybe duplicate.
         //SystemManager.putDataProvider("aircraftconfig", new AircraftConfigProvider(tw));
@@ -316,6 +319,13 @@ public class FlatAirportScene extends FlightTravelScene {
         trafficSystem.destinationNode = getDestinationNode();
         trafficSystem.nearView = nearView;
         trafficSystem.setVehicleLoader(new FgVehicleLoader());
+    }
+
+    @Override
+    protected void customProcessArguments() {
+        if (EngineHelper.isEnabled("enableDoormarker")) {
+            enableDoormarker = true;
+        }
     }
 
     /**
@@ -543,7 +553,10 @@ public class FlatAirportScene extends FlightTravelScene {
         if (Input.getKeyDown(KeyCode.Alpha5)) {
             // Service for the marked aircraft.
             if (markedaircraft != null) {
-                markDoor(markedaircraft);
+                if (enableDoormarker) {
+                    // TODO check: redundant to vehileloaddelegate solution?
+                    markDoor(markedaircraft);
+                }
                 GroundServicesSystem.requestService(markedaircraft);
             } else {
                 //Ein Aircraft "ranholen" und einfahren lassen
@@ -779,7 +792,7 @@ public class FlatAirportScene extends FlightTravelScene {
 
         // text has no margin yet.
         TextTexture textTexture = new TextTexture(Color.LIGHTGRAY);
-        ControlPanelArea textArea = cp.addArea(new Vector2(-iconareasize/2, 0), new DimensionF(textareawidth, ControlPanelRowHeight), null);
+        ControlPanelArea textArea = cp.addArea(new Vector2(-iconareasize / 2, 0), new DimensionF(textareawidth, ControlPanelRowHeight), null);
         // empty string fails due to length 0
         textArea.setTexture(textTexture.getTextureForText(" ", Color.RED));
         updateMarkedAircraft(textArea, textTexture);
