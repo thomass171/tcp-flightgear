@@ -4,10 +4,12 @@ package de.yard.threed.trafficfg.apps;
 import de.yard.threed.core.Color;
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.Dimension;
+import de.yard.threed.core.DimensionF;
 import de.yard.threed.core.Event;
 import de.yard.threed.core.LocalTransform;
 import de.yard.threed.core.Payload;
 import de.yard.threed.core.Quaternion;
+import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
@@ -19,6 +21,7 @@ import de.yard.threed.engine.DirectionalLight;
 import de.yard.threed.engine.Input;
 import de.yard.threed.engine.KeyCode;
 import de.yard.threed.engine.Light;
+import de.yard.threed.engine.Material;
 import de.yard.threed.engine.Observer;
 import de.yard.threed.engine.ObserverSystem;
 import de.yard.threed.engine.Scene;
@@ -31,10 +34,19 @@ import de.yard.threed.engine.ecs.FirstPersonMovingComponent;
 import de.yard.threed.engine.ecs.FirstPersonMovingSystem;
 import de.yard.threed.engine.ecs.InputToRequestSystem;
 import de.yard.threed.engine.ecs.SystemManager;
+import de.yard.threed.engine.gui.ButtonDelegate;
+import de.yard.threed.engine.gui.ControlPanel;
+import de.yard.threed.engine.gui.ControlPanelHelper;
+import de.yard.threed.engine.gui.Icon;
+import de.yard.threed.engine.gui.NumericSpinnerHandler;
+import de.yard.threed.engine.gui.SelectSpinnerHandler;
+import de.yard.threed.engine.gui.SpinnerControlPanel;
 import de.yard.threed.engine.platform.EngineHelper;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.platform.common.Settings;
+import de.yard.threed.engine.vr.VrInstance;
+import de.yard.threed.engine.vr.VrOffsetWrapper;
 import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.FgTerrainBuilder;
 import de.yard.threed.flightgear.FgVehicleLoader;
@@ -89,6 +101,7 @@ public class SceneryScene extends Scene {
     private EcsEntity vehicleEntity = null;
     private LocalTransform captainPosition;
     private SceneNode vehicleModelnode = null;
+    VrInstance vrInstance;
 
     @Override
     public String[] getPreInitBundle() {
@@ -108,9 +121,13 @@ public class SceneryScene extends Scene {
         SceneNode world = new SceneNode();
         world.setName("Scenery World");
 
+        String initialVehicle = Platform.getInstance().getConfiguration().getString("initialVehicle");
+
         // Observer can exist before login/join for showing eg. an overview.
         // After login/join it might be attched to an avatar.
         Observer observer = Observer.buildForDefaultCamera();
+
+        vrInstance = VrInstance.buildFromArguments();
 
         FlightGearMain.initFG(new FlightLocation(WorldGlobal.equator020000, new Degree(0), new Degree(0)), null);
         // BundleResourceProvider are FG specific (not mix up with BundleResolver) and currently not yet needed(?)
@@ -155,11 +172,25 @@ public class SceneryScene extends Scene {
 
         SystemManager.addSystem(new ObserverSystem());
 
+        if (vrInstance != null) {
+            // Even in VR the observer will be attached to avatar later. Controller only with vehicle. Otherwise there is nothing to control.
+            if (initialVehicle != null) {
+
+                observer.attach(vrInstance.getController(0));
+                observer.attach(vrInstance.getController(1));
+
+                ControlPanel leftControllerPanel = buildVrControlPanel();
+                // position and rotation of VR controlpanel is controlled by property ...
+                inputToRequestSystem.addControlPanel(leftControllerPanel);
+                vrInstance.attachControlPanelToController(vrInstance.getController(0), leftControllerPanel);
+            }
+        } else {
+        }
+
         addLight();
 
         ModelLoader.processPolicy = new ACProcessPolicy(null);
 
-        String initialVehicle = Platform.getInstance().getConfiguration().getString("initialVehicle");
         if (initialVehicle != null) {
             waitsForInitialVehicle = true;
             TrafficConfig tc = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), new BundleResource("flight/vehicle-definitions.xml"));
@@ -178,15 +209,6 @@ public class SceneryScene extends Scene {
         settings.vrready = true;
         settings.minfilter = EngineHelper.TRILINEAR;
     }
-
-    @Override
-    public Dimension getPreferredDimension() {
-    /*    if (Platform.getInstance().isDevmode()) {
-            return new Dimension(WIDTH, HEIGHT);
-        }*/
-        return null;
-    }
-
 
     public void addLight() {
 
@@ -318,6 +340,37 @@ public class SceneryScene extends Scene {
             waitsForInitialVehicle = false;
         });
     }
+
+    /**
+     * A simple control panel permanently attached to the left controller. Consists of
+     * <p>
+     * top line: vr y offset spinner
+     * medium:
+     * bottom:
+     */
+    private ControlPanel buildVrControlPanel() {
+        Color backGround = Color.LIGHTBLUE;
+        Material mat = Material.buildBasicMaterial(backGround, false);
+
+        double ControlPanelWidth = 0.6;
+        double ControlPanelRowHeight = 0.1;
+        double ControlPanelMargin = 0.005;
+
+        int rows = 3;
+        DimensionF rowsize = new DimensionF(ControlPanelWidth, ControlPanelRowHeight);
+
+        ControlPanel cp = new ControlPanel(new DimensionF(ControlPanelWidth, rows * ControlPanelRowHeight), mat, 0.01);
+
+        // top line: property control for yvroffset
+        cp.add(new Vector2(0, ControlPanelHelper.calcYoffsetForRow(2, rows, ControlPanelRowHeight)),
+                new SpinnerControlPanel(rowsize, ControlPanelMargin, mat, new NumericSpinnerHandler(0.1, new VrOffsetWrapper())));
+        // mid line
+        // ...
+        // bottom line:
+        // ...
+        return cp;
+    }
+
 }
 
 

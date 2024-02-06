@@ -605,6 +605,10 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
 
         List<SGAnimation> animationList = new ArrayList<SGAnimation>();
         group.setName("XmlDestination");
+        // 6.2.24: Be more specific with name setting
+        if (bpath != null) {
+            group.setName(bpath.getFullName());
+        }
         BuildResult xmlresult = new BuildResult(group.nativescenenode/*, animationList*/);
         // 15.9.17: und jetzt das noch fehlende Model. Ob async oder nicht, erst jetzt einhaengen.
         if (pendingbmodelpath != null) {

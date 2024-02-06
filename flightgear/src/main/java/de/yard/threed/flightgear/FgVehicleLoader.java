@@ -118,15 +118,6 @@ public class FgVehicleLoader implements VehicleLoader {
                 // In der base node KANN auch eine Rotation sein (manche AIs). Darum ist es doch unbrauchbar
                 // und wird gekapselt.
                 SceneNode nn = SimpleVehicleLoader.buildVehicleNode(currentaircraft, config.getZoffset());
-                SceneNode basenode = VehicleLauncher.getModelNodeFromVehicleNode(nn);
-            /*SceneNode basenode = new SceneNode(currentaircraft);
-            basenode.setName("basenode");
-            SceneNode node = new SceneNode(basenode);
-            node.setName("zoffsetnode");
-            Vector3 p = node.getTransform().getPosition();
-            p = new Vector3(p.getX(), p.getY(), p.getZ() + config.getZoffset());
-            node.getTransform().setPosition(p);
-            SceneNode nn = new SceneNode(node);*/
 
                 // Eigentlich ist es zu frueh, das Model ist vielleicht noch nicht komplett geladen
                 // 4.4.18. Darum jetzt oben fuer jedes submodel
