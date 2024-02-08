@@ -43,8 +43,9 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
 
         properties.put("logging.level.de.yard.threed","DEBUG");
 
+        // 'initialVehicle' might cause NPE if not found
         //properties.put("argv.initialVehicle", "c172p");
-        properties.put("initialVehicle", "bluebird");
+        //properties.put("initialVehicle", "bluebird");
         //properties.put("argv.basename","B55-B477");
         //properties.put("argv.basename","B55-B477-small");
 
@@ -67,7 +68,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
 
         // traffic-advanced
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.FlatAirportScene");
-        //properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
+        properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.HangarScene");
 
         return properties;

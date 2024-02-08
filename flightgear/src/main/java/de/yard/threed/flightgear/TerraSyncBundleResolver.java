@@ -14,6 +14,9 @@ public class TerraSyncBundleResolver extends BundleResolver {
     public static String TERRAYSYNCPREFIX = "Terrasync-";
     String basePath;
 
+    /**
+     * Can be used with http and file system the same way.
+     */
     public TerraSyncBundleResolver(String basePath) {
         this.basePath = basePath;
     }

@@ -42,6 +42,8 @@ public class WebglExtMain extends de.yard.threed.platform.webgl.Main {
                 PlatformInternals platformInternals = PlatformWebGl.init(conf);
                 // "/TerraySync" is added inside resolver. TerraSyncBundleResolver needs to be before default resolver, which resolves everything.
                 // And no leading "/". That is added later.
+                // This resolver is only a basic default only returning a subset. For full TerrySync bundle a custom
+                // TerraSyncBundleResolver needs to be added by the platform.
                 Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver("bundles"), true);
                 return platformInternals;
             }

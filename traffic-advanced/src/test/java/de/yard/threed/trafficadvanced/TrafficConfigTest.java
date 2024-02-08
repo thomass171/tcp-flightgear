@@ -43,7 +43,7 @@ public class TrafficConfigTest {
     static void setup() {
         Platform platform = FgTestFactory.initPlatformForTest(false, false);
 
-        EngineTestFactory.loadBundleSync("traffic-advanced");
+        EngineTestFactory.loadBundleAndWait("traffic-advanced");
 
     }
 

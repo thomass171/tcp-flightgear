@@ -179,15 +179,16 @@ public class TravelScene extends FlightTravelScene {
 
     @Override
     public String[] getPreInitBundle() {
-        //4.10.21: den brauchts jetzt separat
-        // "fgdatabasic" in project is only a small subset. The external should have 'before' prio to load instead of subset.
-        // "data" is needed for taxiway ground texture.
-        // "sgmaterial" in project also is only a small subset. But there is no way to add a file system resolver here.
+        // "fgdatabasic","sgmaterial" and "TerraySync" in project are only a small subset. The external should have 'before' prio to load instead of subset.
+        //  There is no way to add a file system resolver here, so use the external also for desktop. This has the benefit
+        // of revealing loading problems also during development.
         Platform.getInstance().addBundleResolver(new HttpBundleResolver("fgdatabasic@https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"),true);
-        //30.1.24: TODO fix local directory dependency for full TerraSync
-        Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver("/Users/thomas/Projekte/Granada/bundles"), true);
-        //29.3.18: Das 777 Bundle wird eh später geladen, allerdings nicht delayed. 11.10.18: kein data mehr
-        return new String[]{"engine", "data-old", "data", "fgdatabasic", "fgdatabasicmodel", "sgmaterial",
+        Platform.getInstance().addBundleResolver(new HttpBundleResolver("sgmaterial@https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"),true);
+        //30.1.24: The default TerraSyncBundleResolver points to "bundles" in webgl.
+        Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver("https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"), true);
+        //13.12.23 "fgdatabasicmodel" is loaded later when needed during vehicle loading.
+        // "data" is needed for taxiway ground texture.
+        return new String[]{"engine", "data-old", "data", "fgdatabasic", "sgmaterial",
                 FlightGear.getBucketBundleName("model") ,  FlightGearSettings.FGROOTCOREBUNDLE,
                 "traffic-advanced","traffic-fg"};
     }

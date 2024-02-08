@@ -97,7 +97,9 @@ Extension of platform-webgl.
 
 # Credits
 
-Syd Adams, Justin Smithies for the 777.
+Wayne Bragg (and others) for c172p (TODO link).
+
+Syd Adams, Justin Smithies for the 777 (TODO link).
 
 Stewart Andreason (http://seahorseCorral.org/flightgear_aircraft.html) for 'bluebird'
 

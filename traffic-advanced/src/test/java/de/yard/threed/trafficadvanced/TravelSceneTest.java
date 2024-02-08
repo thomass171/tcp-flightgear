@@ -91,15 +91,22 @@ public class TravelSceneTest {
         VehicleDefinition/*Config*/ config = TrafficHelper.getVehicleConfigByDataprovider("VolvoFuel", null);
         assertNotNull(config);
 
-        //11 passt: "Player",GS Vehicle (ohne delayed aircraft) Vehicle from sceneconfig, 3 Aircraft
+        // vehicle need groundnet to be loaded.
+        TestUtils.waitUntil(() -> {
+            sceneRunner.runLimitedFrames(1);
+            return GroundServicesSystem.groundnetEDDK != null;
+        }, 60000);
+
+        //11 passt: "Player",5 GS Vehicle (3 LSG?, 2 Goldhofert?, no delayed aircraft),  Vehicle from sceneconfig (747, 737, 738, Bravo), 3 Aircraft
         //Why 15?
         int expectedNumberOfEntites = 15;
         TestUtils.waitUntil(() -> {
             TestHelper.processAsync();
+            sceneRunner.runLimitedFrames(1);
             List<EcsEntity> entities = SystemManager.findEntities((EntityFilter) null);
-            //log.debug(""+entities.size());
+            log.debug(""+entities.size());
             return entities.size() == expectedNumberOfEntites;
-        }, 40000);
+        }, 60000);
 
         validateStaticEDDK(enableDoormarker);
 

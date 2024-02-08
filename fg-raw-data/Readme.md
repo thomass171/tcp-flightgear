@@ -17,3 +17,11 @@ but using 'fgdatabasic-light' is difficult because of currently hardcoded usage
 during init. Maybe later.
 
 Contains yoke and pedals.
+
+## sgmaterial
+
+A subset of the full 'sgmaterial' bundle.
+
+## terrasync
+
+A subset of the full 'TerraSync' bundle.

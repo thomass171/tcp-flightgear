@@ -27,3 +27,9 @@ sceneserver/build
 
 # exclude files created during tests
 /*/src/test/resources/tmp/
+
+backyard
+
+# The two dylibs are copied here during JME start(?)
+liblwjgl.dylib
+libopenal.dylib
