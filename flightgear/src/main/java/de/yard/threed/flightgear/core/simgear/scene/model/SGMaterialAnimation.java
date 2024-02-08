@@ -30,7 +30,7 @@ public class SGMaterialAnimation extends SGAnimation {
     static   int EMISSION = 8;
     static    int SHININESS = 16;
     static    int TRANSPARENCY = 32;
-Group group;
+public Group group;
 
     int  AMBIENT_DIFFUSE = AMBIENT | DIFFUSE;
     //const int allMaterialColors = (DIFFUSE | AMBIENT | SPECULAR | EMISSION        | SHININESS);
