@@ -6,6 +6,7 @@ import de.yard.threed.core.resource.BundleResource;
 //import de.yard.threed.flightgear.core.FileSystemResource;
 import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector3;
+import de.yard.threed.core.resource.URL;
 import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.misc.SgResourceManager;
@@ -18,63 +19,68 @@ import de.yard.threed.core.Color;
 import de.yard.threed.core.resource.ResourcePath;
 import de.yard.threed.core.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * 27.12.16: Fuer das Lesen der includes wird erst mal kein Event verwendet.
  * 27.12.16: Umgestellt von SGPath auf ResourcePath und String auf NativeResource.
  * 10.04.17: Jetzt fuer Bundles. readbyecs koennte damit obselet sein.
  * 24.04.17: Wirft weiterhin SGException ,um Fehlerbehandlung zu erzwingen. Wird wohl nur innerhalb von Loadern verwendet.
+ * 08.02.24: Reading properties no longer static, legacy file path source removed, decoupled from bundle.
  * <p>
  * Created by thomass on 04.12.15.
  */
 public class PropsIO {
-    static Log logger = Platform.getInstance().getLog(PropsIO.class);
+    Log logger = Platform.getInstance().getLog(PropsIO.class);
+    // for testing
+    public List<String> locations = new ArrayList<String>();
 
-    public static void readProperties(String file, SGPropertyNode startnode) throws SGException {
+    public PropsIO() {
+
+    }
+
+    public void readProperties(String file, SGPropertyNode startnode) throws SGException {
         readProperties(file, startnode, 0, false);
     }
 
-    public static void readProperties(String file, SGPropertyNode startnode, int default_mode) throws SGException {
+    /*9.2.24 public void readProperties(String file, SGPropertyNode startnode, int default_mode) throws SGException {
         readProperties(file, startnode, default_mode, false);
-    }
+    }*/
 
-    public static void readProperties(/*Bundle bundle, */BundleResource bpath, SGPropertyNode startnode) throws SGException {
+    public void readProperties(/*Bundle bundle, */BundleResource bpath, SGPropertyNode startnode) throws SGException {
         readProperties(bpath, null, startnode, 0, false, false);
     }
 
-    public static void readProperties(BundleResource bpath, SGPropertyNode startnode, int default_mode) throws SGException {
+    public void readProperties(BundleResource bpath, SGPropertyNode startnode, int default_mode) throws SGException {
         readProperties(bpath, null, startnode, default_mode, false, false);
     }
 
-    public static void readProperties(String file, SGPropertyNode startnode, int default_mode, boolean extended) throws SGException {
+    private void readProperties(String file, SGPropertyNode startnode, int default_mode, boolean extended) throws SGException {
         readProperties(null, /*7.7.21FileSystem*/BundleResource.buildFromFullString(file), startnode, default_mode, extended, false);
     }
 
-    public static void readProperties(BundleResource bpath, SGPropertyNode startnode, int default_mode, boolean extended) throws SGException {
+    public void readProperties(BundleResource bpath, SGPropertyNode startnode, int default_mode, boolean extended) throws SGException {
         readProperties(bpath, null, startnode, default_mode, extended, false);
     }
 
-    public static void readProperties(/*Bundle bundle, */BundleResource bpath,/*String*/NativeResource file, SGPropertyNode startnode, int default_mode, boolean extended, boolean readbyecs) throws SGException {
+    public void readProperties(/*Bundle bundle, */BundleResource bpath,/*String*/NativeResource file, SGPropertyNode startnode, int default_mode, boolean extended, boolean readbyecs) throws SGException {
         try {
             if (bpath == null && file == null) {
                 throw new SGException("invalid parameter");
-
             }
-            String xmlbuf=null;
+            String xmlbuf = null;
             if (bpath != null) {
                 if (bpath.bundle == null) {
                     throw new SGException("no bundle in bpath");
-
                 }
                 BundleData data = bpath.bundle.getResource(bpath);
                 if (data == null) {
                     throw new SGException("no data for bundle resource " + bpath);
-
                 }
                 if (!data.isText()) {
                     throw new SGException("no text data in bpath");
-
                 }
                 xmlbuf = bpath.bundle.getResource(bpath).getContentAsString();
             } else {
@@ -83,8 +89,23 @@ public class PropsIO {
             }
             if (xmlbuf == null) {
                 throw new SGException("xml not found:" + ((file != null) ? file.getFullName() : bpath.getFullName()));
-
             }
+            readProperties( xmlbuf,  bpath, file,  startnode,  default_mode,  extended,  readbyecs);
+        } catch (java.lang.Exception e) {
+            //8.10.18: Warum genau ist hier der catch? Wegen NPE oder aehnlich? Ist irgendwie doch doof, weil es auch einen Stacktrace gibt.
+            //Stacktrace mal nicht bei SGException
+            if (e instanceof SGException) {
+                // 8.10.18: das wurde dann schon gelogged. Darum gar nicht mehr.
+                //logger.error("readProperties failed for " + bpath.getFullName() + ": " + e.getMessage());
+            } else {
+                logger.error("readProperties failed for " + bpath.getFullName() + ": " + e.getMessage(), e);
+            }
+            throw new SGException("readProperties failed : " + e.getMessage(), e);
+        }
+    }
+
+    private void readProperties(String xmlbuf, BundleResource bpath,/*String*/NativeResource file, SGPropertyNode startnode, int default_mode, boolean extended, boolean readbyecs) throws SGException {
+        try {
             NativeDocument doc = Platform.getInstance().parseXml(xmlbuf);
             if (!doc.getNodeName().equals("PropertyList")) {
                 throw new SGException("must start with PropertyList");
@@ -101,12 +122,7 @@ public class PropsIO {
             }
             throw new SGException("readProperties failed : " + e.getMessage(), e);
         }
-
-        //NativeNodeList pathlist = doc.getElementsByTagName("/path");
-        // NativeNode path = pathlist.getItem(0);
-
     }
-
 
     /**
      * siehe Pendant props_io.cxx:PropsVisitor
@@ -114,7 +130,7 @@ public class PropsIO {
      * @param node
      * @param destnode
      */
-    static void readNode(/*Bundle bundle,*/ BundleResource bpath, State parentstate, int level, NativeNode node, SGPropertyNode destnode, /*SGPath*/ResourcePath basepath, boolean extended, boolean readbyecs, String resourcenamefuerlogging) throws SGException {
+    void readNode(/*Bundle bundle,*/ BundleResource bpath, State parentstate, int level, NativeNode node, SGPropertyNode destnode, /*SGPath*/ResourcePath basepath, boolean extended, boolean readbyecs, String resourcenamefuerlogging) throws SGException {
         State state = startElement(bpath, parentstate, level, destnode, node.getNodeName(), new XMLAttributes(((NativeElement) node).getAttributes()), (NativeElement) node, basepath, extended, readbyecs, resourcenamefuerlogging);
 
         if (!state.omit) {
@@ -159,7 +175,7 @@ public class PropsIO {
     /**
      * aus props_io.cxx:PropsVisitor
      */
-    static State startElement(BundleResource bpath, State parentstate, int _level, SGPropertyNode target, String name, XMLAttributes atts, NativeElement element, /*SGPath*/ResourcePath basepath, boolean extended, boolean readbyecs, String resourcenamefuerlogging) throws SGException {
+    private State startElement(BundleResource bpath, State parentstate, int _level, SGPropertyNode target, String name, XMLAttributes atts, NativeElement element, /*SGPath*/ResourcePath basepath, boolean extended, boolean readbyecs, String resourcenamefuerlogging) throws SGException {
         String attval = null;
         // const sg_location location (getPath(), getLine(), getColumn());
         // 10.4.17: Mit Bundle mal wieder ueber basepath die Location ermitteln 
@@ -170,6 +186,7 @@ public class PropsIO {
         } else {
             location = basepath.path;
         }
+        locations.add(location);
 
         if (_level == 0) {
             if (!name.equals("PropertyList")) {
@@ -213,8 +230,8 @@ public class PropsIO {
 
             //push_state(_root, "", DEFAULT_MODE);
         } else {
-           /* State &st = state();
-*/
+            /* State &st = state();
+             */
             // Get the index.
             attval = atts.getValue("n");
 
@@ -344,7 +361,7 @@ public class PropsIO {
     /**
      * Auch aus PropsVisitor
      */
-    static void endElement(int _level, State st, String _data) {
+    private void endElement(int _level, State st, String _data) {
         //State &st = state();
         boolean ret = false;
         //const sg_location location(getPath(), getLine(), getColumn());*/
@@ -425,7 +442,7 @@ public class PropsIO {
     /**
      * Set/unset a yes/no flag.
      */
-    private static int setFlag(int mode, int mask, String val, String/*const sg_location&*/ location) throws SGIOException {
+    private int setFlag(int mode, int mask, String val, String/*const sg_location&*/ location) throws SGIOException {
         char flag = StringUtils.charAt(val, 0);
         if (flag == 'y')
             mode |= mask;

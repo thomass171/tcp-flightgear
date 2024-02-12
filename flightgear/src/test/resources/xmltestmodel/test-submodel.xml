@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<!-- included from test-main.xml. TODO find useful submodel gltf -->
+
+<PropertyList>
+
+    <name>submodel-loc</name>
+    <path>loc.ac</path>
+
+</PropertyList>

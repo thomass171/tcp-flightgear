@@ -866,6 +866,8 @@ class FindAndCacheAircraft /*TODO extends AircraftDirVistorBase  */ {
      * 27.3.18:Bevorzugt aircraft und aircraftdir als Parameter (MA23)
      * 07.06.18: Die Methode ist wichtig, weil hier das "-set.xml" gelesen wird. Das geht nicht ueber SGReadWriterXML.
      * Das Model wird hier aber noch nicht geladen.
+     *
+     * 09.02.24: Important for animations. Apparently only used for "777-200"
      * @return
      */
     public boolean loadAircraft(String airc, String aird, SGPropertyNode destinationProp) {
@@ -899,7 +901,7 @@ class FindAndCacheAircraft /*TODO extends AircraftDirVistorBase  */ {
                 logger.info("found aircraft in dir: " + aircraftDir);
                 setFile.bundle = bundle;
                 try {
-                    PropsIO.readProperties(setFile/*.str()*/, destinationProp);
+                    new PropsIO().readProperties(setFile/*.str()*/, destinationProp);
                 } catch (SGException e) {
                     logger.error("Error reading aircraft: " + e.getMessage());
                     FlightGear.fatalMessageBox("Error reading aircraft",
@@ -916,7 +918,11 @@ class FindAndCacheAircraft /*TODO extends AircraftDirVistorBase  */ {
             }
         }
 
-        if (!checkCache()) {
+        // 9.2.24: The only use case 777-200 leads to above branch with loading and returning
+        // So this here probably is never reached.
+        Util.nomore();
+
+        /*9.2.24 if (!checkCache()) {
             // prepare cache for re-scan
             //TODO SGPropertyNode n = _cache.getNode("fg-root", true);
             //TODO n.setStringValue(FGGlobals.globals.get_fg_root().c_str());
@@ -944,14 +950,14 @@ class FindAndCacheAircraft /*TODO extends AircraftDirVistorBase  */ {
         }
 
         try {
-            PropsIO.readProperties(_foundPath.str(), destinationProp);
+            new PropsIO().readProperties(_foundPath.str(), destinationProp);
         } catch (SGException e) {
             logger.error("Error reading aircraft: " + e.getMessage());
             FlightGear.fatalMessageBox("Error reading aircraft",
                     "An error occured reading the requested aircraft (" + aircraft + ")" + e.getMessage());
             return false;
         }
-
+*/
         return true;
     }
 

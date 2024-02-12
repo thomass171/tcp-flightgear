@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+<!-- included from test-main.xml. Animations still are nonsens -->
+
+<PropertyList>
+
+    <animation>
+        <type>material</type>
+        <object-name>Chimney</object-name>
+        <object-name>Locomotive</object-name>
+        <emission>
+            <red>1.0</red>
+            <green>0.2</green>
+            <blue>0.0</blue>
+            <factor-prop>sim/XXX//material/instruments/factor</factor-prop>
+        </emission>
+    </animation>
+
+    <animation>
+        <type>rotate</type>
+        <object-name>Locomotive</object-name>
+        <property>fdm/XXX/velocities/vias-kts</property>
+        <interpolation>
+            <entry>
+                <ind> 190</ind>
+                <dep>  331</dep>
+            </entry>
+        </interpolation>
+        <axis>
+            <x>-1</x>
+            <y>0</y>
+            <z>0</z>
+        </axis>
+    </animation>
+
+</PropertyList>

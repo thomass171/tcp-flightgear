@@ -110,7 +110,7 @@ public class AircraftResourceProvider implements /*30.9.19ResourceProvider,*/ Bu
 
             // 'r' is now the relative path inside the aircraft bundle (or other bundle?)
             if (bundle.exists(new BundleResource(r.str()))) {
-                //logger.debug("found aircraft path "+r.str());
+                logger.debug("after stripping 2 pieces found aircraft path "+r.str());
                 return new BundleResource(bundle/*bundle.name*/, r.str());
             }
             //logger.debug(r.str()+" not exists in bundle "+bundle.name);

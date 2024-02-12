@@ -61,12 +61,12 @@ public class FlightGear {
     // 26.6.17: Um erkenn zu koennen, dass FG nutzbar ist.
     //24.3.18 jetzt in modules public static boolean inited = false;
 
-    public static SceneNode buildBTG(boolean roadsonly) {
+    /*9.2.24 public static SceneNode buildBTG(boolean roadsonly) {
         String smodel = refbtg;
-        return buildBTG(/*new BundleResource(*/new BundleResource(BundleRegistry.getBundle("data"),refbtg), roadsonly);
-    }
+        return buildBTG(/*new BundleResource(* /new BundleResource(BundleRegistry.getBundle("data"),refbtg), roadsonly);
+    }*/
 
-    public static SceneNode buildBTG(/*NativeResource*/BundleResource file, boolean roadsonly) {
+    /*9.2.24 public static SceneNode buildBTG(/*NativeResource* /BundleResource file, boolean roadsonly) {
         if (!materialsloaded && simplematerial == null) {
             loadMaterials();
         }
@@ -104,8 +104,8 @@ public class FlightGear {
         model.setPosition(new Vector3(loader.gbs_center));
         //Model m = new Model();
         //m.add(model);
-        return model;*/
-    }
+        return model;* /
+    }*/
 
     /*public static SceneNode buildTile() throws ResourceNotFoundException, InvalidDataException {
         SceneNode m = new SceneNode();
@@ -137,7 +137,7 @@ public class FlightGear {
         return m;
     }*/
 
-    public static void loadMaterials() {
+    /*9.2.24 public static void loadMaterials() {
         String fgroot = Platform.getInstance().getConfiguration().getString("FG_ROOT");
         String materialbasexml = fgroot + "/Materials/base/materials-base.xml";
         String materialeuropexml = fgroot + "/Materials/regions/europe.xml";
@@ -146,14 +146,14 @@ public class FlightGear {
         SGMaterial.loadMaterial(materialeuropexml, materials);
         SGMaterial.loadMaterial(defaultsummer, materials);
         materialsloaded = true;
-    }
+    }*/
 
     /**
      * Von Anfang an so wie FG, aber ohne AircraftModel.
      * Liest das gesamte Model rekursiv mit allem.
      */
     public static SceneNode read777200(BundleResource modelfile) {
-        return new SceneNode(SGReaderWriterXML.buildModelFromBundleXML(modelfile, null).getNode());
+        return new SceneNode(SGReaderWriterXML.buildModelFromBundleXML(modelfile, null, null).getNode());
 
     }
 
@@ -413,7 +413,7 @@ public class FlightGear {
         // erstmal nach y-up rotieren (-90 an x). Und noch mal weil er falsch rum steht.
         // 2.5.17: Um y jetzt -90 statt 90, damit die Spitze richtig zeigt.
         //Quaternion yuprot = new Quaternion(new Degree(-90), new Degree(-90), new Degree(0));
-        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(br, null);
+        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(br, null, null);
         if (result != null && result.getNode() != null) {
             // Das model hat evtl. die offsets in seinem transform
             // 30.10.17: Die Modelle sind aber nicht alle mit z0 bei den Gears. MErkwuerdig.

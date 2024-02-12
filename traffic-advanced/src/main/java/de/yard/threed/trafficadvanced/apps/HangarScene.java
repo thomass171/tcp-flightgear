@@ -114,13 +114,14 @@ public class HangarScene extends Scene {
     int vehicleindex = 0;
     /*4.12.23 TrafficWorldConfig*/ TrafficConfig tw;
     SceneNode hud;
-    List<String> vehiclelist = new ArrayList<String>();
+    public List<String> vehiclelist = new ArrayList<String>();
     MenuCycler menuCycler = null;
     boolean avatarInited = false;
-    boolean modelInited = false;
+    public boolean modelInited = false;
     String vrMode = null;
     VrInstance vrInstance;
     Map<String, ButtonDelegate> buttonDelegates = new HashMap<String, ButtonDelegate>();
+    String initialVehicle = null;
 
     @Override
     public void init(SceneMode forServer) {
@@ -255,7 +256,8 @@ public class HangarScene extends Scene {
     }
 
     protected void processArguments() {
-        // for future use
+        initialVehicle = Platform.getInstance().getConfiguration().getString("initialVehicle");
+
     }
 
     @Override
@@ -320,6 +322,11 @@ public class HangarScene extends Scene {
         }
 
         if (avatarInited && !modelInited) {
+            if (initialVehicle != null) {
+                while (!initialVehicle.equals(vehiclelist.get(vehicleindex))) {
+                    vehicleindex++;
+                }
+            }
             addNextVehicle();
             modelInited = true;
         }
@@ -411,11 +418,13 @@ public class HangarScene extends Scene {
             // 1.2.24: Make it an entity to be grabable
             EcsEntity modelEntity = new EcsEntity(currentaircraft);
             modelEntity.addComponent(new GrabbingComponent());
+            modelEntity.setName(config.getName());
 
             logger.debug("teleport positions:" + pc.getPointCount());
             for (int i = 0; i < pc.getPointCount(); i++) {
                 logger.debug("teleport position:" + pc.getPointLabel(i));
             }
+            logger.debug("vehicle entity added for " + modelEntity.getName());
         });
     }
 

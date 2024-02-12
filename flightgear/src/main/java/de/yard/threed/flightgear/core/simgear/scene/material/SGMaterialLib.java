@@ -75,7 +75,7 @@ public class SGMaterialLib {
         }
         //SG_LOG( SG_INPUT, SG_INFO, "Reading materials from " << mpath );
         try {
-            PropsIO.readProperties(new BundleResource(bundle, mpath), materialblocks);
+            new PropsIO().readProperties(new BundleResource(bundle, mpath), materialblocks);
         } catch (SGException ex) {
             logger.error(/*SG_LOG( SG_INPUT, SG_ALERT*/ "Error reading materials in " + mpath + ": " + ex.getMessage());
             return false;

@@ -38,7 +38,7 @@ public class SimgearTest {
     public void testProperties() {
         SGPropertyNode props = new SGPropertyNode("root");
         try {
-            PropsIO.readProperties(new BundleResource(BundleRegistry.getBundle("test-resources"),modelfile), props);
+            new PropsIO().readProperties(new BundleResource(BundleRegistry.getBundle("test-resources"),modelfile), props);
         } catch (SGException e) {
             throw new RuntimeException(e);
         }
@@ -51,7 +51,7 @@ public class SimgearTest {
     public void testFindNode() {
         SGPropertyNode props = new SGPropertyNode("");
         try {
-            PropsIO.readProperties(new BundleResource(BundleRegistry.getBundle("test-resources"),testfile777200), props);
+            new PropsIO().readProperties(new BundleResource(BundleRegistry.getBundle("test-resources"),testfile777200), props);
         } catch (SGException t) {
             throw new RuntimeException(t);
         }
@@ -70,12 +70,12 @@ public class SimgearTest {
             String subPathStr = sub_props.getStringValue("path");
             Assertions.assertFalse(StringUtils.empty(subPathStr),"subPathStr");
         }
-        Assertions.assertEquals("Aircraft/My-777/Models/flightdeck-200.xml", model_nodes.get(0).getStringValue("path"),"subPathStr");
-        Assertions.assertEquals( "Aircraft/My-777/Models/Lights/light-coneLR.xml", model_nodes.get(1).getStringValue("path"),"subPathStr");
-        Assertions.assertEquals( "Aircraft/My-777/Models/Lights/light-coneC.xml", model_nodes.get(2).getStringValue("path"),"subPathStr");
+        Assertions.assertEquals("Aircraft/777/Models/flightdeck-200.xml", model_nodes.get(0).getStringValue("path"),"subPathStr");
+        Assertions.assertEquals( "Aircraft/777/Models/Lights/light-coneLR.xml", model_nodes.get(1).getStringValue("path"),"subPathStr");
+        Assertions.assertEquals( "Aircraft/777/Models/Lights/light-coneC.xml", model_nodes.get(2).getStringValue("path"),"subPathStr");
 
         SGPropertyNode pathnode = props.getChildren("path").get(0);
-        Assertions.assertEquals( "Aircraft/My-777/Models/777-200.ac", pathnode.getStringValue(),"path value");
+        Assertions.assertEquals( "Aircraft/777/Models/777-200.ac", pathnode.getStringValue(),"path value");
 
     }
 

@@ -132,7 +132,7 @@ public class MakeEffect {
         }
         SGPropertyNode/*_ptr*/ effectProps = new SGPropertyNode();
         try {
-            PropsIO.readProperties(absFileName, effectProps/*.ptr()*/, 0, true);
+            new PropsIO().readProperties(absFileName, effectProps/*.ptr()*/, 0, true);
         } catch (SGException e1) {
             logger.error(/*SG_LOG(SG_INPUT, SG_ALERT,*/ "error reading \"" + absFileName + "\": " + e1.getMessage());
             return null;

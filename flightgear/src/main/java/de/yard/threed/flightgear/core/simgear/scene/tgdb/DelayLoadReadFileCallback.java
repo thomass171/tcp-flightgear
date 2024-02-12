@@ -66,7 +66,7 @@ public class DelayLoadReadFileCallback /*extends OptionsReadFileCallback*/ {
                     // 4.1.18: GLTF Nutzung
                     LoaderOptions lo = new LoaderOptions();
                     lo.usegltf=true;
-                    result = SGReaderWriterXML.buildModelFromBundleXML(i.resource, lo);
+                    result = SGReaderWriterXML.buildModelFromBundleXML(i.resource, lo, null);
                     if (result == null||result.getNode()==null) {
                         logger.error( i._errorLocation + ": Failed to load " + i._token + " '" + i._name + "'");
                         continue;

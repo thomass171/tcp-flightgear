@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<!-- derived from asi.xml. Animations still are nonsens -->
+
+<PropertyList include="test-animations.xml">
+
+    <name>LOC</name>
+    <path>loc.ac</path>
+
+    <model>
+        <name>submodel</name>
+        <path>test-submodel.xml</path>
+        <offsets>
+            <x-m>0</x-m>
+            <y-m>0</y-m>
+            <z-m>0</z-m>
+        </offsets>
+    </model>
+
+</PropertyList>

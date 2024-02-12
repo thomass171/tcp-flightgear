@@ -600,7 +600,7 @@ public class FGProperties {
         }*/
 
         try {
-            PropsIO.readProperties(/*full*/path, props, default_mode);
+            new PropsIO().readProperties(/*full*/path, props, default_mode);
         } catch (SGException e) {
             FlightGear.guiErrorMessage("Error reading properties: ", e);
             return false;

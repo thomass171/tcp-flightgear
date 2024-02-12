@@ -44,8 +44,10 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         properties.put("logging.level.de.yard.threed","DEBUG");
 
         // 'initialVehicle' might cause NPE if not found
-        //properties.put("argv.initialVehicle", "c172p");
+        //properties.put("initialVehicle", "c172p");
+        //properties.put("initialVehicle", "777");
         //properties.put("initialVehicle", "bluebird");
+
         //properties.put("argv.basename","B55-B477");
         //properties.put("argv.basename","B55-B477-small");
 

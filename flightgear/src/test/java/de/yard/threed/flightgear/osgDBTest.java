@@ -1,4 +1,4 @@
-package de.yard.threed.trafficfg;
+package de.yard.threed.flightgear;
 
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.engine.testutil.EngineTestFactory;

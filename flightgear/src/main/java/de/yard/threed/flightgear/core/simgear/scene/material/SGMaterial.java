@@ -215,7 +215,7 @@ public class SGMaterial extends BVHMaterial {
         SGPropertyNode/*_ptr*/ props = new SGPropertyNode(null/*TODO*/);
 
         try {
-            PropsIO.readProperties(xmlfilename, props);
+            new PropsIO().readProperties(xmlfilename, props);
         } catch (SGException t) {
             logger.error("Failed to load xml: " + t.getMessage());
 

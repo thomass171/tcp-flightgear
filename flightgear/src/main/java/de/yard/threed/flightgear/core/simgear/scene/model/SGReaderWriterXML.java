@@ -41,11 +41,10 @@ import java.util.List;
 
 
 /**
- * Reading a XML properylist file. Any more?
- * Used by LoadOnlyCallback only? Why extending ReaderWriter?
+ * Reading a XML properylist file.
  * <p>
  * 28.12.16: Der Versuch, das ganze ECS maessig aufzudröseln ist zwecklos. Dafür sind die Model zu sehr ineinander verschachtelt (submodel ineinander und propertylist includes).
- * Das rauslösen von SGPath und ReadResult koennte aber was sein.
+ *
  * 24.1.17: Er braucht aber auch z.B. AircraftResourceProvider oder andere.
  * 10.4.17: "Saubere" Variante mit Bundle. ist kein lookup per osgDB.findDataFile() erforderlich. Die Klasse muss trotzdem auch simple Model (z.B. ac laden koennen, weil
  * sie rekursiv aufgerufen wird.
@@ -56,13 +55,14 @@ import java.util.List;
  * <p>
  * Created by thomass on 07.12.15.
  */
-public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements ModelBuilder */ {
+public class SGReaderWriterXML {
     static Log logger = Platform.getInstance().getLog(SGReaderWriterXML.class);
     private static boolean async = true;
     public static boolean fgmodelloaddebug = false;
-    // two helper for tests
+    // few helper for tests
     public static int errorCnt = 0;
     public static List<String> loadedList = new ArrayList<String>();
+    public static List<String> failedList = new ArrayList<String>();
 
     public SGReaderWriterXML() {
         //MA17 supportsExtension("xml", "");
@@ -80,38 +80,34 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
      * Und da kommt per options auch der Property Tree fuer Animationen rein.
      * 4.4.18: Der modeldelegate wird fuer jedes submodel aufgerufen, also evtl. sehr oft!
      * Die einzelnen Model werden async geladen und nach und nach eingehangen. Die Bundle muessen aber da sein.
-     *
-     * @return
+     * <p>
+     * 08.02.24: Not sure what of the above comments still fits. The pure XML load (includes inclusive) is done snyc from bundle,
+     * the referenced model (ac/gltf/xml) are loaded async. Also referenced XML?
+     * Independent from "modeldelegate" (which might be null), the loaded model is hooked async into the destination node.
      */
     public static BuildResult buildModelFromBundleXML(BundleResource modelfile, LoaderOptions options, XmlModelCompleteDelegate modeldelegate) {
-        String extension = modelfile.getExtension();
+
         SGReaderWriterXML ldr = new SGReaderWriterXML();
-        BuildResult result = ldr.build(modelfile, options, modeldelegate);
+        BuildResult result = ldr.sgLoad3DModel_internal(modelfile, options, modeldelegate);
         return result;
     }
 
     /**
-     * Laedt async!
-     * 7.10.17: Ohhne delegate ist das doch witzlos? Nicht unbedingt. Das model wird spaeter in die node gahangen,
-     * die BuildResult liefert. Naja, etwas Hmm.
-     * 9.1.18: Doch doch, so ist das.
-     *
-     * @param modelfile
-     * @param options
-     * @return
+     * 10.2.24: Also the XML is loaded async. Only returns a complete empty destination node.
      */
-    public static BuildResult buildModelFromBundleXML(BundleResource modelfile, LoaderOptions options) {
-        return buildModelFromBundleXML(modelfile, options, null);
-    }
+    /*public static BuildResult buildModelFromXMLAsync(String modelfile, LoaderOptions options, XmlModelCompleteDelegate modeldelegate) {
 
-    //@Override
-    private BuildResult build(BundleResource bpath, LoaderOptions opt, XmlModelCompleteDelegate modeldelegate) {
-        logger.debug("load: name=" + bpath.getFullName());
-        return sgLoad3DModel_internal(bpath/*, null, null, null*/, opt, modeldelegate);
-    }
+        SGReaderWriterXML ldr = new SGReaderWriterXML();
+        BuildResult result = ldr.sgLoad3DModel_internal_async(modelfile, options, modeldelegate);
+        if (result == null) {
+            //already logged.
+            result = new BuildResult("load failed");
+        }
+        return result;
+    }*/
 
     /**
-     * Create animations, which in fact are effects.
+     * Create animations, which in fact are effects (10.2.24: really is the same?).
      * 5.10.17: Als Animation werden die aber auch nochmal angelegt. Irgendwie unklar.
      */
     private void makeEffectAnimations(PropertyList animation_nodes, PropertyList effect_nodes) {
@@ -172,35 +168,25 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
     }
 
     /**
+     * Sync load of a XML model file. As of 2017 no longer for gltf/ac. Those referenced from XML are delegated async to the platform.
+     * Returns null in case of an error (no exception is thrown), which already was logged. Its up
+     * to the caller to create an empty BuildResult for avoiding NPEs (its hard to do that here).
+     * <p>
      * 27.12.16: Kann die gelesenen Properties jetzt auch uebergeben bekommen. Ginge zwar, durch die Rekursion in die submodel hilft das aber nur wenig.
      * 10.04.17: Wenn es ein Bundle gibt, wird der "bpath" relativ in dieses Bundle betrachtet.
-     * 11.04.17: Liefert null bei einem Fehler statt eine Exception. Fehler wurde gelogged.
      * 15.09.17: Jetzt async. Das ist ein kompletter Umbau des Ablaufs.
-     * 26.12.18: Muss bei Fehler leeres BuildResult liefern.
-     * 28.9.19: Das ist aber lästig. Das kann doch der eine Aufrufer machen. Liefert null bei Fehler.
+     * xx.xx.?? bpath is considered to be not null and "(SG)path" no longer is an option!
      *
      * @return
      */
     private BuildResult sgLoad3DModel_internal_async(BundleResource bpath, LoaderOptions bdbOptions, final XmlModelCompleteDelegate modeldelegate) {
-        SGPath path = null;
         de.yard.threed.flightgear.core.osgdb.Options dbOptions = null;
         SGPropertyNode overlay = null;
 
-
-        logger.debug("sgLoad3DModel_internal");
-
-        if (path != null) {
-            if (!path.exists()) {
-                logger.error("Failed (!path.exists) to load file: \"" + path + "\"");
-                return null;
-            }
-            logger.debug("SGReaderWriterXML::sgLoad3DModel_internal. path=" + path.file_base());
-
-        }
-
+        logger.debug("sgLoad3DModel_internal" + bpath.getFullQualifiedName());
 
         /*osg::ref_ptr <*/
-        // 4.1.18: das mit dem copy isType doch Driss
+        // 4.1.18: das mit dem copy is doch Driss
         SGReaderWriterOptions options = SGReaderWriterOptions.copyOrCreate(dbOptions);
         SGLoaderOptions boptions = SGLoaderOptions.copyOrCreate(bdbOptions);
 
@@ -209,17 +195,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         SGPath modelpath = null;
         SGPath texturepath = null;
         SGPath modelDir = null;
-        boolean isxml;
-        if (bpath == null) {
-            //MA23
-            Util.nomore();
-            modelpath = new SGPath(path);
-            texturepath = new SGPath(path);
-            modelDir = new SGPath(modelpath.dir());
-            isxml = modelpath.extension().equals("xml");
-        } else {
-            isxml = bpath.getExtension().equals("xml");
-        }
+        boolean isxml = bpath.getExtension().equals("xml");
 
         /*SGSharedPtr<*/
         // Ueber die Options kann DER PropertyTree reinkommen. Den brauchen z.B. die Animationen.
@@ -251,74 +227,50 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         // Check for an XML wrapper
 
         if (isxml) {
-            logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: found nodelpath xml. modelpath=" + modelpath + ",modelDir=" + modelDir);
+            logger.debug("found nodelpath xml. modelpath=" + modelpath + ",modelDir=" + modelDir);
 
-            if (bpath != null) {
-                try {
-                    PropsIO.readProperties(bpath, props);
-                } catch (SGException t) {
-                    logger.error("Failed to load xml: " + t.getMessage());
-                    return null;
-                }
-            } else {
-                try {
-                    PropsIO.readProperties(modelpath.str(), props);
-                } catch (SGException t) {
-                    logger.error("Failed to load xml: " + t.getMessage());
-                    return null;
-                }
-
+            PropsIO propsIO = new PropsIO();
+            try {
+                propsIO.readProperties(bpath, props);
+            } catch (SGException t) {
+                logger.error("Failed to load xml: " + t.getMessage());
+                failedList.add(bpath.getFullQualifiedName());
+                return null;
             }
 
             if (overlay != null) {
                 PropsIO.copyProperties(overlay, props);
             }
             if (previewMode && props.hasChild("nopreview")) {
+                logger.warn("no preview");
                 return null;
             }
 
             if (props.hasValue("/path")) {
 
                 String modelPathStr = props.getStringValue("/path");
-                logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: found path prop. value=" + modelPathStr);
+                logger.debug("found path prop. value=" + modelPathStr);
 
-                if (bpath == null) {
-                    modelpath = new SGPath(SGModelLib.findDataFile(modelPathStr, null, modelDir));
-                    if (modelpath.isNull()) {
-                        logger.error("Model file not found: '" + modelPathStr + "'" + path);
-                        return null;
-                    }
-                    if (StringUtils.empty(modelpath.str())) {
-                        logger.warn("modelpath found isType empty. Missung ResourceProvider?");
-                    }
-                } else {
-                    bmodelpath = FgBundleHelper.findPath(modelPathStr, bpath);
-                    if (bmodelpath == null) {
-                        logger.error("Failed to resolve " + modelPathStr + " in " + bpath);
-                        errorCnt++;
-                        return null;
-                    }
+                bmodelpath = FgBundleHelper.findPath(modelPathStr, bpath);
+                if (bmodelpath == null) {
+                    logger.error("Failed to resolve " + modelPathStr + " in " + bpath);
+                    errorCnt++;
+                    failedList.add(bpath.getFullQualifiedName());
+                    return null;
                 }
+
                 if (props.hasValue("/texture-path")) {
                     String texturePathStr = props.getStringValue("/texture-path");
                     if (!StringUtils.empty(texturePathStr)) {
-                        if (bpath == null) {
-                            texturepath = new SGPath(SGModelLib.findDataFile(texturePathStr, null, modelDir));
-                            if (texturepath.isNull()) {
-                                logger.error("Texture file not found: '" + texturePathStr + "'" + path);
-                                return null;
-                            }
+                        //02.10.19 bpath ist ja wohl ein XML und bmodelpath ein AC. Und die Texture dann beim AC suchen, nicht XML (z.B. bluebird yoke)
+                        //Total heikel. Was soll denn "Aircraft/Instruments-3d/yoke" sein? Relativ vom AC? Wohl nicht. Hier muss wohl nochmal ein resolve gemacht
+                        //werden. Aber wie, nur auf den Pfad? Kann ich nicht. Das ist so eine FG Sonderlocke. Erstmal so nachbilden.
+                        //Das ist total krampfig. TODO dabrauchts auch Tests zu.
+                        if (StringUtils.startsWith(texturePathStr, "Aircraft/")) {
+                            btexturepath = new ResourcePath(texturePathStr);
                         } else {
-                            //02.10.19 bpath ist ja wohl ein XML und bmodelpath ein AC. Und die Texture dann beim AC suchen, nicht XML (z.B. bluebird yoke)
-                            //Total heikel. Was soll denn "Aircraft/Instruments-3d/yoke" sein? Relativ vom AC? Wohl nicht. Hier muss wohl nochmal ein resolve gemacht
-                            //werden. Aber wie, nur auf den Pfad? Kann ich nicht. Das ist so eine FG Sonderlocke. Erstmal so nachbilden.
-                            //Das ist total krampfig. TODO dabrauchts auch Tests zu.
-                            if (StringUtils.startsWith(texturePathStr, "Aircraft/")) {
-                                btexturepath = new ResourcePath(texturePathStr);
-                            } else {
-                                //2.10.10:modelpath statt bpath führt zu AI Fliegern ohne Textur.
-                                btexturepath = new ResourcePath(bpath/*bpath*/.getPath().path + "/" + texturePathStr);
-                            }
+                            //2.10.10:modelpath statt bpath führt zu AI Fliegern ohne Textur.
+                            btexturepath = new ResourcePath(bpath/*bpath*/.getPath().path + "/" + texturePathStr);
                         }
                     }
                 }
@@ -331,39 +283,27 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
                 PropsIO.copyProperties(mp, prop_root);
             }
         } else {
-            // kein XML
-            // model without wrapper
-            // 27.12.16: Was sind denn das für Cases?
-            // 10.4.17: Das dueften z.B. reine ac Model sein.
+            // No XML but just a model without XML wrapper. For submodels inside XMLs that do not reference
+            // other XML but directly ac model files.
+            // Nothing to do here.
         }
 
         BundleResource pendingbmodelpath = null;
 
         if (model == null) {
-            // "simples" model, z.B. ac? 15.9.17 Nee, ich glaub der kann hier fuer alles andere auch reinkommen.
+            // pure ac model or XML with "path".
             // Assume that textures are in
             // the same location as the XML file.
-            if (bpath == null) {
-                if (texturepath != null) {
-                    if (!StringUtils.empty(texturepath.extension()))
-                        texturepath = texturepath.dir();
-
-                    logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading textures(?) or model from modelpath " + ((bpath == null) ? modelpath.str() : bpath.getFullName()) + ",texturepath=" + texturepath.str());
-                    options.setDatabasePath(texturepath.str());
-                }
-            } else {
-                if (btexturepath != null) {
-                    logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading textures(?) or model from modelpath " + bpath.getFullName() + ",texturepath=" + (btexturepath.path));
-                    boptions.setDatabasePath(new ResourcePath(btexturepath.path));
-                }
+            if (btexturepath != null) {
+                logger.debug("loading textures(?) or model from modelpath " + bpath.getFullName() + ",texturepath=" + (btexturepath.path));
+                boptions.setDatabasePath(new ResourcePath(btexturepath.path));
             }
-            /* osgDB::ReaderWriter::*/
 
             if (bmodelpath != null) {
                 String extension = bmodelpath.getExtension();
                 BuildResult modelResult;
                 if (extension.equals("xml")) {
-                    modelResult = buildModelFromBundleXML(bmodelpath,/*TODO 25.4.17*/boptions);
+                    modelResult = buildModelFromBundleXML(bmodelpath,/*TODO 25.4.17*/boptions, null);
                     //modelResult = new ReadResult(osgDB.readNodeFile(bmodelpath, null, options/*.get()*/));
                     if (modelResult == null || modelResult.getNode() == null) {
                         logger.error("Failed to build 3D model:" + ((modelResult == null) ? "" : modelResult.message()) /*10.4.17 +                        modelpath.str()*/);
@@ -387,9 +327,9 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
                 model = modelResult.getNode();//copyModel(modelResult.getNode());
             }
             // Add an extra reference to the model stored in the database.
-            // That isType to avoid expiring the object from the cache even if
-            // it isType still in use. Note that the object cache will think
-            // that a model isType unused if the reference count isType 1. If we
+            // That is to avoid expiring the object from the cache even if
+            // it is still in use. Note that the object cache will think
+            // that a model is unused if the reference count is 1. If we
             // clone all structural nodes here we need that extra
             // reference to the original object
             /*TODO SGDatabaseReference * databaseReference;
@@ -409,12 +349,8 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
             model.accept(setNodeMaskVisitor);*/
         }
         if (model != null) {
-            if (bpath != null) {
-                // keep suffix like ".xml" in node name.
-                model.setName(bpath.getFullName());
-            } else {
-                model.setName(modelpath.str());
-            }
+            // keep suffix like ".xml" in node name.
+            model.setName(bpath.getFullName());
         }
 
 
@@ -423,7 +359,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         // Set up the alignment node if needed
         SGPropertyNode offsets = props.getNode("offsets", false);
         if (offsets != null) {
-            logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: found offsets");
+            logger.debug("found offsets");
 
             needTransform = true;
             /*osg::MatrixTransform **/
@@ -464,7 +400,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         // Load sub-models
         PropertyList /*Vector<SGPropertyNode_ptr>*/ model_nodes = props.getChildren("model");
 
-        logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading sub models. cnt=" + model_nodes.size());
+        logger.debug("loading sub models. cnt=" + model_nodes.size());
         for (int i = 0; i < model_nodes.size(); i++) {
             SGPropertyNode/*_ptr*/ sub_props = model_nodes.get(i);
 
@@ -474,24 +410,16 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
             SceneNode submodel;
 
             String subPathStr = sub_props.getStringValue("path");
-            logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading sub model " + subPathStr + " at " + i);
+            logger.debug("loading sub model " + subPathStr + " at " + i);
 
             SGPath submodelPath = null;
             BundleResource bsubmodelpath = null;
-            if (bpath == null) {
-                submodelPath = new SGPath(SGModelLib.findDataFile(subPathStr, null, modelDir));
-                if (submodelPath.isNull()) {
-                    logger.error("Failed (sub model path isType null) to load file: \"" + subPathStr + "\"");
-                    continue;
-                }
-            } else {
                 bsubmodelpath = FgBundleHelper.findPath(subPathStr, bpath);
                 if (bsubmodelpath == null) {
-                    logger.error("Failed (sub model path isType null) to load file: \"" + subPathStr + "\"");
+                    logger.error("Failed (sub model path is null) to load file: \"" + subPathStr + "\"");
+                    failedList.add(subPathStr);
                     continue;
                 }
-            }
-
 
             if (sub_props.hasChild("usage")) { /* We don't want load this file and its content now */
                 boolean isInterior = sub_props.getStringValue("usage").equals("interior");
@@ -563,7 +491,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
 
         /*TODO
         /*osg::* /Node * ( * load_panel)(SGPropertyNode *) = options -> getLoadPanel();
-        //tsch_log("SGReaderWriterXML::sgLoad3DModel_internal: load_panel=%d\n", load_panel);
+        //logger.debug("load_panel=%d\n", load_panel);
         if (load_panel) {
             // Load panels
             PropertyList /*vector<SGPropertyNode_ptr>* / panel_nodes = props.getChildren("panel");
@@ -596,7 +524,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
 
         PropertyList /*std::vector < SGPropertyNode_ptr >*/ text_nodes;
         text_nodes = props.getChildren("text");
-        //tsch_log("SGReaderWriterXML::sgLoad3DModel_internal: loading text nodes. cnt=%d\n", text_nodes.size());
+        //logger.debug("loading text nodes. cnt=%d\n", text_nodes.size());
         for (int i = 0; i < text_nodes.size(); ++i) {
            /*TODO group.addChild(SGText::appendText (text_nodes.get(i),
                     prop_root,
@@ -606,9 +534,9 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         List<SGAnimation> animationList = new ArrayList<SGAnimation>();
         group.setName("XmlDestination");
         // 6.2.24: Be more specific with name setting
-        if (bpath != null) {
+
             group.setName(bpath.getFullName());
-        }
+
         BuildResult xmlresult = new BuildResult(group.nativescenenode/*, animationList*/);
         // 15.9.17: und jetzt das noch fehlende Model. Ob async oder nicht, erst jetzt einhaengen.
         if (pendingbmodelpath != null) {
@@ -621,7 +549,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
                     group.attach(new SceneNode(result.getNode()));
                     //die group aendert sich wohl, also brauch ich auch keine returngroup
                     // Group returngroup = group;
-                    buildAnimations(group, props, previewMode, final_prop_root, options, path, bpath, animationList);
+                    buildAnimations(group, props, previewMode, final_prop_root, options, null/*12.2.24 path*/, bpath, animationList);
                     if (modeldelegate != null) {
                         modeldelegate.modelComplete(finalpendingbmodelpath, animationList);
                     }
@@ -635,7 +563,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
             group.attach(model);
             //die group aendert sich wohl, also brauch ich auch keine returngroup
             // Group returngroup = group;
-            buildAnimations(group, props, previewMode, prop_root, options, path, bpath, animationList);
+            buildAnimations(group, props, previewMode, prop_root, options, null/*12.2.24  path*/, bpath, animationList);
         }
         
         
@@ -655,9 +583,9 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
             osgDB::writeNodeFile ( * returngroup, outputfile);
         }*/
 
-        logger.debug("sgLoad3DModel_internal completed");
+        logger.debug("sgLoad3DModel_internal completed for "+bpath.getFullQualifiedName());
 
-        loadedList.add(bpath.getName());
+        loadedList.add(bpath.getFullQualifiedName());
         return xmlresult;//group;//returngroup/*.release()*/;
     }
 
@@ -791,7 +719,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
 
         if (isxml) {
             if (Config.modelloaddebuglog) {
-                logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: found nodelpath xml. modelpath=" + modelpath + ",modelDir=" + modelDir);
+                logger.debug("found nodelpath xml. modelpath=" + modelpath + ",modelDir=" + modelDir);
             }
             if (bpath != null) {
                 try {
@@ -821,7 +749,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
 
                 String modelPathStr = props.getStringValue("/path");
                 if (Config.modelloaddebuglog) {
-                    logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: found path prop. value=" + modelPathStr);
+                    logger.debug("found path prop. value=" + modelPathStr);
                 }
                 if (bpath == null) {
                     modelpath = new SGPath(SGModelLib.findDataFile(modelPathStr, null, modelDir));
@@ -830,7 +758,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
                         return null;
                     }
                     if (StringUtils.empty(modelpath.str())) {
-                        logger.warn("modelpath found isType empty. Missung ResourceProvider?");
+                        logger.warn("modelpath found is empty. Missung ResourceProvider?");
                     }
                 } else {
                     bmodelpath = BundleRegistry.findPath(modelPathStr, bpath);
@@ -877,14 +805,14 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
                         texturepath = texturepath.dir();
 
                     if (Config.modelloaddebuglog) {
-                        logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading textures(?) or model from modelpath " + ((bpath == null) ? modelpath.str() : bpath.getFullName()) + ",texturepath=" + texturepath.str());
+                        logger.debug("loading textures(?) or model from modelpath " + ((bpath == null) ? modelpath.str() : bpath.getFullName()) + ",texturepath=" + texturepath.str());
                     }
                     options.setDatabasePath(texturepath.str());
                 }
             } else {
                 if (btexturepath != null) {
                     if (Config.modelloaddebuglog) {
-                        logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading textures(?) or model from modelpath " + bpath.getFullName() + ",texturepath=" + (btexturepath.path));
+                        logger.debug("loading textures(?) or model from modelpath " + bpath.getFullName() + ",texturepath=" + (btexturepath.path));
                     }
                     boptions.setDatabasePath(new ResourcePath(btexturepath.path));
                 }
@@ -914,9 +842,9 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
                 model = modelResult.getNode();//copyModel(modelResult.getNode());
             }
             // Add an extra reference to the model stored in the database.
-            // That isType to avoid expiring the object from the cache even if
-            // it isType still in use. Note that the object cache will think
-            // that a model isType unused if the reference count isType 1. If we
+            // That is to avoid expiring the object from the cache even if
+            // it is still in use. Note that the object cache will think
+            // that a model is unused if the reference count is 1. If we
             // clone all structural nodes here we need that extra
             // reference to the original object
             /*TODO SGDatabaseReference * databaseReference;
@@ -946,7 +874,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         SGPropertyNode offsets = props.getNode("offsets", false);
         if (offsets != null) {
             if (Config.modelloaddebuglog) {
-                logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: found offsets");
+                logger.debug("found offsets");
             }
             needTransform = true;
             /*osg::MatrixTransform **/
@@ -988,7 +916,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
         PropertyList /*Vector<SGPropertyNode_ptr>* / model_nodes = props.getChildren("model");
 
         if (Config.modelloaddebuglog) {
-            logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading sub models. cnt=" + model_nodes.size());
+            logger.debug("loading sub models. cnt=" + model_nodes.size());
         }
         for (int i = 0; i < model_nodes.size(); i++) {
             SGPropertyNode/*_ptr* / sub_props = model_nodes.get(i);
@@ -999,20 +927,20 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
 
             String subPathStr = sub_props.getStringValue("path");
             if (Config.modelloaddebuglog) {
-                logger.debug("SGReaderWriterXML::sgLoad3DModel_internal: loading sub model " + subPathStr + " at " + i);
+                logger.debug("loading sub model " + subPathStr + " at " + i);
             }
             SGPath submodelPath = null;
             BundleResource bsubmodelpath = null;
             if (bpath == null) {
                 submodelPath = new SGPath(SGModelLib.findDataFile(subPathStr, null, modelDir));
                 if (submodelPath.isNull()) {
-                    logger.error("Failed (sub model path isType null) to load file: \"" + subPathStr + "\"");
+                    logger.error("Failed (sub model path is null) to load file: \"" + subPathStr + "\"");
                     continue;
                 }
             } else {
                 bsubmodelpath = BundleRegistry.findPath(subPathStr, bpath);
                 if (bsubmodelpath == null) {
-                    logger.error("Failed (sub model path isType null) to load file: \"" + subPathStr + "\"");
+                    logger.error("Failed (sub model path is null) to load file: \"" + subPathStr + "\"");
                     continue;
                 }
             }
@@ -1082,7 +1010,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
 
         /*TODO
         /*osg::* /Node * ( * load_panel)(SGPropertyNode *) = options -> getLoadPanel();
-        //tsch_log("SGReaderWriterXML::sgLoad3DModel_internal: load_panel=%d\n", load_panel);
+        //logger.debug("load_panel=%d\n", load_panel);
         if (load_panel) {
             // Load panels
             PropertyList /*vector<SGPropertyNode_ptr>* / panel_nodes = props.getChildren("panel");
@@ -1115,7 +1043,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
 
         PropertyList /*std::vector < SGPropertyNode_ptr >* / text_nodes;
         text_nodes = props.getChildren("text");
-        //tsch_log("SGReaderWriterXML::sgLoad3DModel_internal: loading text nodes. cnt=%d\n", text_nodes.size());
+        //logger.debug("loading text nodes. cnt=%d\n", text_nodes.size());
         for (int i = 0; i < text_nodes.size(); ++i) {
            /*TODO group.addChild(SGText::appendText (text_nodes.get(i),
                     prop_root,
@@ -1255,6 +1183,7 @@ public class SGReaderWriterXML /*MA17 extends ReaderWriter /*15.9.17 implements 
     public static void clearStatistics() {
         errorCnt = 0;
         loadedList = new ArrayList<String>();
+        failedList = new ArrayList<String>();
     }
 }
 
