@@ -47,7 +47,7 @@ public class GltfBuildingTest {
         BundleResource gltfbr = new BundleResource(new InMemoryBundle("windturbine", lf.gltfstring, lf.bin), "windturbine.gltf");
         try {
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, null);
-            ModelAssertions.assertWindturbine(lf1.ploadedfile, 2);
+            ModelAssertions.assertWindturbine(lf1.doload(), 2);
         } catch (InvalidDataException e) {
             Assert.fail(e.getMessage());
         }
@@ -66,7 +66,7 @@ public class GltfBuildingTest {
             // Den texturebasepath einfach mal so setzen
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, new ResourcePath("flusi"));
             //8 vertices und 30 indices?
-            ModelAssertions.assertEgkkTower(lf1.ploadedfile, 8, 30, true, false);
+            ModelAssertions.assertEgkkTower(lf1.doload(), 8, 30, true, false);
         } catch (InvalidDataException e) {
             Assert.fail(e.getMessage());
         }
@@ -85,7 +85,7 @@ public class GltfBuildingTest {
         try {
             // Den texturebasepath einfach mal so setzen
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, new ResourcePath("flusi"));
-            ModelAssertions.assertCDU777(lf1.ploadedfile, true);
+            ModelAssertions.assertCDU777(lf1.doload(), true);
         } catch (InvalidDataException e) {
             Assert.fail(e.getMessage());
         }
@@ -104,7 +104,7 @@ public class GltfBuildingTest {
                 // Den texturebasepath einfach mal so setzen
                 LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, new ResourcePath("flusi/terrain/3056410-gltf"));
                 // Das GLTF wurde mit matlib erstellt
-                ModelAssertions.assertRefbtg(lf1.ploadedfile, true);
+                ModelAssertions.assertRefbtg(lf1.doload(), true);
             } catch (InvalidDataException e) {
                 Assert.fail(e.getMessage());
             }
@@ -129,7 +129,7 @@ public class GltfBuildingTest {
             // Den texturebasepath einfach mal so setzen
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, new ResourcePath("flusi/terrain/3056410-gltf"));
             // Das GLTF wurde ohne matlib erstellt
-            ModelAssertions.assertRefbtg(lf1.ploadedfile, false);
+            ModelAssertions.assertRefbtg(lf1.doload(), false);
         } catch (InvalidDataException e) {
             Assert.fail(e.getMessage());
         }
@@ -152,7 +152,7 @@ public class GltfBuildingTest {
         BundleResource gltfbr = new BundleResource(new InMemoryBundle("followme", lf.gltfstring, lf.bin), "followme.gltf");
         try {
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, null);
-            ModelAssertions.assertFollowMe(lf1.ploadedfile, 38);
+            ModelAssertions.assertFollowMe(lf1.doload(), 38);
         } catch (InvalidDataException e) {
             Assert.fail(e.getMessage());
         }

@@ -79,7 +79,8 @@ public class FgTestFactory {
 
         // "fgdatabasicmodel" and FlightGearSettings.FGROOTCOREBUNDLE currently not needed in tests
         // "fgdatabasic" is needed eg. for yoke and pedals in bluebird.
-        String[] bundlelist = new String[]{"engine", "fgdatabasic", "traffic-fg"};
+        // "data" is needed for textures for loc sometimes.
+        String[] bundlelist = new String[]{"data", "engine", "fgdatabasic", "traffic-fg"};
 
         Configuration configuration = ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties);
 

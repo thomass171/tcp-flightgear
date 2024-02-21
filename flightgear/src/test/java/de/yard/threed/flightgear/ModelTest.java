@@ -20,6 +20,7 @@ import de.yard.threed.core.resource.ResourcePath;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.platform.EngineHelper;
+import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.AsyncHelper;
 import de.yard.threed.engine.test.testutil.TestUtil;
@@ -62,9 +63,9 @@ public class ModelTest {
         Bundle bundle = BundleRegistry.getBundle("My-777");
         TestUtil.assertNotNull("bundle My-777", bundle);
         // 18.10.23: No more 'ac', so only gltf any more.
-        EngineHelper.buildNativeModel(new BundleResource(bundle, new ResourcePath("Models"), "777-200.ac"), null, (BuildResult result) -> {
+        Platform.getInstance().buildNativeModelPlain(new ResourceLoaderFromBundle(new BundleResource(bundle, new ResourcePath("Models"), "777-200.ac")), null, (BuildResult result) -> {
             TestUtil.assertNotNull("node", result.getNode());
-        });
+        }, 0);
         //  TestUtil.assertEquals("world kids", 113, world.kids.size());
     }
 
@@ -84,7 +85,7 @@ public class ModelTest {
         // This windturbine.gltf is from earlier bundle build. 'ac' is mapped to 'gltf'.
         BundleResource resource = new BundleResource(bundlemodel, "Models/Power/windturbine.ac");
 
-        SceneNode node = FgModelHelper.mappedasyncModelLoad(resource);
+        SceneNode node = FgModelHelper.mappedasyncModelLoad(new ResourceLoaderFromBundle(resource));
 
         assertEquals(0, node.findNodeByName("Blade3", true).size());
         // modelbuildvalues not available for checking
@@ -123,7 +124,7 @@ public class ModelTest {
                 log.debug("Starting loader");
 
                 // only test loading. Converting ac is tested in 'tools-fg'.
-                SceneNode node = FgModelHelper.mappedasyncModelLoad(resource);
+                SceneNode node = FgModelHelper.mappedasyncModelLoad(new ResourceLoaderFromBundle(resource));
                 destinationNodes.add(node);
                 modelLaunched.setValue(true);
             }
@@ -168,21 +169,21 @@ public class ModelTest {
 
         final StringBuffer callbackdone = new StringBuffer("");
         BundleResource resource = new BundleResource(BundleRegistry.getBundle(BUNDLENAMEDELAYED), "flusi/egkk_tower.gltf");
-        EngineHelper.buildNativeModel(resource, null, (BuildResult result) -> {
+        Platform.getInstance().buildNativeModelPlain(new ResourceLoaderFromBundle(resource), null, (BuildResult result) -> {
             TestUtil.assertNotNull("built node", result.getNode());
             //rootnodename ist jetzt full name statt nur egkk_tower
             TestUtil.assertEquals("rootnode.name", "flusi/egkk_tower.gltf", result.getNode().getName());
             TestUtil.assertEquals("number of kids", 6, result.getNode().getTransform().getChildren().size());
             TestUtil.assertNotNull("kid(0) mesh", result.getNode().getTransform().getChild(0).getSceneNode().getMesh());
             callbackdone.append("done");
-        });
+        }, 0);
         TestHelper.processAsync();
         TestUtil.assertNotNull("", BundleRegistry.getBundle(BUNDLENAMEDELAYED).getResource("flusi/egkk_tower.gltf"));
         TestUtil.assertNull("", BundleRegistry.getBundle(BUNDLENAMEDELAYED).getResource("flusi/egkk_tower.bin"));
-        TestUtil.assertEquals("", 1, AsyncHelper.getModelbuildvaluesSize());
+        TestUtil.assertEquals("", 1, AbstractSceneRunner.getInstance().futures.size());
         TestHelper.processAsync();
         TestHelper.processAsync();
-        TestUtil.assertEquals("", 0, AsyncHelper.getModelbuildvaluesSize());
+        TestUtil.assertEquals("", 0, AbstractSceneRunner.getInstance().futures.size());
         //gltf/bin wurden nach dem Built wieder genullt.
         TestUtil.assertNull("", BundleRegistry.getBundle(BUNDLENAMEDELAYED).getResource("flusi/egkk_tower.gltf"));
         TestUtil.assertNull("", BundleRegistry.getBundle(BUNDLENAMEDELAYED).getResource("flusi/egkk_tower.bin"));

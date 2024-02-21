@@ -5,6 +5,8 @@ import de.yard.threed.core.platform.NativeJsonValue;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleData;
+import de.yard.threed.core.resource.ResourcePath;
+import de.yard.threed.core.resource.URL;
 import de.yard.threed.core.testutil.InMemoryBundle;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.Scene;
@@ -86,30 +88,44 @@ public class EffectTest {
         Bundle bundlemodel = BundleRegistry.getBundle("Terrasync-model");
         assertNotNull(bundlemodel);
 
+        BuildResult result = SGReaderWriterXMLTest.loadModel(new BundleResource(bundlemodel, "Models/Power/windturbine.xml"),animationList);
+        validateWindturbine(new SceneNode(result.getNode()), animationList);
 
-        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundlemodel, "Models/Power/windturbine.xml"), null, (bpath, alist) -> {
-            if (alist != null) {
-                animationList.addAll(alist);//  xmlloaddelegate.modelComplete( animationList);
-            }
-        });
-        TestHelper.processAsync();
-        TestHelper.processAsync();
-        assertEquals(2, animationList.size(), "animations");
-        assertNotNull(((SGRotateAnimation) animationList.get(0)).rotategroup, "rotationgroup");
-        assertNotNull(((SGRotateAnimation) animationList.get(1)).rotategroup, "rotationgroup");
-        //PlatformOpenGL.asyncmode=1;
         animationList.clear();
         result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundlemodel, "Models/Power/windturbine.xml"), null, (bpath, alist) -> {
             if (alist != null) {
                 animationList.addAll(alist);//  xmlloaddelegate.modelComplete( animationList);
             }
         });
-        //MT gibt es im Test nicht. Darum gibt es keine Animation.
         assertEquals(0, animationList.size(), "animations");
         TestHelper.processAsync();
         TestHelper.processAsync();
+        validateWindturbine(new SceneNode(result.getNode()), animationList);
+    }
+
+    @Test
+    @Disabled
+    public void testAnimationsBundleLess() {
+        TestHelper.cleanupAsync();
+        List<SGAnimation> animationList = new ArrayList<SGAnimation>();
+        SGLoaderOptions opt = new SGLoaderOptions();
+        opt.setPropertyNode(new SGPropertyNode("" + "-root")/*FGGlobals.getInstance().get_props()*/);
+
+        EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("model"));
+
+        Bundle bundlemodel = BundleRegistry.getBundle("Terrasync-model");
+        assertNotNull(bundlemodel);
+
+        BuildResult result = SGReaderWriterXMLTest.loadModelBundleLess(new URL("", new ResourcePath("Models/Power"),"windturbine.xml"),animationList);
+        validateWindturbine(new SceneNode(result.getNode()),animationList);
+    }
+
+    private void validateWindturbine(SceneNode node, List<SGAnimation> animationList){
+        assertEquals(2, animationList.size(), "animations");
         assertNotNull(((SGRotateAnimation) animationList.get(0)).rotategroup, "rotationgroup");
         assertNotNull(((SGRotateAnimation) animationList.get(1)).rotategroup, "rotationgroup");
+        assertEquals("Models/Power/windturbine.xml->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Power/windturbine.gltf->[Tower,center back translate]", TestHelper.getHierarchy(node, 4));
+
     }
 
     /**

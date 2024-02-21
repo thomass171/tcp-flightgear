@@ -1,6 +1,8 @@
 package de.yard.threed.toolsfg;
 
+import de.yard.threed.core.BooleanHolder;
 import de.yard.threed.core.BuildResult;
+import de.yard.threed.core.GeneralParameterHandler;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.geometry.SimpleGeometry;
 import de.yard.threed.core.loader.InvalidDataException;
@@ -19,6 +21,7 @@ import de.yard.threed.core.testutil.InMemoryBundle;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.platform.EngineHelper;
+import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.engine.platform.common.AsyncHelper;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.test.testutil.TestUtil;
@@ -101,11 +104,22 @@ public class LoaderExtTest {
         //System.out.println(lf.gltfstring);
         BundleResource gltfbr = new BundleResource(new InMemoryBundle("777-200", lf.gltfstring, lf.bin), "777-200.gltf");
 
-        PortableModelList pml = ModelLoader.readGltfModelFromBundle(gltfbr, false, 0);
+        BooleanHolder loaded = new BooleanHolder(false);
 
-        //18.10.23: set defaulttexturebasepath to make check happy. TODO check intention and fix
-        pml.defaulttexturebasepath = new ResourcePath("flusi");
-        check777200(pml, !ignoreacworld);
+        ModelLoader.readGltfModelFromBundle(new ResourceLoaderFromBundle(gltfbr), false, 0, new GeneralParameterHandler<PortableModelList>() {
+            @Override
+            public void handle(PortableModelList pml) {
+                //18.10.23: set defaulttexturebasepath to make check happy. TODO check intention and fix
+                pml.defaulttexturebasepath = new ResourcePath("flusi");
+                check777200(pml, !ignoreacworld);
+                loaded.setValue(true);
+            }
+        });
+
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return loaded.getValue();
+        }, 10000);
 
     }
 

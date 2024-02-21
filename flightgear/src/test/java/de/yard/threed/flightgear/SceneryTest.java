@@ -1,5 +1,7 @@
 package de.yard.threed.flightgear;
 
+import de.yard.threed.core.BooleanHolder;
+import de.yard.threed.core.GeneralParameterHandler;
 import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.loader.AbstractLoader;
 import de.yard.threed.core.loader.InvalidDataException;
@@ -7,7 +9,10 @@ import de.yard.threed.core.loader.LoaderGLTF;
 import de.yard.threed.core.loader.PortableModelList;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.testutil.TestUtils;
+import de.yard.threed.engine.Texture;
+import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.engine.testutil.EngineTestFactory;
+import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
@@ -76,29 +81,54 @@ public class SceneryTest {
      *
      */
     @Test
-    public void testLoadRefBTG() {
+    public void testLoadRefBTG() throws Exception {
         Obj obj = new Obj();
         //TestFactory.loadBundleSync(SGMaterialLib.BUNDLENAME);
         // bis 7, weil dort das Material geladen wird.
         //FlightGear.init(7, FlightGear.argv);
         //FlightGearModuleBasic.init(null, null);
         //FlightGearModuleScenery.init(false);
+        Texture.resetTexturePool();
         //12.9.23: BTG should no longer considered a use case in Obj.SGLoadBTG()?
         LoaderOptions loaderoptions = new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib());
         loaderoptions.usegltf = false;
-        Node node = obj.SGLoadBTG(new BundleResource(BundleRegistry.getBundle("test-resources"), FlightGear.refbtg), null, loaderoptions);
-        assertNotNull(node);
-        ModelAssertions.assertRefbtgNode(node, "terrain/3056410.btg");
 
+        final BooleanHolder validated = new BooleanHolder(false);
+        obj.SGLoadBTG(new BundleResource(BundleRegistry.getBundle("test-resources"), FlightGear.refbtg), null, loaderoptions, new GeneralParameterHandler<Node>() {
+            @Override
+            public void handle(Node node) {
+                assertNotNull(node);
+                ModelAssertions.assertRefbtgNode(node, "terrain/3056410.btg");
+                validated.setValue(true);
+            }
+        });
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return validated.getValue();
+        }, 10000);
+
+        Texture.resetTexturePool();
         // And now as GLTF. Suffix remains ".btg"
         loaderoptions.usegltf = true;
-        node = obj.SGLoadBTG(new BundleResource(BundleRegistry.getBundle("test-resources"), FlightGear.refbtg), null, loaderoptions);
-        assertNotNull(node);
-        ModelAssertions.assertRefbtgNode(node, "terrain/3056410.gltf");
+        validated.setValue(false);
+        obj.SGLoadBTG(new BundleResource(BundleRegistry.getBundle("test-resources"), FlightGear.refbtg), null, loaderoptions, new GeneralParameterHandler<Node>() {
+            @Override
+            public void handle(Node node) {
+                assertNotNull(node);
+                ModelAssertions.assertRefbtgNode(node, "terrain/3056410.gltf");
+                validated.setValue(true);
+            }
+        });
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return validated.getValue();
+        }, 10000);
+
+
     }
 
     @Test
-    public void testLoadBTG2() {
+    public void testLoadBTG2() throws Exception {
         //TestFactory.loadBundleSync(SGMaterialLib.BUNDLENAME);
         //TestFactory.loadBundleSync(FlightGear.getBucketBundleName("3056410"));
         // bis 7, weil dort das Material geladen wird.
@@ -107,15 +137,28 @@ public class SceneryTest {
         //FlightGearModuleScenery.init(false);
 
         SGReaderWriterOptions options = new SGReaderWriterOptions();
-        SceneNode result = SGReaderWriterBTG.loadBTG(new BundleResource(BundleRegistry.getBundle("test-resources"), "terrain/3056410.btg"), options, null);
-        assertNotNull(result);
+        final BooleanHolder validated = new BooleanHolder(false);
+        SGReaderWriterBTG.loadBTG(new BundleResource(BundleRegistry.getBundle("test-resources"), "terrain/3056410.btg"), options, null, new GeneralParameterHandler<SceneNode>() {
+            @Override
+            public void handle(SceneNode result) {
+                assertNotNull(result);
+                validated.setValue(true);
+            }
+        });
+
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return validated.getValue();
+        }, 10000);
+
+
     }
 
     /**
      * wegen Materialmehrfachnutzung auch 3072816.btg testen
      */
     @Test
-    public void testLoadBTG3072816() {
+    public void testLoadBTG3072816() throws Exception {
         //TestFactory.loadBundleSync(SGMaterialLib.BUNDLENAME);
         //FlightGear.init(7, FlightGear.argv);
         // FlightGearModuleBasic.init(null, null);
@@ -128,8 +171,19 @@ public class SceneryTest {
         } catch (InvalidDataException e) {
             throw new RuntimeException(e);
         }
-        SceneNode result = SGReaderWriterBTG.loadBTG(br, null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()));
-        assertNotNull(result);
+        final BooleanHolder validated = new BooleanHolder(false);
+        SGReaderWriterBTG.loadBTG(br, null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()), new GeneralParameterHandler<SceneNode>() {
+            @Override
+            public void handle(SceneNode result) {
+                assertNotNull(result);
+                validated.setValue(true);
+            }
+        });
+
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return validated.getValue();
+        }, 10000);
     }
 
     @Test
@@ -302,7 +356,7 @@ public class SceneryTest {
      * Testing the internal main steps done in "Obj.java".
      */
     @Test
-    public void testLoadRefBtgAsGltf() throws InvalidDataException {
+    public void testLoadRefBtgAsGltf() throws Exception {
 
         BundleResource bpath = new BundleResource(BundleRegistry.getBundle("test-resources"), "terrain/3056410.btg");
         assertNotNull(bpath);
@@ -310,22 +364,35 @@ public class SceneryTest {
         String basename = StringUtils.substringBeforeLast(bpath.getFullName(), ".btg");
         bpath = new BundleResource(bpath.bundle, basename + ".gltf");
 
-        AbstractLoader tile = LoaderGLTF.buildLoader(bpath, null);
+        //AbstractLoader tile = LoaderGLTF.buildLoader(bpath, null);
+        BooleanHolder loaded = new BooleanHolder(false);
+        LoaderGLTF.load(new ResourceLoaderFromBundle(bpath), new GeneralParameterHandler<PortableModelList>() {
+            @Override
+            public void handle(PortableModelList ppfile) {
+                //PortableModelList ppfile = tile.preProcess();
 
-        PortableModelList ppfile = tile.preProcess();
+                ModelAssertions.assertRefbtg(ppfile, false);
 
-        ModelAssertions.assertRefbtg(ppfile, false);
+                SGMaterialLib matlib = SGMaterialTest.initSGMaterialLib();
+                SGMaterialCache matcache = null;
+                matcache = matlib.generateMatCache(SGGeod.fromCart(FlightGear.refbtgcenter));
 
-        SGMaterialLib matlib = SGMaterialTest.initSGMaterialLib();
-        SGMaterialCache matcache = null;
-        matcache = matlib.generateMatCache(SGGeod.fromCart(FlightGear.refbtgcenter));
+                Obj obj = new Obj();
+                //The GLTF itself does not contain material.
+                Node node = obj.getSurfaceGeometryPart2(ppfile/*.gml*/, false, matcache);
 
-        Obj obj = new Obj();
-        //The GLTF itself does not contain material.
-        Node node = obj.getSurfaceGeometryPart2(ppfile/*.gml*/, false, matcache);
+                assertEquals(17, obj.foundMaterial.size());
+                assertEquals(0, obj.notFoundMaterial.size());
+                assertTrue(obj.foundMaterial.contains("DryCrop"), "DryCrop");
+                loaded.setValue(true);
+            }
+        });
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return loaded.getValue();
+        }, 10000);
 
-        assertEquals(17, obj.foundMaterial.size());
-        assertEquals(0, obj.notFoundMaterial.size());
-        assertTrue(obj.foundMaterial.contains("DryCrop"), "DryCrop");
+
+
     }
 }

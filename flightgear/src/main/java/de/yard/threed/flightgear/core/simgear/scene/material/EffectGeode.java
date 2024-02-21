@@ -3,10 +3,12 @@ package de.yard.threed.flightgear.core.simgear.scene.material;
 import de.yard.threed.core.geometry.SimpleGeometry;
 import de.yard.threed.core.loader.PortableMaterial;
 import de.yard.threed.core.resource.BundleRegistry;
+import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.engine.GenericGeometry;
 import de.yard.threed.engine.Material;
 import de.yard.threed.engine.Mesh;
 import de.yard.threed.engine.loader.PortableModelBuilder;
+import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.flightgear.core.osg.Geode;
 
 
@@ -122,19 +124,23 @@ public class EffectGeode extends Geode {
     public void buildMesh(SimpleGeometry geometry) {
         // Aus dem SGMaterial und dem Effect das Platform Material bauen. 14.12.17: Oder aus material, wenns schon vorliegt.
         Material mat;
+        // 19.2.24: decoupled from bundle by using resourceLoader. path and name might be empty. These are set later in PortableModelBuilder
+        ResourceLoaderFromBundle resourceLoader = new ResourceLoaderFromBundle(
+                new BundleResource(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),new ResourcePath(""),""));
         if (material != null) {
             // mat = material;
-            mat = PortableModelBuilder.buildMaterial(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),
-                    material, (material.texture != null) ? material.texture : null/*obj.texture*/, new ResourcePath(""/*texturebasepath*/),geometry.getNormals()!=null);
-
+            //14.2.24 mat = PortableModelBuilder.buildMaterial(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),
+            //14.2.24         material, (material.texture != null) ? material.texture : null/*obj.texture*/, new ResourcePath(""/*texturebasepath*/),geometry.getNormals()!=null);
+            mat = PortableModelBuilder.buildMaterial(resourceLoader, material, new ResourcePath(""), geometry.getNormals() != null);
         } else {
             if (_effect == null) {
                 // kann wohl vorkommen? TODO was tun? erstmal null und damit wireframe. Auch Absicht fuer Tests.
                 mat = null;//Material.buildBasicMaterial(Color.YELLOW);
             } else {
                 PortableMaterial lmat = _effect.getMaterialDefinition();
-                mat = PortableModelBuilder.buildMaterial(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),
-                        lmat, (lmat.texture != null) ? lmat.texture : null/*obj.texture*/, new ResourcePath(""/*texturebasepath*/),geometry.getNormals()!=null);
+                //mat = PortableModelBuilder.buildMaterial(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),
+                //        lmat, (lmat.texture != null) ? lmat.texture : null/*obj.texture*/, new ResourcePath(""/*texturebasepath*/),geometry.getNormals()!=null);
+                mat = PortableModelBuilder.buildMaterial(resourceLoader, lmat, new ResourcePath(""), geometry.getNormals() != null);
 
             }
         }

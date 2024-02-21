@@ -3,6 +3,7 @@ package de.yard.threed.flightgear.core.simgear.scene.tgdb;
 import de.yard.threed.core.BuildResult;
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.platform.Platform;
+import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.flightgear.FgModelHelper;
 import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.engine.ModelFactory;
@@ -75,7 +76,7 @@ public class DelayLoadReadFileCallback /*extends OptionsReadFileCallback*/ {
                 }else{
                     // Das Model async ueber die Platform laden. Die gelieferte node wird nie null sein.
                     // 4.1.18: using GLTF, 18.10.23: ac->gltf name mapping and policy setting now here.
-                    node = FgModelHelper.mappedasyncModelLoad(i.resource);
+                    node = FgModelHelper.mappedasyncModelLoad(new ResourceLoaderFromBundle(i.resource));
                 }
                 
                 

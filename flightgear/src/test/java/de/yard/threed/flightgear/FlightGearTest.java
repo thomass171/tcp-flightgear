@@ -4,6 +4,7 @@ import de.yard.threed.core.Degree;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.Ray;
 import de.yard.threed.engine.Scene;
 import de.yard.threed.engine.SceneNode;
@@ -71,7 +72,7 @@ public class FlightGearTest {
      * 8.10.23: Was using 'greenwichtilecenter' once, but greenwichs tile is not content of project. Switched to refbtg.
      */
     @Test
-    public void testFGTileMgr() {
+    public void testFGTileMgr() throws Exception {
 
         // there might be fragments from previous tests. Hope remove catches the oldest.
         log.debug((Platform.getInstance()).findSceneNodeByName("World").size() + " worlds found");
@@ -121,7 +122,14 @@ public class FlightGearTest {
         SceneNode scenerynode = new SceneNode(scenerynodes.get(0));
         TestUtil.assertEquals("", "FGScenery", scenerynode.getName());
         Ray ray = FGScenery.getVerticalRay(SGGeod.fromGeoCoordinate(positionNearEddk), new Vector3());
-        // Depends on intersection calculation and thus depends on the platform
+        // Depends on intersection calculation and thus depends on the platform.
+        // 15.2.24: scenery load is async now. Wait somehow
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            Double elevation = scenery.get_elevation_m(SGGeod.fromGeoCoordinate(positionNearEddk), new Vector3());
+            return elevation != null;
+        }, 10000);
+
         Double elevation = scenery.get_elevation_m(SGGeod.fromGeoCoordinate(positionNearEddk), new Vector3());
         TestUtil.assertNotNull("elevation", elevation);
         // There is no exact correct value, it depends on ellipsoid calculation. So use a quite large tolerance.

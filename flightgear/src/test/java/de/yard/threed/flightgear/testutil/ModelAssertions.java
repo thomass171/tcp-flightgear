@@ -10,6 +10,7 @@ import de.yard.threed.engine.SceneNode;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 
+import de.yard.threed.engine.Texture;
 import de.yard.threed.flightgear.LoaderBTG;
 import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.flightgear.core.FlightGear;
@@ -21,6 +22,9 @@ import de.yard.threed.core.Color;
 
 import de.yard.threed.engine.test.testutil.TestUtil;
 import de.yard.threed.core.buffer.ByteArrayInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * better in tools-fg? Only parts.
@@ -39,7 +43,7 @@ public class ModelAssertions {
             TestUtil.assertEquals("materialname", "DefaultWhite", ppfile.materials.get(0).name);
             TestUtil.assertEquals("materialname", "hazard2Xmat", ppfile.materials.get(1).name);
         }
-        TestUtil.assertEquals("texturebasepath", "flusi", ppfile.defaulttexturebasepath.path);
+        TestUtil.assertEquals("texturebasepath", "flusi", ppfile.defaulttexturebasepath.getPath());
         //texture ist z.Z. nur bei den auch verwendeten gesetzt.
         TestUtil.assertEquals("texturename", "egkk_tower.png", ppfile.materials.get(3).texture);
         PortableModelDefinition obj0 = ppfile.getObject(0);
@@ -168,6 +172,9 @@ public class ModelAssertions {
         //der material name ist wohl nie gefuellt 
         TestUtil.assertNull("materials0.name", geo0.getMesh().getMaterial().getName());
 
+        assertEquals(16, Texture.texturePoolSize());
+        // only check 1 texture
+        assertTrue(Texture.hasTexture("mixedforest-hires-autumn.png"), "texture");
     }
 
     public static void assertCDU777(PortableModelList ppfile, boolean fromgltf) {

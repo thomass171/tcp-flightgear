@@ -1,12 +1,14 @@
 package de.yard.threed.flightgear;
 
 import de.yard.threed.core.BuildResult;
+import de.yard.threed.core.Util;
 import de.yard.threed.core.buffer.SimpleByteBuffer;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleData;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.core.resource.URL;
 import de.yard.threed.core.testutil.TestBundle;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
@@ -69,7 +71,7 @@ public class SGReaderWriterXMLTest {
         // Now has not only 'submodel' but also gltf.
         assertEquals("xmltestmodel/test-main.xml->" +
                         "[submodel->xmltestmodel/test-submodel.xml->ACProcessPolicy.root node->ACProcessPolicy.transform node," +
-                        "ACProcessPolicy.root node->ACProcessPolicy.transform node->xmltestmodel/loc.gltf]",
+                        "ACProcessPolicy.root node->ACProcessPolicy.transform node->xmltestmodel/loc.gltf->center back translate]",
                 TestHelper.getHierarchy(resultNode, 4));
 
         assertEquals(2, animationList.size(), "animations");
@@ -140,12 +142,12 @@ public class SGReaderWriterXMLTest {
         // Needs a bundle with name "777" for resolving "Aircraft/777/Models/777-200.ac".
         TestBundle bundle777 = new TestBundle("777", new String[]{}, "");
         // different case of 'models'!
-        bundle777.addAdditionalResource("Models/777-200.xml",new BundleData(new SimpleByteBuffer(loadFileFromTestResources("models/777-200.xml")),true));
-        bundle777.addAdditionalResource("Models/777-200.gltf",new BundleData(new SimpleByteBuffer(loadFileFromTestResources("models/cube.gltf")),true));
-        bundle777.addAdditionalResource("Models/777-200.bin",new BundleData(new SimpleByteBuffer(loadFileFromTestResources("models/cube.bin")),false));
+        bundle777.addAdditionalResource("Models/777-200.xml", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("models/777-200.xml")), true));
+        bundle777.addAdditionalResource("Models/777-200.gltf", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("models/cube.gltf")), true));
+        bundle777.addAdditionalResource("Models/777-200.bin", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("models/cube.bin")), false));
         // Also mock an non XML submodel. Caused RTE once by trying recursive sync load instead of async.
-        bundle777.addAdditionalResource("Models/Airport/Vehicle/hoskosh-ti-1500.gltf",new BundleData(new SimpleByteBuffer(loadFileFromTestResources("models/cube.gltf")),true));
-        bundle777.addAdditionalResource("Models/Airport/Vehicle/hoskosh-ti-1500.bin",new BundleData(new SimpleByteBuffer(loadFileFromTestResources("models/cube.bin")),false));
+        bundle777.addAdditionalResource("Models/Airport/Vehicle/hoskosh-ti-1500.gltf", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("models/cube.gltf")), true));
+        bundle777.addAdditionalResource("Models/Airport/Vehicle/hoskosh-ti-1500.bin", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("models/cube.bin")), false));
         bundle777.complete();
         BundleRegistry.registerBundle(bundle777.name, bundle777);
 
@@ -169,17 +171,17 @@ public class SGReaderWriterXMLTest {
         TestHelper.processAsync();
 
         log.debug(resultNode.dump("  ", 0));
-        assertEquals("Models/777-200.xml->["+
-                        "Firetruck1->Models/Airport/Vehicle/hoskosh-ti-1500.ac->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Airport/Vehicle/hoskosh-ti-1500.gltf,"+
-                        "Firetruck2->Models/Airport/Vehicle/hoskosh-ti-1500.ac->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Airport/Vehicle/hoskosh-ti-1500.gltf,"+
+        assertEquals("Models/777-200.xml->[" +
+                        "Firetruck1->Models/Airport/Vehicle/hoskosh-ti-1500.ac->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Airport/Vehicle/hoskosh-ti-1500.gltf," +
+                        "Firetruck2->Models/Airport/Vehicle/hoskosh-ti-1500.ac->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Airport/Vehicle/hoskosh-ti-1500.gltf," +
                         "ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/777-200.gltf-><no name>]",
                 TestHelper.getHierarchy(resultNode, 5));
 
-        List<String> modelsBuilt=AbstractSceneRunner.getInstance().systemTracker.getModelsBuilt();
+        List<String> modelsBuilt = AbstractSceneRunner.getInstance().systemTracker.getModelsBuilt();
         assertEquals(3, modelsBuilt.size());
-        assertEquals("777:Models/777-200.gltf", modelsBuilt.get(0));
+        assertEquals("777:Models/777-200.gltf", modelsBuilt.get(2));
+        assertEquals("777:Models/Airport/Vehicle/hoskosh-ti-1500.gltf", modelsBuilt.get(0));
         assertEquals("777:Models/Airport/Vehicle/hoskosh-ti-1500.gltf", modelsBuilt.get(1));
-        assertEquals("777:Models/Airport/Vehicle/hoskosh-ti-1500.gltf", modelsBuilt.get(2));
 
         assertEquals(9, SGReaderWriterXML.failedList.size());
     }
@@ -202,5 +204,30 @@ public class SGReaderWriterXMLTest {
         });
         // TODO wait for completion
         assertNull(result.getNode());
+    }
+
+    public static BuildResult loadModel(BundleResource bundleResource, List<SGAnimation> animationList) {
+        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(bundleResource, null, (bpath, alist) -> {
+            if (alist != null) {
+                animationList.addAll(alist);
+            }
+        });
+        assertEquals(0, animationList.size(), "animations");
+        TestHelper.processAsync();
+        TestHelper.processAsync();
+        return result;
+    }
+
+    public static BuildResult loadModelBundleLess(URL url, List<SGAnimation> animationList) {
+        Util.notyet();
+        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(null, null, (bpath, alist) -> {
+            if (alist != null) {
+                animationList.addAll(alist);
+            }
+        });
+        assertEquals(0, animationList.size(), "animations");
+        TestHelper.processAsync();
+        TestHelper.processAsync();
+        return result;
     }
 }

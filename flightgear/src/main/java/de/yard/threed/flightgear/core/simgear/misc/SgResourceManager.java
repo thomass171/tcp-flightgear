@@ -56,7 +56,7 @@ public class SgResourceManager {
         //Der absolute Pfad scheint keinerlei Bedeutung zu haben. Siehe position.xml. Mal mit und mal ohne. Also muss gesucht werden. 
         // Der "smarte" AircraftResourceProvider kann sowas auflösen.
 
-        /*FileSystem*/BundleResource fr = /*FileSystem*/BundleResource.buildFromFullString(aContext.path + "/" + aResource);
+        /*FileSystem*/BundleResource fr = /*FileSystem*/BundleResource.buildFromFullString(aContext.getPath() + "/" + aResource);
         if (fr.exists()) {
             return fr;
         }
@@ -64,7 +64,7 @@ public class SgResourceManager {
             if (StringUtils.indexOf(aResource,"position.xml")!=-1){
                 fr = null;
             }
-            SGPath path = rp.resolve(aResource, new SGPath(aContext.path));
+            SGPath path = rp.resolve(aResource, new SGPath(aContext.getPath()));
             if (!path.isNull()) {
                 return /*FileSystem*/BundleResource.buildFromFullString(path.str());
             }

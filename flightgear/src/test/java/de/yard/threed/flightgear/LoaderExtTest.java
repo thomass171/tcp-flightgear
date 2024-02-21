@@ -2,6 +2,7 @@ package de.yard.threed.flightgear;
 
 import de.yard.threed.core.BooleanHolder;
 import de.yard.threed.core.BuildResult;
+import de.yard.threed.core.GeneralParameterHandler;
 import de.yard.threed.core.IntHolder;
 import de.yard.threed.core.Packet;
 import de.yard.threed.core.Vector3;
@@ -22,6 +23,7 @@ import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.loader.*;
 import de.yard.threed.engine.platform.EngineHelper;
+import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.engine.test.testutil.TestUtil;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
@@ -116,7 +118,7 @@ public class LoaderExtTest {
         // Faces vermehrt wegen Triangulation
         TestUtil.assertEquals("LHstab faces", /*6*/12 * 3, lhstab.geolist.get(0).getIndices().length);
         TestUtil.assertEquals("LHstab faces", /*22*/29 * 3, lhstab.geolist.get(1).getIndices().length);
-        TestUtil.assertEquals("texturebasepath", "flusi", loadedfile.defaulttexturebasepath.path);
+        TestUtil.assertEquals("texturebasepath", "flusi", loadedfile.defaulttexturebasepath.getPath());
         TestUtil.assertEquals("material.texture", "Liveries-200/paint1.png", unshadedmaterial.texture);
         TestUtil.assertEquals("material.texture", "Liveries-200/paint1.png", shadedmaterial.texture);
         //TestUtil.assertTrue("shaded", ac.loadedfile.materials.get(0).shaded);
@@ -142,10 +144,20 @@ public class LoaderExtTest {
         // This one here is from earlier bundle build.
         BundleResource resource = new BundleResource(bundlemodel, "Models/Power/windturbine.gltf");
         // eigentlich geht das Laden ueber die Platform. Nur wegen Test werden die dahinterliegenden Klassen hier direkt aufgerufen.
-        LoaderGLTF lf1 = LoaderGLTF.buildLoader(resource, null);
-        PortableModelList ppfile = lf1.getPortableModelList();
-        // 18.19.23 1->2 ??
-        ModelAssertions.assertWindturbine(ppfile, 2);
+        BooleanHolder loaded = new BooleanHolder(false);
+        LoaderGLTF.load(new ResourceLoaderFromBundle(resource), new GeneralParameterHandler<PortableModelList>() {
+            @Override
+            public void handle(PortableModelList parameter) {
+               // PortableModelList ppfile = lf1.getPortableModelList();
+                // 18.19.23 1->2 ??
+                ModelAssertions.assertWindturbine(parameter, 2);
+                loaded.setValue(true);
+            }
+        });
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return loaded.getValue();
+        }, 10000);
     }
 
     /*

@@ -1,5 +1,6 @@
 package de.yard.threed.flightgear.core.simgear.scene.model;
 
+import de.yard.threed.core.CharsetException;
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.Matrix4;
 import de.yard.threed.core.Quaternion;
@@ -8,6 +9,8 @@ import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.core.resource.ResourceLoader;
+import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.FgModelHelper;
 import de.yard.threed.flightgear.LoaderOptions;
@@ -95,16 +98,17 @@ public class SGReaderWriterXML {
     /**
      * 10.2.24: Also the XML is loaded async. Only returns a complete empty destination node.
      */
-    /*public static BuildResult buildModelFromXMLAsync(String modelfile, LoaderOptions options, XmlModelCompleteDelegate modeldelegate) {
+    public static BuildResult buildModelFromXML(ResourceLoader resourceLoader, LoaderOptions options, XmlModelCompleteDelegate modeldelegate) {
 
         SGReaderWriterXML ldr = new SGReaderWriterXML();
-        BuildResult result = ldr.sgLoad3DModel_internal_async(modelfile, options, modeldelegate);
+        Util.notyet();
+        BuildResult result = null;//ldr.sgLoad3DModel_internal_async(modelfile, options, modeldelegate);
         if (result == null) {
             //already logged.
             result = new BuildResult("load failed");
         }
         return result;
-    }*/
+    }
 
     /**
      * Create animations, which in fact are effects (10.2.24: really is the same?).
@@ -159,6 +163,28 @@ public class SGReaderWriterXML {
      * 26.12.18: Muss bei Fehler leeres BuildResult liefern.
      */
     private BuildResult sgLoad3DModel_internal(BundleResource bpath, LoaderOptions bdbOptions, XmlModelCompleteDelegate modeldelegate) {
+        /* 14.2.24: just an idea:
+         SceneNode destinationNode=new SceneNode();
+        // only a temporary name
+        destinationNode.setName("XML-destinationNode");
+        BuildResult result = new BuildResult(destinationNode.nativescenenode);
+
+        resourceLoader.loadResource(response->{
+            String content;
+            try {
+            content=    response.getContentAsString();
+            } catch (CharsetException e) {
+                // TODO better error handling
+                throw new RuntimeException(e);
+            }
+            BuildResult br1 = sgLoad3DModel_internal_async(content, resourceLoader.isXml(), bdbOptions, modeldelegate);
+            if (br1==null){
+                failedList.add(bpath.getFullQualifiedName());
+
+            }
+        });
+         end of idea */
+
         BuildResult result = sgLoad3DModel_internal_async(bpath, bdbOptions, modeldelegate);
         if (result == null) {
             //already logged. 28.9.19 ob der Constructor so gut ist?
@@ -176,6 +202,7 @@ public class SGReaderWriterXML {
      * 10.04.17: Wenn es ein Bundle gibt, wird der "bpath" relativ in dieses Bundle betrachtet.
      * 15.09.17: Jetzt async. Das ist ein kompletter Umbau des Ablaufs.
      * xx.xx.?? bpath is considered to be not null and "(SG)path" no longer is an option!
+     * 12.02.24: exclusive for XML? (not yet)
      *
      * @return
      */
@@ -270,7 +297,7 @@ public class SGReaderWriterXML {
                             btexturepath = new ResourcePath(texturePathStr);
                         } else {
                             //2.10.10:modelpath statt bpath führt zu AI Fliegern ohne Textur.
-                            btexturepath = new ResourcePath(bpath/*bpath*/.getPath().path + "/" + texturePathStr);
+                            btexturepath = new ResourcePath(bpath/*bpath*/.getPath().getPath() + "/" + texturePathStr);
                         }
                     }
                 }
@@ -286,6 +313,7 @@ public class SGReaderWriterXML {
             // No XML but just a model without XML wrapper. For submodels inside XMLs that do not reference
             // other XML but directly ac model files.
             // Nothing to do here.
+            int h=9;
         }
 
         BundleResource pendingbmodelpath = null;
@@ -295,14 +323,15 @@ public class SGReaderWriterXML {
             // Assume that textures are in
             // the same location as the XML file.
             if (btexturepath != null) {
-                logger.debug("loading textures(?) or model from modelpath " + bpath.getFullName() + ",texturepath=" + (btexturepath.path));
-                boptions.setDatabasePath(new ResourcePath(btexturepath.path));
+                logger.debug("loading textures(?) or model from modelpath " + bpath.getFullName() + ",texturepath=" + (btexturepath.getPath()));
+                boptions.setDatabasePath(new ResourcePath(btexturepath.getPath()));
             }
 
             if (bmodelpath != null) {
                 String extension = bmodelpath.getExtension();
                 BuildResult modelResult;
                 if (extension.equals("xml")) {
+                    // current XML references another XML??
                     modelResult = buildModelFromBundleXML(bmodelpath,/*TODO 25.4.17*/boptions, null);
                     //modelResult = new ReadResult(osgDB.readNodeFile(bmodelpath, null, options/*.get()*/));
                     if (modelResult == null || modelResult.getNode() == null) {
@@ -430,8 +459,13 @@ public class SGReaderWriterXML {
                 }
             }
 
-            BuildResult submodelresult = sgLoad3DModel_internal(bsubmodelpath,/*MA23 submodelPath, options/*.get()* /,
+            // 12.2.24: No longer use same methode for XML and non XML. Decide here.
+            // just an idea for now
+            //if (bmodelpath.getExtension().equals("xml")) {
+                BuildResult submodelresult = sgLoad3DModel_internal(bsubmodelpath,/*MA23 submodelPath, options/*.get()* /,
                     sub_props.getNode("overlay"),*/ boptions, modeldelegate);
+            //}
+
             submodel = new SceneNode(submodelresult.getNode());
 
             if (submodelresult.getNode()/*20.7.21 submodel*/ == null) {
@@ -542,7 +576,7 @@ public class SGReaderWriterXML {
         if (pendingbmodelpath != null) {
             // das eigentliche Modelfile (z.B. ac) wieder async laden.
             BundleResource finalpendingbmodelpath = pendingbmodelpath;
-            FgModelHelper.buildNativeModel(pendingbmodelpath, btexturepath, (BuildResult result) -> {
+            FgModelHelper.buildNativeModel(new ResourceLoaderFromBundle(pendingbmodelpath), btexturepath, (BuildResult result) -> {
                 // result sollte es immer geben. 
                 if (result != null && result.getNode() != null) {
 

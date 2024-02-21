@@ -55,7 +55,7 @@ public class LoaderBTGBuilderTest {
 
             // eigentlich geht das Laden ueber die Platform. Nur wegen Test werden die dahinterliegenden Klassen hier direkt aufgerufen.
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, null);
-            PortableModelList ppfile = lf1.getPortableModelList();
+            PortableModelList ppfile = lf1.doload();
             // LoaderBTGBuilder should provide matlib
             ModelAssertions.assertRefbtg(ppfile, true);
         } catch (Exception e) {

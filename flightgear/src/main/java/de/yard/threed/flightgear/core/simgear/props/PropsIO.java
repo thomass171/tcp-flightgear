@@ -184,7 +184,7 @@ public class PropsIO {
         if (bpath != null) {
             location = bpath.getFullName();
         } else {
-            location = basepath.path;
+            location = basepath.getPath();
         }
         locations.add(location);
 

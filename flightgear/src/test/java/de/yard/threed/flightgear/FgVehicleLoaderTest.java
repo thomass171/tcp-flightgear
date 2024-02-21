@@ -49,6 +49,7 @@ public class FgVehicleLoaderTest {
         assertEquals(2, FgBundleHelper.getProvider().size(), "provider.size");
 
         List<SceneNode> loaded = new ArrayList<>();
+        List<FgVehicleLoaderResult> loadedResults = new ArrayList<>();
 
         SGReaderWriterXML.clearStatistics();
         new FgVehicleLoader().loadVehicle(new Vehicle(config.getName()), config,
@@ -64,6 +65,10 @@ public class FgVehicleLoaderTest {
                     SceneNode container1 = zoffsetnode.getParent();
                     assertEquals("vehicle-container", container1.getName());
                     loaded.add(container);
+                    // animation loading might not been complete. TODO should. delegte called to often?
+                    loadedResults.add((FgVehicleLoaderResult) loaderResult);
+                    //Wow, 609 animations counted. But only 393 effective. Hmm
+                    //TODO fix assertEquals(393, loadedResults.get(0).animationList.size());
                 });
         for (int i = 0; i < 30; i++) {
             TestHelper.processAsync();
@@ -72,10 +77,17 @@ public class FgVehicleLoaderTest {
         //log.debug(bluebirdNode.dump("  ",0));
 
         assertEquals(0, SGReaderWriterXML.errorCnt, "errorCnt ");
+        //Wow, 609 animations counted. But only 393 effective. Hmm
+        assertEquals(393, loadedResults.get(0).animationList.size());
+
         // should load bluebird, yoke, pedals,display-screens, 6 spheres
         assertEquals(1 + 1 + 1 + 1 + 6, SGReaderWriterXML.loadedList.size(), "loadedList ");
         // original ac-file referenced 'yoke.rgb', but was mapped to 'png' in ACLoader.
         assertTrue(Texture.hasTexture("yoke.png"), "yoke.texture");
+
+        // texture was found via texturepath
+        assertTrue(Texture.hasTexture("bluebird-1.png"), "bluebird-1.texture");
+        // TODO validate used texturepath assertEquals("Models/Textures", );
 
         List<NativeSceneNode> mainyoke = SceneNode.findByName("YOKE");
         assertEquals(1, mainyoke.size(), "mainyoke.size");
@@ -103,6 +115,10 @@ public class FgVehicleLoaderTest {
         assertTrue(FgBundleHelper.getProvider().get(1) instanceof SimpleBundleResourceProvider);
         assertEquals("fgrootcore", ((SimpleBundleResourceProvider) FgBundleHelper.getProvider().get(1)).bundlename);
 
+        log.debug(bluebirdNode.dump("  ", 0));
+        // full hierarchy is too large, so only check some
+        String hierarchy = TestHelper.getHierarchy(bluebirdNode, 10);
+        assertTrue(hierarchy.contains("ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/bluebird.gltf->[Layer_Last->[center back translate->Spin Animation Group->center 0 translate"));
     }
 
     /**

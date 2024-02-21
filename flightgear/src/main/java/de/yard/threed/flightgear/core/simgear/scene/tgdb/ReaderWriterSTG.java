@@ -2,6 +2,7 @@ package de.yard.threed.flightgear.core.simgear.scene.tgdb;
 
 import de.yard.threed.core.CharsetException;
 import de.yard.threed.core.Degree;
+import de.yard.threed.core.GeneralParameterHandler;
 import de.yard.threed.core.loader.StringReader;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
@@ -578,14 +579,20 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
                 //for (std::list < _Object >::iterator i = _objectList.begin();            i != _objectList.end();            ++i){
                 for (_Object i : _objectList) {
                     // 22.3.18 i.resource must be set
-                    SceneNode node = SGReaderWriterBTG.loadBTG(i.resource, null, bopt/*source*/);
-                    if (node != null) {
-                        terrainGroup.attach(node/*.get()*/);
-                        logger.debug("BTG node for " + i.resource.getName() + " added to group 'terrain'");
-                        btgLoaded.add(i.resource.getName());
-                    } else {
-                        logger.info(/*SG_LOG(SG_TERRAIN, SG_ALERT,*/ i._errorLocation + ": Failed to load " + i._token + " '" + i._name + "'");
-                    }
+                    // 15.2.24: Now async. Will 'i' be correct in lambda? Apparently it is.
+                    SGReaderWriterBTG.loadBTG(i.resource, null, bopt/*source*/, new GeneralParameterHandler<SceneNode>() {
+                        @Override
+                        public void handle(SceneNode node) {
+                            if (node != null) {
+                                terrainGroup.attach(node/*.get()*/);
+                                logger.debug("BTG node for " + i.resource.getName() + " added to group 'terrain'");
+                                btgLoaded.add(i.resource.getName());
+                            } else {
+                                logger.info(/*SG_LOG(SG_TERRAIN, SG_ALERT,*/ i._errorLocation + ": Failed to load " + i._token + " '" + i._name + "'");
+                            }
+                        }
+                    });
+
                 }
             } else {
                 logger.info(/*SG_LOG(SG_TERRAIN, SG_INFO, */"  Generating ocean tile: " + bucket.gen_base_path() + "/" + bucket.gen_index_str());

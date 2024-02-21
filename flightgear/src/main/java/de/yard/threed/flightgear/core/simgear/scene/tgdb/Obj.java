@@ -1,5 +1,6 @@
 package de.yard.threed.flightgear.core.simgear.scene.tgdb;
 
+import de.yard.threed.core.GeneralParameterHandler;
 import de.yard.threed.core.geometry.SimpleGeometry;
 import de.yard.threed.core.loader.AbstractLoader;
 import de.yard.threed.core.loader.InvalidDataException;
@@ -9,6 +10,7 @@ import de.yard.threed.core.loader.PortableModelDefinition;
 import de.yard.threed.core.loader.PortableModelList;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.flightgear.core.osg.Group;
@@ -47,26 +49,33 @@ public class Obj {
      * Resource muss Bundle mit path der resource enthalten.
      * Bundle muss schon geladen sein. Suffix ".gz" darf nicht mit angegeben werden.
      * 14.12.17: Wegen preprocess zerlegt in alten SGLoadBTG und neuen SGbuildBTG.
-     *
+     * 15.2.24: Now async
      * @return
      */
-    public Node SGLoadBTG(BundleResource bpath, SGReaderWriterOptions options, LoaderOptions boptions) {
-        PortableModelList ppfile = SGLoadBTG(bpath, options, boptions, 222);
-        if (ppfile == null) {
-            //already logged
-            return null;
-        }
-        return SGbuildBTG(ppfile, boptions != null ? boptions.materialLib : null);
+    public void/*Node*/ SGLoadBTG(BundleResource bpath, SGReaderWriterOptions options, LoaderOptions boptions, GeneralParameterHandler<Node> delegate) {
+        SGLoadBTG(bpath, options, boptions, 222, new GeneralParameterHandler<PortableModelList>() {
+            @Override
+            public void handle(PortableModelList ppfile) {
+                if (ppfile == null) {
+                    //already logged
+                    return ;
+                }
+                Node node = SGbuildBTG(ppfile, boptions != null ? boptions.materialLib : null);
+                delegate.handle(node);
+            }
+        });
+
     }
 
     /**
      * Runs sync. Bundle must have been loaded already.
+     * 15.2.14: No longer sync but asnyc like LoaderGLTF.
      */
-    public PortableModelList/*Node*/ SGLoadBTG(BundleResource bpath, SGReaderWriterOptions options, LoaderOptions boptions, int dummy) {
+    public void /*PortableModelList/*Node*/ SGLoadBTG(BundleResource bpath, SGReaderWriterOptions options, LoaderOptions boptions, int dummy,  GeneralParameterHandler<PortableModelList> delegate) {
         //tsch_log("obj.cxx::SGLoadBTG(%d) path=%s \n",0,path.c_str());
 
         /*SGBinObject*/
-        AbstractLoader tile;
+        AbstractLoader tile=null;
         //if (!tile.read_bin(path))
         //    return NULL;
         if (bpath == null) {
@@ -80,7 +89,7 @@ public class Obj {
             //LoadResult lr = ModelLoader.readModelFromBundle(bpath, false);
             if (bpath.bundle == null) {
                 logger.warn("no bundle set");
-                return null;
+                return /*null*/;
             }
 
             if (boptions != null && boptions.usegltf) {
@@ -90,14 +99,11 @@ public class Obj {
                 ins = bpath.bundle.getResource(bpath);
                 if (ins == null) {
                     logger.error(bpath.getName() + " not found in bundle " + bpath);
-                    return null;
+                    return /*null*/;
                 }
 
-                try {
-                    tile = LoaderGLTF.buildLoader(bpath, null);
-                } catch (InvalidDataException e) {
-                    throw new RuntimeException(e);
-                }
+                    LoaderGLTF.load(new ResourceLoaderFromBundle(bpath), delegate);
+
             } else {
                 //load from BTG
 
@@ -107,7 +113,7 @@ public class Obj {
                 ins = bpath.bundle.getResource(bpath);
                 if (ins == null) {
                     logger.error("loadModel " + bpath.getName() + " not found in bundle " + bpath);
-                    return null;
+                    return /*null*/;
                 }
 
                 try {
@@ -115,14 +121,16 @@ public class Obj {
                 } catch (InvalidDataException e) {
                     throw new RuntimeException(e);
                 }
+                // Code moved to LoaderBTG.preProcess();
+                PortableModelList ppfile = tile.preProcess();
+                //ppfile.btgcenter = ((LoaderBTG)tile).center;
+                delegate.handle(ppfile);
             }
             //21.12.17 tile = (LoaderBTG) lr.loader;
         }
 
-        // Code moved to LoaderBTG.preProcess();
-        PortableModelList ppfile = tile.preProcess();
-        //ppfile.btgcenter = ((LoaderBTG)tile).center;
-        return ppfile;
+
+        //return ppfile;
     }
 
     /**
