@@ -4,12 +4,14 @@ package de.yard.threed.trafficadvanced.apps;
 import de.yard.threed.core.Color;
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.Dimension;
+import de.yard.threed.core.DimensionF;
 import de.yard.threed.core.Event;
 import de.yard.threed.core.IntHolder;
 import de.yard.threed.core.LocalTransform;
 import de.yard.threed.core.MathUtil2;
 import de.yard.threed.core.Payload;
 import de.yard.threed.core.Quaternion;
+import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.geometry.Primitives;
 import de.yard.threed.core.geometry.SimpleGeometry;
@@ -19,6 +21,7 @@ import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.HttpBundleResolver;
 import de.yard.threed.core.testutil.RuntimeTestUtil;
+import de.yard.threed.engine.Camera;
 import de.yard.threed.engine.FirstPersonController;
 import de.yard.threed.engine.GenericGeometry;
 import de.yard.threed.engine.Input;
@@ -31,17 +34,26 @@ import de.yard.threed.engine.apps.ModelSamples;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsHelper;
 import de.yard.threed.engine.ecs.EcsSystem;
+import de.yard.threed.engine.ecs.InputToRequestSystem;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.ecs.TeleportComponent;
 import de.yard.threed.engine.ecs.UserSystem;
+import de.yard.threed.engine.gui.ControlMenuBuilder;
+import de.yard.threed.engine.gui.ControlPanel;
+import de.yard.threed.engine.gui.ControlPanelArea;
+import de.yard.threed.engine.gui.GuiGrid;
+import de.yard.threed.engine.gui.Icon;
 import de.yard.threed.engine.gui.MenuItem;
+import de.yard.threed.engine.gui.PanelGrid;
 import de.yard.threed.engine.gui.Text;
+import de.yard.threed.engine.gui.TextTexture;
 import de.yard.threed.engine.platform.EngineHelper;
 import de.yard.threed.engine.platform.ProcessPolicy;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.engine.util.NearView;
+import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.FgTerrainBuilder;
 import de.yard.threed.flightgear.FgVehicleLoader;
@@ -68,6 +80,7 @@ import de.yard.threed.traffic.GraphBackProjectionProvider;
 import de.yard.threed.traffic.GraphTerrainSystem;
 import de.yard.threed.traffic.GraphVisualizationSystem;
 import de.yard.threed.traffic.LightDefinition;
+import de.yard.threed.traffic.RequestRegistry;
 import de.yard.threed.traffic.ScenerySystem;
 import de.yard.threed.traffic.SolarSystem;
 import de.yard.threed.traffic.TrafficConfig;
@@ -176,6 +189,7 @@ public class TravelScene extends FlightTravelScene {
     private EcsEntity orbitingvehicle = null;
     private boolean avatarInited = false;
     private boolean enableDoormarker = false;
+    EcsEntity markedaircraft = null;
 
     @Override
     public String[] getPreInitBundle() {
@@ -189,7 +203,9 @@ public class TravelScene extends FlightTravelScene {
         //13.12.23 "fgdatabasicmodel" is loaded later when needed during vehicle loading.
         // "data" is needed for taxiway ground texture.
         return new String[]{"engine", "data-old", "data", "fgdatabasic", "sgmaterial",
-                FlightGear.getBucketBundleName("model") ,  FlightGearSettings.FGROOTCOREBUNDLE,
+                //21.2.24: TerraSync-model isn't used anyway currently due to flag 'ignoreshared'. So save the time and memory for loading it.
+                //FlightGear.getBucketBundleName("model") ,
+                FlightGearSettings.FGROOTCOREBUNDLE,
                 "traffic-advanced","traffic-fg"};
     }
 
@@ -301,6 +317,16 @@ public class TravelScene extends FlightTravelScene {
         trafficSystem.destinationNode=getDestinationNode();
         trafficSystem.nearView=nearView;
         trafficSystem.setVehicleLoader(new FgVehicleLoader());
+
+        if (VrInstance.getInstance() == null) {
+            ((InputToRequestSystem) SystemManager.findSystem(InputToRequestSystem.TAG)).setControlMenuBuilder(new ControlMenuBuilder() {
+                @Override
+                public GuiGrid buildControlMenu(Camera camera) {
+                    return buildControlMenuForScene(camera);
+                }
+            });
+        }
+
     }
 
     @Override
@@ -494,6 +520,73 @@ public class TravelScene extends FlightTravelScene {
                 new LightDefinition(Color.WHITE, new Vector3(0, 30000000, 20000000)),
                 new LightDefinition(Color.WHITE, new Vector3(0, -30000000, -20000000)),
         };
+    }
+
+    /**
+     * Override the default control panel.
+     * A traffic 3x3 control panel permanently attached to the left controller. Consists of
+     * <p>
+     * 0) load - automove - finetune up
+     * 1) aircraft selector
+     * 2) service - trip - finetune down
+     * teleport not needed because already on VR button.
+     */
+    @Override
+    public ControlPanel buildVrControlPanel() {
+
+        double ControlPanelWidth = 0.3;
+        double ControlPanelRowHeight = 0.1;
+        int ControlPanelRows = 3;
+        double[] ControlPanelColWidth = new double[]{0.1, 0.1, 0.1};
+        double ControlPanelMargin = 0.005;
+        Color controlPanelBackground = Color.LIGHTGREEN;
+
+        ControlPanel cp = new ControlPanel(new DimensionF(ControlPanelWidth, ControlPanelRows * ControlPanelRowHeight), Material.buildBasicMaterial(controlPanelBackground, false), 0.01);
+        PanelGrid panelGrid = new PanelGrid(ControlPanelWidth, ControlPanelRowHeight, ControlPanelRows, ControlPanelColWidth);
+
+        // top line:
+        cp.addArea(panelGrid.getPosition(0, 2), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
+            logger.debug("load clicked");
+            SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
+        }).setIcon(Icon.IconCharacter(11));
+        cp.addArea(panelGrid.getPosition(1, 2), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () ->
+                SystemManager.putRequest(new Request(UserSystem.USER_REQUEST_AUTOMOVE))).setIcon(Icon.IconCharacter(0));
+        cp.addArea(panelGrid.getPosition(2, 2), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), buttonDelegates.get("up")).setIcon(Icon.ICON_UPARROW);
+
+        // mid line
+        //double iconsize = size.height - 2 * margin;
+        double iconareasize = ControlPanelRowHeight;
+        double textareawidth = ControlPanelWidth - 1 * iconareasize;
+
+        // text has no margin yet.
+        TextTexture textTexture = new TextTexture(Color.LIGHTGRAY);
+        ControlPanelArea textArea = cp.addArea(new Vector2(-iconareasize / 2, 0), new DimensionF(textareawidth, ControlPanelRowHeight), null);
+        // empty string fails due to length 0
+        textArea.setTexture(textTexture.getTextureForText(" ", Color.RED));
+        updateMarkedAircraft(textArea, textTexture);
+
+        cp.addArea(panelGrid.getPosition(2, 1), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
+            cycleAircraft();
+            //updateHud();
+            updateMarkedAircraft(textArea, textTexture);
+        }).setIcon(Icon.ICON_PLUS);
+
+        // bottom line:
+        cp.addArea(panelGrid.getPosition(0, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
+            if (markedaircraft != null) {
+                //markDoor(markedaircraft);
+                GroundServicesSystem.requestService(markedaircraft);
+            }
+        }).setIcon(Icon.IconCharacter(18));
+        cp.addArea(panelGrid.getPosition(1, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
+            TravelHelper.startDefaultTrip(getAvatarVehicle());
+        }).setIcon(Icon.IconCharacter(19));
+        cp.addArea(panelGrid.getPosition(2, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), buttonDelegates.get("down")).setIcon(Icon.ICON_DOWNARROW);
+        return cp;
+    }
+
+    private void updateMarkedAircraft(ControlPanelArea textArea, TextTexture textTexture) {
+        textArea.setTexture(textTexture.getTextureForText(((markedaircraft != null) ? markedaircraft.getName() : " "), Color.RED));
     }
 
     public void add(SceneNode model, double x, double y, double z, double scale, Quaternion rotation) {
@@ -747,6 +840,29 @@ public class TravelScene extends FlightTravelScene {
         return orbittour;
     }
 
+    private void cycleAircraft() {
+        List<EcsEntity> aircrafts = SystemManager.findEntities(new AircraftFilter());
+        int i;
+        for (i = 0; i < aircrafts.size(); i++) {
+            if (aircrafts.get(i).equals(markedaircraft)) {
+                i++;
+                break;
+            }
+        }
+        if (i >= aircrafts.size()) {
+            i = 0;
+        }
+        markedaircraft = aircrafts.get(i);
+        /*major += inc;
+        if (major < 0) {
+            major = arrivedaircraft.size() - 1;
+        }
+        if (major >= arrivedaircraft.size()) {
+            major = 0;
+        }
+        logger.info("cycled to " + "." + major);*/
+    }
+
     @Override
     public EllipsoidCalculations getRbcp() {
         return new FgCalculations();
@@ -907,7 +1023,30 @@ public class TravelScene extends FlightTravelScene {
         return DefaultTrafficWorld.getInstance();
     }*/
 
+    /**
+     * Non VR Control menu.
+     * 22.2.24: Currently not working due to no intersection.
+     * <p>
+     */
+    public GuiGrid buildControlMenuForScene(Camera camera) {
 
+        GuiGrid controlmenu = GuiGrid.buildForCamera(camera, 2, 4, 1, Color.BLACK_FULLTRANSPARENT, true);
+
+        controlmenu.addButton(0, 0, 1, Icon.ICON_POSITION, () -> {
+            InputToRequestSystem.sendRequestWithId(new Request(UserSystem.USER_REQUEST_TELEPORT, new Payload(new Object[]{new IntHolder(0)})));
+        });
+        controlmenu.addButton(1, 0, 1, Icon.ICON_MENU, () -> {
+            InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
+        });
+        controlmenu.addButton(2, 0, 1, Icon.ICON_PLUS, () -> {
+            SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
+            //updateHud();
+        });
+        controlmenu.addButton(3, 0, 1, Icon.ICON_CLOSE, () -> {
+            InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_CONTROLMENU));
+        });
+        return controlmenu;
+    }
 }
 
 class FlightSceneConfig {

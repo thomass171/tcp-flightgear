@@ -25,7 +25,6 @@ import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleData;
-import de.yard.threed.core.platform.Config;
 import de.yard.threed.core.resource.ResourcePath;
 import de.yard.threed.core.StringUtils;
 
@@ -171,11 +170,12 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
     }*/
 
     /**
-     * Gets fileName without path? Apparently.
-     * Rein aus dem Dateinamen des .stg kann der Pfad ermittelt werden.
+     * Build models listed in a stg-file. "fileName" is only the name without path. The path can be derived from the name by bucketIndexFromFileName.
+     * <p>
      * 10.6.17: Es werden alle stgs gelesen (Terrain und Objects). Hier eine BundleResource reinzugeben ist unsinnig, daher wieder nur der stg Name.
      * Einfach jetzt mal so festgelegt: Die Bundle muessen schon vorher geladen worden sein (die Scenery Bundle und auch die TerrainModel). SceneryPager kann async laden.
      * 22.3.18: Liefert jetzt auch Node/Group statt BuildResult. Und ein evtl. Fehler wurde schon gelogged.
+     * 22.2.24: bundle "Terrasync-model" no longer mandatory but just optional
      *
      * @return
      */
@@ -201,19 +201,17 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
             logger.error("Bundle for stg '" + stgname + "' not found in " + BundleRegistry.TERRAYSYNCPREFIX);
             return null;//BuildResult.ERROR_IN_READING_FILE;
         }
+        // 21.2.24: Bundle "Terrasync-model" no longer mandatory but just optional, (see also flag 'ignoreshared').
+        // silently ignore if it doesn't exist. Maybe log once?
         modelbundle = BundleRegistry.getBundle(BundleRegistry.TERRAYSYNCPREFIX + "model");
-        if (modelbundle == null) {
-            logger.error("terrasync 'model' bundle not found.");
-            return null;//BuildResult.ERROR_IN_READING_FILE;
-        }
 
         // We treat 123.stg different than ./123.stg.
-        // The difference isType that ./123.stg as well as any absolute path
+        // The difference is that ./123.stg as well as any absolute path
         // really loads the given stg file and only this.
         // In contrast 123.stg uses the search paths to load a set of stg
         // files spread across the scenery directories.
         if (!osgDB.getSimpleFileName(fileName).equals(fileName)) {
-            if (!modelBin.read(null, fileName, options, boptions, basePath, modelbundle))
+            if (!modelBin.parseSTG(null, fileName, options, boptions, basePath, modelbundle))
                 return null;//BuildResult.FILE_NOT_FOUND;
         } else {
             // For stg meta files, we need options for the search path.
@@ -230,9 +228,9 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
             // Es gibt (noch?) keinen Searchpath fuer Bundle. Offenbar würde er alle stgs lesen die er findet.
             // Das stg kann es aber in "Objects" und in "Terrain" geben. 
             BundleResource br = new BundleResource(bundle, new ResourcePath("Objects/" + basePath), fileName);
-            modelBin.read(br, null, options, boptions, basePath, modelbundle);
+            modelBin.parseSTG(br, null, options, boptions, basePath, modelbundle);
             br = new BundleResource(bundle, new ResourcePath("Terrain/" + basePath), fileName);
-            modelBin.read(br, null, options, boptions, basePath, modelbundle);
+            modelBin.parseSTG(br, null, options, boptions, basePath, modelbundle);
 
             // Stop scanning once an object base isType found
             // This isType considered a meta file, so apply the scenery path search
@@ -279,12 +277,14 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
 
         /**
          * Das wird wohl auch nur probing aufgerufen, um zu sehen ob es eine Datei gibt.
+         * Original method name was just 'read'.
+         * 21.2.24 'innermodelbundle' might be null if no "Terrasync-model" bundle was found.
          *
          * @param absoluteFileName
          * @param options
          * @return
          */
-        boolean read(BundleResource bpath, String absoluteFileName, Options options, LoaderOptions boptions, String innerbasePath, Bundle innermodelbundle) {
+        boolean parseSTG(BundleResource bpath, String absoluteFileName, Options options, LoaderOptions boptions, String innerbasePath, Bundle innermodelbundle) {
             StringReader stream = null;
             String filePath = null;
             ResourcePath bfilePath = null;
@@ -335,15 +335,10 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
             boolean onlyTerrain = options.getPluginStringData("SimGear::FG_ONLY_TERRAIN").equals("ON");
 
             String line;
-            while ((line = stream.readLine(/*!stream.eof()*/)) != null) {
+            while ((line = stream.readLine()) != null) {
                 // read a line
-                // std::string line;
-                //std::getline(stream, line);
 
                 // strip comments
-                //std::string::size_type hash_pos = line.find('#');
-                //if (hash_pos != std::string::npos)
-                //line.resize(hash_pos);
                 if (StringUtils.startsWith(line, "#")) {
                     continue;
                 }
@@ -354,19 +349,16 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
                 }
 
                 // and process further
-                //std::stringstream in(line);
-                //std::string token;
-                //in >> token;
                 String[] parts = StringUtils.split(line, " ");
 
                 // No comment
-                if (parts.length == 0)//empty())
+                if (parts.length == 0)
                     continue;
+                // token is something like "OBJECT_SHARED"
                 String token = parts[0];
 
-                // Then there isType always a name
+                // Then there is always a name, something like "Models/Airport/ndb.ac". Might also be a 'btg'?
                 String name = parts[1];
-                //in >> name;
 
                 //Objet might be local in stg folder or relative from "Models/..."
                 //TODO hier brauchts einen Resolver
@@ -469,7 +461,7 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
                         }
 
                     } else if (token.equals("OBJECT_SHARED") || token.equals("OBJECT_SHARED_AGL")) {
-                        if (!onlyTerrain && !ignoreshared) {
+                        if (!onlyTerrain && !ignoreshared && innermodelbundle != null) {
                             objectresource.bundle = innermodelbundle;
                             SGReaderWriterOptions opt;
                             opt = sharedOptions(filePath, objectresource, options);

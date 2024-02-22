@@ -73,8 +73,8 @@ public class TravelSceneTest {
         assertEquals(INITIAL_FRAMES, sceneRunner.getFrameCount());
 
         String[] bundleNames = BundleRegistry.getBundleNames();
-        // 7 appears correct
-        assertEquals(7, bundleNames.length);
+        // 7 appears correct, but without "Terrasync-model" its only 6.
+        assertEquals(6, bundleNames.length);
         assertNotNull(BundleRegistry.getBundle("fgdatabasic"));
 
         /*5.2.24??SphereProjections projections = TrafficHelper.getProjectionByDataprovider();

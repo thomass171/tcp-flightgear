@@ -10,6 +10,7 @@ import de.yard.threed.core.LocalTransform;
 import de.yard.threed.core.Payload;
 import de.yard.threed.core.Point;
 import de.yard.threed.core.Quaternion;
+import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
@@ -402,6 +403,9 @@ public class HangarScene extends Scene {
             Vector3 destination = new Vector3();
             if (isAR()) {
                 double scale = 0.03;
+                if (StringUtils.contains(vehiclelist.get(index), "777")) {
+                    scale = 0.006;
+                }
                 currentaircraft.getTransform().setScale(new Vector3(scale, scale, scale));
                 // put it 'on the desk'. Stack all together. The user might grab and relocate.
                 destination = new Vector3(0, 1, 0);
