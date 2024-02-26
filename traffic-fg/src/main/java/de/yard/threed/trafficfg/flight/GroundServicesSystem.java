@@ -127,8 +127,13 @@ public class GroundServicesSystem extends DefaultEcsSystem {
 
     //27.12.21 Der Ersatz für: DefaultTrafficWorld.getInstance().getGroundNet("EDDK")
     public static GroundNet groundnetEDDK;
-    //27.12.21: Und Ersatz fuer den Airport und TrafficWorldConfig in DefaultTrafficWorld
+    //27.12.21: Und Ersatz fuer den Airport und TrafficWorldConfig in DefaultTrafficWorld.
+    // Needed eg. for runways, but not for groundnet. So it might appear the wrong location here. But ground services might
+    // also need it for parking positions(?) and "followme" services.
     public static AirportConfig airport;
+    // historical defaults for EDDK
+    public static String airportConfigBundle = "traffic-advanced";
+    public static String airportConfigFullName = "EDDK.xml";
 
     /**
      * weil er neue Pfade im Graph hinzufuegt, lauscht er auch auf GRAPH_EVENT_PATHCOMPLETED, um diese wieder aus dem
@@ -313,7 +318,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
             //dass es ueberhaupt jemals Terrain geben wird. Vorerst einfach mal per Counter
             //16.5.20: Groundnet sollte in der Lage sein zum Nachladen wie in FG.
             if (/*24.5.20 request.declined > 10*/true) {
-                String icao = (String) request.getPayloadByIndex(0);
+                String icao = (String) request.getPayload().get("icao");
                 // 16.5.20: Fuer EDDK bleibts erstmal mal beim alten.
                 if (icao.equals("EDDK") && false) {
                     //24.5.20: EDDK einfach eintragen. Groundnet kommt spaeter als pending groundnet. Nee, kommt aus init wegen der config Daten,
@@ -390,7 +395,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
     private void addAirport(Airport/*Config*/ ap) {
         //20.11.23 TrafficWorldConfig tw = TrafficWorldConfig.readDefault();
         //20.11.23 AirportConfig airport = tw.getAirportConfig(ap.getIcao());
-        AirportConfig airport = AirportConfig.buildFromAirportConfig(ap.getIcao());
+        AirportConfig airport = AirportConfig.buildFromAirportConfig(airportConfigBundle, airportConfigFullName, ap.getIcao());
         if (airport == null) {
             //keine config daten
             airport = new AirportConfig(ap);

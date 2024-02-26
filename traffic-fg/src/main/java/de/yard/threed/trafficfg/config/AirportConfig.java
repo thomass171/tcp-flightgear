@@ -101,12 +101,12 @@ public class AirportConfig {
      *
      * @return
      */
-    public static AirportConfig buildFromAirportConfig(String icao) {
+    public static AirportConfig buildFromAirportConfig(String bundlename, String fullname, String icao) {
         if (icao == null) {
             return null;
         }
 
-        TrafficConfig defs = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), BundleResource.buildFromFullString(icao+".xml"));
+        TrafficConfig defs = TrafficConfig.buildFromBundle(BundleRegistry.getBundle(bundlename), BundleResource.buildFromFullString(fullname));
 AirportDefinition airportDefinition = defs.findAirportDefinitionsByIcao(icao).get(0);
         /*for (int i = 0; i < airports.size(); i++) {
             NativeNode airportnode = airports.get(i);

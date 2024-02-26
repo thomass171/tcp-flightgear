@@ -62,15 +62,5 @@ public class FlightTravelScene extends BasicTravelScene {
 
     }
 
-    /**
-     * 4.12.23:Additional helper
-     */
-    public VehicleDefinition getVehicleConfig(List<NativeNode> vds, String name) {
-        VehicleConfigDataProvider vcdp = new VehicleConfigDataProvider(
-                XmlVehicleDefinition.convertVehicleDefinitions(vds));
 
-        List<VehicleDefinition> vehicleDefinitions = vcdp.findVehicleDefinitionsByName(name);
-        return vehicleDefinitions.get(0);
-        //24.11.23 return ConfigHelper.getVehicleConfig(tw.tw, name);
-    }
 }

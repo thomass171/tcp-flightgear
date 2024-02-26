@@ -92,3 +92,7 @@ Textures/Runway/pa_9r.png
 Textures/Runway/pa_1r.png
 Textures/Runway/lf_other_hold.png
 Textures/Runway/pa_2l.png
+Textures/Runway/pc_taxiway.png
+Textures/Runway/pa_stopway.png
+Textures/Runway/pa_centerline.png
+Textures/Runway/pc_stopway.png

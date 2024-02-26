@@ -14,6 +14,7 @@ import de.yard.threed.engine.Texture;
 import de.yard.threed.flightgear.LoaderBTG;
 import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.flightgear.core.FlightGear;
+import de.yard.threed.flightgear.core.osg.Group;
 import de.yard.threed.flightgear.core.osg.Node;
 
 import de.yard.threed.core.Vector2Array;
@@ -138,7 +139,7 @@ public class ModelAssertions {
         }
     }
 
-    public static void assert3072816(PortableModelList ppfile, boolean hadmatlib) {
+    public static void assertBTG3072816(PortableModelList ppfile, boolean hadmatlib) {
         // preprocess liefert ein Object mit 17 geos.
         TestUtil.assertEquals("objects", 1, ppfile.getObjectCount());
         PortableModelDefinition ppobj = ppfile.getObject(0);
@@ -244,6 +245,8 @@ public class ModelAssertions {
         TestUtil.assertEquals("materialname",  "ROOF_DEFAULT" , ppfile.materials.get(3).name);
     }
 
-
+    public static void assertSTG3072816(Group pagedLOD) {
+        // TODO
+    }
 
 }

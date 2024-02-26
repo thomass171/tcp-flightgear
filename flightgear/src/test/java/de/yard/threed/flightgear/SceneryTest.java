@@ -9,6 +9,7 @@ import de.yard.threed.core.loader.LoaderGLTF;
 import de.yard.threed.core.loader.PortableModelList;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.testutil.TestUtils;
+import de.yard.threed.engine.Scene;
 import de.yard.threed.engine.Texture;
 import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.engine.testutil.EngineTestFactory;
@@ -48,6 +49,7 @@ import de.yard.threed.core.resource.BundleData;
 import de.yard.threed.core.buffer.ByteArrayInputStream;
 import de.yard.threed.core.testutil.Assert;
 import de.yard.threed.traffic.WorldGlobal;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -70,6 +72,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * <p>
  * Created by thomass on 09.08.16.
  */
+@Slf4j
 public class SceneryTest {
 
     @BeforeAll
@@ -167,7 +170,7 @@ public class SceneryTest {
         BundleData ins = br.bundle.getResource(br);
         try {
             PortableModelList ppfile = new LoaderBTG(new ByteArrayInputStream(ins.b), null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()), br.getFullName()).preProcess();
-            ModelAssertions.assert3072816(ppfile, true);
+            ModelAssertions.assertBTG3072816(ppfile, true);
         } catch (InvalidDataException e) {
             throw new RuntimeException(e);
         }
@@ -184,6 +187,10 @@ public class SceneryTest {
             TestHelper.processAsync();
             return validated.getValue();
         }, 10000);
+
+        // only reading the BTG doesn't add it to world.
+        log.debug(Scene.getCurrent().getWorld().dump("  ", 0));
+
     }
 
     @Test
@@ -216,10 +223,11 @@ public class SceneryTest {
     }
 
     /**
-     * Auch zum Testen der TerraSync Bundle
+     * 3072816.stg contains airports EDDK and EDKB
+     * Also for testing TerraSync Bundle
      */
     @Test
-    public void testReaderWriterSTG() {
+    public void testSTG3072816() {
         //MA17Registry.setReadFileCallback(ModelRegistry.getInstance());
         EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("3072816"));
         EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("model"));
@@ -270,6 +278,10 @@ public class SceneryTest {
         if (rr/*.getNode()*/ == null) {
             Assert.fail("node isType null. 3072816.stg failed");
         }
+        // only reading the STG doesn't add it to world.
+        log.debug(Scene.getCurrent().getWorld().dump("  ", 0));
+
+        ModelAssertions.assertSTG3072816(rr);
     }
 
     @Test
@@ -335,21 +347,36 @@ public class SceneryTest {
     }
 
     /**
-     * Das stg enthaelt zwei Airports, u.a. EDDK
+     * 3072816.stg contains airports EDDK and EDKB
      * 9.6.17
      */
     @Test
-    public void testSTG3072816() {
-        //30.9.19  FlightGear.setupRegistry();
-        EngineTestFactory.loadBundleSync(BundleRegistry.TERRAYSYNCPREFIX + "3072816");
-        EngineTestFactory.loadBundleSync(BundleRegistry.TERRAYSYNCPREFIX + "model");
+    public void testSTG3072816ByQueue() throws Exception {
+
+        //26.2.24 pager wants to load it itself! So be sure remove it. EngineTestFactory.loadBundleSync(BundleRegistry.TERRAYSYNCPREFIX + "3072816");
+        BundleRegistry.unregister(BundleRegistry.TERRAYSYNCPREFIX + "3072816");
+
+        //26.2.24 not used/needed anyway EngineTestFactory.loadBundleSync(BundleRegistry.TERRAYSYNCPREFIX + "model");
         SceneryPager sceneryPager = new SceneryPager();
         //ModelRegistry.getInstance().registerCallbacks();
         //Registry.setReadFileCallback(ModelRegistry.getInstance());
         SGReaderWriterOptions options = new SGReaderWriterOptions();
-        SceneNode node = new SceneNode();
-        sceneryPager.queueRequest("3072816.stg", node, 0, options, "e000n50/e007n50");
+        SceneNode destinationNode = new SceneNode();
+        sceneryPager.queueRequest("3072816.stg", destinationNode, 0, options, "e000n50/e007n50");
 
+        // waiting 30 secs should be sufficient. Not sure what better condition we have (futures?).
+        long startTime = Platform.getInstance().currentTimeMillis();
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return Platform.getInstance().currentTimeMillis() - startTime > 30000;
+        }, 31000);
+
+        // TODO make sure not the "duplicate stg loading??" branch in SceneryPager.queueRequest was used.
+
+        // result will be in destinationNode
+        log.debug(destinationNode.dump("  ", 0));
+
+        ModelAssertions.assertSTG3072816(null);
     }
 
     /**

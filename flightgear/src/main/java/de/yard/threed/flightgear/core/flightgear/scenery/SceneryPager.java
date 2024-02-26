@@ -32,10 +32,9 @@ public class SceneryPager {//extends lic osgDB::DatabasePager
 
     /**
      * FG-DIFF less parameter, no multithreading
-     * Die ganze gelesene Modelhierarchie kommt in destinationnode.
+     * Queue STG file for async loading.  The model hierarchy will end up in destinationnode.
      * <p>
-     * <p>
-     * filename isType pathless, eg.:3056394.stg
+     * filename is pathless, eg.:3056394.stg
      * 26.4.17:basepath added for bundle
      * 12.6.17: jetzt doch multithreaded per async loading.TODO: das Einhaengen in die destinationnode muss mal validiert werden, evtl ueber queue?
      */

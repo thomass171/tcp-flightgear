@@ -624,7 +624,7 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
             pagedLOD.setName("pagedObjectLOD" + bucket.gen_index_str());
 
             // This should be visible in any case.
-            // If this isType replaced by some lower level of detail, the parent LOD node handles this.
+            // If this is replaced by some lower level of detail, the parent LOD node handles this.
             pagedLOD.addChild(terrainGroup, 0, Float.MAX_VALUE/*std::numeric_limits <float>::max()*/);
 
             // we just need to know about the read file callback that itself holds the data

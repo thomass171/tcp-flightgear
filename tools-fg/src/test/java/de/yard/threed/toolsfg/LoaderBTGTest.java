@@ -82,6 +82,8 @@ public class LoaderBTGTest {
 
     /**
      * 5.10.23: 4 materials are missing. We keep these missings for testing error handling.
+     * 25.2.24: But the errors cause holes making groundnet unusable due to missing elevation. So
+     * better avoid these errors in EDDK. TODO use non airport btg for error testing
      */
     @Test
     public void testEddkBtg() throws Exception {
@@ -101,9 +103,9 @@ public class LoaderBTGTest {
         SGTileGeometryBin tileGeometryBin = loaderBTG.tileGeometryBin;
         // 34 just taken as reference
         assertEquals(34, tileGeometryBin.materialTriangleMap.size());
-        // 4 materials are missing: pc_taxiway, pa_stopway, pa_centerline, pc_stopway
-        assertEquals(30, ppfile.materials.size());
-        assertEquals(4, tileGeometryBin.materialNotFound.size());
+        // 4 materials are no longer missing: pc_taxiway, pa_stopway, pa_centerline, pc_stopway
+        assertEquals(34, ppfile.materials.size());
+        assertEquals(0, tileGeometryBin.materialNotFound.size());
 
     }
 }

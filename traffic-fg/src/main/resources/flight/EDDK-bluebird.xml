@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Tile Definition bluebird TravelScene. Does not contain groundnet for now. That is loaded separately.  -->
+
+<c:config xmlns:c="http://www.example.org/tcp-22" name="a">
+
+    <airportdefinition icao="EDDK">
+        <home>A20</home>
+        <parking>C_4</parking>
+
+        <!-- bluebird start pos -->
+        <location>groundnet:184-183</location>
+
+    </airportdefinition>
+
+</c:config>
+
+
+
