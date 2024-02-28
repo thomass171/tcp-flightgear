@@ -280,7 +280,7 @@ public class RailingScene extends Scene {
         }
 
         if (menuCycler == null /*&& avatar != null*/) {
-            menuCycler = new MenuCycler(new MenuProvider[]{new DefaultMenuProvider(this.getDefaultCamera(), () -> {
+            menuCycler = new MenuCycler(new MenuProvider[]{new DefaultMenuProvider(this.getDefaultCamera(), (Camera camera) -> {
                 //Versuchen, das Menu vor den Kessel zu setzen, damit es normal und in VR brauchbar ist.
                 double width = 0.3;
                 //BrowseMenu m = new BrowseMenu(new DimensionF(width, width * 0.7), -3, -0.4, sc.menuitems);

@@ -186,7 +186,7 @@ public class HangarScene extends Scene {
             // arp = new AircraftResourceProvider();
             // BundleRegistry.addProvider(arp);
         }
-        menuCycler = new MenuCycler(new MenuProvider[]{new CockpitMenuBuilder(this), new DefaultMenuProvider(this.getDefaultCamera(), () -> {
+        menuCycler = new MenuCycler(new MenuProvider[]{new CockpitMenuBuilder(this), new DefaultMenuProvider(this.getDefaultCamera(), (Camera camera) -> {
             //Versuchen, ca 3 m vor Avatar statt nearplane, damit es normal und in VR brauchbar ist.
             //ach, wie CDU 5m.
             double width = 5.5;
@@ -512,8 +512,8 @@ class CockpitMenuBuilder implements MenuProvider {
     }
 
     @Override
-    public Menu buildMenu() {
-        return new CockpitCduMenu(sc.getDefaultCamera(), sc.logger);
+    public Menu buildMenu(Camera camera) {
+        return new CockpitCduMenu(camera, sc.logger);
     }
 
     @Override
@@ -522,10 +522,6 @@ class CockpitMenuBuilder implements MenuProvider {
         //rs.getDefaultCamera().getCarrier();
     }
 
-    /* @Override
-     public Camera getCamera() {
-         return null;//FovElement.getDeferredCamera(null);
-     }*/
     @Override
     public Ray getRayForUserClick(Point mouselocation) {
         if (mouselocation != null) {
@@ -555,7 +551,7 @@ class CockpitCduMenu implements Menu {
         this.logger = logger;
         // Einen Cube links oben
 
-        cduCarrier = new SceneNode();//FovElement.buildSceneNodeForDeferredCamera(camera);
+        cduCarrier = new SceneNode();
 
         AbstractSceneRunner.instance.loadBundle("fgdatabasic", (Bundle bundle) -> {
 
@@ -565,7 +561,7 @@ class CockpitCduMenu implements Menu {
             entity = de.yard.threed.flightgear.traffic.ModelFactory.buildModelFromBundleXmlAsEntity(new BundleResource(bundle, "Aircraft/Instruments-3d/cdu2/boeing.xml"), null);
             entity.setName("CDU-Menu");
             AnimationComponent.getAnimationComponent(entity).setCameraProvider(() -> {
-                return camera/*FovElement.getDeferredCamera(null)*/;
+                return camera;
             });
             //BuildResult buildresult = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundle, "Aircraft/Instruments-3d/cdu/boeing.xml"), opt, (bpath, alist) -> {                 });
             cduCarrier.attach(entity.scenenode);

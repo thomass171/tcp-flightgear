@@ -13,6 +13,7 @@ import de.yard.threed.trafficadvanced.apps.HangarScene;
 import de.yard.threed.trafficadvanced.apps.TravelScene;
 import de.yard.threed.trafficfg.apps.RailingScene;
 import de.yard.threed.trafficfg.apps.SceneryScene;
+import de.yard.threed.trafficfg.apps.TravelSceneBluebird;
 
 public class WebglExtMain extends de.yard.threed.platform.webgl.Main {
 
@@ -30,6 +31,8 @@ public class WebglExtMain extends de.yard.threed.platform.webgl.Main {
             return new HangarScene();
         if (name.equals("TravelScene"))
             return new TravelScene();
+        if (name.equals("TravelSceneBluebird"))
+            return new TravelSceneBluebird();
         logger.error("Scene " + name + " not found");
         return null;
     }

@@ -40,6 +40,7 @@ import de.yard.threed.engine.ecs.UserSystem;
 import de.yard.threed.engine.gui.ControlMenuBuilder;
 import de.yard.threed.engine.gui.ControlPanel;
 import de.yard.threed.engine.gui.ControlPanelArea;
+import de.yard.threed.engine.gui.FovElement;
 import de.yard.threed.engine.gui.GuiGrid;
 import de.yard.threed.engine.gui.Icon;
 import de.yard.threed.engine.gui.MenuItem;
@@ -62,6 +63,7 @@ import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
+import de.yard.threed.flightgear.core.simgear.scene.model.OpenGlProcessPolicy;
 import de.yard.threed.flightgear.ecs.AnimationUpdateSystem;
 import de.yard.threed.graph.Graph;
 import de.yard.threed.graph.GraphEdge;
@@ -147,8 +149,11 @@ public class TravelSceneBluebird extends BasicTravelScene {
     private EcsEntity orbitingvehicle = null;
     private boolean avatarInited = false;
     protected AirportDefinition airportDefinition;
-    TrafficConfig worldPois;
+    TrafficConfig trafficConfig;
+    // worldPois are contained in trafficConfig
+    // TrafficConfig worldPois;
     TrafficConfig vdefs;
+    private Camera cameraForMenu = null;
 
     @Override
     public String[] getPreInitBundle() {
@@ -161,14 +166,14 @@ public class TravelSceneBluebird extends BasicTravelScene {
     public void customInit() {
         logger.debug("init Flight");
 
-        vehiclelistname="VehiclesWithCockpit";
+        vehiclelistname = "VehiclesWithCockpit";
         world = new SceneNode();
         world.setName("FlightWorld");
 
         FlightGearMain.initFG(new FlightLocation(WorldGlobal.equator020000, new Degree(0), new Degree(0)), null);
         FgBundleHelper.addProvider(new SimpleBundleResourceProvider("fgdatabasicmodel"));
 
-        TrafficConfig trafficConfig = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), new BundleResource("flight/EDDK-bluebird.xml"));
+        trafficConfig = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), new BundleResource("flight/EDDK-bluebird.xml"));
         // not until we define some worldPois = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), new BundleResource("world-pois.xml"));
         airportDefinition = trafficConfig.findAirportDefinitionsByIcao("EDDK").get(0);
 
@@ -181,6 +186,9 @@ public class TravelSceneBluebird extends BasicTravelScene {
         terrainBuilder.init(world);
         ts.setTerrainBuilder(terrainBuilder);
         SystemManager.addSystem(ts, 0);
+        // TerrainElevationProvider was created in FgTerrainBuilder. Needs help because EDDK groundnet exceeds EDDK tile, so define a default value 68.
+        ((TerrainElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION)).setDefaultAltitude(68.0);
+
         SystemManager.addSystem(new AutomoveSystem());
 
         initHud();
@@ -234,12 +242,10 @@ public class TravelSceneBluebird extends BasicTravelScene {
         trafficSystem.setVehicleLoader(new FgVehicleLoader());
 
         if (VrInstance.getInstance() == null) {
-            ((InputToRequestSystem) SystemManager.findSystem(InputToRequestSystem.TAG)).setControlMenuBuilder(new ControlMenuBuilder() {
-                @Override
-                public GuiGrid buildControlMenu(Camera camera) {
-                    return buildControlMenuForScene(camera);
-                }
-            });
+            InputToRequestSystem inputToRequestSystem = (InputToRequestSystem) SystemManager.findSystem(InputToRequestSystem.TAG);
+            inputToRequestSystem.setControlMenuBuilder(camera -> buildControlMenuForScene(camera));
+            // use dedicated camera for menu to avoid picking ray issues due to large/small dimensions conflicts
+            inputToRequestSystem.setCameraForMenu(cameraForMenu);
         }
 
     }
@@ -251,14 +257,6 @@ public class TravelSceneBluebird extends BasicTravelScene {
     @Override
     public EcsSystem[] getCustomTerrainSystems() {
         return new EcsSystem[]{};
-    }
-
-    @Override
-    public List<Vehicle> getVehicleList() {
-        // list is quite simple, so dont use a config.
-        List<Vehicle> l = new ArrayList<Vehicle>();
-        l.add(new Vehicle("bluebird"));
-        return l;
     }
 
     @Override
@@ -297,34 +295,21 @@ public class TravelSceneBluebird extends BasicTravelScene {
     }
 
     /**
+     * For future use
+     *
      * @return
      */
-    private void buildBluebird(TeleportComponent avatarpc) {
-        //4.12.23 VehicleDefinition vehicleConfig = /*DefaultTrafficWorld.getInstance().getConfiguration()*/ConfigHelper.getVehicleConfig(tw.tw, "Navigator");
-        // "Navigator" resides in traffic-fg
-        TrafficConfig trafficConfig = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), new BundleResource("flight/vehicle-definitions.xml"));
-        VehicleDefinition vehicleConfig = ConfigHelper.getVehicleConfig(trafficConfig.getVehicleDefinitions(), "bluebird");
-
-        VehicleLauncher.launchVehicle(new Vehicle("Navigator"), vehicleConfig, null, null, avatarpc, getWorld(), null,
-                TrafficSystem.baseTransformForVehicleOnGraph, null/*nearView*/, Arrays.asList(new VehicleBuiltDelegate[]{((ecsEntity, config) -> {
-
-                    // Weil der TeleporterSystem.init schon gelaufen ist, muss auch "needsupdate" gesetzt werden, darum stepTo().
-                    avatarpc.stepTo(0);
-                    addPoisToBluebird(ecsEntity);
-                })}), new FgVehicleLoader());
-    }
-
     private void addPoisToBluebird(EcsEntity bluebird) {
         // needle muss als parent eingetragen werden. NeeNee, needle ist child von needleforefg.
         SceneNode needleforfg = bluebird.scenenode;
         TeleportComponent navigatorpc = new TeleportComponent(needleforfg);
 
         SceneNode parent = world;
-        /*TODO for (PoiConfig poi : getPoiList(worldPois)) {
+        for (PoiConfig poi : getPoiList(trafficConfig/*worldPois*/)) {
             navigatorpc.addPosition(poi.getName(), parent.getTransform(), poi.getTransform(new FgCalculations()));
-        }*/
+        }
         // in general start in EDDK
-        navigatorpc.setIndex(startpos - 1);
+        navigatorpc.setIndex(0/*startpos - 1*/);
 
         bluebird.addComponent(navigatorpc);
         bluebird.addComponent(new GraphMovingComponent(bluebird.scenenode.getTransform()));
@@ -332,16 +317,12 @@ public class TravelSceneBluebird extends BasicTravelScene {
 
     private static List<PoiConfig> getPoiList(TrafficConfig tw) {
         List<PoiConfig> poilist = new ArrayList<PoiConfig>();
-        poilist.add(tw.getPoiByName("equator20000"));
-        poilist.add(tw.getPoiByName("equator5000indiocean"));
-        poilist.add(tw.getPoiByName("equator5000eastafrica"));
-        poilist.add(tw.getPoiByName("Dahlem 1300"));
         poilist.add(tw.getPoiByName("EDDK Overview"));
-        poilist.add(tw.getPoiByName("EDDK Overview Far"));
+        /*poilist.add(tw.getPoiByName("EDDK Overview Far"));
         poilist.add(tw.getPoiByName("EDDK Overview Far High"));
         poilist.add(tw.getPoiByName("elsdorf2000"));
         poilist.add(tw.getPoiByName("greenwich500"));
-        poilist.add(tw.getPoiByName("Nordpol"));
+        poilist.add(tw.getPoiByName("Nordpol"));*/
         return poilist;
     }
 
@@ -412,7 +393,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
 
 
         cp.addArea(panelGrid.getPosition(2, 1), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
-           // cycleAircraft();
+            // cycleAircraft();
             //updateHud();
         }).setIcon(Icon.ICON_PLUS);
 
@@ -448,7 +429,19 @@ public class TravelSceneBluebird extends BasicTravelScene {
                 logger.warn("no avatar (tc) yet");
             } else {
                 // 30.1.24: 'navigator.gltf' not found for some time now. Leads to repeatedly 'not fond' logging.
-                buildBluebird(avatartc);
+                //  buildBluebird(avatartc);
+                LocalTransform loc = WorldGlobal.eddkoverview.location.toPosRot(new FgCalculations());
+                // Base rotation to make user node a FG model ...
+                Quaternion rotation = new OpenGlProcessPolicy(null).opengl2fg.extractQuaternion();
+                // .. that is suited for FG geo transformation and FirstPersonTransformers OpenGL coordinate system.
+                // Unclear why it is this order of rotation multiply.
+                rotation = loc.rotation.multiply(rotation);
+
+                //for (PoiConfig poi : getPoiList(trafficConfig/*worldPois*/)) {
+                //avatartc.addPosition(poi.getName(), null, poi.getTransform(new FgCalculations()));
+                avatartc.addPosition("t1", null, new LocalTransform(loc.position, rotation));
+                //}
+                avatartc.stepTo(0);
 
                 if (teleporterSystem != null) {
                     teleporterSystem.setActivetc(avatartc);
@@ -633,7 +626,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
 
     /**
      * Non VR Control menu.
-     * 22.2.24: Currently not working due to no intersection.
+     * Camera is a deferred camera defined during init.
      * <p>
      */
     public GuiGrid buildControlMenuForScene(Camera camera) {
@@ -654,6 +647,18 @@ public class TravelSceneBluebird extends BasicTravelScene {
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_CONTROLMENU));
         });
         return controlmenu;
+    }
+
+    /**
+     * For both menu and control menu
+     */
+    @Override
+    public Camera getMenuCamera() {
+        if (cameraForMenu == null) {
+            // use dedicated camera for menu to avoid picking ray issues due to large/small dimensions conflicts
+            cameraForMenu = FovElement.getDeferredCamera(getDefaultCamera());
+        }
+        return cameraForMenu;
     }
 }
 

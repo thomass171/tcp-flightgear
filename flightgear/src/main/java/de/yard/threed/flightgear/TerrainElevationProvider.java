@@ -11,13 +11,16 @@ import de.yard.threed.core.platform.Log;
 
 /**
  * 9.3.21: MA31 Wohin damit?
- *
+ * 26.2.24: defaultAltitude added
+ * <p>
  * Created on 28.03.18.
  */
 public class TerrainElevationProvider implements de.yard.threed.engine.ecs.DataProvider, ElevationProvider {
     Log logger = Platform.getInstance().getLog(TerrainElevationProvider.class);
     Double altitude = null;
     private SceneNode world;
+    // optional value if detection fails.
+    Double defaultAltitude = null;
 
     public TerrainElevationProvider() {
     }
@@ -34,8 +37,11 @@ public class TerrainElevationProvider implements de.yard.threed.engine.ecs.DataP
             return altitude;
         }
         SGGeod coor = (SGGeod) parameter[0];
-        Double elevation = FlightGearModuleScenery.getInstance().get_scenery().get_elevation_m(coor,(world!=null)?world.getTransform().getPosition():new Vector3());
-        logger.debug("elevation " + elevation + " found for " + coor+", world="+world);
+        Double elevation = FlightGearModuleScenery.getInstance().get_scenery().get_elevation_m(coor, (world != null) ? world.getTransform().getPosition() : new Vector3());
+        //logger.debug("elevation " + elevation + " found for " + coor + ", world=" + world);
+        if (elevation == null && defaultAltitude != null) {
+            return defaultAltitude;
+        }
         return elevation;
     }
 
@@ -50,12 +56,12 @@ public class TerrainElevationProvider implements de.yard.threed.engine.ecs.DataP
 
     @Override
     public Double getElevation(double latitudedeg, double longitudedeg/*SGGeod coor*/) {
-        Double elevation = (Double)getData(new Object[]{SGGeod.fromDeg(longitudedeg,latitudedeg)});
-        if (elevation==null){
+        Double elevation = (Double) getData(new Object[]{SGGeod.fromDeg(longitudedeg, latitudedeg)});
+        if (elevation == null) {
             // null zurueckzuliefern bringt ja nichts. 2.11.19: Doch, dann kann der Aufrufer needsUpdate setzen.
             return null;
         }
-        double d = (double)elevation;
+        double d = (double) elevation;
         return d;
     }
 
@@ -64,6 +70,10 @@ public class TerrainElevationProvider implements de.yard.threed.engine.ecs.DataP
     }
 
     public double getAltitude() {
-        return (double)altitude;
+        return (double) altitude;
+    }
+
+    public void setDefaultAltitude(double v) {
+        defaultAltitude = v;
     }
 }

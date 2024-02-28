@@ -33,6 +33,7 @@ import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.testutils.TrafficTestUtils;
 import de.yard.threed.trafficadvanced.apps.FlatAirportScene;
+import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.flight.GroundNetMetadata;
 import de.yard.threed.trafficfg.flight.GroundServiceComponent;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
@@ -117,8 +118,8 @@ public class FlatAirportSceneTest {
 
         sceneRunner.runLimitedFrames(50);
 
-        // "GroundServices" vehicle list from TrafficWorld.xml
-        assertEquals(8, TrafficSystem.vehiclelist.size(), "size of vehiclelist");
+        List<Vehicle> vehiclelist = TrafficHelper.getVehicleListByDataprovider();
+        assertEquals(8, vehiclelist.size(), "size of vehiclelist");
 
         VehicleDefinition/*Config*/ config = TrafficHelper.getVehicleConfigByDataprovider("VolvoFuel", null);
         assertNotNull(config);

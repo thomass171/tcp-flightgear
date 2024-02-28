@@ -41,6 +41,7 @@ import de.yard.threed.engine.ecs.UserSystem;
 import de.yard.threed.engine.gui.ControlMenuBuilder;
 import de.yard.threed.engine.gui.ControlPanel;
 import de.yard.threed.engine.gui.ControlPanelArea;
+import de.yard.threed.engine.gui.FovElement;
 import de.yard.threed.engine.gui.GuiGrid;
 import de.yard.threed.engine.gui.Icon;
 import de.yard.threed.engine.gui.MenuItem;
@@ -191,6 +192,7 @@ public class TravelScene extends FlightTravelScene {
     private boolean avatarInited = false;
     private boolean enableDoormarker = false;
     EcsEntity markedaircraft = null;
+    private Camera cameraForMenu = null;
 
     @Override
     public String[] getPreInitBundle() {
@@ -320,12 +322,10 @@ public class TravelScene extends FlightTravelScene {
         trafficSystem.setVehicleLoader(new FgVehicleLoader());
 
         if (VrInstance.getInstance() == null) {
-            ((InputToRequestSystem) SystemManager.findSystem(InputToRequestSystem.TAG)).setControlMenuBuilder(new ControlMenuBuilder() {
-                @Override
-                public GuiGrid buildControlMenu(Camera camera) {
-                    return buildControlMenuForScene(camera);
-                }
-            });
+            InputToRequestSystem inputToRequestSystem = (InputToRequestSystem) SystemManager.findSystem(InputToRequestSystem.TAG);
+            inputToRequestSystem.setControlMenuBuilder(camera -> buildControlMenuForScene(camera));
+            // use dedicated camera for menu to avoid picking ray issues due to large/small dimensions conflicts
+            inputToRequestSystem.setCameraForMenu(cameraForMenu);
         }
 
     }
@@ -1026,7 +1026,7 @@ public class TravelScene extends FlightTravelScene {
 
     /**
      * Non VR Control menu.
-     * 22.2.24: Currently not working due to no intersection.
+     * Camera is a deferred camera defined during init.
      * <p>
      */
     public GuiGrid buildControlMenuForScene(Camera camera) {
@@ -1047,6 +1047,18 @@ public class TravelScene extends FlightTravelScene {
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_CONTROLMENU));
         });
         return controlmenu;
+    }
+
+    /**
+     * For both menu and control menu
+     */
+    @Override
+    public Camera getMenuCamera() {
+        if (cameraForMenu == null) {
+            // use dedicated camera for menu to avoid picking ray issues due to large/small dimensions conflicts
+            cameraForMenu = FovElement.getDeferredCamera(getDefaultCamera());
+        }
+        return cameraForMenu;
     }
 }
 

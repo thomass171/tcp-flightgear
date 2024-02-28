@@ -112,7 +112,33 @@
                         </div>
                     </div>
                 </div>
+                <!-- Bluebird TravelScene -->
+                <div class="w3-third">
+                    <div class="w3-card-2">
+                        <div class="w3-container">
+                            <h3>Bluebird Travel</h3>
+                            <div class="w3-container w3-center">
+                                <img src="BluebirdTravel-Preview.png" style="width:100%">
+                            </div>
+                            <p>A simple travel scene initially located at EDDK. Use 't' to teleport or
+                                's' to start bluebird.
+                                <br>Use 'm' for opening a menu and selecting a tour.
+                                <br>(Needs a long time for loading and bluebird elevation is buggy).
+                            </p>
+                            <p></p>
 
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchSingleScene('TravelSceneBluebird',null,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'),'bluebird')">
+                                Launch
+                            </button>
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchSingleScene('TravelSceneBluebird','VR',false,false,'bluebird')">
+                                Launch VR
+                            </button>
+                            <p></p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

@@ -956,7 +956,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
                 GroundServicesSystem.groundnetEDDK = groundNet;
                 // 30.10.21: Vehicles cannot be loaded immediately, because they need to wait for example for elevation.
                 TrafficGraph trafficGraph = groundNet.groundnetgraph;
-                SystemManager.putRequest(new Request(RequestRegistry.TRAFFIC_REQUEST_LOADVEHICLES, new Payload(trafficGraph, groundNet)));
+                SystemManager.putRequest(RequestRegistry.buildLoadVehicles(trafficGraph));
 
             } else {
                 logger.warn("pending groundnet not loaded");

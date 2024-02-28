@@ -135,7 +135,7 @@ public class FGScenery extends DefaultSGSubsystem {
         Ray ray = getVerticalRay(geod,worldadjustment);
         //23.3.18 Subtree Suche ist Murks
         List<NativeCollision> intersections = ray.getIntersections(/*terrain_branch*/);
-        logger.debug("get_elevation_m: found " + intersections.size() + " intersections overall with ray "+ray);
+        //logger.debug("get_elevation_m: found " + intersections.size() + " intersections overall with ray "+ray);
         int cnt = intersections.size();
         if (cnt > 0) {
             // nehm ich einfach mal die erste groesser 0. Aber nur, wenn wirklich eine gefunden wurde

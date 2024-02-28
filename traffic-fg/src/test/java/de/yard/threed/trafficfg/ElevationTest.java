@@ -17,6 +17,8 @@ import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.core.simgear.scene.tgdb.SGReaderWriterBTG;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
+import de.yard.threed.trafficfg.flight.GroundNet;
+import de.yard.threed.trafficfg.flight.GroundNetTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -54,10 +56,12 @@ public class ElevationTest {
 
         log.debug(Scene.getCurrent().getWorld().dump("  ", 0));
 
+        // EDDK groundnet exceeds EDDK tile, so define a default value 68
         TerrainElevationProvider elevationProvider = new TerrainElevationProvider();
-        /*elevations are missing TODO GroundNet groundNet = GroundNetTest.loadGroundNetForTesting( BundleRegistry.getBundle("traffic-fg"), 0, "EDDK",false,
-                 elevationProvider);*/
-
+        elevationProvider.setDefaultAltitude(68.0);
+        GroundNet groundNet = GroundNetTest.loadGroundNetForTesting(BundleRegistry.getBundle("traffic-fg"), 0, "EDDK", false,
+                elevationProvider);
+        assertNotNull(groundNet);
     }
 
 }

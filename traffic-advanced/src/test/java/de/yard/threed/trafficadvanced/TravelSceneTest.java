@@ -12,6 +12,7 @@ import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.Texture;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsHelper;
+import de.yard.threed.engine.ecs.EcsTestHelper;
 import de.yard.threed.engine.ecs.EntityFilter;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.ecs.UserSystem;
@@ -30,6 +31,7 @@ import de.yard.threed.traffic.TrafficSystem;
 import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.trafficadvanced.apps.FlatAirportScene;
+import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.flight.GroundNetMetadata;
 import de.yard.threed.trafficfg.flight.GroundServiceComponent;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
@@ -84,9 +86,13 @@ public class TravelSceneTest {
         TestUtils.assertLatLon(GroundNetMetadata.getMap().get("EDDK").airport.getCenter(), projections.projection.getOrigin(), 0.01, "EDDK origin");*/
 
         sceneRunner.runLimitedFrames(50);
+        EcsEntity userEntity = SystemManager.findEntities(e -> "Freds account name".equals(e.getName())).get(0);
+        assertNotNull(userEntity, "userEntity");
+        assertNotNull(userEntity.getName(), "name");
 
         // "GroundServices" vehicle list from TrafficWorld.xml
-        assertEquals(8, TrafficSystem.vehiclelist.size(), "size of vehiclelist");
+        List<Vehicle> vehiclelist = TrafficHelper.getVehicleListByDataprovider();
+        assertEquals(8, vehiclelist.size(), "size of vehiclelist");
 
         VehicleDefinition/*Config*/ config = TrafficHelper.getVehicleConfigByDataprovider("VolvoFuel", null);
         assertNotNull(config);
@@ -98,7 +104,7 @@ public class TravelSceneTest {
         }, 60000);
 
         //11 passt: "Player",5 GS Vehicle (3 LSG?, 2 Goldhofert?, no delayed aircraft),  Vehicle from sceneconfig (747, 737, 738, Bravo), 3 Aircraft
-        //Why 15?
+        //Why 15? earth,moon,sun?
         int expectedNumberOfEntites = 15;
         TestUtils.waitUntil(() -> {
             TestHelper.processAsync();
@@ -109,6 +115,8 @@ public class TravelSceneTest {
         }, 60000);
 
         validateStaticEDDK(enableDoormarker);
+        // 2*3 for navigator, 2 for LSG, 1 for 738, position not tested
+        EcsTestHelper.assertTeleportComponent(userEntity, 3 + 3 + 2 + 1, 8, null);
 
         EcsEntity entity747 = EcsHelper.findEntitiesByName("747 KLM").get(0);
         assertNotNull(entity747);
