@@ -77,7 +77,7 @@ public class SceneryTest {
 
     @BeforeAll
     static void setup() {
-        FgTestFactory.initPlatformForTest(true,true);
+        FgTestFactory.initPlatformForTest(true, true);
     }
 
     /**
@@ -278,8 +278,8 @@ public class SceneryTest {
         if (rr/*.getNode()*/ == null) {
             Assert.fail("node isType null. 3072816.stg failed");
         }
-        // only reading the STG doesn't add it to world.
-        log.debug(Scene.getCurrent().getWorld().dump("  ", 0));
+        // only reading the STG doesn't add it to world. XMLs are loaded sync and available immediately?
+        log.debug(rr.dump("  ", 0));
 
         ModelAssertions.assertSTG3072816(rr);
     }
@@ -376,7 +376,8 @@ public class SceneryTest {
         // result will be in destinationNode
         log.debug(destinationNode.dump("  ", 0));
 
-        ModelAssertions.assertSTG3072816(null);
+        ModelAssertions.assertSTG3072816(destinationNode);
+        assertEquals(1, destinationNode.findNodeByName("Terrain/e000n50/e007n50/EDDK.gltf", true).size());
     }
 
     /**
@@ -420,6 +421,9 @@ public class SceneryTest {
         }, 10000);
 
 
+    }
 
+    public static void isSTG3072816Loaded(SceneNode destinationNode) {
+        // TODO
     }
 }

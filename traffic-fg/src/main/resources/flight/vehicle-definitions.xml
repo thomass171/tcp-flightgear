@@ -32,6 +32,12 @@
                 <angle>90, 0, 90</angle>
             </transform>
         </viewpoint>
+        <viewpoint name="BackSide">
+            <transform>
+                <position>90,20,15</position>
+                <angle>0, 90, 90</angle>
+            </transform>
+        </viewpoint>
         <aircraftdir>bluebird</aircraftdir>
         <optional>nav_sphere_L1</optional>
         <optional>nav_sphere_L2</optional>

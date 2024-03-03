@@ -42,6 +42,7 @@ public class AutomoveSystem extends DefaultEcsSystem {
     boolean automovetoggleenabled = true;
     boolean debuglog = true;
     AirportConfig airport;
+    public static String TAG = "AutomoveSystem";
 
     /**
      *
@@ -145,6 +146,11 @@ public class AutomoveSystem extends DefaultEcsSystem {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public String getTag() {
+        return TAG;
     }
 
     private boolean expiredIdle(GraphMovingComponent gmc, VehicleComponent vhc, /*GroundServiceComponent gsc, */int maxidletimeinseconds) {

@@ -73,8 +73,8 @@ public class TravelSceneBluebirdTest {
             return GroundServicesSystem.groundnetEDDK != null;
         }, 60000);
 
-        // Sun,Earth,Moon,user
-        int expectedNumberOfEntites = 4 + (withBluebird ? 1 : 0);
+        // (Sun,Earth,Moon no longer exist),user
+        int expectedNumberOfEntites = /*4*/1 + (withBluebird ? 1 : 0);
         TestUtils.waitUntil(() -> {
             TestHelper.processAsync();
             sceneRunner.runLimitedFrames(1);
@@ -99,6 +99,7 @@ public class TravelSceneBluebirdTest {
     }
 
     /**
+     *
      * Needs parameter, so no @Before
      */
     private void setup(boolean withBluebird) throws Exception {

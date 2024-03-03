@@ -17,6 +17,7 @@ import de.yard.threed.core.EventType;
 @Deprecated
 public class XMLPropertyReaderSystem extends DefaultEcsSystem {
     Log logger = Platform.getInstance().getLog(XMLPropertyReaderSystem.class);
+    public static String TAG = "XMLPropertyReaderSystem";
 
     // 6.2.23 Event von tcp-22 nach hier moved
     public static EventType EVENT_MODELLOAD = EventType.register(-23, "EVENT_MODELLOAD");
@@ -30,7 +31,11 @@ public class XMLPropertyReaderSystem extends DefaultEcsSystem {
         SGPropertyNode/*_ptr*/ props = new SGPropertyNode();
         //SystemManager.sendEvent(EcsSystemEvent.buildModelLoadEvent(resource));
     }
-    
+
+    @Override
+    public String getTag() {
+        return TAG;
+    }
 
         public Log getLogger() {
         return logger;

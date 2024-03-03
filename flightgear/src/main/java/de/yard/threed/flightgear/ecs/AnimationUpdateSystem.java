@@ -26,6 +26,7 @@ public class AnimationUpdateSystem extends DefaultEcsSystem {
         super(new String[]{"AnimationComponent"});
     }
     Log logger = Platform.getInstance().getLog(AnimationUpdateSystem.class);
+    public static String TAG = "AnimationUpdateSystem";
 
     @Override
     public void init(EcsGroup group) {
@@ -60,6 +61,11 @@ public class AnimationUpdateSystem extends DefaultEcsSystem {
             a.process(pickingray, new AUSRequestHandler());
         }
 
+    }
+
+    @Override
+    public String getTag() {
+        return TAG;
     }
 }
 

@@ -245,7 +245,7 @@ public class ModelAssertions {
         TestUtil.assertEquals("materialname",  "ROOF_DEFAULT" , ppfile.materials.get(3).name);
     }
 
-    public static void assertSTG3072816(Group pagedLOD) {
+    public static void assertSTG3072816(SceneNode destinationNode) {
         // TODO
     }
 

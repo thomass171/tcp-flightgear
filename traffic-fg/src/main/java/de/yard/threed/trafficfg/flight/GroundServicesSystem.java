@@ -35,6 +35,7 @@ import de.yard.threed.graph.TurnExtension;
 import de.yard.threed.traffic.JsonUtil;
 import de.yard.threed.traffic.NoElevationException;
 import de.yard.threed.traffic.RequestRegistry;
+import de.yard.threed.traffic.ScenerySystem;
 import de.yard.threed.traffic.TrafficEventRegistry;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficHelper;
@@ -134,6 +135,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
     // historical defaults for EDDK
     public static String airportConfigBundle = "traffic-advanced";
     public static String airportConfigFullName = "EDDK.xml";
+    public static String TAG = "GroundServicesSystem";
 
     /**
      * weil er neue Pfade im Graph hinzufuegt, lauscht er auch auf GRAPH_EVENT_PATHCOMPLETED, um diese wieder aus dem
@@ -317,8 +319,11 @@ public class GroundServicesSystem extends DefaultEcsSystem {
             //TODO 27.3.20: Aber erst, wenn Terrain da ist. Sonst warten. Aber wie lange? Es ist ja gar nicht sicher,
             //dass es ueberhaupt jemals Terrain geben wird. Vorerst einfach mal per Counter
             //16.5.20: Groundnet sollte in der Lage sein zum Nachladen wie in FG.
-            if (/*24.5.20 request.declined > 10*/true) {
-                String icao = (String) request.getPayload().get("icao");
+            // 1.3.24: use temp solution for making sure we have elevation.
+            // Otherwise elevation provider might fall back to a default (eg.68), especially in webgl.
+            // causing bluebird (and other) be too low
+            String icao = (String) request.getPayload().get("icao");
+            if (/*24.5.20 request.declined > 10*/hasTerrainTempSolution(icao)) {
                 // 16.5.20: Fuer EDDK bleibts erstmal mal beim alten.
                 if (icao.equals("EDDK") && false) {
                     //24.5.20: EDDK einfach eintragen. Groundnet kommt spaeter als pending groundnet. Nee, kommt aus init wegen der config Daten,
@@ -510,6 +515,11 @@ public class GroundServicesSystem extends DefaultEcsSystem {
         }
 
 
+    }
+
+    @Override
+    public String getTag() {
+        return TAG;
     }
 
     private void spawnSingleService(EcsEntity aircraft, String servicetype, int servicedurationinseconds) {
@@ -994,6 +1004,18 @@ public class GroundServicesSystem extends DefaultEcsSystem {
             vehicleDefinition = TrafficHelper.getVehicleConfigByDataprovider(null, "738");
         }
         return vehicleDefinition;
+    }
+
+    /**
+     * only temporary solution! TODO Probing complete groundnet will be more reliable.
+     */
+    private boolean hasTerrainTempSolution(String icao) {
+        // Difficult to find a generic 2D/3D solution.
+        if (SystemManager.findSystem(ScenerySystem.TAG) == null) {
+            return true;
+        }
+        int eddks = SceneNode.findByName("Terrain/e000n50/e007n50/EDDK.gltf").size();
+        return eddks > 0;
     }
 }
 

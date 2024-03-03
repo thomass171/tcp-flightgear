@@ -579,9 +579,10 @@ public class TravelSceneBluebird extends BasicTravelScene {
     @Override
     protected void initSpheres() {
         logger.debug("initSpheres");
+        /* 1.3.24: has a dimension bug in GraphMovingComponent leading to large iterations and problems in webgl. Not yet needed that way.
         SolarSystem solarSystem = new SolarSystem();
-        SceneNode sun = solarSystem.build(2 * WorldGlobal.DISTANCEMOONEARTH, WorldGlobal.DISTANCEMOONEARTH/*km(18000)*/);
-        addToWorld(sun);
+        SceneNode sun = solarSystem.build(2 * WorldGlobal.DISTANCEMOONEARTH, WorldGlobal.DISTANCEMOONEARTH/*km(18000)* /);
+        addToWorld(sun);*/
     }
 
     /*@Override

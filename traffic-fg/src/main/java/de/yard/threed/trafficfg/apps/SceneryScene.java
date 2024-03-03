@@ -132,9 +132,9 @@ public class SceneryScene extends Scene {
 
         FlightGearMain.initFG(new FlightLocation(WorldGlobal.equator020000, new Degree(0), new Degree(0)), null);
         // BundleResourceProvider are FG specific (not mix up with BundleResolver) and currently not yet needed(?)
-        FgBundleHelper.addProvider(new SimpleBundleResourceProvider("fgdatabasicmodel"));
+        // 29.2.24 not used FgBundleHelper.addProvider(new SimpleBundleResourceProvider("fgdatabasicmodel"));
         //4.1.18:TerraSync-model. Ob das hier gut ist?
-        FgBundleHelper.addProvider(new SimpleBundleResourceProvider(FlightGear.getBucketBundleName("model")));
+        // 29.2.24 not used  FgBundleHelper.addProvider(new SimpleBundleResourceProvider(FlightGear.getBucketBundleName("model")));
         // FG, Position is initialisiert.
 
         // A elevation provider is needed for calculating 3D coordinates from geo coordinates. To keep is simple, use a fix one for now.

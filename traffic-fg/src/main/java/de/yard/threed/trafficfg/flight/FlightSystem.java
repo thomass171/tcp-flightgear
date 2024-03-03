@@ -45,6 +45,7 @@ import de.yard.threed.trafficfg.TrafficRequest;
 public class FlightSystem extends DefaultEcsSystem {
     private static Log logger = Platform.getInstance().getLog(FlightSystem.class);
     boolean flightsystemdebuglog = true;
+    public static String TAG = "FlightSystem";
 
     /**
      *
@@ -142,6 +143,11 @@ public class FlightSystem extends DefaultEcsSystem {
 
         }
 
+    }
+
+    @Override
+    public String getTag() {
+        return TAG;
     }
 
     /**
