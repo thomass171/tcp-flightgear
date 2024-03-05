@@ -192,7 +192,7 @@ public class TravelScene extends FlightTravelScene {
     private boolean avatarInited = false;
     private boolean enableDoormarker = false;
     EcsEntity markedaircraft = null;
-    private Camera cameraForMenu = null;
+
 
     @Override
     public String[] getPreInitBundle() {
@@ -324,8 +324,7 @@ public class TravelScene extends FlightTravelScene {
         if (VrInstance.getInstance() == null) {
             InputToRequestSystem inputToRequestSystem = (InputToRequestSystem) SystemManager.findSystem(InputToRequestSystem.TAG);
             inputToRequestSystem.setControlMenuBuilder(camera -> buildControlMenuForScene(camera));
-            // use dedicated camera for menu to avoid picking ray issues due to large/small dimensions conflicts
-            inputToRequestSystem.setCameraForMenu(cameraForMenu);
+            // cameraForMenu already set by super class
         }
 
     }
@@ -359,14 +358,13 @@ public class TravelScene extends FlightTravelScene {
                     logger.debug("Default Trip");
                     //startDefaultTrip();
                     TravelHelper.startFlight(Destination.buildRoundtrip(0), getAvatarVehicle());
-                    // openclosemenu();
+                    InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
                 }),
                 new MenuItem(null, new Text("Low Orbit Tour", Color.RED, Color.LIGHTGRAY), () -> {
                     logger.debug("menu: low orbit track");
                     //startOrbitTour();
                     TravelHelper.startFlight(Destination.buildRoundtrip(1), getAvatarVehicle());
-
-                    // openclosemenu();
+                    InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
                 }),
                 new MenuItem(null, new Text("Enter Equator Orbit", Color.RED, Color.LIGHTGRAY), () -> {
                     logger.debug("menu: equator orbit");
@@ -1050,17 +1048,7 @@ public class TravelScene extends FlightTravelScene {
         return controlmenu;
     }
 
-    /**
-     * For both menu and control menu
-     */
-    @Override
-    public Camera getMenuCamera() {
-        if (cameraForMenu == null) {
-            // use dedicated camera for menu to avoid picking ray issues due to large/small dimensions conflicts
-            cameraForMenu = FovElement.getDeferredCamera(getDefaultCamera());
-        }
-        return cameraForMenu;
-    }
+
 }
 
 class FlightSceneConfig {

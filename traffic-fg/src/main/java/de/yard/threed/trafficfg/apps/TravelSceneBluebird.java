@@ -153,7 +153,6 @@ public class TravelSceneBluebird extends BasicTravelScene {
     // worldPois are contained in trafficConfig
     // TrafficConfig worldPois;
     TrafficConfig vdefs;
-    private Camera cameraForMenu = null;
 
     @Override
     public String[] getPreInitBundle() {
@@ -244,8 +243,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
         if (VrInstance.getInstance() == null) {
             InputToRequestSystem inputToRequestSystem = (InputToRequestSystem) SystemManager.findSystem(InputToRequestSystem.TAG);
             inputToRequestSystem.setControlMenuBuilder(camera -> buildControlMenuForScene(camera));
-            // use dedicated camera for menu to avoid picking ray issues due to large/small dimensions conflicts
-            inputToRequestSystem.setCameraForMenu(cameraForMenu);
+            // cameraForMenu already set by super class
         }
 
     }
@@ -269,16 +267,13 @@ public class TravelSceneBluebird extends BasicTravelScene {
         return new MenuItem[]{
                 new MenuItem(null, new Text("Default Trip", Color.RED, Color.LIGHTGRAY), () -> {
                     logger.debug("Default Trip");
-                    //startDefaultTrip();
                     TravelHelper.startFlight(Destination.buildRoundtrip(0), getAvatarVehicle());
-                    // openclosemenu();
+                    InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
                 }),
                 new MenuItem(null, new Text("Low Orbit Tour", Color.RED, Color.LIGHTGRAY), () -> {
                     logger.debug("menu: low orbit track");
-                    //startOrbitTour();
                     TravelHelper.startFlight(Destination.buildRoundtrip(1), getAvatarVehicle());
-
-                    // openclosemenu();
+                    InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
                 }),
                 new MenuItem(null, new Text("Enter Equator Orbit", Color.RED, Color.LIGHTGRAY), () -> {
                     logger.debug("menu: equator orbit");
@@ -641,25 +636,13 @@ public class TravelSceneBluebird extends BasicTravelScene {
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
         });
         controlmenu.addButton(2, 0, 1, Icon.ICON_PLUS, () -> {
-            SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
+           //why?? SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
             //updateHud();
         });
         controlmenu.addButton(3, 0, 1, Icon.ICON_CLOSE, () -> {
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_CONTROLMENU));
         });
         return controlmenu;
-    }
-
-    /**
-     * For both menu and control menu
-     */
-    @Override
-    public Camera getMenuCamera() {
-        if (cameraForMenu == null) {
-            // use dedicated camera for menu to avoid picking ray issues due to large/small dimensions conflicts
-            cameraForMenu = FovElement.getDeferredCamera(getDefaultCamera());
-        }
-        return cameraForMenu;
     }
 }
 
