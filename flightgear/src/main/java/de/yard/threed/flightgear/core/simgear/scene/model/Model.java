@@ -1,6 +1,9 @@
 package de.yard.threed.flightgear.core.simgear.scene.model;
 
 import de.yard.threed.core.platform.*;
+import de.yard.threed.engine.Material;
+import de.yard.threed.engine.Mesh;
+import de.yard.threed.engine.SceneNode;
 import de.yard.threed.flightgear.core.PropertyList;
 import de.yard.threed.flightgear.core.osg.Node;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
@@ -53,17 +56,17 @@ public class Model {
                     String objname = objNameNode.getStringValue();
                     // 5.10.17: Nicht global suchen, denn durch async ist die Node noch nicht in den tree eingehangen.
                     // je nach Loader (zB. gltf kann es Nodesduibeltten geben. Darum alle druchgehen und die mit Mesh suchen.
-                    List<NativeSceneNode> nlist = modelGroup.findNodeByName(objname, true);
+                    List<SceneNode> nlist = modelGroup.findNodeByName(objname);
                     if (nlist.size() == 0) {
                         // Kommt wohl schon mal vor. "Lettering_Btns" z.B. wird in boeing.xml auf transparent gesetzt gibt es aber nicht
                         logger.warn("object not found: " + objname);
                     }
                     boolean meshfound = false;
-                    for (NativeSceneNode n : nlist) {
+                    for (SceneNode n : nlist) {
                         //logger.debug("setting transparency for node " + n.getName());
-                        NativeMesh mesh = n.getMesh();
+                        Mesh mesh = n.getMesh();
                         if (mesh != null) {
-                            NativeMaterial mat = mesh.getMaterial();
+                            Material mat = mesh.getMaterial();
                             mat.setTransparency(true);
                             meshfound=true;
                         }

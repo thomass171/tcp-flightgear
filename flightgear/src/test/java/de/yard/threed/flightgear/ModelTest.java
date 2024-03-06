@@ -87,13 +87,13 @@ public class ModelTest {
 
         SceneNode node = FgModelHelper.mappedasyncModelLoad(new ResourceLoaderFromBundle(resource));
 
-        assertEquals(0, node.findNodeByName("Blade3", true).size());
+        assertEquals(0, node.findNodeByName("Blade3").size());
         // modelbuildvalues not available for checking
 
         TestHelper.processAsync();
         TestHelper.processAsync();
         TestHelper.processAsync();
-        assertEquals(1, node.findNodeByName("Blade3", true).size());
+        assertEquals(1, node.findNodeByName("Blade3").size());
     }
 
     /**
@@ -141,7 +141,7 @@ public class ModelTest {
         TestHelper.processAsync();
         assertEquals(1, destinationNodes.size());
         //rootnodename is full name instead of just egkk_tower
-        NativeSceneNode egkkTowerNode = destinationNodes.get(0).findNodeByName("Objects/e000n50/e007n50/egkk_tower.gltf", true).get(0);
+        SceneNode egkkTowerNode = destinationNodes.get(0).findNodeByName("Objects/e000n50/e007n50/egkk_tower.gltf").get(0);
         assertNotNull(egkkTowerNode);
 
         TestUtil.assertEquals("number of kids", 6, egkkTowerNode.getTransform().getChildren().size());

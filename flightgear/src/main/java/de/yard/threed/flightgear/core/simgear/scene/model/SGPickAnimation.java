@@ -449,13 +449,13 @@ public class SGPickAnimation extends SGAnimation {
 
             //node ist die destination node. darum die Childs durchgehen (ACPolicy kommt ja auch noch). NeeNee, gezielt nach den Obekten pruefen.
             for (String objectName : _objectNames) {
-                List<NativeSceneNode> nodes = node.findNodeByName(objectName, true);
+                List<SceneNode> nodes = node.findNodeByName(objectName);
                 //   Transform acpol = node.getTransform().getChild(0);
                 // for (Transform transForm:acpol.getChildren()) {
-                for (NativeSceneNode n : nodes) {
+                for (SceneNode n : nodes) {
                     //   SceneNode n=transForm.getSceneNode();
                     if (n != null) {
-                        List<NativeCollision> hits = new SceneNode(n).getHits(pickingray);
+                        List<NativeCollision> hits = n.getHits(pickingray);
                         if (hits.size() > 0) {
                             logger.debug(n.getName() + " was clicked");
                             if (requestHandler!=null){

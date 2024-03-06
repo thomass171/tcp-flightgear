@@ -347,9 +347,9 @@ public abstract class SGAnimation {
         // rekursiv suchen, weil ich keinen traverse habe. Das ist sicherlich nicht 100% vergleichbar.
         // 7.10.17: Und es kann je nach Loder (zB. gltf) Nodedubletten geben. Wie sich das auswirkt? Wer weiss.
         SceneNode child = null;
-        List<NativeSceneNode> nlist = group.findNodeByName(name, true);//getChild(i);
+        List<SceneNode> nlist = group.findNodeByName(name);//getChild(i);
         if (nlist.size()>0){
-            child = new SceneNode(nlist.get(0));
+            child = nlist.get(0);
         }
         if (child == null) {
             // 10.10.18: debug statt warn um es disablen zu können. Kommt sehr oft.

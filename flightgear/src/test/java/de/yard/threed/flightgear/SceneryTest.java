@@ -377,7 +377,8 @@ public class SceneryTest {
         log.debug(destinationNode.dump("  ", 0));
 
         ModelAssertions.assertSTG3072816(destinationNode);
-        assertEquals(1, destinationNode.findNodeByName("Terrain/e000n50/e007n50/EDDK.gltf", true).size());
+        assertEquals(1, destinationNode.findNodeByName("Terrain/e000n50/e007n50/EDDK.gltf").size());
+        assertEquals(1, SceneNode.findNode(n -> StringUtils.endsWith(n.getName(), "EDDK.gltf"), destinationNode));
     }
 
     /**
@@ -424,6 +425,6 @@ public class SceneryTest {
     }
 
     public static void isSTG3072816Loaded(SceneNode destinationNode) {
-        // TODO
+        // TODO but difficult to decide when it is complete
     }
 }
