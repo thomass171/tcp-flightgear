@@ -57,7 +57,10 @@ public class SGReaderWriterXMLTest {
         SceneNode resultNode = new SceneNode(result.getNode());
         log.debug(resultNode.dump("  ", 0));
         // XML (and includes?) was loaded sync, gltf and animations will be loaded async
-        assertEquals("xmltestmodel/test-main.xml->submodel->xmltestmodel/test-submodel.xml", TestHelper.getHierarchy(resultNode, 2));
+        assertEquals("xmltestmodel/test-main.xml->[" + "" +
+                "submodel->xmltestmodel/test-submodel.xml," +
+                "plainsubmodel->xmltestmodel/cube.ac" +
+                "]", TestHelper.getHierarchy(resultNode, 8));
         assertEquals(0, animationList.size(), "animations");
 
         TestHelper.processAsync();
@@ -70,9 +73,10 @@ public class SGReaderWriterXMLTest {
         log.debug(resultNode.dump("  ", 0));
         // Now has not only 'submodel' but also gltf.
         assertEquals("xmltestmodel/test-main.xml->" +
-                        "[submodel->xmltestmodel/test-submodel.xml->ACProcessPolicy.root node->ACProcessPolicy.transform node," +
-                        "ACProcessPolicy.root node->ACProcessPolicy.transform node->xmltestmodel/loc.gltf->center back translate]",
-                TestHelper.getHierarchy(resultNode, 4));
+                        "[submodel->xmltestmodel/test-submodel.xml->ACProcessPolicy.root node->ACProcessPolicy.transform node->xmltestmodel/loc.gltf," +
+                        "plainsubmodel->xmltestmodel/cube.ac->ACProcessPolicy.root node->ACProcessPolicy.transform node->xmltestmodel/cube.gltf-><no name>," +
+                        "ACProcessPolicy.root node->ACProcessPolicy.transform node->xmltestmodel/loc.gltf->center back translate->Spin Animation Group->center 0 translate]",
+                TestHelper.getHierarchy(resultNode, 6));
 
         assertEquals(2, animationList.size(), "animations");
         assertNotNull(((SGMaterialAnimation) animationList.get(0)).group, "group");
@@ -172,10 +176,10 @@ public class SGReaderWriterXMLTest {
 
         log.debug(resultNode.dump("  ", 0));
         assertEquals("Models/777-200.xml->[" +
-                        "Firetruck1->Models/Airport/Vehicle/hoskosh-ti-1500.ac->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Airport/Vehicle/hoskosh-ti-1500.gltf," +
-                        "Firetruck2->Models/Airport/Vehicle/hoskosh-ti-1500.ac->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Airport/Vehicle/hoskosh-ti-1500.gltf," +
+                        "Firetruck1->Models/Airport/Vehicle/hoskosh-ti-1500.ac->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Airport/Vehicle/hoskosh-ti-1500.gltf-><no name>," +
+                        "Firetruck2->Models/Airport/Vehicle/hoskosh-ti-1500.ac->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Airport/Vehicle/hoskosh-ti-1500.gltf-><no name>," +
                         "ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/777-200.gltf-><no name>]",
-                TestHelper.getHierarchy(resultNode, 5));
+                TestHelper.getHierarchy(resultNode, 6));
 
         List<String> modelsBuilt = AbstractSceneRunner.getInstance().systemTracker.getModelsBuilt();
         assertEquals(3, modelsBuilt.size());

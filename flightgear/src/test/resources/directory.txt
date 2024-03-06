@@ -18,3 +18,5 @@ xmltestmodel/test-animations.xml
 xmltestmodel/test-submodel.xml
 xmltestmodel/loc.gltf
 xmltestmodel/loc.bin
+xmltestmodel/cube.gltf
+xmltestmodel/cube.bin

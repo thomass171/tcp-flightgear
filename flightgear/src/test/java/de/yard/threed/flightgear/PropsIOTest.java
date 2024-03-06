@@ -42,10 +42,10 @@ public class PropsIOTest {
     }
 
     private void validateXmlTestModel(PropsIO propsIO, SGPropertyNode startnode) {
-        // name,path,model,2x animations
-        assertEquals(5, startnode.nChildren());
+        // name,path,2xsubmodel,2x animations
+        assertEquals(6, startnode.nChildren());
         log.debug("locations=" + propsIO.locations);
-        assertEquals(32, propsIO.locations.size());
+        assertEquals(39, propsIO.locations.size());
         // both repeat many times
         assertEquals("xmltestmodel/test-main.xml", propsIO.locations.get(0));
         assertEquals("xmltestmodel/test-animations.xml", propsIO.locations.get(1));

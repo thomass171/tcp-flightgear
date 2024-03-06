@@ -314,6 +314,7 @@ public class SGReaderWriterXML {
             // other XML but directly ac model files.
             // Nothing to do here.
             int h=9;
+            Util.nomore();
         }
 
         BundleResource pendingbmodelpath = null;
@@ -459,16 +460,31 @@ public class SGReaderWriterXML {
                 }
             }
 
+            SceneNode submodelresultNode;
             // 12.2.24: No longer use same methode for XML and non XML. Decide here.
-            // just an idea for now
-            //if (bmodelpath.getExtension().equals("xml")) {
+            if (bsubmodelpath.getExtension().equals("xml")) {
                 BuildResult submodelresult = sgLoad3DModel_internal(bsubmodelpath,/*MA23 submodelPath, options/*.get()* /,
                     sub_props.getNode("overlay"),*/ boptions, modeldelegate);
-            //}
+                submodelresultNode = new SceneNode(submodelresult.getNode());
+            }else{
+                BundleResource finalbsubmodelpath = bsubmodelpath;
+                SceneNode destinationNode = new SceneNode();
+                destinationNode.setName(finalbsubmodelpath.getFullName());
+                submodelresultNode=destinationNode;
+                FgModelHelper.buildNativeModel(new ResourceLoaderFromBundle(finalbsubmodelpath), btexturepath, (BuildResult result) -> {
+                    if (result.getNode() != null) {
+                        destinationNode.attach(new SceneNode(result.getNode()));
+                        // there should be no need here to load animations. And no need to inform delegate, its just a sub model.
+                    } else {
+                        logger.error("model built failed for " + finalbsubmodelpath.getFullName());
+                    }
 
-            submodel = new SceneNode(submodelresult.getNode());
+                }, boptions.usegltf ? EngineHelper.LOADER_USEGLTF : 0);
+            }
 
-            if (submodelresult.getNode()/*20.7.21 submodel*/ == null) {
+            submodel = submodelresultNode;
+
+            if (submodel/*20.7.21 submodel*/ == null) {
                 //error already logged
                 //Nicht return sondern weitermachen. Es gibt ja noch weitere.
                 // Die error messages kann man nicht sammeln, weil das ja async ist/sein kann und der error
