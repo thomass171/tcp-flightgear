@@ -378,7 +378,7 @@ public class SceneryTest {
 
         ModelAssertions.assertSTG3072816(destinationNode);
         assertEquals(1, destinationNode.findNodeByName("Terrain/e000n50/e007n50/EDDK.gltf").size());
-        assertEquals(1, SceneNode.findNode(n -> StringUtils.endsWith(n.getName(), "EDDK.gltf"), destinationNode));
+        assertEquals(1, SceneNode.findNode(n -> StringUtils.endsWith(n.getName() == null ? "" : n.getName(), "EDDK.gltf"), destinationNode).size());
     }
 
     /**

@@ -1038,7 +1038,8 @@ public class TravelScene extends FlightTravelScene {
         controlmenu.addButton(1, 0, 1, Icon.ICON_MENU, () -> {
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
         });
-        controlmenu.addButton(2, 0, 1, Icon.ICON_PLUS, () -> {
+        // 'L' for load
+        controlmenu.addButton(2, 0, 1, Icon.IconCharacter(11), () -> {
             SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
             //updateHud();
         });

@@ -387,10 +387,10 @@ public class TravelSceneBluebird extends BasicTravelScene {
         textArea.setTexture(textTexture.getTextureForText(" ", Color.RED));
 
 
-        cp.addArea(panelGrid.getPosition(2, 1), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
+        /*cp.addArea(panelGrid.getPosition(2, 1), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
             // cycleAircraft();
             //updateHud();
-        }).setIcon(Icon.ICON_PLUS);
+        }).setIcon(Icon.ICON_PLUS);*/
 
         // bottom line:
         cp.addArea(panelGrid.getPosition(0, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
@@ -627,7 +627,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
      */
     public GuiGrid buildControlMenuForScene(Camera camera) {
 
-        GuiGrid controlmenu = GuiGrid.buildForCamera(camera, 2, 4, 1, Color.BLACK_FULLTRANSPARENT, true);
+        GuiGrid controlmenu = GuiGrid.buildForCamera(camera, 2, 3, 1, Color.BLACK_FULLTRANSPARENT, true);
 
         controlmenu.addButton(0, 0, 1, Icon.ICON_POSITION, () -> {
             InputToRequestSystem.sendRequestWithId(new Request(UserSystem.USER_REQUEST_TELEPORT, new Payload(new Object[]{new IntHolder(0)})));
@@ -635,11 +635,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
         controlmenu.addButton(1, 0, 1, Icon.ICON_MENU, () -> {
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
         });
-        controlmenu.addButton(2, 0, 1, Icon.ICON_PLUS, () -> {
-           //why?? SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
-            //updateHud();
-        });
-        controlmenu.addButton(3, 0, 1, Icon.ICON_CLOSE, () -> {
+        controlmenu.addButton(2, 0, 1, Icon.ICON_CLOSE, () -> {
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_CONTROLMENU));
         });
         return controlmenu;

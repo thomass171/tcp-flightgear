@@ -797,13 +797,14 @@ public class FlatAirportScene extends FlightTravelScene {
         textArea.setTexture(textTexture.getTextureForText(" ", Color.RED));
         updateMarkedAircraft(textArea, textTexture);
 
+        // ICON_PLUS is preferred for speed increase, use 'C'
         cp.addArea(panelGrid.getPosition(2, 1), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
             cycleAircraft();
             //updateHud();
             updateMarkedAircraft(textArea, textTexture);
-        }).setIcon(Icon.ICON_PLUS);
+        }).setIcon(Icon.IconCharacter(2));
 
-        // bottom line:
+        // bottom line: 'S' for service, 'T' for travel
         cp.addArea(panelGrid.getPosition(0, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
             if (markedaircraft != null) {
                 markDoor(markedaircraft);
