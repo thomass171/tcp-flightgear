@@ -307,8 +307,9 @@ OBJECT_STATIC egkk_carpark_multi.xml 7.11542121 50.87873891 60.4 336
 OBJECT_STATIC egkk_carpark_multi.xml 7.11594461 50.87947356 63.83 156
 OBJECT_STATIC egkk_carpark_multi.xml 7.11657403 50.87891436 61.81 156
 OBJECT_STATIC egkk_carpark_multi.xml 7.12055682 50.87804396 67.5 271.4
-#the EDDK terminal building already contains the correct tower
-#OBJECT_STATIC egkk_tower.xml 7.12187799 50.87789306 68 256.1
+#the EDDK terminal building already contains the correct tower. Move tower aside instead
+#of removing because its used in tests (and its a good looking model)
+OBJECT_STATIC egkk_tower.xml 7.115 50.876 68 256.1
 OBJECT_STATIC EDDK-Terminal1.xml 7.12233252 50.87822155 68.18 90
 OBJECT_STATIC EDDK-Terminal2.ac 7.11936824 50.88158074 68.42 270.7
 OBJECT_STATIC EDDK-Cylinder.ac 7.1211808 50.8785296 67.74 270
