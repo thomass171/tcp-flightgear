@@ -32,6 +32,7 @@ import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
+import de.yard.threed.trafficfg.fgadapter.FlightGearProperties;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
     //Die Animationen des aktuellen Model inkl. aller Submodel.
     List<SGAnimation> animationList;
     AircraftResourceProvider arp;
+    FlightGearProperties flightGearProperties=new FlightGearProperties();
 
     /**
      * 9.1.18: Vorne stehen die Bundlenamen (vor dem ersten ':') oder ein 'A' als Kenner fuer ein FGAircraft (mit Zusatzdefinitionen), H ist TerraSync-model
@@ -72,7 +74,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                 //windturbine should have two rotations (currently only one)
                 "H:Models/Power/windturbine.xml",
                 "A:Models/777-200.xml",
-                "",
+                "fgdatabasic:Aircraft/Instruments-3d/garmin196/garmin196.xml",
                 "",
                 //5
                 "fgdatabasicmodel:Models/Airport/Pushback/Douglas.xml",
@@ -119,7 +121,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
 
     @Override
     public void customInit() {
-        major = 1;
+        major = 3;
         arp = initFG();
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
@@ -277,12 +279,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
     public void customUpdate() {
         Point mouselocation = Input.getMouseDown();
 
-        // for tower radar
-        FGGlobals.getInstance().get_props().getNode("/sim/time/elapsed-sec", true).setDoubleValue(elapsedsec);
-        // windturbine
-        FGGlobals.getInstance().get_props().getNode("/environment/wind-from-heading-deg", true).setDoubleValue(elapsedsec * 20);
-        // 5.10.2017: wind-speed mal besser konstant. Duerfte noch nicht implementierte spin sein.
-        FGGlobals.getInstance().get_props().getNode("/environment/wind-speed-kt", true).setDoubleValue(40/*elapsedsec * 10 % 200*/);
+        flightGearProperties.update();
 
         if (animationList != null) {
             Ray pickingray = null;
