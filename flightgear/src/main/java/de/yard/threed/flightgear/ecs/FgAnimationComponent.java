@@ -2,6 +2,8 @@ package de.yard.threed.flightgear.ecs;
 
 
 import de.yard.threed.engine.Camera;
+import de.yard.threed.engine.SceneNode;
+import de.yard.threed.engine.ecs.AnimationComponent;
 import de.yard.threed.engine.ecs.CameraProvider;
 import de.yard.threed.engine.ecs.DefaultEcsComponent;
 import de.yard.threed.engine.ecs.EcsEntity;
@@ -10,10 +12,10 @@ import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import java.util.List;
 
 /**
+ * 8.3.24: Now extends AnimationComponent from tcp22
  * Created by thomass on 29.12.16.
  */
-public class AnimationComponent extends DefaultEcsComponent {
-    public static String TAG = "AnimationComponent";
+public class FgAnimationComponent extends AnimationComponent {
     // die animationlist wird sukzessive gefuellt pro submodel gefuellt.
     public List<SGAnimation> animationList;
     //PickAnimation z.B. braucht die Camera. Für VR ist das aber nicht hilfreich. Das duerfte verzichtbar sein. 26.11.19: Darum deprecated.
@@ -21,7 +23,8 @@ public class AnimationComponent extends DefaultEcsComponent {
     @Deprecated
     CameraProvider cameraProvider = null;
 
-    public AnimationComponent(List<SGAnimation> animationList) {
+    public FgAnimationComponent(SceneNode coreNode, List<SGAnimation> animationList) {
+        super(coreNode);
         this.animationList = animationList;
     }
 
@@ -43,8 +46,8 @@ public class AnimationComponent extends DefaultEcsComponent {
 
 
 
-    public static AnimationComponent getAnimationComponent(EcsEntity e) {
-        AnimationComponent gmc = (AnimationComponent) e.getComponent(AnimationComponent.TAG);
+    public static FgAnimationComponent getAnimationComponent(EcsEntity e) {
+        FgAnimationComponent gmc = (FgAnimationComponent) e.getComponent(AnimationComponent.TAG);
         return gmc;
     }
 }

@@ -58,6 +58,7 @@ import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.OpenGlProcessPolicy;
+import de.yard.threed.flightgear.ecs.AnimationUpdateSystem;
 import de.yard.threed.traffic.AbstractTerrainBuilder;
 import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.EllipsoidConversionsProvider;
@@ -70,6 +71,7 @@ import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.flight.FlightLocation;
 import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.FgCalculations;
+import de.yard.threed.trafficfg.fgadapter.FlightGearSystem;
 
 
 import java.util.List;
@@ -91,6 +93,7 @@ import static de.yard.threed.engine.ecs.TeleporterSystem.EVENT_POSITIONCHANGED;
  * Keys:
  * w/a/s/d, cursor
  * <p>
+ * 11.3.24: Animation added (windturbine and tower)
  */
 public class SceneryScene extends Scene {
     static Log logger = Platform.getInstance().getLog(SceneryScene.class);
@@ -172,6 +175,8 @@ public class SceneryScene extends Scene {
         SystemManager.addSystem(firstPersonMovingSystem);
 
         SystemManager.addSystem(new ObserverSystem());
+        SystemManager.addSystem(new AnimationUpdateSystem());
+        SystemManager.addSystem(new FlightGearSystem());
 
         if (vrInstance != null) {
             // Even in VR the observer will be attached to avatar later. Controller only with vehicle. Otherwise there is nothing to control.

@@ -128,7 +128,7 @@ public class FlightGearAircraft {
         // PropertyTree isType needed for animations
         SGLoaderOptions opt = new SGLoaderOptions();
         opt.setPropertyNode(FGGlobals.getInstance().get_props());
-      SceneNode  currentaircraft = new SceneNode(SGReaderWriterXML.buildModelFromBundleXML(br, opt, (bpath,alist) -> {
+      SceneNode  currentaircraft = new SceneNode(SGReaderWriterXML.buildModelFromBundleXML(br, opt, (bpath,destinationNode,alist) -> {
             // das wird vermutlich zu oft aufgerufen.
             removeCones(aircraft);
          

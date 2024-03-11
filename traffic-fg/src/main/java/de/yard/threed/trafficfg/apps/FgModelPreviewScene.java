@@ -249,7 +249,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
             // Das mit der animationlist duerfte durch das Ansammeln auch fuer geschachtelte Model gehen.
             animationList = new ArrayList<SGAnimation>();
 
-            result = SGReaderWriterXML.buildModelFromBundleXML(br, opt, (bpath, alist) -> {
+            result = SGReaderWriterXML.buildModelFromBundleXML(br, opt, (bpath, destinationNode, alist) -> {
                 if (alist != null) {
                     animationList.addAll(alist);
 

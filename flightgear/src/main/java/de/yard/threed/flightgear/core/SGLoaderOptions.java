@@ -34,7 +34,8 @@ public class SGLoaderOptions extends LoaderOptions {
         for (String s: options.getDatabasePathList()){
             this.databasePathList.add(s);
         }*/
-        this.propertyNode = null;
+        // 11.3.24: also pass property node
+        this.propertyNode = options.propertyNode;
         //this._materialLib = options.getMaterialLib();
         //this.modelData = options.getModelData();
         this._instantiateEffects =false;

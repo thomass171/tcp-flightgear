@@ -592,6 +592,7 @@ public class SGReaderWriterXML {
         if (pendingbmodelpath != null) {
             // das eigentliche Modelfile (z.B. ac) wieder async laden.
             BundleResource finalpendingbmodelpath = pendingbmodelpath;
+            BundleResource finalbpath = bpath;
             FgModelHelper.buildNativeModel(new ResourceLoaderFromBundle(pendingbmodelpath), btexturepath, (BuildResult result) -> {
                 // result sollte es immer geben. 
                 if (result != null && result.getNode() != null) {
@@ -601,7 +602,8 @@ public class SGReaderWriterXML {
                     // Group returngroup = group;
                     buildAnimations(group, props, previewMode, final_prop_root, options, null/*12.2.24 path*/, bpath, animationList);
                     if (modeldelegate != null) {
-                        modeldelegate.modelComplete(finalpendingbmodelpath, animationList);
+                        // 8.3.24: Passed source should be the XML, not the 'ac'.
+                        modeldelegate.modelComplete(finalbpath, new SceneNode(result.getNode()), animationList);
                     }
                 } else {
                     logger.error("model built failed for " + finalpendingbmodelpath.getFullName());

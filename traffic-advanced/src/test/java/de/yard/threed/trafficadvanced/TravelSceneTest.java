@@ -104,8 +104,8 @@ public class TravelSceneTest {
         }, 60000);
 
         //11 passt: "Player",5 GS Vehicle (3 LSG?, 2 Goldhofert?, no delayed aircraft),  Vehicle from sceneconfig (747, 737, 738, Bravo), 3 Aircraft
-        //Why 15? (earth,moon,sun no longer exist)?
-        int expectedNumberOfEntites = /*15*/12;
+        //Why 15? (earth,moon,sun no longer exist)? + 7+24(??) animated scenery objects
+        int expectedNumberOfEntites = /*15*/12 + 7 + 18/*??*/;
         TestUtils.waitUntil(() -> {
             TestHelper.processAsync();
             sceneRunner.runLimitedFrames(1);

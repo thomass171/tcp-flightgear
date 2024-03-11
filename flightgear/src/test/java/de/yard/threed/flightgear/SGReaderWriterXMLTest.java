@@ -10,6 +10,7 @@ import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.URL;
 import de.yard.threed.core.testutil.TestBundle;
+import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.ModelLoader;
@@ -49,7 +50,7 @@ public class SGReaderWriterXMLTest {
         Bundle bundlemodel = BundleRegistry.getBundle("test-resources");
         assertNotNull(bundlemodel);
 
-        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundlemodel, "xmltestmodel/test-main.xml"), null, (bpath, alist) -> {
+        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundlemodel, "xmltestmodel/test-main.xml"), null, (bpath, destinationNode, alist) -> {
             if (alist != null) {
                 animationList.addAll(alist);
             }
@@ -101,7 +102,7 @@ public class SGReaderWriterXMLTest {
         Bundle bundlemodel = BundleRegistry.getBundle("traffic-fg");
         assertNotNull(bundlemodel);
 
-        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundlemodel, "railing/asi.xml"), null, (bpath, alist) -> {
+        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundlemodel, "railing/asi.xml"), null, (bpath, destinationNode, alist) -> {
             if (alist != null) {
                 animationList.addAll(alist);
             }
@@ -161,7 +162,7 @@ public class SGReaderWriterXMLTest {
 
         List<SGAnimation> animationList = new ArrayList<SGAnimation>();
         SGReaderWriterXML.clearStatistics();
-        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(br, null, (bpath, alist) -> {
+        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(br, null, (bpath, destinationNode, alist) -> {
             if (alist != null) {
                 animationList.addAll(alist);
             }
@@ -201,7 +202,7 @@ public class SGReaderWriterXMLTest {
         BundleResource br = new BundleResource(bundleTestResources, "models/777-200.xml");
         // Aircraft/777/Models/777-200.ac does not exist in bundle or cannot be resolved respectively
 
-        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(br, null, (bpath, alist) -> {
+        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(br, null, (bpath, destinationNode, alist) -> {
             if (alist != null) {
                 animationList.addAll(alist);
             }
@@ -210,21 +211,28 @@ public class SGReaderWriterXMLTest {
         assertNull(result.getNode());
     }
 
-    public static BuildResult loadModel(BundleResource bundleResource, List<SGAnimation> animationList) {
-        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(bundleResource, null, (bpath, alist) -> {
+
+    /**
+     * Waits until animationlist is complete. This also means, the model is loaded.
+     */
+    public static BuildResult loadModelAndWait(BundleResource bundleResource, List<SGAnimation> animationList, int expectedAnimations, String expectedSource) throws Exception {
+        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(bundleResource, null, (source, destinationNode, alist) -> {
+            assertEquals(expectedSource, source.getFullName());
             if (alist != null) {
                 animationList.addAll(alist);
             }
         });
-        assertEquals(0, animationList.size(), "animations");
-        TestHelper.processAsync();
-        TestHelper.processAsync();
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            log.debug("animationList.size()=" + animationList.size() + ",expected=" + expectedAnimations);
+            return animationList.size() == expectedAnimations;
+        }, 5000);
         return result;
     }
 
     public static BuildResult loadModelBundleLess(URL url, List<SGAnimation> animationList) {
         Util.notyet();
-        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(null, null, (bpath, alist) -> {
+        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(null, null, (bpath, destinationNode, alist) -> {
             if (alist != null) {
                 animationList.addAll(alist);
             }

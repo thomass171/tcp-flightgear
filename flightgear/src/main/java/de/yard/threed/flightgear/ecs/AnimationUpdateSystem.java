@@ -6,8 +6,6 @@ import de.yard.threed.engine.Input;
 import de.yard.threed.core.Point;
 import de.yard.threed.engine.Ray;
 import de.yard.threed.engine.Scene;
-import de.yard.threed.engine.avatar.Avatar;
-import de.yard.threed.engine.avatar.AvatarSystem;
 import de.yard.threed.engine.ecs.DefaultEcsSystem;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsGroup;
@@ -51,7 +49,7 @@ public class AnimationUpdateSystem extends DefaultEcsSystem {
             pickingray = VrInstance.getInstance().getController(1).getRay();
         }
 
-        AnimationComponent ac = (AnimationComponent) group.cl.get(0);
+        FgAnimationComponent ac = (FgAnimationComponent) group.cl.get(0);
         for (int i = 0; i < ac.animationList.size(); i++) {
             SGAnimation a = ac.animationList.get((i));
             /*Ray pickingray = null;

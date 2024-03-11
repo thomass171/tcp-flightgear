@@ -38,7 +38,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,7 +72,7 @@ public class EffectTest {
      * async ein Model laden und pruefen, dass z.B. Animationen drin sind
      */
     @Test
-    public void testAnimationsWithAsync() {
+    public void testAnimationsWithAsync() throws Exception {
         //PlatformHomeBrew op = (PlatformHomeBrew) platform;
         //evtl. Reste wegraeumen
         TestHelper.cleanupAsync();
@@ -88,11 +87,12 @@ public class EffectTest {
         Bundle bundlemodel = BundleRegistry.getBundle("Terrasync-model");
         assertNotNull(bundlemodel);
 
-        BuildResult result = SGReaderWriterXMLTest.loadModel(new BundleResource(bundlemodel, "Models/Power/windturbine.xml"),animationList);
+        BuildResult result = SGReaderWriterXMLTest.loadModelAndWait(new BundleResource(bundlemodel, "Models/Power/windturbine.xml"),animationList,
+                2, "Models/Power/windturbine.xml");
         validateWindturbine(new SceneNode(result.getNode()), animationList);
 
         animationList.clear();
-        result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundlemodel, "Models/Power/windturbine.xml"), null, (bpath, alist) -> {
+        result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundlemodel, "Models/Power/windturbine.xml"), null, (bpath, destinationNode, alist) -> {
             if (alist != null) {
                 animationList.addAll(alist);//  xmlloaddelegate.modelComplete( animationList);
             }
@@ -155,7 +155,7 @@ public class EffectTest {
         // "*.ac" is not really content, but 'gltf' is OK
         assertTrue(bundle.exists(new BundleResource("models/CDU-777-boeing.ac")));
 
-        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundle, "models/CDU-777-boeing.xml"), opt, (bpath, alist) -> {
+        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundle, "models/CDU-777-boeing.xml"), opt, (bpath, destinationNode, alist) -> {
             if (alist != null) {
                 animationList.addAll(alist);//  xmlloaddelegate.modelComplete( animationList);
             }
@@ -194,7 +194,7 @@ public class EffectTest {
         List<SGAnimation> animationList = new ArrayList<SGAnimation>();
         SGLoaderOptions opt = new SGLoaderOptions();
         opt.setPropertyNode(new SGPropertyNode("" + "-root")/*FGGlobals.getInstance().get_props()*/);
-        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(BundleRegistry.getBundle("fgdatabasicmodel"), "AI/Aircraft/747/744-KLM.xml"), opt, (bpath, alist) -> {
+        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(BundleRegistry.getBundle("fgdatabasicmodel"), "AI/Aircraft/747/744-KLM.xml"), opt, (bpath, destinationNode, alist) -> {
             if (alist != null) {
                 animationList.addAll(alist);//  xmlloaddelegate.modelComplete( animationList);
             }

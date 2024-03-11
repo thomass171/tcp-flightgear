@@ -3,7 +3,6 @@ package de.yard.threed.trafficadvanced.apps;
 
 import de.yard.threed.core.Color;
 import de.yard.threed.core.Degree;
-import de.yard.threed.core.Dimension;
 import de.yard.threed.core.DimensionF;
 import de.yard.threed.core.IntHolder;
 import de.yard.threed.core.LocalTransform;
@@ -49,7 +48,6 @@ import de.yard.threed.engine.geometry.ShapeGeometry;
 import de.yard.threed.engine.gui.ButtonDelegate;
 import de.yard.threed.engine.gui.ControlPanel;
 import de.yard.threed.engine.gui.ControlPanelHelper;
-import de.yard.threed.engine.gui.ControlPanelMenu;
 import de.yard.threed.engine.gui.DefaultMenuProvider;
 import de.yard.threed.engine.gui.GuiGrid;
 import de.yard.threed.engine.gui.Icon;
@@ -72,7 +70,7 @@ import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.SimpleBundleResourceProvider;
 import de.yard.threed.flightgear.core.SGLoaderOptions;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
-import de.yard.threed.flightgear.ecs.AnimationComponent;
+import de.yard.threed.flightgear.ecs.FgAnimationComponent;
 import de.yard.threed.flightgear.ecs.AnimationUpdateSystem;
 import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.VehicleLauncher;
@@ -560,7 +558,7 @@ class CockpitCduMenu implements Menu {
             //lieber cdu2, dann kann das ganze Display eine einzige Textur (Canvas?) sein, statt einzelne Buchstaben.
             entity = de.yard.threed.flightgear.traffic.ModelFactory.buildModelFromBundleXmlAsEntity(new BundleResource(bundle, "Aircraft/Instruments-3d/cdu2/boeing.xml"), null);
             entity.setName("CDU-Menu");
-            AnimationComponent.getAnimationComponent(entity).setCameraProvider(() -> {
+            FgAnimationComponent.getAnimationComponent(entity).setCameraProvider(() -> {
                 return camera;
             });
             //BuildResult buildresult = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundle, "Aircraft/Instruments-3d/cdu/boeing.xml"), opt, (bpath, alist) -> {                 });

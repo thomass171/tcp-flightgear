@@ -466,7 +466,7 @@ public class SceneryViewerScene extends Scene {
     private void addModel(SGGeod geo, BundleResource model, Degree heading) {
         SceneNode sn = new SceneNode(SGReaderWriterXML.buildModelFromBundleXML(model, null, new XmlModelCompleteDelegate() {
             @Override
-            public void modelComplete(BundleResource source, List<SGAnimation> animationList) {
+            public void modelComplete(BundleResource source, SceneNode destinationNode, List<SGAnimation> animationList) {
 
             }
         }).getNode());

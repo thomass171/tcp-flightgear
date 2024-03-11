@@ -65,7 +65,7 @@ These are typically located in the current working directory or via LD_LIBRARY_P
 ### flightgear
 Migration of some components of FlightGear to Java:
 
-  + simgear property tree including SGExpressions
+  * simgear property tree including SGExpressions
   * Scenery loader
   * Model loader
   * Aircraft/Vehicle loader 'FgVehicleLoader'

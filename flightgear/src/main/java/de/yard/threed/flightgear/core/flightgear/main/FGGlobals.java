@@ -160,6 +160,9 @@ public class FGGlobals {
         initProperties();
     }
 
+    /**
+     * The main global property tree root.
+     */
     public static FGGlobals getInstance() {
         if (globals == null) {
             globals = new FGGlobals();

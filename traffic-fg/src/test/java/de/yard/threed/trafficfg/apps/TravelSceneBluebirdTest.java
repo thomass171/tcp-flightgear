@@ -73,8 +73,8 @@ public class TravelSceneBluebirdTest {
             return GroundServicesSystem.groundnetEDDK != null;
         }, 60000);
 
-        // (Sun,Earth,Moon no longer exist),user
-        int expectedNumberOfEntites = /*4*/1 + (withBluebird ? 1 : 0);
+        // (Sun,Earth,Moon no longer exist),user, 7+24(??) animated scenery objects
+        int expectedNumberOfEntites = /*4*/1 + (withBluebird ? 1 : 0) + 7 + 24;
         TestUtils.waitUntil(() -> {
             TestHelper.processAsync();
             sceneRunner.runLimitedFrames(1);

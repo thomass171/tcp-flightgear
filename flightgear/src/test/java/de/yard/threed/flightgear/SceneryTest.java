@@ -1,9 +1,9 @@
 package de.yard.threed.flightgear;
 
 import de.yard.threed.core.BooleanHolder;
+import de.yard.threed.core.BuildResult;
 import de.yard.threed.core.GeneralParameterHandler;
 import de.yard.threed.core.StringUtils;
-import de.yard.threed.core.loader.AbstractLoader;
 import de.yard.threed.core.loader.InvalidDataException;
 import de.yard.threed.core.loader.LoaderGLTF;
 import de.yard.threed.core.loader.PortableModelList;
@@ -12,6 +12,8 @@ import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.Scene;
 import de.yard.threed.engine.Texture;
 import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
+import de.yard.threed.engine.platform.common.AbstractSceneRunner;
+import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.testutil.EngineTestFactory;
 import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
@@ -31,6 +33,8 @@ import de.yard.threed.flightgear.core.osg.Node;
 import de.yard.threed.flightgear.core.osgdb.Options;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialCache;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialLib;
+import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
+import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.flightgear.testutil.ModelAssertions;
 
@@ -50,11 +54,11 @@ import de.yard.threed.core.buffer.ByteArrayInputStream;
 import de.yard.threed.core.testutil.Assert;
 import de.yard.threed.traffic.WorldGlobal;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -223,7 +227,7 @@ public class SceneryTest {
     }
 
     /**
-     * 3072816.stg contains airports EDDK and EDKB
+     * 3072816.stg contains airports EDDK (only terrain, objects are in 3072824) and EDKB
      * Also for testing TerraSync Bundle
      */
     @Test
@@ -282,6 +286,70 @@ public class SceneryTest {
         log.debug(rr.dump("  ", 0));
 
         ModelAssertions.assertSTG3072816(rr);
+    }
+
+    /**
+     * 3072824.stg contains airports EDDK (only objects, terrain is in 3072816)
+     * Also for testing TerraSync Bundle
+     */
+    @Test
+    public void testSTG3072824() throws Exception {
+
+        // needs to clean entities
+        setup();
+
+        EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("3072824"));
+        EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("model"));
+        Bundle bundle3072824 = BundleRegistry.getBundle("Terrasync-3072824");
+        assertNotNull(bundle3072824, "bundle30728124");
+        assertNotNull(bundle3072824.getResource("Objects/e000n50/e007n50/EDDK-Terminal1.xml"), "EDDK-Terminal1");
+        assertNotNull(bundle3072824.getResource("Objects/e000n50/e007n50/egkk_tower.xml"), "egkk_tower");
+
+        // 3072824.stg exists twice (in Objects and in Terrain). Both should be loaded. TODO check
+        Options options = new Options();
+        LoaderOptions opt = new LoaderOptions();
+        opt.usegltf = true;
+
+        Group rr = new ReaderWriterSTG().build("3072824.stg", options, opt);
+        if (rr == null) {
+            Assert.fail("node is null. 3072824.stg failed");
+        }
+        // only reading the STG doesn't add it to world. XMLs are loaded sync and available immediately.
+        log.debug(rr.dump("  ", 0));
+        // animations wait for model, so we have to wait
+
+        long startTime = Platform.getInstance().currentTimeMillis();
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return Platform.getInstance().currentTimeMillis() - startTime > 10000;
+        }, 31000);
+
+        ModelAssertions.assertSTG3072824(rr);
+    }
+
+    @Test
+    public void testegkk_carpark_multi() throws Exception {
+
+        EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("3072824"));
+        Bundle bundle3072824 = BundleRegistry.getBundle("Terrasync-3072824");
+        // Kruecke zur Entkopplung des Modelload von AC policy.
+        ModelLoader.processPolicy = new ACProcessPolicy(null);
+
+        List<SGAnimation> animationList = new ArrayList<SGAnimation>();
+
+        EngineTestFactory.loadBundleAndWait("traffic-fg");
+        Bundle bundlemodel = BundleRegistry.getBundle("traffic-fg");
+        assertNotNull(bundlemodel);
+
+        // only one of the 2 animations is built currently.
+        BuildResult result = SGReaderWriterXMLTest.loadModelAndWait(new BundleResource(bundle3072824, "Objects/e000n50/e007n50/egkk_carpark_multi.xml"),
+                animationList, 1, "Objects/e000n50/e007n50/egkk_carpark_multi.xml");
+        SceneNode resultNode = new SceneNode(result.getNode());
+        log.debug(resultNode.dump("  ", 0));
+        // XML was loaded sync, gltf and animations were loaded async
+        assertEquals("Objects/e000n50/e007n50/egkk_carpark_multi.xml", resultNode.getName());
+        assertEquals(1, resultNode.getTransform().getChildCount());
+        assertEquals(1, animationList.size(), "animations");
     }
 
     @Test
@@ -424,7 +492,43 @@ public class SceneryTest {
 
     }
 
-    public static void isSTG3072816Loaded(SceneNode destinationNode) {
-        // TODO but difficult to decide when it is complete
+    public static SceneNode loadSTGAndWait(int tile) throws Exception {
+
+        EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("" + tile));
+        Bundle bundle = BundleRegistry.getBundle("Terrasync-" + tile);
+        assertNotNull(bundle, "bundle" + tile);
+
+        Options options = new Options();
+        LoaderOptions opt = new LoaderOptions();
+        opt.usegltf = true;
+        // property node not needed for now
+
+        Group rr = new ReaderWriterSTG().build(tile + ".stg", options, opt);
+        if (rr/*.getNode()*/ == null) {
+            fail("node is null. " + tile + ".stg failed");
+        }
+        // only reading the STG doesn't add it to world. XMLs are loaded sync and available immediately?
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return isSTGLoaded(rr, ModelAssertions.objectsPerTile.get(tile));
+        }, 30000);
+        log.debug(rr.dump("  ", 0));
+        // TODO validate its not in world yet
+        return rr;
+    }
+
+    /**
+     * difficult to decide when it is complete. Only some probes.
+     */
+    public static boolean isSTGLoaded(SceneNode destinationNode, String[] expectedObjects) {
+        for (int i = 0; i < expectedObjects.length; i++) {
+            if (SceneNode.findByName(expectedObjects[i]).size() == 0) {
+                return false;
+            }
+        }
+        if (AbstractSceneRunner.getInstance().futures.size() > 0) {
+            return false;
+        }
+        return true;
     }
 }

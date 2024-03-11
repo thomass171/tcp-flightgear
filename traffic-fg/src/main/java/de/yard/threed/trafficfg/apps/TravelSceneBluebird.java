@@ -111,6 +111,7 @@ import de.yard.threed.trafficfg.StgCycler;
 import de.yard.threed.trafficfg.TravelHelper;
 import de.yard.threed.trafficfg.VehicleEntityBuilder;
 import de.yard.threed.trafficfg.config.ConfigHelper;
+import de.yard.threed.trafficfg.fgadapter.FlightGearSystem;
 import de.yard.threed.trafficfg.flight.FlightSystem;
 import de.yard.threed.trafficfg.flight.GroundNet;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
@@ -219,6 +220,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
 
         SystemManager.addSystem(new FlightSystem());
         SystemManager.addSystem(new AnimationUpdateSystem());
+        SystemManager.addSystem(new FlightGearSystem());
 
         ((GraphTerrainSystem) SystemManager.findSystem(GraphTerrainSystem.TAG)).disable();
 
@@ -416,6 +418,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
 
     @Override
     public void customUpdate(double currentdelta) {
+
         if (!avatarInited) {
 
             TeleportComponent avatartc = TeleportComponent.getTeleportComponent(UserSystem.getInitialUser());

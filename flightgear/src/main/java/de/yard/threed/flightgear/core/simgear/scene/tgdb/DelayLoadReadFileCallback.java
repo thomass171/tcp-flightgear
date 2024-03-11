@@ -3,32 +3,36 @@ package de.yard.threed.flightgear.core.simgear.scene.tgdb;
 import de.yard.threed.core.BuildResult;
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.platform.Platform;
+import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.flightgear.FgModelHelper;
 import de.yard.threed.flightgear.LoaderOptions;
-import de.yard.threed.engine.ModelFactory;
 import de.yard.threed.core.Quaternion;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.core.Vector3;
+import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
 import de.yard.threed.flightgear.core.osg.Group;
 import de.yard.threed.flightgear.core.osgdb.Options;
 import de.yard.threed.flightgear.core.osgdb.ReadResult;
 import de.yard.threed.flightgear.core.osgdb.osgDB;
 import de.yard.threed.flightgear.core.simgear.bucket.SGBucket;
 import de.yard.threed.flightgear.core.simgear.misc.SGPath;
+import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
+import de.yard.threed.flightgear.core.simgear.scene.model.XmlModelCompleteDelegate;
 import de.yard.threed.flightgear.core.simgear.scene.util.SGReaderWriterOptions;
 import de.yard.threed.flightgear.core.simgear.geodesy.FgMath;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.core.platform.Log;
 
-import de.yard.threed.engine.platform.EngineHelper;
+import de.yard.threed.flightgear.ecs.FgAnimationComponent;
 
 import java.util.List;
 
 /**
  * ReaderWriterSTG.[ch]xx
- * 
+ * <p>
  * Liest ein Model file aus dem stg.
  * <p>
  * Created by thomass on 19.08.16.
@@ -64,22 +68,31 @@ public class DelayLoadReadFileCallback /*extends OptionsReadFileCallback*/ {
                 String extension = i.resource.getExtension();
                 BuildResult result;
                 if (extension.equals("xml")) {
-                    // 4.1.18: GLTF Nutzung
+                    // 4.1.18: use GLTF which is default . 11.3.24: Also set root property for building animations
                     LoaderOptions lo = new LoaderOptions();
-                    lo.usegltf=true;
-                    result = SGReaderWriterXML.buildModelFromBundleXML(i.resource, lo, null);
-                    if (result == null||result.getNode()==null) {
-                        logger.error( i._errorLocation + ": Failed to load " + i._token + " '" + i._name + "'");
+                    lo.propertyNode= FGGlobals.getInstance().get_props();
+                    result = SGReaderWriterXML.buildModelFromBundleXML(i.resource, lo, new XmlModelCompleteDelegate() {
+                        @Override
+                        public void modelComplete(BundleResource source, SceneNode destinationNode, List<SGAnimation> animationList) {
+                            // Build entity for animated objects
+                            if (animationList.size() > 0) {
+                                EcsEntity entity = new EcsEntity(new FgAnimationComponent(destinationNode, animationList));
+                                entity.setName(source.getFullName());
+                            }
+                        }
+                    });
+                    if (result == null || result.getNode() == null) {
+                        logger.error(i._errorLocation + ": Failed to load " + i._token + " '" + i._name + "'");
                         continue;
                     }
                     node = new SceneNode(result.getNode());
-                }else{
+                } else {
                     // Das Model async ueber die Platform laden. Die gelieferte node wird nie null sein.
                     // 4.1.18: using GLTF, 18.10.23: ac->gltf name mapping and policy setting now here.
                     node = FgModelHelper.mappedasyncModelLoad(new ResourceLoaderFromBundle(i.resource));
                 }
-                
-                
+
+
             } else {
                 node = osgDB.readRefNodeFile(null, i._name, i._options/*.get()*/);
                 if (node == null) {//!node.valid()) {
@@ -98,11 +111,11 @@ public class DelayLoadReadFileCallback /*extends OptionsReadFileCallback*/ {
             //matrix.preMultRotate(osg::Quat (SGMiscd::deg2rad (i._hdg), osg::Vec3 (0, 0, 1)));
             //matrix.preMultRotate(osg::Quat (SGMiscd::deg2rad (i._pitch), osg::Vec3 (0, 1, 0)));
             //matrix.preMultRotate(osg::Quat (SGMiscd::deg2rad (i._roll), osg::Vec3 (1, 0, 0)));
-            Quaternion q = Quaternion.buildQuaternionFromAngleAxis((float)new Degree( i._hdg).toRad(), new Vector3(0, 0, 1));
-            rotation = rotation.multiply( (q));
-            q = Quaternion.buildQuaternionFromAngleAxis((float)new Degree( i._pitch).toRad(), new Vector3(0, 1, 0));
-            rotation = rotation.multiply( (q));
-            q = Quaternion.buildQuaternionFromAngleAxis((float)new Degree( i._roll).toRad(), new Vector3(1, 0, 0));
+            Quaternion q = Quaternion.buildQuaternionFromAngleAxis((float) new Degree(i._hdg).toRad(), new Vector3(0, 0, 1));
+            rotation = rotation.multiply((q));
+            q = Quaternion.buildQuaternionFromAngleAxis((float) new Degree(i._pitch).toRad(), new Vector3(0, 1, 0));
+            rotation = rotation.multiply((q));
+            q = Quaternion.buildQuaternionFromAngleAxis((float) new Degree(i._roll).toRad(), new Vector3(1, 0, 0));
             rotation = rotation.multiply((q));
 
             //rotation = rotation.multiply(new Quaternion(new Degree((float)i._hdg),new Degree((float)i._pitch),new Degree((float)i._roll)));

@@ -16,7 +16,7 @@ import de.yard.threed.engine.platform.common.RequestHandler;
 
 /**
  * animation.[hc]xx
- * 
+ * <p>
  * Created by thomass on 28.12.16.
  */
 public class SGRotateAnimation extends SGAnimation {
@@ -26,7 +26,9 @@ public class SGRotateAnimation extends SGAnimation {
     Vector3 _center;
     double _initialValue;
     boolean _isSpin;
-   public Group rotategroup;
+    public Group rotategroup;
+    // for testing
+    public Degree lastUsedAngle = null;
 
     public SGRotateAnimation(SGPropertyNode configNode, SGPropertyNode modelRoot) {
         super(configNode, modelRoot);
@@ -37,8 +39,8 @@ public class SGRotateAnimation extends SGAnimation {
         _condition = getCondition();
         SGExpression/*d*/ value;
         value = read_value(configNode, modelRoot, "-deg", -SGLimitsd.max, SGLimitsd.max);
-        if (value == null){
-            // z.B. when there isType no property tree
+        if (value == null) {
+            // eg. when there is no property tree
             logger.warn("cannot resolve expression. Using 0.");
             value = new SGConstExpression(new PrimitiveValue(0));
         }
@@ -55,14 +57,15 @@ public class SGRotateAnimation extends SGAnimation {
 
     @Override
     public void process(Ray pickingray, RequestHandler requestHandler) {
-        //TODO unfertig, Z.B. condition
-        if (rotategroup!=null) {
-            double speed =_animationValue.getValue(null).doubleVal;
+        //TODO parts missing, like condition
+        if (rotategroup != null) {
+            double speed = _animationValue.getValue(null).doubleVal;
             /*if (_animationValue instanceof SGInterpTableExpression /*&& speed > 0.0001f* /) {
                 logger.debug("process: " + _animationValue + "=" + speed);
             }*/
             //rotategroup.getTransform().rotateOnAxis(_axis, new Degree(3));
-            Quaternion rotation = Quaternion.buildQuaternionFromAngleAxis(new Degree((float) speed),_axis);
+            lastUsedAngle = new Degree((float) speed);
+            Quaternion rotation = Quaternion.buildQuaternionFromAngleAxis(lastUsedAngle, _axis);
             //logger.debug("process rotation="+rotation+",speed="+speed);
             rotategroup.getTransform().setRotation(rotation);
         }
@@ -72,7 +75,7 @@ public class SGRotateAnimation extends SGAnimation {
     public AnimationGroup/*SceneNode*/ createAnimationGroup(/*Group*/SceneNode parent) {
         if (_isSpin) {
             //TODO really spin. 5.10.17:ist das sowas wie das Winrad? Das auch rotiert, wenn sich die property(wins-speed) nicht ändert.
-            AnimationGroup translategroupo = AnimationGroup.buildAnimationGroupForRotation(parent,_center);
+            AnimationGroup translategroupo = AnimationGroup.buildAnimationGroupForRotation(parent, _center);
             //5.10.17 wegen Abstraktion 
             rotategroup = translategroupo.rotategroup;
            /* translategroupo.getTransform().setPosition(_center.negate());
@@ -103,7 +106,7 @@ public class SGRotateAnimation extends SGAnimation {
             parent.addChild(transform);
             return transform;*/
             // Ob in SGRotAnimTransform bzw. SGRotateTransform Achsen getauscht werden?? Spooky!
-            AnimationGroup translategroupo = AnimationGroup.buildAnimationGroupForRotation(parent,_center);
+            AnimationGroup translategroupo = AnimationGroup.buildAnimationGroupForRotation(parent, _center);
             rotategroup = translategroupo.rotategroup;
 
 /*            rotategroup = new Group();

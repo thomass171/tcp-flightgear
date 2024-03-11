@@ -93,7 +93,7 @@ public class FgVehicleLoader implements VehicleLoader {
                 //ModelFactory kann man hier wegen der optionals nicht so einfach nehmen.
 
                 // 9.11.21: Can also load pure GLTF, not only XML
-                BuildResult buildresult = SGReaderWriterXML.buildModelFromBundleXML(br, opt, (bpath, alist) -> {
+                BuildResult buildresult = SGReaderWriterXML.buildModelFromBundleXML(br, opt, (bpath, destinationNode, alist) -> {
                     // das wird evtl zu oft aufgerufen?? 2.3.18: laut Debugger schon. Ist die for schleife nicht OK?
                     // vleiiehct ist das Model auch noch nicht ganz geladen. Hmmm, wer weiß.
                     // 4.4.18: Der modeldelegate wird doch fuer jedes submodel aufgerufen!

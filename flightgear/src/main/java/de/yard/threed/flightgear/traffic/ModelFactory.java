@@ -2,7 +2,7 @@ package de.yard.threed.flightgear.traffic;
 
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.engine.ecs.EcsEntity;
-import de.yard.threed.flightgear.ecs.AnimationComponent;
+import de.yard.threed.flightgear.ecs.FgAnimationComponent;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.flightgear.core.SGLoaderOptions;
@@ -47,7 +47,7 @@ public class ModelFactory {
         SGLoaderOptions opt = new SGLoaderOptions();
         opt.setPropertyNode(rootnode);
 
-        BuildResult buildresult = SGReaderWriterXML.buildModelFromBundleXML(modelfile, opt, (bpath, alist) -> {
+        BuildResult buildresult = SGReaderWriterXML.buildModelFromBundleXML(modelfile, opt, (bpath, destinationNode, alist) -> {
             if (alist != null) {
                 animationList.addAll(alist);//  xmlloaddelegate.modelComplete( animationList);
             }
@@ -71,7 +71,7 @@ public class ModelFactory {
         List<SGAnimation> animationList = new ArrayList<SGAnimation>();
 
         SceneNode destinationNode = buildModelFromBundleXml(modelfile,rootnode,animationList);
-        EcsEntity entity = new EcsEntity(destinationNode, new AnimationComponent(animationList));
+        EcsEntity entity = new EcsEntity(destinationNode, new FgAnimationComponent(destinationNode, animationList));
         entity.setName(""/*config.getName()*/);
         //entity.setBasenode(basenode);
 

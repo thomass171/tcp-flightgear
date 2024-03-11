@@ -4,34 +4,35 @@ import de.yard.threed.core.geometry.SimpleGeometry;
 import de.yard.threed.core.loader.PortableMaterial;
 import de.yard.threed.core.loader.PortableModelDefinition;
 import de.yard.threed.core.loader.PortableModelList;
-import de.yard.threed.core.resource.BundleRegistry;
-import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 
 import de.yard.threed.engine.Texture;
-import de.yard.threed.flightgear.LoaderBTG;
-import de.yard.threed.flightgear.LoaderOptions;
+import de.yard.threed.engine.ecs.EcsEntity;
+import de.yard.threed.engine.ecs.EcsHelper;
 import de.yard.threed.flightgear.core.FlightGear;
-import de.yard.threed.flightgear.core.osg.Group;
 import de.yard.threed.flightgear.core.osg.Node;
 
 import de.yard.threed.core.Vector2Array;
-import de.yard.threed.core.resource.BundleData;
 import de.yard.threed.core.Color;
 
 import de.yard.threed.engine.test.testutil.TestUtil;
-import de.yard.threed.core.buffer.ByteArrayInputStream;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * better in tools-fg? Only parts.
- *
  */
 public class ModelAssertions {
+
+    public static Map<Integer, String[]> objectsPerTile = defineObjectsPerTile();
+
     public static void assertEgkkTower(PortableModelList ppfile, int vertices, int indices, boolean shadedmaterial, boolean builtbyblender) {
         //TestUtil.assertNotNull("root node", ppfile.root);
         TestUtil.assertEquals("number of objects", 6, ppfile.getObjectCount());
@@ -63,7 +64,7 @@ public class ModelAssertions {
             //den x-Wert gibt es zweimal
             //TestUtil.assertVector2("uv1", new Vector2(0.1163029f, 0.6413539f), toweruvs.getElement(1));
             TestUtil.assertVector2("uv1", new Vector2(0.1163029f, 0.52769506f), toweruvs.getElement(1));
-            
+
         } else {
             TestUtil.assertVector2("uv0", new Vector2(0.1163029f, 0.6413539f), toweruvs.getElement(0));
             TestUtil.assertVector2("uv1", new Vector2(0.0024108677f, 0.6413539f), toweruvs.getElement(1));
@@ -79,7 +80,7 @@ public class ModelAssertions {
     public static void assertFollowMe(PortableModelList ppfile, int expectedmaterials) {
         TestUtil.assertEquals("number of objects", 31, ppfile.getObjectCount());
         TestUtil.assertEquals("number of materials", expectedmaterials, ppfile.materials.size());
-        TestUtil.assertEquals("materialname", "shadedDefaultWhite" , ppfile.materials.get(0).name);
+        TestUtil.assertEquals("materialname", "shadedDefaultWhite", ppfile.materials.get(0).name);
         PortableModelDefinition car = ppfile.getObject(0);
         TestUtil.assertEquals("number of car.objects", 13, car.kids.size());
         PortableModelDefinition mesh76 = car.kids.get(0);
@@ -88,8 +89,8 @@ public class ModelAssertions {
         TestUtil.assertEquals("number of doorrl.objects", 2, doorrl.kids.size());
 
         PortableMaterial unshadedMaterial_4 = ppfile.findMaterial("unshadedMaterial_4");
-        TestUtil.assertColor("unshadedMaterial_4.color",new Color(1.0f,0.8f,0.2f,1.0f),unshadedMaterial_4.color);
-        TestUtil.assertFalse("unshadedMaterial_4.shaded",unshadedMaterial_4.shaded);
+        TestUtil.assertColor("unshadedMaterial_4.color", new Color(1.0f, 0.8f, 0.2f, 1.0f), unshadedMaterial_4.color);
+        TestUtil.assertFalse("unshadedMaterial_4.shaded", unshadedMaterial_4.shaded);
     }
 
     /**
@@ -242,11 +243,35 @@ public class ModelAssertions {
     public static void assertTestData(PortableModelList ppfile, int expectedmaterials) {
         TestUtil.assertEquals("number of objects", 5, ppfile.getObjectCount());
         TestUtil.assertEquals("number of materials", expectedmaterials, ppfile.materials.size());
-        TestUtil.assertEquals("materialname",  "ROOF_DEFAULT" , ppfile.materials.get(3).name);
+        TestUtil.assertEquals("materialname", "ROOF_DEFAULT", ppfile.materials.get(3).name);
     }
 
     public static void assertSTG3072816(SceneNode destinationNode) {
         // TODO
     }
 
+    public static void assertSTG3072824(SceneNode destinationNode) {
+        assertEquals(1, SceneNode.findByName("Objects/e000n50/e007n50/egkk_tower.xml").size());
+        assertEquals(1, SceneNode.findByName("Objects/e000n50/e007n50/windturbine.xml").size());
+        List<EcsEntity> entities = EcsHelper.findAllEntities();
+        String[] objectsIn3072824 = objectsPerTile.get(3072824);
+        assertEquals(objectsIn3072824.length, entities.size());
+        for (int i = 0; i < objectsIn3072824.length; i++) {
+            assertEquals(objectsIn3072824[i], entities.get(i).getName());
+        }
+    }
+
+    private static Map<Integer,String[]> defineObjectsPerTile() {
+        Map<Integer, String[]> objectsPerTile = new HashMap<Integer, String[]>();
+        objectsPerTile.put(3072824, new String[]{
+                "Objects/e000n50/e007n50/EDDH_Radartower2.xml",
+                "Objects/e000n50/e007n50/egkk_carpark_multi.xml",
+                "Objects/e000n50/e007n50/egkk_carpark_multi.xml",
+                "Objects/e000n50/e007n50/egkk_carpark_multi.xml",
+                "Objects/e000n50/e007n50/egkk_carpark_multi.xml",
+                "Objects/e000n50/e007n50/egkk_tower.xml",
+                "Objects/e000n50/e007n50/windturbine.xml"
+        });
+        return objectsPerTile;
+    }
 }
