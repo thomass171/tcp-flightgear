@@ -9,6 +9,7 @@ import de.yard.threed.core.IntHolder;
 import de.yard.threed.core.LatLon;
 import de.yard.threed.core.Payload;
 import de.yard.threed.core.Point;
+import de.yard.threed.core.SpinnerHandler;
 import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
@@ -96,6 +97,7 @@ import de.yard.threed.trafficfg.TravelGraphVisualizer;
 import de.yard.threed.trafficfg.TravelHelper;
 import de.yard.threed.trafficfg.VehicleEntityBuilder;
 import de.yard.threed.trafficfg.flight.FlightSystem;
+import de.yard.threed.trafficfg.flight.FlightVrControlPanel;
 import de.yard.threed.trafficfg.flight.GroundNetTerrainBuilder;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
 import de.yard.threed.trafficfg.flight.Parking;
@@ -299,7 +301,7 @@ public class FlatAirportScene extends FlightTravelScene {
 
         SystemManager.registerService("vehicleentitybuilder", new VehicleEntityBuilder());
         if (enableDoormarker) {
-            ((TrafficSystem)SystemManager.findSystem(TrafficSystem.TAG)).addVehicleBuiltDelegate(new DoormarkerDelegate());
+            ((TrafficSystem) SystemManager.findSystem(TrafficSystem.TAG)).addVehicleBuiltDelegate(new DoormarkerDelegate());
         }
         // 24.11.23: AircraftConfigProvider replaced by the more generic VehicleConfigDataProvider
         // but for now with same name and maybe duplicate.
@@ -580,7 +582,7 @@ public class FlatAirportScene extends FlightTravelScene {
             automoveSystem.setAutomoveEnabled(!automoveSystem.getAutomoveEnabled());
         }*/
         if (Input.getKeyDown(KeyCode.Space)) {
-            cycleAircraft();
+            cycleAircraft(1);
             updateHud();
         }
 
@@ -755,71 +757,52 @@ public class FlatAirportScene extends FlightTravelScene {
     }
 
     /**
-     * Override the default control panel.
-     * A traffic 3x3 control panel permanently attached to the left controller. Consists of
-     * <p>
-     * 0) load - automove - finetune up
-     * 1) aircraft selector
-     * 2) service - trip - finetune down
-     * teleport not needed because already on VR button.
+     * Override the default control panel with the flight travel default menu.
      */
     @Override
     public ControlPanel buildVrControlPanel() {
 
-        double ControlPanelWidth = 0.3;
-        double ControlPanelRowHeight = 0.1;
-        int ControlPanelRows = 3;
-        double[] ControlPanelColWidth = new double[]{0.1, 0.1, 0.1};
-        double ControlPanelMargin = 0.005;
-        Color controlPanelBackground = Color.LIGHTGREEN;
+        return FlightVrControlPanel.buildVrControlPanel(true,
+                // trip handler. Only one trip available here for now
+                new SpinnerHandler() {
+                    @Override
+                    public void up() {
+                    }
 
-        ControlPanel cp = new ControlPanel(new DimensionF(ControlPanelWidth, ControlPanelRows * ControlPanelRowHeight), Material.buildBasicMaterial(controlPanelBackground, false), 0.01);
-        PanelGrid panelGrid = new PanelGrid(ControlPanelWidth, ControlPanelRowHeight, ControlPanelRows, ControlPanelColWidth);
+                    @Override
+                    public String getValue() {
+                        return "Default Trip";
+                    }
 
-        // top line:
-        cp.addArea(panelGrid.getPosition(0, 2), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
-            logger.debug("load clicked");
-            SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
-        }).setIcon(Icon.IconCharacter(11));
-        cp.addArea(panelGrid.getPosition(1, 2), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () ->
-                SystemManager.putRequest(new Request(UserSystem.USER_REQUEST_AUTOMOVE))).setIcon(Icon.IconCharacter(0));
-        cp.addArea(panelGrid.getPosition(2, 2), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), buttonDelegates.get("up")).setIcon(Icon.ICON_UPARROW);
+                    @Override
+                    public void down() {
+                    }
+                }, () -> {
+                    TravelHelper.startDefaultTrip(getAvatarVehicle());
+                },
+                // service handler
+                new SpinnerHandler() {
+                    @Override
+                    public void up() {
+                        cycleAircraft(1);
+                    }
 
-        // mid line
-        //double iconsize = size.height - 2 * margin;
-        double iconareasize = ControlPanelRowHeight;
-        double textareawidth = ControlPanelWidth - 1 * iconareasize;
+                    @Override
+                    public String getValue() {
+                        // empty string fails due to length 0
+                        return markedaircraft == null ? " " : markedaircraft.getName();
+                    }
 
-        // text has no margin yet.
-        TextTexture textTexture = new TextTexture(Color.LIGHTGRAY);
-        ControlPanelArea textArea = cp.addArea(new Vector2(-iconareasize / 2, 0), new DimensionF(textareawidth, ControlPanelRowHeight), null);
-        // empty string fails due to length 0
-        textArea.setTexture(textTexture.getTextureForText(" ", Color.RED));
-        updateMarkedAircraft(textArea, textTexture);
-
-        // ICON_PLUS is preferred for speed increase, use 'C'
-        cp.addArea(panelGrid.getPosition(2, 1), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
-            cycleAircraft();
-            //updateHud();
-            updateMarkedAircraft(textArea, textTexture);
-        }).setIcon(Icon.IconCharacter(2));
-
-        // bottom line: 'S' for service, 'T' for travel
-        cp.addArea(panelGrid.getPosition(0, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
-            if (markedaircraft != null) {
-                markDoor(markedaircraft);
-                GroundServicesSystem.requestService(markedaircraft);
-            }
-        }).setIcon(Icon.IconCharacter(18));
-        cp.addArea(panelGrid.getPosition(1, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
-            TravelHelper.startDefaultTrip(getAvatarVehicle());
-        }).setIcon(Icon.IconCharacter(19));
-        cp.addArea(panelGrid.getPosition(2, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), buttonDelegates.get("down")).setIcon(Icon.ICON_DOWNARROW);
-        return cp;
-    }
-
-    private void updateMarkedAircraft(ControlPanelArea textArea, TextTexture textTexture) {
-        textArea.setTexture(textTexture.getTextureForText(((markedaircraft != null) ? markedaircraft.getName() : " "), Color.RED));
+                    @Override
+                    public void down() {
+                        cycleAircraft(-1);
+                    }
+                }, () -> {
+                    if (markedaircraft != null) {
+                        markDoor(markedaircraft);
+                        GroundServicesSystem.requestService(markedaircraft);
+                    }
+                });
     }
     /*@Override jetzt in config
     protected Quaternion getBaseRotationForVehicleOnGraph() {
@@ -988,27 +971,26 @@ public class FlatAirportScene extends FlightTravelScene {
     }*/
 
 
-    private void cycleAircraft() {
+    private void cycleAircraft(int inc) {
         List<EcsEntity> aircrafts = SystemManager.findEntities(new AircraftFilter());
+        if (aircrafts.size() == 0) {
+            markedaircraft = null;
+            return;
+        }
         int i;
         for (i = 0; i < aircrafts.size(); i++) {
             if (aircrafts.get(i).equals(markedaircraft)) {
-                i++;
+                i += inc;
                 break;
             }
         }
         if (i >= aircrafts.size()) {
             i = 0;
         }
+        if (i < 0) {
+            i = aircrafts.size() - 1;
+        }
         markedaircraft = aircrafts.get(i);
-        /*major += inc;
-        if (major < 0) {
-            major = arrivedaircraft.size() - 1;
-        }
-        if (major >= arrivedaircraft.size()) {
-            major = 0;
-        }
-        logger.info("cycled to " + "." + major);*/
     }
 
 
@@ -1122,7 +1104,7 @@ public class FlatAirportScene extends FlightTravelScene {
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
         });
         controlmenu.addButton(2, 0, 1, Icon.ICON_PLUS, () -> {
-            cycleAircraft();
+            cycleAircraft(1);
             updateHud();
         });
         controlmenu.addButton(3, 0, 1, Icon.ICON_CLOSE, () -> {

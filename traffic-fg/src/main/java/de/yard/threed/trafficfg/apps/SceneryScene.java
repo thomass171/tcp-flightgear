@@ -369,7 +369,7 @@ public class SceneryScene extends Scene {
 
         // top line: property control for yvroffset
         cp.add(new Vector2(0, ControlPanelHelper.calcYoffsetForRow(2, rows, ControlPanelRowHeight)),
-                new SpinnerControlPanel(rowsize, ControlPanelMargin, mat, new NumericSpinnerHandler(0.1, new VrOffsetWrapper())));
+                new SpinnerControlPanel(rowsize, ControlPanelMargin, mat, new NumericSpinnerHandler(0.1, new VrOffsetWrapper()), Color.BLUE));
         // mid line
         // ...
         // bottom line:

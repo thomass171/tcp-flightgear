@@ -11,6 +11,7 @@ import de.yard.threed.core.LocalTransform;
 import de.yard.threed.core.MathUtil2;
 import de.yard.threed.core.Payload;
 import de.yard.threed.core.Quaternion;
+import de.yard.threed.core.SpinnerHandler;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.geometry.Primitives;
@@ -113,6 +114,7 @@ import de.yard.threed.trafficfg.VehicleEntityBuilder;
 import de.yard.threed.trafficfg.config.ConfigHelper;
 import de.yard.threed.trafficfg.fgadapter.FlightGearSystem;
 import de.yard.threed.trafficfg.flight.FlightSystem;
+import de.yard.threed.trafficfg.flight.FlightVrControlPanel;
 import de.yard.threed.trafficfg.flight.GroundNet;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
 import de.yard.threed.trafficfg.flight.RouteBuilder;
@@ -264,20 +266,23 @@ public class TravelSceneBluebird extends BasicTravelScene {
         return new ACProcessPolicy(null);
     }
 
+    String[] trips = new String[]{"Default Trip", "Low Orbit Tour"};
+    int tripindex = 0;
+
     @Override
     public MenuItem[] getMenuItems() {
         return new MenuItem[]{
-                new MenuItem(null, new Text("Default Trip", Color.RED, Color.LIGHTGRAY), () -> {
-                    logger.debug("Default Trip");
-                    TravelHelper.startFlight(Destination.buildRoundtrip(0), getAvatarVehicle());
+                new MenuItem(null, new Text(trips[0], Color.RED, Color.LIGHTGRAY), () -> {
+                    tripindex = 0;
+                    startTrip();
                     InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
                 }),
-                new MenuItem(null, new Text("Low Orbit Tour", Color.RED, Color.LIGHTGRAY), () -> {
-                    logger.debug("menu: low orbit track");
-                    TravelHelper.startFlight(Destination.buildRoundtrip(1), getAvatarVehicle());
+                new MenuItem(null, new Text(trips[1], Color.RED, Color.LIGHTGRAY), () -> {
+                    tripindex = 1;
+                    startTrip();
                     InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
                 }),
-                new MenuItem(null, new Text("Enter Equator Orbit", Color.RED, Color.LIGHTGRAY), () -> {
+                /*not yet defined trips new MenuItem(null, new Text("Enter Equator Orbit", Color.RED, Color.LIGHTGRAY), () -> {
                     logger.debug("menu: equator orbit");
                     //8.3.20 enterEquatorOrbit();
                     TravelHelper.startFlight(Destination.buildForOrbit(true), getAvatarVehicle());
@@ -287,8 +292,25 @@ public class TravelSceneBluebird extends BasicTravelScene {
                     logger.debug("menu: moon orbit");
                     //enterEquatorOrbit();
                     //openclosemenu();
-                }),
+                }),*/
         };
+    }
+
+    /**
+     * uses current index
+     */
+    private void startTrip() {
+        logger.debug("startTrip:" + trips[tripindex]);
+        switch (tripindex) {
+            case 0:
+                TravelHelper.startFlight(Destination.buildRoundtrip(0), getAvatarVehicle());
+                break;
+            case 1:
+                TravelHelper.startFlight(Destination.buildRoundtrip(1), getAvatarVehicle());
+                break;
+            default:
+                logger.error("invalid tripindex " + tripindex);
+        }
     }
 
     /**
@@ -347,62 +369,37 @@ public class TravelSceneBluebird extends BasicTravelScene {
     }
 
     /**
-     * Override the default control panel.
-     * A traffic 3x3 control panel permanently attached to the left controller. Consists of
-     * <p>
-     * 0) load - automove - finetune up
-     * 1) aircraft selector
-     * 2) service - trip - finetune down
-     * teleport not needed because already on VR button.
+     * Override the default control panel with the flight travel default menu.
      */
     @Override
     public ControlPanel buildVrControlPanel() {
 
-        double ControlPanelWidth = 0.3;
-        double ControlPanelRowHeight = 0.1;
-        int ControlPanelRows = 3;
-        double[] ControlPanelColWidth = new double[]{0.1, 0.1, 0.1};
-        double ControlPanelMargin = 0.005;
-        Color controlPanelBackground = Color.LIGHTGREEN;
+        return FlightVrControlPanel.buildVrControlPanel(false,
+                // trip handler. Only one trip available here for now
+                new SpinnerHandler() {
+                    @Override
+                    public void up() {
+                        if (++tripindex >= trips.length) {
+                            tripindex = 0;
+                        }
+                    }
 
-        ControlPanel cp = new ControlPanel(new DimensionF(ControlPanelWidth, ControlPanelRows * ControlPanelRowHeight), Material.buildBasicMaterial(controlPanelBackground, false), 0.01);
-        PanelGrid panelGrid = new PanelGrid(ControlPanelWidth, ControlPanelRowHeight, ControlPanelRows, ControlPanelColWidth);
+                    @Override
+                    public String getValue() {
+                        return trips[tripindex];
+                    }
 
-        // top line:
-        cp.addArea(panelGrid.getPosition(0, 2), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
-            logger.debug("load clicked");
-            SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
-        }).setIcon(Icon.IconCharacter(11));
-        cp.addArea(panelGrid.getPosition(1, 2), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () ->
-                SystemManager.putRequest(new Request(UserSystem.USER_REQUEST_AUTOMOVE))).setIcon(Icon.IconCharacter(0));
-        cp.addArea(panelGrid.getPosition(2, 2), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), buttonDelegates.get("up")).setIcon(Icon.ICON_UPARROW);
-
-        // mid line
-        //double iconsize = size.height - 2 * margin;
-        double iconareasize = ControlPanelRowHeight;
-        double textareawidth = ControlPanelWidth - 1 * iconareasize;
-
-        // text has no margin yet.
-        TextTexture textTexture = new TextTexture(Color.LIGHTGRAY);
-        ControlPanelArea textArea = cp.addArea(new Vector2(-iconareasize / 2, 0), new DimensionF(textareawidth, ControlPanelRowHeight), null);
-        // empty string fails due to length 0
-        textArea.setTexture(textTexture.getTextureForText(" ", Color.RED));
-
-
-        /*cp.addArea(panelGrid.getPosition(2, 1), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
-            // cycleAircraft();
-            //updateHud();
-        }).setIcon(Icon.ICON_PLUS);*/
-
-        // bottom line:
-        cp.addArea(panelGrid.getPosition(0, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
-            // no marking for now
-        }).setIcon(Icon.IconCharacter(18));
-        cp.addArea(panelGrid.getPosition(1, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
-            TravelHelper.startDefaultTrip(getAvatarVehicle());
-        }).setIcon(Icon.IconCharacter(19));
-        cp.addArea(panelGrid.getPosition(2, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), buttonDelegates.get("down")).setIcon(Icon.ICON_DOWNARROW);
-        return cp;
+                    @Override
+                    public void down() {
+                        if (--tripindex < 0) {
+                            tripindex = trips.length - 1;
+                        }
+                    }
+                }, () -> {
+                    startTrip();
+                },
+                // no service (vehicles) currently
+                null, null);
     }
 
     public void add(SceneNode model, double x, double y, double z, double scale, Quaternion rotation) {
