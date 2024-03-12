@@ -14459,4 +14459,15 @@
 			<z>0</z>
 		</axis>
 	</animation>
+
+    <!-- garmin is no component in original bluebird. But might be an option for user menus-->
+	<model>
+		<path>Aircraft/Instruments-3d/garmin196/garmin196.xml</path>
+		<offsets>
+			<x-m>-8.290</x-m>
+			<y-m>0</y-m>
+			<z-m>1.200</z-m>
+			<pitch-deg>-19</pitch-deg>
+		</offsets>
+	</model>
 </PropertyList>

@@ -77,11 +77,11 @@ public class FgVehicleLoaderTest {
         //log.debug(bluebirdNode.dump("  ",0));
 
         assertEquals(0, SGReaderWriterXML.errorCnt, "errorCnt ");
-        //Wow, 609 animations counted. But only 393 effective. Hmm
-        assertEquals(393, loadedResults.get(0).animationList.size());
+        //Wow, 609 animations counted. But only 393 effective. Hmm. now 587 due to garmin?
+        assertEquals(587, loadedResults.get(0).animationList.size());
 
-        // should load bluebird, yoke, pedals,display-screens, 6 spheres
-        assertEquals(1 + 1 + 1 + 1 + 6, SGReaderWriterXML.loadedList.size(), "loadedList ");
+        // should load bluebird, yoke, pedals,display-screens, 6 spheres, 3 of garmin(?)
+        assertEquals(1 + 1 + 1 + 1 + 6 + 3, SGReaderWriterXML.loadedList.size(), "loadedList ");
         // original ac-file referenced 'yoke.rgb', but was mapped to 'png' in ACLoader.
         assertTrue(Texture.hasTexture("yoke.png"), "yoke.texture");
 
