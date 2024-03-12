@@ -35,7 +35,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         properties.put("enableHud", "true");
         properties.put("enableDoormarker", "true");
 
-        boolean emulateVR = true;
+        boolean emulateVR = false;
         if (emulateVR) {
             properties.put("emulateVR", "true");
             properties.put("yoffsetVR", "0.3");
@@ -60,8 +60,8 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
 
         // traffic-fg
         properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryScene");
-        //properties.put("scene", "de.yard.threed.trafficfg.apps.RailingScene");
-        properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
+        properties.put("scene", "de.yard.threed.trafficfg.apps.RailingScene");
+        //properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryViewerScene");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.FgModelPreviewScene");
         boolean demo = false;
@@ -73,7 +73,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
 
         // traffic-advanced
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.FlatAirportScene");
-        properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
+        //properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.HangarScene");
 
         return properties;

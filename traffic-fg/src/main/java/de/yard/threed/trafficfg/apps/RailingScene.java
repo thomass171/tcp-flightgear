@@ -3,6 +3,7 @@ package de.yard.threed.trafficfg.apps;
 import de.yard.threed.core.Color;
 import de.yard.threed.core.Dimension;
 import de.yard.threed.core.DimensionF;
+import de.yard.threed.core.IntHolder;
 import de.yard.threed.core.Payload;
 import de.yard.threed.core.Point;
 import de.yard.threed.core.Vector3;
@@ -37,8 +38,10 @@ import de.yard.threed.engine.ecs.UserSystem;
 import de.yard.threed.engine.ecs.VelocityComponent;
 import de.yard.threed.engine.geometry.ShapeGeometry;
 import de.yard.threed.engine.gui.DefaultMenuProvider;
+import de.yard.threed.engine.gui.FovElement;
 import de.yard.threed.engine.gui.GuiGrid;
 import de.yard.threed.engine.gui.GuiGridMenu;
+import de.yard.threed.engine.gui.Icon;
 import de.yard.threed.engine.gui.Label;
 import de.yard.threed.engine.gui.MenuCycler;
 import de.yard.threed.engine.gui.MenuItem;
@@ -49,6 +52,7 @@ import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.engine.util.NearView;
+import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.ecs.AnimationUpdateSystem;
@@ -89,12 +93,14 @@ import java.util.List;
 public class RailingScene extends Scene {
     public Log logger = Platform.getInstance().getLog(RailingScene.class);
 
-    MenuCycler menuCycler = null;
     MenuItem[] menuitems;
     //21.10.19 optional
     NearView nearView = null;
     boolean enableNearView = false;
+    private VrInstance vrInstance;
     //29.10.23 VehicleConfig vc;
+    // in non VR for menu and control menu
+    protected Camera cameraForMenu = null;
 
     @Override
     public String[] getPreInitBundle() {
@@ -116,6 +122,8 @@ public class RailingScene extends Scene {
         ModelLoader.processPolicy = new ACProcessPolicy(null);
 
         processArguments();
+        vrInstance = VrInstance.buildFromArguments();
+
 
         SphereSystem sphereSystem = new SphereSystem(null, null, null, null);
         SystemManager.addSystem(sphereSystem);
@@ -178,11 +186,42 @@ public class RailingScene extends Scene {
                     logger.debug("start");
                     EcsEntity engine = EcsHelper.findEntitiesByName("locomotive"/*"Locomotive"*/).get(0);
                     GraphMovingComponent.getGraphMovingComponent(engine).setAutomove(true);
-                    menuCycler.close();
+                    InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
                 }),
         };
 
-        SystemManager.addSystem(new InputToRequestSystem());
+        InputToRequestSystem inputToRequestSystem = new InputToRequestSystem();
+        // 'M' is also used by VR controller
+        inputToRequestSystem.addKeyMapping(KeyCode.M, InputToRequestSystem.USER_REQUEST_MENU);
+        SystemManager.addSystem(inputToRequestSystem);
+
+        if (vrInstance != null) {
+            // Even in VR the observer will be attached to avatar later
+            // Observer was inited before
+            Observer observer = Observer.getInstance();
+            observer.initFineTune(vrInstance.getOffsetVR());
+            observer.attach(vrInstance.getController(0));
+            observer.attach(vrInstance.getController(1));
+        } else {
+            // controlpanel for non VR
+            inputToRequestSystem.setControlMenuBuilder(camera -> buildControlMenuForScene(camera));
+            // use dedicated camera for menu to avoid picking ray issues due to large/small dimensions conflicts
+            cameraForMenu = FovElement.getDeferredCamera(getDefaultCamera());
+            // might be null if not desired
+            inputToRequestSystem.setCameraForMenu(cameraForMenu);
+            // menu only in non VR
+            inputToRequestSystem.setMenuProvider(new DefaultMenuProvider(cameraForMenu, (Camera camera) -> {
+                /**
+                 * avoid menu coverage by loc parts by deferred camera.
+                 */
+                double width = 3.5;
+                double zpos = -camera.getNear() - 0.001;
+                double buttonzpos = zpos - 0.0001;
+                GuiGrid m = GuiGrid.buildSingleColumnFromMenuitems(new DimensionF(width, width * 0.7), zpos, buttonzpos, menuitems);
+                GuiGridMenu menu = new GuiGridMenu(m);
+                return menu;
+            }));
+        }
 
         SystemManager.addSystem(new UserSystem());
 
@@ -269,26 +308,10 @@ public class RailingScene extends Scene {
 
         Point mouselocation = Input.getMouseDown();
 
-        if (menuCycler != null) {
-            menuCycler.update(mouselocation);
-        }
-
         //(V)alidate statt (T)est
         if (Input.getKeyDown(KeyCode.V)) {
             RailingTests.testInteriorView(this);
             logger.info("tests completed");
-        }
-
-        if (menuCycler == null /*&& avatar != null*/) {
-            menuCycler = new MenuCycler(new MenuProvider[]{new DefaultMenuProvider(this.getDefaultCamera(), (Camera camera) -> {
-                //Versuchen, das Menu vor den Kessel zu setzen, damit es normal und in VR brauchbar ist.
-                double width = 0.3;
-                //BrowseMenu m = new BrowseMenu(new DimensionF(width, width * 0.7), -3, -0.4, sc.menuitems);
-                GuiGrid m = GuiGrid.buildSingleColumnFromMenuitems(new DimensionF(width, width * 0.7), -3, -0.4, menuitems);
-
-                GuiGridMenu menu = new GuiGridMenu(m);
-                return menu;
-            })});
         }
 
         // fuer Speed Indicator.
@@ -302,6 +325,32 @@ public class RailingScene extends Scene {
         }
 
         Observer.getInstance().update();
+    }
+
+    /**
+     * The non VR Control menu.
+     * Camera is a deferred camera defined during init.
+     */
+    public GuiGrid buildControlMenuForScene(Camera camera) {
+
+        GuiGrid controlmenu = GuiGrid.buildForCamera(camera, 2, 5, 1, Color.BLACK_FULLTRANSPARENT, true);
+
+        controlmenu.addButton(0, 0, 1, Icon.ICON_POSITION, () -> {
+            InputToRequestSystem.sendRequestWithId(new Request(UserSystem.USER_REQUEST_TELEPORT, new Payload(new Object[]{new IntHolder(0)})));
+        });
+        controlmenu.addButton(1, 0, 1, Icon.ICON_MENU, () -> {
+            InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
+        });
+        controlmenu.addButton(2, 0, 1, Icon.ICON_HORIZONTALLINE, () -> {
+            //TODO incMovementSpeed
+        });
+        controlmenu.addButton(3, 0, 1, Icon.ICON_PLUS, () -> {
+            //TODO incMovementSpeed
+        });
+        controlmenu.addButton(4, 0, 1, Icon.ICON_CLOSE, () -> {
+            InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_CONTROLMENU));
+        });
+        return controlmenu;
     }
 }
 
