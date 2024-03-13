@@ -1,7 +1,9 @@
 package de.yard.threed.flightgear.ecs;
 
 
+import de.yard.threed.core.platform.NativeCollision;
 import de.yard.threed.core.platform.Platform;
+import de.yard.threed.engine.Camera;
 import de.yard.threed.engine.Input;
 import de.yard.threed.core.Point;
 import de.yard.threed.engine.Ray;
@@ -14,6 +16,8 @@ import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.platform.common.RequestHandler;
+
+import java.util.List;
 
 
 /**
@@ -32,31 +36,32 @@ public class AnimationUpdateSystem extends DefaultEcsSystem {
     }
 
     /**
-     * Auf Mouse oder Controller Click pruefen.
+     * Check for mouse or controller click.
      */
     @Override
     public void update(EcsEntity entity, EcsGroup group, double tpf) {
         Point mouselocation = Input.getMouseDown();
 
-        //Avatar avatar = /*1.4.21 Player.getInstance()*/AvatarSystem.getAvatar();
         Ray pickingray = null;
-        //Die Camera aus AnimationComponentn zu holen ist zwar doof, aber iregdnwo muss sie ja herkommen. Tja,...
-        if (/*avatar != null && */mouselocation != null) {
-            pickingray = Scene.getCurrent().getDefaultCamera().buildPickingRay(Scene.getCurrent().getDefaultCamera().getCarrierTransform(),mouselocation);
+        if (mouselocation != null) {
+            Camera camera = Scene.getCurrent().getDefaultCamera();
+            pickingray = camera.buildPickingRay(camera.getCarrierTransform(), mouselocation);
         }
-        if (/*avatar != null &&*/ Input.getControllerButtonDown(10)) {
+        if (Input.getControllerButtonDown(10)) {
             logger.debug(" found controller button down 10 (right)");
             pickingray = VrInstance.getInstance().getController(1).getRay();
         }
 
+        // 13.3.24: No longer pass pickingray to any animation and do intersection check again and again. This is very inefficient.
+        // Instead pass the objects hit.
+        List<NativeCollision> intersections = null;
+        if (pickingray != null) {
+            intersections = pickingray.getIntersections();
+        }
         FgAnimationComponent ac = (FgAnimationComponent) group.cl.get(0);
         for (int i = 0; i < ac.animationList.size(); i++) {
             SGAnimation a = ac.animationList.get((i));
-            /*Ray pickingray = null;
-            if (ac.getCamera() != null && mouselocation != null) {
-                pickingray = ac.getCamera().buildPickingRay(ac.getCamera().getCarrier().getTransform(),mouselocation);
-            }*/
-            a.process(pickingray, new AUSRequestHandler());
+            a.process(intersections, new AUSRequestHandler());
         }
 
     }
@@ -67,7 +72,7 @@ public class AnimationUpdateSystem extends DefaultEcsSystem {
     }
 }
 
-class AUSRequestHandler implements RequestHandler{
+class AUSRequestHandler implements RequestHandler {
     @Override
     public boolean processRequest(Request request) {
         return false;

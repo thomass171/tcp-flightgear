@@ -442,25 +442,28 @@ public class SGPickAnimation extends SGAnimation {
 
     }
 
+    /**
+     * 13.3.24: No longer pass pickingray but the objects hit. And avoid subnode finding, which is very inefficient.
+     * Anyway, this method needs a thorough check: Does it really work and is it reliable and efficient.
+     */
     @Override
-    public void process(Ray pickingray, RequestHandler requestHandler) {
-        if (pickingray != null) {
-            //logger.debug("PickAnimation picking ray isType " + pickingray);
+    public void process(List<NativeCollision> pickingrayintersections, RequestHandler requestHandler) {
+        if (pickingrayintersections != null) {
+            //logger.debug("PickAnimation picking ray is " + pickingray);
 
             //node ist die destination node. darum die Childs durchgehen (ACPolicy kommt ja auch noch). NeeNee, gezielt nach den Obekten pruefen.
             for (String objectName : _objectNames) {
-                List<SceneNode> nodes = node.findNodeByName(objectName);
-                //   Transform acpol = node.getTransform().getChild(0);
-                // for (Transform transForm:acpol.getChildren()) {
-                for (SceneNode n : nodes) {
-                    //   SceneNode n=transForm.getSceneNode();
-                    if (n != null) {
-                        List<NativeCollision> hits = n.getHits(pickingray);
-                        if (hits.size() > 0) {
-                            logger.debug(n.getName() + " was clicked");
-                            if (requestHandler!=null){
-                                requestHandler.processRequest(new Request(RequestType.register(-33,"??")));
-                            }
+                //List<SceneNode> nodes = node.findNodeByName(objectName);
+                // for (SceneNode n : nodes) {
+                //   SceneNode n=transForm.getSceneNode();
+                //     if (n != null) {
+                //List<NativeCollision> hits = n.getHits(pickingray);
+                for (NativeCollision collision : pickingrayintersections) {
+                    //if (collision.getSceneNode().getUniqueId() == n.nativescenenode.getUniqueId()) {
+                    if (collision.getSceneNode().getName() != null && collision.getSceneNode().getName().equals(objectName)) {
+                        logger.debug(objectName + " was clicked");
+                        if (requestHandler != null) {
+                            requestHandler.processRequest(new Request(RequestType.register(-33, "??")));
                         }
                     }
                 }
@@ -508,7 +511,7 @@ public class SGPickAnimation extends SGAnimation {
 
 ///////////////////////////////////////////////////////////////////////////
 
-        // insert count copies of binding list A, into the output list.
+// insert count copies of binding list A, into the output list.
 // effectively makes the output list fire binding A multiple times
 // in sequence
     /*static void repeatBindings(const SGBindingList& a, SGBindingList& out, int count)
@@ -890,19 +893,19 @@ public class SGPickAnimation extends SGAnimation {
         ud->setPickCallback(new KnobSliderPickCallback(getConfig(), getModelRoot(), _condition));
     }*/
 
-        /*
-         * touch screen isType a 2d surface that will pass parameters to the callbacks indicating the
-         * normalized coordinates of hover or touch. Touch isType defined as a button click.
-         * For compatibility with touchscreen operations this class does not differentiate between
-         * which buttons are touched, simply because this isn't how touchscreens work.
-         * Some touchscreens (e.g. SAW) can have a Z-axis indicating the pressure. This isType not
-         * simulated.
-         */
+    /*
+     * touch screen isType a 2d surface that will pass parameters to the callbacks indicating the
+     * normalized coordinates of hover or touch. Touch isType defined as a button click.
+     * For compatibility with touchscreen operations this class does not differentiate between
+     * which buttons are touched, simply because this isn't how touchscreens work.
+     * Some touchscreens (e.g. SAW) can have a Z-axis indicating the pressure. This isType not
+     * simulated.
+     */
 
 
-        /**
-         * Handle picking events on object with a canvas placed onto
-         */
+/**
+ * Handle picking events on object with a canvas placed onto
+ */
     /*class TouchPickCallback : public SGPickCallback {
         public:
         TouchPickCallback(const SGPropertyNode* configNode,
@@ -1044,4 +1047,4 @@ public class SGPickAnimation extends SGAnimation {
 //    ud->setPickCallback(new TouchPickCallback(getConfig(), getModelRoot()));
     }
 */
-    }
+}

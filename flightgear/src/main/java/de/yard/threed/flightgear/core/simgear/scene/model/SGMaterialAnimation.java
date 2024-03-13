@@ -1,11 +1,14 @@
 package de.yard.threed.flightgear.core.simgear.scene.model;
 
+import de.yard.threed.core.platform.NativeCollision;
 import de.yard.threed.engine.*;
 import de.yard.threed.flightgear.core.osg.Group;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.props.SGCondition;
 import de.yard.threed.flightgear.core.simgear.structure.SGExpression;
 import de.yard.threed.engine.platform.common.RequestHandler;
+
+import java.util.List;
 
 /**
  * Created by thomass on 28.12.16.
@@ -48,7 +51,7 @@ public Group group;
     }
 
     @Override
-    public void process(Ray pickingray, RequestHandler requestHandler) {
+    public void process(List<NativeCollision> pickingrayintersections, RequestHandler requestHandler) {
         //TODO unfertig, Z.B. condition
         /*if (rotategroup != null) {
             double speed = _animationValue.getValue(null).doubleVal;

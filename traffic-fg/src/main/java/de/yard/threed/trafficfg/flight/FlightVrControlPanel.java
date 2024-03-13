@@ -64,14 +64,14 @@ public class FlightVrControlPanel {
                 new NumericSpinnerHandler(0.1, new VrOffsetWrapper()), Color.BLUE));
 
         // line 1:
-
+        // Use 'S' instead of ICON_TURNRIGHT to have consistent start trigger
         cp.add(panelGrid.getPosition(2, 3), new SpinnerControlPanel(spinnerSize, ControlPanelMargin, mat, tripSpinnerHandler, Color.BLUE));
         cp.addArea(panelGrid.getPosition(5, 3), new DimensionF(ControlPanelColWidth[5], ControlPanelRowHeight), () -> {
             //logger.debug("starting trip " + tripSelectSpinnerHandler.getValue());
             if (tripStarter != null) {
                 tripStarter.buttonpressed();
             }
-        }).setIcon(Icon.ICON_TURNRIGHT);
+        }).setIcon(Icon.IconCharacter(18));
 
         // line 2:
         if (serviceSpinnerHandler != null) {

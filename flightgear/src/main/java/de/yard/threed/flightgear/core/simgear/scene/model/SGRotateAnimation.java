@@ -2,6 +2,7 @@ package de.yard.threed.flightgear.core.simgear.scene.model;
 
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.Quaternion;
+import de.yard.threed.core.platform.NativeCollision;
 import de.yard.threed.engine.Ray;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.core.Vector3;
@@ -13,6 +14,8 @@ import de.yard.threed.flightgear.core.simgear.structure.PrimitiveValue;
 import de.yard.threed.flightgear.core.simgear.structure.SGConstExpression;
 import de.yard.threed.flightgear.core.simgear.structure.SGExpression;
 import de.yard.threed.engine.platform.common.RequestHandler;
+
+import java.util.List;
 
 /**
  * animation.[hc]xx
@@ -56,7 +59,7 @@ public class SGRotateAnimation extends SGAnimation {
     }
 
     @Override
-    public void process(Ray pickingray, RequestHandler requestHandler) {
+    public void process(List<NativeCollision> pickingrayintersections, RequestHandler requestHandler) {
         //TODO parts missing, like condition
         if (rotategroup != null) {
             double speed = _animationValue.getValue(null).doubleVal;

@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>tcp-flightgear</title>
+    <title>tcp-flightgear - Flightgear scenery and aircrafts in a browser and in virtual reality</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="description" content="A flightgear extension of tcp-22">
     <!--Viewport from w3.css-->
@@ -27,10 +27,32 @@
     </header>
 
     <div class="w3-container" style="padding:32px">
+        <div class="w3-panel w3-padding-large w3-section w3-white">
+            <h1>The Idea</h1>
+            From <a href="https://www.flightgear.org/about/">Flightgear home</a>:
+            <blockquote><i>
+                FlightGear is an open-source flight simulator. It supports a variety of popular platforms (Windows, Mac, Linux, etc.) and is
+                developed by skilled volunteers from around the world. Source code for the entire project is available
+                and licensed under the GNU General Public License.
+            </i></blockquote>
 
+            Fascinated by both Flightgear and the opportunity to run 3D graphics in a browser (via <a href="https://threejs.org">three.js</a> and WebGL)
+            without the need for an installation, this is an approach to migrate components of Flightgear to be ready to be run in a browser.
+            <p>
+            This gets even more fascinating with WebXR (f.k.a. WebVR) making Flightgear scenery and aircraft visible in virtual reality.
+            <p>
+            The components currently available are:
+            <ul>
+                <li>Scenery and scenery objects</li>
+                <li>Tools for converting 'btg' model format to GLTF</li>
+                <li>Aircraft model</li>
+                <li>Tools for converting 'ac' model format to GLTF</li>
+            </ul>
+            However, the core of Flightgear, the flight simulation, has not been migrated. All vehicle movement is very simple.
+        </div>
 
         <div class=" w3-padding-large w3-section w3-white">
-            <h1 class="">Use Case Traffic</h1>
+            <h1 class="">Show Cases</h1>
 
             <p class="w3-xlarge"></p>
             <br>
@@ -143,7 +165,7 @@
         </div>
 
         <div class=" w3-padding-large w3-section w3-white">
-            <h1 class="">Use Case Traffic (advanced)</h1>
+            <h1 class="">Show Cases (advanced)</h1>
 
             <p>Also uses models from external host, making loading slow (> 1 min).</p>
             <br>
@@ -208,7 +230,7 @@
                                 <img src="Travel-Preview.png" style="width:100%">
                             </div>
                             <p>A simple travel scene initially located at EDDK. Use 't' to teleport or
-                                'l' to load aircraft. Might crash the browser due to memory requirements.</p>
+                                'l' to load aircraft c172p. After loading press 's' to start trip.</p>
                             <button class=" w3-button  w3-round w3-khaki "
                                     onclick="launchSingleScene('TravelScene',null,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'),null)">
                                 Launch

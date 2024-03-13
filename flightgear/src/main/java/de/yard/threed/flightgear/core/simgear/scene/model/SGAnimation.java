@@ -1,5 +1,6 @@
 package de.yard.threed.flightgear.core.simgear.scene.model;
 
+import de.yard.threed.core.platform.NativeCollision;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.engine.*;
 import de.yard.threed.core.Vector3;
@@ -155,10 +156,11 @@ public abstract class SGAnimation {
     /**
      * Statt SGTranslateTransform.
      * 4.10.19: Das ist aber nicht sehr generisch. Darum pack ich erstmal noch Parameter ein, wie es gebraucht wird. Alles zur für PickAnimation
+     * 13.3.24: No longer pass pickingray but the objects hit for better efficiency.
      * <p>
      * FG DIFF
      */
-    public abstract void process(Ray pickingray, RequestHandler requestHandler);
+    public abstract void process(List<NativeCollision> pickingrayintersections, RequestHandler requestHandler);
 
     /**
      * Ob es die pro Animation geben muesste und hier abstract ist unklar. Eigentlich ist apply der Callback des NodeVisitors.

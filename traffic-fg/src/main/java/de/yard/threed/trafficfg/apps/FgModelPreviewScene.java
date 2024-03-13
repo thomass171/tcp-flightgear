@@ -7,6 +7,7 @@ import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
+import de.yard.threed.core.platform.NativeCollision;
 import de.yard.threed.core.platform.NativeSceneNode;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.Bundle;
@@ -47,7 +48,7 @@ import java.util.List;
  * 22.12.18: Not using trafficConfig. But "AircraftDir" is needed for FG aitcraft. Doesn't know "optionals" and
  * "zoffset" and so on. But that is acceptable.
  * FG Animations are supported manually (outside ECS).
- *
+ * <p>
  * Model with visual aimations:
  * - Windturbine(index 1)
  * - tower radar(0)
@@ -60,7 +61,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
     //Die Animationen des aktuellen Model inkl. aller Submodel.
     List<SGAnimation> animationList;
     AircraftResourceProvider arp;
-    FlightGearProperties flightGearProperties=new FlightGearProperties();
+    FlightGearProperties flightGearProperties = new FlightGearProperties();
 
     /**
      * 9.1.18: Vorne stehen die Bundlenamen (vor dem ersten ':') oder ein 'A' als Kenner fuer ein FGAircraft (mit Zusatzdefinitionen), H ist TerraSync-model
@@ -282,13 +283,18 @@ public class FgModelPreviewScene extends ModelPreviewScene {
         flightGearProperties.update();
 
         if (animationList != null) {
-            Ray pickingray = null;
+            List<NativeCollision> intersections = null;
             if (mouselocation != null) {
-                getDefaultCamera().buildPickingRay(getDefaultCamera().getCarrier().getTransform(), mouselocation);
+                Ray pickingray = getDefaultCamera().buildPickingRay(getDefaultCamera().getCarrier().getTransform(), mouselocation);
+                // 13.3.24: No longer pass pickingray to any animation and do intersection check again and again. This is very inefficient.
+                // Instead pass the objects hit.
+                if (pickingray != null) {
+                    intersections = pickingray.getIntersections();
+                }
             }
             AURequestHandler auRequestHandler = new AURequestHandler();
             for (SGAnimation animation : animationList) {
-                animation.process(pickingray, auRequestHandler);
+                animation.process(intersections, auRequestHandler);
             }
         }
 
