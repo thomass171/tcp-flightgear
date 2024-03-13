@@ -67,6 +67,7 @@ import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
+import de.yard.threed.flightgear.core.simgear.scene.model.OpenGlProcessPolicy;
 import de.yard.threed.flightgear.ecs.AnimationUpdateSystem;
 import de.yard.threed.graph.Graph;
 import de.yard.threed.graph.GraphEdge;
@@ -161,6 +162,7 @@ import java.util.List;
  * 8.5.19:Analog GroundService... umbenannt: FlightScene->TravelScene
  * 26.10.21: Echte outside viewpoints wie Flat gibts hier doch gar nicht, oder?
  * 30.1.24: Still uses bundles from local directory (full Terrasync). But full sgmaterial is not available). See todo at bundlelist.
+ * 13.3.24: Navigator and helper model disabled by default (currently also disables sescond level world teleports)
  */
 public class TravelScene extends FlightTravelScene {
     static Log logger = Platform.getInstance().getLog(TravelScene.class);
@@ -194,6 +196,8 @@ public class TravelScene extends FlightTravelScene {
     private boolean avatarInited = false;
     private boolean enableDoormarker = false;
     EcsEntity markedaircraft = null;
+    private boolean enableNavigator = false;
+    private boolean enableHelperModel = false;
 
 
     @Override
@@ -201,8 +205,8 @@ public class TravelScene extends FlightTravelScene {
         // "fgdatabasic","sgmaterial" and "TerraySync" in project are only a small subset. The external should have 'before' prio to load instead of subset.
         //  There is no way to add a file system resolver here, so use the external also for desktop. This has the benefit
         // of revealing loading problems also during development.
-        Platform.getInstance().addBundleResolver(new HttpBundleResolver("fgdatabasic@https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"),true);
-        Platform.getInstance().addBundleResolver(new HttpBundleResolver("sgmaterial@https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"),true);
+        Platform.getInstance().addBundleResolver(new HttpBundleResolver("fgdatabasic@https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"), true);
+        Platform.getInstance().addBundleResolver(new HttpBundleResolver("sgmaterial@https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"), true);
         //30.1.24: The default TerraSyncBundleResolver points to "bundles" in webgl.
         Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver("https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"), true);
         //13.12.23 "fgdatabasicmodel" is loaded later when needed during vehicle loading.
@@ -211,7 +215,7 @@ public class TravelScene extends FlightTravelScene {
                 //21.2.24: TerraSync-model isn't used anyway currently due to flag 'ignoreshared'. So save the time and memory for loading it.
                 //FlightGear.getBucketBundleName("model") ,
                 FlightGearSettings.FGROOTCOREBUNDLE,
-                "traffic-advanced","traffic-fg"};
+                "traffic-advanced", "traffic-fg"};
     }
 
     @Override
@@ -261,19 +265,18 @@ public class TravelScene extends FlightTravelScene {
             nearView = new NearView(getDefaultCamera(), 0.01, 20, this);
         }
 
-        //24.10.21 verschoben nach update buildNavigator(avatartc);
-
-        SceneNode cube = ModelSamples.buildCube(1000, new Color(0xCC, 00, 00));
-        if (cube != null) {
-            cube.getTransform().setPosition(new Vector3(3987743.8f, 480804.66f, 4937917.5f));
-            //cube.setPosition(new Vector3(0, 0, 0));
-            world.attach(cube);
+        if (enableHelperModel) {
+            SceneNode cube = ModelSamples.buildCube(1000, new Color(0xCC, 00, 00));
+            if (cube != null) {
+                cube.getTransform().setPosition(new Vector3(3987743.8f, 480804.66f, 4937917.5f));
+                //cube.setPosition(new Vector3(0, 0, 0));
+                world.attach(cube);
+            }
+            world.attach(buildSuedpolPillar());
+            world.attach(buildNordpolPillar());
+            world.attach(buildKoelnerDomPillar());
+            world.attach(buildSriLankaPillar());
         }
-        //27.10.21 addLight();
-        world.attach(buildSuedpolPillar());
-        world.attach(buildNordpolPillar());
-        world.attach(buildKoelnerDomPillar());
-        world.attach(buildSriLankaPillar());
         //world.attach(ModelSamples.buildAxisHelper(WorldGlobal.EARTHRADIUS * 3, 20000));
 
         //addSceneUpdater(this);
@@ -318,9 +321,9 @@ public class TravelScene extends FlightTravelScene {
 
         //trafficSystem.addAdditionalData(getLocationList(), getGroundNet(),getDestinationNode(),nearView,getVehicleLoader());
         //groundnet is set later
-        trafficSystem.locationList=getLocationList();
-        trafficSystem.destinationNode=getDestinationNode();
-        trafficSystem.nearView=nearView;
+        trafficSystem.locationList = getLocationList();
+        trafficSystem.destinationNode = getDestinationNode();
+        trafficSystem.nearView = nearView;
         trafficSystem.setVehicleLoader(new FgVehicleLoader());
 
         if (VrInstance.getInstance() == null) {
@@ -335,6 +338,9 @@ public class TravelScene extends FlightTravelScene {
     protected void customProcessArguments() {
         if (EngineHelper.isEnabled("enableDoormarker")) {
             enableDoormarker = true;
+        }
+        if (EngineHelper.isEnabled("enableNavigator")) {
+            enableNavigator = true;
         }
     }
 
@@ -437,7 +443,7 @@ public class TravelScene extends FlightTravelScene {
         VehicleDefinition vehicleConfig = ConfigHelper.getVehicleConfig(trafficConfig.getVehicleDefinitions(), "Navigator");
 
         VehicleLauncher.launchVehicle(new Vehicle("Navigator"), vehicleConfig, null, null, avatarpc, getWorld(), null,
-                /*4.12.23 sceneConfig.getBaseTransformForVehicleOnGraph()*/TrafficSystem.baseTransformForVehicleOnGraph, null/*nearView*/, Arrays.asList(new VehicleBuiltDelegate[]{ ((ecsEntity, config) -> {
+                /*4.12.23 sceneConfig.getBaseTransformForVehicleOnGraph()*/TrafficSystem.baseTransformForVehicleOnGraph, null/*nearView*/, Arrays.asList(new VehicleBuiltDelegate[]{((ecsEntity, config) -> {
 
                     // Weil der TeleporterSystem.init schon gelaufen ist, muss auch "needsupdate" gesetzt werden, darum stepTo().
                     avatarpc.stepTo(0);
@@ -451,7 +457,7 @@ public class TravelScene extends FlightTravelScene {
         TeleportComponent navigatorpc = new TeleportComponent(needleforfg);
 
         SceneNode parent = world;
-        for (PoiConfig poi : getPoiList(worldPois/*DefaultTrafficWorld.getInstance().getConfiguration()*/)) {
+        for (PoiConfig poi : getPoiList(worldPois)) {
             navigatorpc.addPosition(poi.getName(), parent.getTransform(), poi.getTransform(new FgCalculations()));
         }
         // in general start in EDDK
@@ -686,9 +692,26 @@ public class TravelScene extends FlightTravelScene {
             if (avatartc == null) {
                 logger.warn("no avatar (tc) yet");
             } else {
+                // Event 'EVENT_POSITIONCHANGED' needs to be published for triggering terrain loading. Is done either implcitly by navigators
+                // loading first teleport step or from here without navigator by first teleport step.
                 // 30.1.24: 'navigator.gltf' not found for some time now. Leads to repeatedly 'not fond' logging.
-                buildNavigator(avatartc);
-
+                if (enableNavigator) {
+                    buildNavigator(avatartc);
+                } else {
+                    // without navigator we have to set overview viewpoint ourselfs
+                    LocalTransform loc = WorldGlobal.eddkoverview.location.toPosRot(new FgCalculations());
+                    loc.rotation = loc.rotation.multiply(new OpenGlProcessPolicy(null).opengl2fg.extractQuaternion());
+                    avatartc.addPosition(loc);
+                    avatartc.stepTo(0);
+                    // additional TeleportComponent for second level world teleport. Avatar/User already has a TeleportComponent. So we need a different
+                    // entity. But this doesn't work. Hmm, the navigator is really missing for the second level. Skip for now.
+                    /*EcsEntity dummy = new EcsEntity(new SceneNode());
+                    TeleportComponent secondLevelTeleport = new TeleportComponent(dummy.getSceneNode());
+                    for (PoiConfig poi : getPoiList(worldPois)) {
+                        secondLevelTeleport.addPosition(poi.getName(), world.getTransform(), poi.getTransform(new FgCalculations()));
+                    }
+                    dummy.addComponent(secondLevelTeleport);*/
+                }
                 if (teleporterSystem != null) {
                     teleporterSystem.setActivetc(avatartc);
                 }
@@ -729,7 +752,7 @@ public class TravelScene extends FlightTravelScene {
             boolean simplegraphtest = false;
             if (simplegraphtest) {
                 //4.12.23 VehicleDefinition configc172p = /*27.12.21 DefaultTrafficWorld.getInstance()*/ConfigHelper.getVehicleConfig(tw.tw, "c172p");
-                VehicleDefinition configc172p = TrafficHelper.getVehicleConfigByDataprovider( "c172p",null);
+                VehicleDefinition configc172p = TrafficHelper.getVehicleConfigByDataprovider("c172p", null);
                 GraphPosition c_4position = /*gsw.*/groundnet.getParkingPosition(/*gsw.*/groundnet.getParkPos("C_4"));
                 TrafficGraph trafficgraph = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildSimpleTestRouteB8toC4(/*gsw.*/groundnet);
                 VehicleLauncher.launchVehicle(new Vehicle("c172p"), configc172p, trafficgraph, new GraphPosition(trafficgraph.getBaseGraph().getEdge(0)),
@@ -739,7 +762,7 @@ public class TravelScene extends FlightTravelScene {
 
             //gsw.graphloaded = null;
             populated = true;
-            trafficSystem.groundNet=GroundServicesSystem.groundnetEDDK.groundnetgraph;
+            trafficSystem.groundNet = GroundServicesSystem.groundnetEDDK.groundnetgraph;
         }
 
         if (Input.getKeyDown(KeyCode.D)) {
@@ -1061,12 +1084,5 @@ public class TravelScene extends FlightTravelScene {
     }
 
 
-}
-
-class FlightSceneConfig {
-    //777 wegen Unity mesh collider mal weglassen
-
-    public static boolean simpleearth = false;
-    public static boolean terrainonly = false;//true;
 }
 

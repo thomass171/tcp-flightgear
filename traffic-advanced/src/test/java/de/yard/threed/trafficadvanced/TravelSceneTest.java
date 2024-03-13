@@ -58,18 +58,18 @@ public class TravelSceneTest {
      *
      */
     @Test
-    public void testWithDoormarker() throws Exception {
-        run(true);
+    public void testWithDoormarkerAndNavigator() throws Exception {
+        run(true, true);
     }
 
     @Test
     public void testWithoutDoormarker() throws Exception {
-        run(false);
+        run(false, false);
     }
 
-    public void run(boolean enableDoormarker) throws Exception {
+    public void run(boolean enableDoormarker, boolean enableNavigator) throws Exception {
 
-        setup( enableDoormarker);
+        setup(enableDoormarker, enableNavigator);
         Log log = Platform.getInstance().getLog(TravelSceneTest.class);
 
         assertEquals(INITIAL_FRAMES, sceneRunner.getFrameCount());
@@ -105,18 +105,27 @@ public class TravelSceneTest {
 
         //11 passt: "Player",5 GS Vehicle (3 LSG?, 2 Goldhofert?, no delayed aircraft),  Vehicle from sceneconfig (747, 737, 738, Bravo), 3 Aircraft
         //Why 15? (earth,moon,sun no longer exist)? + 7+24(??) animated scenery objects
-        int expectedNumberOfEntites = /*15*/12 + 7 + 18/*??*/;
+        int expectedNumberOfEntites = /*15*/(enableNavigator ? 12 : 11) + 7 + 18/*??*/;
         TestUtils.waitUntil(() -> {
             TestHelper.processAsync();
             sceneRunner.runLimitedFrames(1);
             List<EcsEntity> entities = SystemManager.findEntities((EntityFilter) null);
-            log.debug(""+entities.size());
+            log.debug("" + entities.size());
             return entities.size() == expectedNumberOfEntites;
         }, 60000);
 
         validateStaticEDDK(enableDoormarker);
-        // 2*3 for navigator, 2 for LSG, 1 for 738, position not tested
-        EcsTestHelper.assertTeleportComponent(userEntity, 3 + 3 + 2 + 1, 8, null);
+        if (enableNavigator) {
+            // 2*3 for navigator, 2 for LSG, 1 for 738, position not tested.
+            EcsTestHelper.assertTeleportComponent(userEntity, 3 + 3 + 2 + 1, 8, null);
+            EcsEntity navigator = EcsHelper.findEntitiesByName("Navigator").get(0);
+            assertNotNull(navigator);
+            // 10 and 4 appears correct
+            EcsTestHelper.assertTeleportComponent(navigator, 10, 4, null);
+        } else {
+            // without navigator we only have the eddk overview viewpoint
+            EcsTestHelper.assertTeleportComponent(userEntity,  1 + 2 + 1, 3, null);
+        }
 
         EcsEntity entity747 = EcsHelper.findEntitiesByName("747 KLM").get(0);
         assertNotNull(entity747);
@@ -196,11 +205,12 @@ public class TravelSceneTest {
     /**
      * Needs parameter, so no @Before
      */
-    private void setup(boolean enableDoormarker) throws Exception {
+    private void setup(boolean enableDoormarker, boolean enableNavigator) throws Exception {
         HashMap<String, String> properties = new HashMap<String, String>();
         properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         properties.put("visualizeTrack", "true");
         properties.put("enableDoormarker", "" + enableDoormarker);
+        properties.put("enableNavigator", "" + enableNavigator);
         //9.12.23 sceneRunner = TrafficTestUtils.setupForScene(INITIAL_FRAMES, ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties));
         FgTestFactory.initPlatformForTest(properties, false, true);
 
