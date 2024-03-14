@@ -29,10 +29,42 @@ public class AnimationUpdateSystem extends DefaultEcsSystem {
     }
     Log logger = Platform.getInstance().getLog(AnimationUpdateSystem.class);
     public static String TAG = "AnimationUpdateSystem";
+    // intersections are cached per frame
+    private List<NativeCollision> intersections = null;
 
     @Override
     public void init(EcsGroup group) {
         int z = 6;
+    }
+
+    @Override
+    public void frameinit() {
+        // Cache picking ray intersections for this frame instead of recalculating again and again when multiple entities are to be updated.
+
+        //long startTime = Platform.getInstance().currentTimeMillis();
+        Ray pickingray = null;
+
+        Point mouselocation = Input.getMouseDown();
+        /*if (mouselocation != null) {
+            logger.debug("getMouseDown: total from start: " + (Platform.getInstance().currentTimeMillis() - startTime) + " ms");
+        }*/
+
+        if (mouselocation != null) {
+            Camera camera = Scene.getCurrent().getDefaultCamera();
+            pickingray = camera.buildPickingRay(camera.getCarrierTransform(), mouselocation);
+            //logger.debug("buildPickingRay: total from start: " + (Platform.getInstance().currentTimeMillis() - startTime) + " ms");
+        }
+        if (Input.getControllerButtonDown(10)) {
+            logger.debug(" found controller button down 10 (right)");
+            pickingray = VrInstance.getInstance().getController(1).getRay();
+        }
+        // 13.3.24: No longer pass pickingray to any animation and do intersection check again and again. This is very inefficient.
+        // Instead pass the objects hit.
+
+        if (pickingray != null) {
+            intersections = pickingray.getIntersections();
+            // getIntersections already has its own performance warning
+        }
     }
 
     /**
@@ -40,28 +72,15 @@ public class AnimationUpdateSystem extends DefaultEcsSystem {
      */
     @Override
     public void update(EcsEntity entity, EcsGroup group, double tpf) {
-        Point mouselocation = Input.getMouseDown();
+        long startTime = Platform.getInstance().currentTimeMillis();
 
-        Ray pickingray = null;
-        if (mouselocation != null) {
-            Camera camera = Scene.getCurrent().getDefaultCamera();
-            pickingray = camera.buildPickingRay(camera.getCarrierTransform(), mouselocation);
-        }
-        if (Input.getControllerButtonDown(10)) {
-            logger.debug(" found controller button down 10 (right)");
-            pickingray = VrInstance.getInstance().getController(1).getRay();
-        }
-
-        // 13.3.24: No longer pass pickingray to any animation and do intersection check again and again. This is very inefficient.
-        // Instead pass the objects hit.
-        List<NativeCollision> intersections = null;
-        if (pickingray != null) {
-            intersections = pickingray.getIntersections();
-        }
         FgAnimationComponent ac = (FgAnimationComponent) group.cl.get(0);
         for (int i = 0; i < ac.animationList.size(); i++) {
             SGAnimation a = ac.animationList.get((i));
             a.process(intersections, new AUSRequestHandler());
+        }
+        if (Platform.getInstance().currentTimeMillis() - startTime > 10) {
+            logger.debug("update: total from start: " + (Platform.getInstance().currentTimeMillis() - startTime) + " ms");
         }
 
     }

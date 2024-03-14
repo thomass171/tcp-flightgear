@@ -449,7 +449,7 @@ public class SGPickAnimation extends SGAnimation {
     @Override
     public void process(List<NativeCollision> pickingrayintersections, RequestHandler requestHandler) {
         if (pickingrayintersections != null) {
-            //logger.debug("PickAnimation picking ray is " + pickingray);
+            //logger.debug("PickAnimation with  " + pickingrayintersections.size() + " intersections and " + _objectNames.size() + " objects to check");
 
             //node ist die destination node. darum die Childs durchgehen (ACPolicy kommt ja auch noch). NeeNee, gezielt nach den Obekten pruefen.
             for (String objectName : _objectNames) {
