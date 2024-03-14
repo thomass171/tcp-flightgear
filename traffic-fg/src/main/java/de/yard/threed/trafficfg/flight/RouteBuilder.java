@@ -19,7 +19,7 @@ import de.yard.threed.traffic.GreatCircle;
 import de.yard.threed.traffic.RunwayHelper;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.WorldGlobal;
-import de.yard.threed.traffic.flight.FlightRoute;
+import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.traffic.geodesy.ElevationProvider;
 import de.yard.threed.traffic.geodesy.GeoCoordinate;
 import de.yard.threed.traffic.geodesy.MapProjection;
@@ -43,9 +43,9 @@ public class RouteBuilder {
     /**
      * Die Projection wird für 2D gebraucht, weil die Route immer in 3D erstellt wird.
      */
-    public FlightRoute buildFlightRoute(Runway runway, MapProjection projection, int pattern) {
-        logger.debug("buildFlightRoute with projection " + projection);
-        FlightRoute graph = buildFlightGraphForAircraftTrafficPattern(runway/*, projection*/, (TerrainElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION), pattern);
+    public FlightRouteGraph buildFlightRouteGraph(Runway runway, MapProjection projection, int pattern) {
+        logger.debug("buildFlightRouteGraph with projection " + projection);
+        FlightRouteGraph graph = buildFlightGraphForAircraftTrafficPattern(runway/*, projection*/, (TerrainElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION), pattern);
         // GraphPath flightpath = GraphPath.buildFromNode(flightgraph.getNode(0),22);
         //graph ist in 3D und nicht gesmoothed. Wenn die Scene eine Projection verwendet
         //muss der Graph vor dem Smoothen umprojected werden.
@@ -72,10 +72,10 @@ public class RouteBuilder {
      *
      * @return
      */
-    public FlightRoute buildFlightGraphForAircraftTrafficPattern(Runway departing, TerrainElevationProvider elevationprovider, int pattern) {
+    public FlightRouteGraph buildFlightGraphForAircraftTrafficPattern(Runway departing, TerrainElevationProvider elevationprovider, int pattern) {
         Graph graph = buildTakeOffGraph(departing, platzrundealtitude, elevationprovider);
         GraphNode sidnode = graph.getNode(graph.getNodeCount() - 1);
-        FlightRoute flightRoute = null;
+        FlightRouteGraph flightRoute = null;
         Vector3 loc;
         GraphNode n;
         RunwayHelper departingRunwayHelper = new RunwayHelper(departing, new FgCalculations());
@@ -97,7 +97,7 @@ public class RouteBuilder {
                 graph.connectNodes(turn0, turn1, "gegenanflug");
                 addLandingGraph(departing, graph, turn1, platzrundealtitude, elevationprovider);
                 graph.setName("Platzrunde");
-                flightRoute = new FlightRoute(graph, graph.getEdge(1), graph.getEdge(graph.getEdgeCount() - 2));
+                flightRoute = new FlightRouteGraph(graph, graph.getEdge(1), graph.getEdge(graph.getEdgeCount() - 2));
                 flightRoute.nextDestination = Destination.buildForLanding(departing);
                 break;
             case 1:
@@ -126,7 +126,7 @@ public class RouteBuilder {
                     SGGeod g = SGGeod.fromCart(loc);
                     //logger.debug("geod=" + g);
                 }
-                flightRoute = new FlightRoute(graph, graph.getEdge(1), graph.getEdge(graph.getEdgeCount() - 2));
+                flightRoute = new FlightRouteGraph(graph, graph.getEdge(1), graph.getEdge(graph.getEdgeCount() - 2));
                 flightRoute.nextDestination = Destination.buildForLanding(departing);
                 break;
             case 2:
@@ -142,7 +142,7 @@ public class RouteBuilder {
                 n = graph.addNode("", loc);
                 graph.connectNodes(highlastnode, n);
 
-                flightRoute = new FlightRoute(graph, graph.getEdge(1), graph.getEdge(graph.getEdgeCount() - 2));
+                flightRoute = new FlightRouteGraph(graph, graph.getEdge(1), graph.getEdge(graph.getEdgeCount() - 2));
                 break;
             case 3:
                 //Equator Transit Orbit Enter. Von der Sid node noch im local Orbit Grosskreis weiter und am Equator Richtung India "abbiegen". Dort graph complete.
@@ -168,7 +168,7 @@ public class RouteBuilder {
                 //nur halb, dann Spherewechsel
                 GraphNode trEnterNode = extendGraph(graph,eorbit.getNodeCount()/2,eorbit);*/
                 // TODO pruefen, ob das Smoothing des graph richtig endet.
-                flightRoute = new FlightRoute(graph, graph.getEdge(1), graph.getEdge(graph.getEdgeCount() - 2));
+                flightRoute = new FlightRouteGraph(graph, graph.getEdge(1), graph.getEdge(graph.getEdgeCount() - 2));
                 flightRoute.nextDestination = new Destination(equatorentry.toGeoCoordinate());
                 break;
             case 4:
@@ -180,7 +180,7 @@ public class RouteBuilder {
                 graph.connectNodes(sidnode, last0, "abflug");
                 graph.setName("SID Abflug");
 
-                flightRoute = new FlightRoute(graph, graph.getEdge(1), null);
+                flightRoute = new FlightRouteGraph(graph, graph.getEdge(1), null);
                 //TODO bis approachenter. Das geht aber nur, wenn Airportinfos verfuegbar sind.
                 flightRoute.nextDestination = Destination.buildForApproachEnter();
 
@@ -206,10 +206,10 @@ public class RouteBuilder {
     /**
      * @return
      */
-    public FlightRoute buildFlightGraph(Runway departing, TerrainElevationProvider elevationprovider, String flightdestination) {
+    public FlightRouteGraph buildFlightGraph(Runway departing, TerrainElevationProvider elevationprovider, String flightdestination) {
         Graph graph = buildTakeOffGraph(departing, cruisingaltitude, elevationprovider);
         GraphNode sidnode = graph.getNode(graph.getNodeCount() - 1);
-        FlightRoute flightRoute = null;
+        FlightRouteGraph flightRoute = null;
 
         //TODO: 2.4.19: Es fehlt noch ein allgemeingültiges Handhaben von Runways. Solange gehts hier nicht weiter.
         return flightRoute;

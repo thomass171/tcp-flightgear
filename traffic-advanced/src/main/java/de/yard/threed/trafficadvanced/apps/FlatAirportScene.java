@@ -86,7 +86,7 @@ import de.yard.threed.traffic.config.SceneConfig;
 import de.yard.threed.traffic.config.VehicleConfigDataProvider;
 import de.yard.threed.traffic.config.XmlVehicleDefinition;
 import de.yard.threed.traffic.flight.DoormarkerDelegate;
-import de.yard.threed.traffic.flight.FlightRoute;
+import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.traffic.geodesy.GeoCoordinate;
 import de.yard.threed.traffic.osm.OsmRunway;
 import de.yard.threed.trafficcore.model.Runway;
@@ -513,7 +513,7 @@ public class FlatAirportScene extends FlightTravelScene {
                 if (platzrunde == null) {
                     // Zum Test direkt mal den Rundflug einblenden
                     Runway runway14l = OsmRunway.eddk14L(/*(TerrainElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION)*/);
-                    FlightRoute tour = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRoute(runway14l, GroundServicesSystem.groundnetEDDK.projection, 0);
+                    FlightRouteGraph tour = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRouteGraph(runway14l, GroundServicesSystem.groundnetEDDK.projection, 0);
                     platzrunde = tour.getPath();
                     SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_PATHCREATED, new Payload(tour.getGraph(), platzrunde)));
                 }

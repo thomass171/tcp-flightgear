@@ -10,7 +10,7 @@ import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.graph.Graph;
 import de.yard.threed.javacommon.JavaBundleResolverFactory;
 import de.yard.threed.javacommon.SimpleHeadlessPlatformFactory;
-import de.yard.threed.traffic.flight.FlightRoute;
+import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.traffic.geodesy.SimpleMapProjection;
 import de.yard.threed.traffic.osm.OsmRunway;
 import de.yard.threed.trafficcore.model.Runway;
@@ -40,7 +40,7 @@ public class RouteBuilderTest {
         //Geht ECS ueberhaupt im Test? Hmmm.Lassen wir mal.
         //EcsEntity aircraft = new EcsEntity(null, new GraphMovingComponent(null, null, null));
         SimpleMapProjection projection = (SimpleMapProjection) groundnet.projection;
-        FlightRoute flightpath = new RouteBuilder(new FgCalculations()).buildFlightGraphForAircraftTrafficPattern(runway14l/*,projection*/,TerrainElevationProvider.buildForStaticAltitude(80),0);
+        FlightRouteGraph flightpath = new RouteBuilder(new FgCalculations()).buildFlightGraphForAircraftTrafficPattern(runway14l/*,projection*/,TerrainElevationProvider.buildForStaticAltitude(80),0);
         System.out.println("flightpath=" + flightpath);
     }
 
@@ -54,7 +54,7 @@ public class RouteBuilderTest {
     @Test
     public void testEDDKOrbit() {
         Runway runway14l = OsmRunway.eddk14L();
-        FlightRoute orbit = new RouteBuilder(new FgCalculations()).buildFlightGraphForAircraftTrafficPattern(runway14l,TerrainElevationProvider.buildForStaticAltitude(80),1);
+        FlightRouteGraph orbit = new RouteBuilder(new FgCalculations()).buildFlightGraphForAircraftTrafficPattern(runway14l,TerrainElevationProvider.buildForStaticAltitude(80),1);
         Assertions.assertEquals("takeoff", orbit.takeoffedge.getName(),"takeoff name");
         //23.11.18: ist noch nicht smooth 
         Assertions.assertEquals( 260, orbit.getGraph().getEdgeCount(),"segments");
@@ -64,7 +64,7 @@ public class RouteBuilderTest {
     @Test
     public void testEDDKtoEDDF() {
         Runway runway14l = OsmRunway.eddk14L();
-        FlightRoute route = new RouteBuilder(new FgCalculations()).buildFlightGraph(runway14l, TerrainElevationProvider.buildForStaticAltitude(80),"EDDF");
+        FlightRouteGraph route = new RouteBuilder(new FgCalculations()).buildFlightGraph(runway14l, TerrainElevationProvider.buildForStaticAltitude(80),"EDDF");
         //Assertions.assertEquals("takeoff name", "takeoff", route.takeoffedge.getName());
         //ist noch nicht smooth
         //Assertions.assertFalse("smoothed",route.isSmoothed());
@@ -78,7 +78,7 @@ public class RouteBuilderTest {
     @Test
     public void testFromCologneToEquatorOrbit() {
         Runway runway14l = OsmRunway.eddk14L();
-        FlightRoute orbit = new RouteBuilder(new FgCalculations()).buildFlightGraphForAircraftTrafficPattern(runway14l,TerrainElevationProvider.buildForStaticAltitude(80),3);
+        FlightRouteGraph orbit = new RouteBuilder(new FgCalculations()).buildFlightGraphForAircraftTrafficPattern(runway14l,TerrainElevationProvider.buildForStaticAltitude(80),3);
 
         // 300 ist plausibel. 22.3.20 nur noch 172?? TODO
         //TODO TestUtil.assertEquals("segments", 44+256, orbit.getGraph().getEdgeCount());

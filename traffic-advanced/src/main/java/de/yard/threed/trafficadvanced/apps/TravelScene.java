@@ -100,7 +100,7 @@ import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.config.XmlVehicleDefinition;
 import de.yard.threed.traffic.flight.DoormarkerDelegate;
 import de.yard.threed.traffic.flight.FlightLocation;
-import de.yard.threed.traffic.flight.FlightRoute;
+import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.traffic.geodesy.GeoCoordinate;
 import de.yard.threed.traffic.osm.OsmRunway;
 import de.yard.threed.trafficcore.model.Runway;
@@ -190,7 +190,7 @@ public class TravelScene extends FlightTravelScene {
     //TrafficWorld3D gsw;
     Graph orbit;
     //22.10.21 boolean useteleport = true;
-    private FlightRoute platzrunde/*, orbittour*/;
+    private FlightRouteGraph platzrunde/*, orbittour*/;
     VehicleDefinition configShuttle;
     private EcsEntity orbitingvehicle = null;
     private boolean avatarInited = false;
@@ -831,7 +831,7 @@ public class TravelScene extends FlightTravelScene {
             logger.info("Building Platzrunde");
             // Zum Test direkt mal den Rundflug einblenden
             Runway runway14l = OsmRunway.eddk14L();
-            platzrunde = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRoute(runway14l, null, 0);
+            platzrunde = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRouteGraph(runway14l, null, 0);
             SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_PATHCREATED, new Payload(platzrunde.getGraph(), platzrunde.getPath())));
         }
         /*18.10.19: Warum soll die denn schon vcorab angelegt werden?
@@ -856,7 +856,7 @@ public class TravelScene extends FlightTravelScene {
      * @param equatorOrbit
      * @return
      */
-    FlightRoute buildOrbitTour(boolean equatorOrbit) {
+    FlightRouteGraph buildOrbitTour(boolean equatorOrbit) {
          /*schwierig zu erkennen, s.o. if (!terrainavailable){
              logger.error("no terrain");
              return null;
@@ -864,7 +864,7 @@ public class TravelScene extends FlightTravelScene {
 
         logger.info("Building orbittour");
         Runway runway14l = OsmRunway.eddk14L();
-        FlightRoute orbittour = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRoute(runway14l, null, (equatorOrbit) ? 3 : 1);
+        FlightRouteGraph orbittour = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRouteGraph(runway14l, null, (equatorOrbit) ? 3 : 1);
         SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_PATHCREATED, new Payload(orbittour.getGraph(), orbittour.getPath())));
             /*for (int i = 0; i < orbitgraph.getNodeCount(); i++) {
                 Vector3 loc = orbitgraph.getNode(i).getLocation();
@@ -908,10 +908,10 @@ public class TravelScene extends FlightTravelScene {
     }
 
     /**
-     * Eine FlightRoute mit aktuellem Vehicle starten. (ueber Graph).
-     * TODO: Das Vehicle muesste sich erst noch zum Start der FlightRoute bewegen.
+     * Eine FlightRouteGraph mit aktuellem Vehicle starten. (ueber Graph).
+     * TODO: Das Vehicle muesste sich erst noch zum Start der FlightRouteGraph bewegen.
      */
-    void startFlightRoute(FlightRoute route) {
+    void startFlightRouteGraph(FlightRouteGraph route) {
 
         //14.11.18: Eine GMC beisst sich zwar mit dem Teleporter, aber damit er sich mal im Orbit bewegen.
         //das ist etwas provisorisch

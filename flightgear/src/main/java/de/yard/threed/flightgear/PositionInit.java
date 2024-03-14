@@ -27,7 +27,7 @@ public class PositionInit {
         FGProperties.fgSetDouble( "/position/longitude-deg",loc.coordinates.getLonDeg().getDegree());
         FGProperties.fgSetDouble( "/position/latitude-deg",loc.coordinates.getLatDeg().getDegree());
         FGProperties.fgSetDouble( "/orientation/heading-deg", loc.heading.getDegree());
-        FGProperties.fgSetDouble("/position/altitude-ft", Constants.getElevationFt((float) loc.coordinates.getElevationM()));
+        FGProperties.fgSetDouble("/position/altitude-ft", Constants.getElevationFt((double) loc.coordinates.getElevationM()));
         FGProperties.fgSetBool("/sim/position-finalized", true);
 
     }

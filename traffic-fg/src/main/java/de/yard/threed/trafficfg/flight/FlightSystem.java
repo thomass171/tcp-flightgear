@@ -31,7 +31,7 @@ import de.yard.threed.traffic.TrafficEventRegistry;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.Travelplan;
 import de.yard.threed.traffic.VehicleComponent;
-import de.yard.threed.traffic.flight.FlightRoute;
+import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.trafficcore.model.Runway;
 import de.yard.threed.trafficfg.TrafficRequest;
 
@@ -265,7 +265,7 @@ public class FlightSystem extends DefaultEcsSystem {
             pattern = travelDestination.getPattern();
         }
         // 28.9.18: Die projection ist wirklich nur fuer 2D? Klingt plausibel.
-        FlightRoute flightRoute = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRoute(departing,
+        FlightRouteGraph flightRoute = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRouteGraph(departing,
                 (/*27.12.21DefaultTrafficWorld.getInstance() == null*/false) ? null : TrafficHelper.getProjectionByDataprovider().projection, pattern);
         GraphPath smoothedflightpath = flightRoute.getPath();
         Graph graph = flightRoute.getGraph();

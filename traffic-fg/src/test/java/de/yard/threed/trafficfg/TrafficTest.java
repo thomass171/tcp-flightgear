@@ -25,7 +25,7 @@ import de.yard.threed.javacommon.JavaBundleResolverFactory;
 import de.yard.threed.javacommon.SimpleHeadlessPlatformFactory;
 import de.yard.threed.traffic.EllipsoidConversionsProvider;
 import de.yard.threed.traffic.NodeCoord;
-import de.yard.threed.traffic.flight.FlightRoute;
+import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.traffic.geodesy.GeoCoordinate;
 import de.yard.threed.traffic.geodesy.SimpleMapProjection;
 import de.yard.threed.traffic.osm.OsmRunway;
@@ -76,7 +76,7 @@ public class TrafficTest {
         TerrainElevationProvider tep = (TerrainElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION);
         assertNotNull( tep,"elevation provider");
         Assertions.assertEquals( 27, tep.getAltitude(), 0.5,"altitude from elevation provider");
-        FlightRoute route = new RouteBuilder(new FgCalculations()).buildFlightRoute(runway14l, projection, 0);
+        FlightRouteGraph route = new RouteBuilder(new FgCalculations()).buildFlightRouteGraph(runway14l, projection, 0);
         GraphPath smoothedflightpath = route.getPath();
         Graph graph = route.getGraph();
         //sind durch smoothing viel mehr als 7
@@ -99,7 +99,7 @@ public class TrafficTest {
         tep = (TerrainElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION);
         assertNotNull( tep,"elevation provider");
         Assertions.assertEquals( 27, tep.getAltitude(), 0.5,"altitude from elevation provider");
-        route = new RouteBuilder(new FgCalculations()).buildFlightRoute(runway14l, null, 0);
+        route = new RouteBuilder(new FgCalculations()).buildFlightRouteGraph(runway14l, null, 0);
         smoothedflightpath = route.getPath();
         graph = route.getGraph();
         System.out.println("platzrunde=" + smoothedflightpath);
