@@ -314,7 +314,7 @@ public class FlatAirportScene extends FlightTravelScene {
         //groundnet is set later
 
         // 4.12.23 Preload config parallel to later SphereSystem for location list
-        TrafficConfig trafficConfig = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), new BundleResource("EDDK.xml"));
+        TrafficConfig trafficConfig = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), new BundleResource("flight/EDDK.xml"));
         airportDefinition = trafficConfig.findAirportDefinitionsByIcao("EDDK").get(0);
 
         trafficSystem.locationList = getLocationList();
@@ -356,7 +356,7 @@ public class FlatAirportScene extends FlightTravelScene {
         return new GroundNetTerrainBuilder();
     }
 
-    public static String DEFAULT_TILENAME = "traffic-advanced:EDDK-flat.xml";
+    public static String DEFAULT_TILENAME = "traffic-fg:flight/EDDK-flat.xml";
 
     @Override
     public String getDefaultTilename() {

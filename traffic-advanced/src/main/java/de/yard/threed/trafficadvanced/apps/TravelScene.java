@@ -233,8 +233,8 @@ public class TravelScene extends FlightTravelScene {
 
         //gsw = new DefaultTrafficWorldForFlightScene("EDDK");
         //30.11.23 tw = TrafficWorldConfig.readConfig("data-old", "TrafficWorld.xml");
-        TrafficConfig trafficConfig = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), new BundleResource("EDDK.xml"));
-        worldPois = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), new BundleResource("world-pois.xml"));
+        TrafficConfig trafficConfig = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), new BundleResource("flight/EDDK.xml"));
+        worldPois = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), new BundleResource("flight/world-pois.xml"));
         //30.11.23 sceneConfig = tw.getScene("Flight");
         airportDefinition = trafficConfig.findAirportDefinitionsByIcao("EDDK").get(0);
 

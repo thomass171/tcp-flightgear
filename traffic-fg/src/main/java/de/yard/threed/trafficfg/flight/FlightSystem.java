@@ -36,15 +36,14 @@ import de.yard.threed.trafficcore.model.Runway;
 import de.yard.threed.trafficfg.TrafficRequest;
 
 /**
- * Bewegt auf Request ein Aircraft von einem Airport zum anderen. In 2D nur Platzrunde.
+ * On request moves an aircraft from airport to airport. In 2D only a local pattern('Platzrunde').
  * <p>
- * War mal als TravelSystem angedacht.
+ * Was intended as TravelSystem.
  * <p>
  * Created by thomass on 26.03.19.
  */
 public class FlightSystem extends DefaultEcsSystem {
     private static Log logger = Platform.getInstance().getLog(FlightSystem.class);
-    boolean flightsystemdebuglog = true;
     public static String TAG = "FlightSystem";
 
     /**
@@ -89,9 +88,8 @@ public class FlightSystem extends DefaultEcsSystem {
         if (entity.isLockedBy(this) && gmc.pathCompleted() && vhc.travelplan != null) {
             //dann bin ich zuständig
             Destination destination = vhc.travelplan.getCurrentDestination();
-            if (flightsystemdebuglog) {
-                logger.debug("found aircraft with completed path. destination=" + destination+",entity="+entity.getName());
-            }
+            logger.debug("found aircraft with completed path. destination=" + destination + ",entity=" + entity.getName());
+
             if (destination.type == Destination.TYPE_FOR_TAKEOFF/*vc.taxiingfortakeoff*/) {
                 buildAircraftDepartAction(entity, destination.runway);
             }
@@ -107,9 +105,7 @@ public class FlightSystem extends DefaultEcsSystem {
 
     @Override
     public boolean processRequest(Request request) {
-        if (flightsystemdebuglog) {
-            logger.debug("got event " + request.getType());
-        }
+        logger.debug("got event " + request.getType());
         if (request.getType().equals(RequestRegistry.TRAFFIC_REQUEST_AIRCRAFTDEPARTING)) {
             //  Servicepoint cleanen? Evtl. ist ja noch Service aktiv. TODO
             TrafficRequest tr = (TrafficRequest) request.getPayloadByIndex(0);
@@ -131,18 +127,13 @@ public class FlightSystem extends DefaultEcsSystem {
 
     @Override
     public void process(Event evt) {
-        if (flightsystemdebuglog) {
-            logger.debug("got event " + evt.getType());
-        }
+        logger.debug("got event " + evt.getType());
         if (evt.getType().equals(GraphEventRegistry.GRAPH_EVENT_PATHCOMPLETED)) {
             EcsEntity vehicle = (EcsEntity) evt.getPayloadByIndex(2);
             VehicleComponent vc = VehicleComponent.getVehicleComponent(vehicle);
-
         }
         if (evt.getType().equals(TrafficEventRegistry.TRAFFIC_EVENT_AIRPORT_LOADED)) {
-
         }
-
     }
 
     @Override
@@ -170,11 +161,11 @@ public class FlightSystem extends DefaultEcsSystem {
         GroundNet groundNet = null;
         Runway runway = null;
         //27.12.21 if (DefaultTrafficWorld.getInstance() != null) {
-            //27.12.21 vorerst immer EDDK
-            // groundNet = DefaultTrafficWorld.getInstance().getGroundNet(icao);
-            // runway = DefaultTrafficWorld.getInstance().getAirport(icao).getRunways()[0];
-            groundNet = GroundServicesSystem.groundnetEDDK;
-            runway = GroundServicesSystem.airport.getRunways()[0];
+        //27.12.21 vorerst immer EDDK
+        // groundNet = DefaultTrafficWorld.getInstance().getGroundNet(icao);
+        // runway = DefaultTrafficWorld.getInstance().getAirport(icao).getRunways()[0];
+        groundNet = GroundServicesSystem.groundnetEDDK;
+        runway = GroundServicesSystem.airport.getRunways()[0];
         //}
         if (groundNet == null) {
             logger.warn("no groundnet");
@@ -189,7 +180,7 @@ public class FlightSystem extends DefaultEcsSystem {
             logger.error("No holding found on runway " + runway.getName());
             return;
         }
-        if (start==null){
+        if (start == null) {
             //Seit 2/2023 bei TravelScene (s)tart. Wahrscheinlich war das schon immer so, wenn man (s) vor (l) pressed.
             throw new RuntimeException("start is null");
         }
@@ -305,7 +296,7 @@ public class FlightSystem extends DefaultEcsSystem {
         Graph trafficGraph = gmc.getGraph();
 
         EllipsoidCalculations rbcp = TrafficHelper.getEllipsoidConversionsProviderByDataprovider();
-        Vector3 starte1 = rbcp.toCart(localOrbitEntry.equatorentry,null);
+        Vector3 starte1 = rbcp.toCart(localOrbitEntry.equatorentry, null);
         Graph graph = SolarSystem.buildLocalOrbitGraph(starte1);
         GraphPosition position = new GraphPosition(graph.getEdge(0));
         gmc.setGraph(graph, position, null);

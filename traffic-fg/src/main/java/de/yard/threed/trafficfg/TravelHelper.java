@@ -25,7 +25,8 @@ public class TravelHelper {
      * muss sich dann nochmal zeigen.
      * 9.5.19: Auf jeden Fall ist es wirklich für einen Flug (und damit wechsel des Graphen) nicht für innerhalb eines Graph.
      * <p>
-     * Verschickt dann nur ein Event als Request. Gehört darum besser nicht in TrafficHelper? Naja, vielleicht doch. Vielleicht kann man es weiter eindampfen.
+     * Just send a request for a 'depart'.
+     *
      */
     public static void startFlight(EcsEntity aircraft, Destination flightdestination) {
 
@@ -33,30 +34,8 @@ public class TravelHelper {
             logger.warn("no aircraft");
             return;
         }
-        //9.10.19: Warum denn keycontrolled?Was soll damit gesteuert werden? Speed geht automatisch und Start/Stop über den Graphpath. Ich lass das mal.
-        //Und wenn Speed mal gesteuert wird, lieber ueber menu/pick animation statt key.
-        /*boolean keycontrolled = false;//true;
-        if (keycontrolled) {
-            //beim keycontrol scheitert manchmal der Graphwechsel. TODO
-            GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(aircraft);
-            //28.9.18: automoce lassen, damit es direkt losgeht.
-            //gmc.setAutomoveEnabled(false);
-            gmc.keycontrolled = true;
-        }*/
-
-
-        boolean use172p = true;
-        if (use172p) {
-                    /*GraphEdge ed = groundnet.groundnetgraph.findEdgeByName("128-129");
-                    GraphPosition start = new GraphPosition(ed, ed.getLength() - 80, false);
-                    loadFlightGearAircraft(0, start);*/
-        } else {
-            //ArrivedAircraft ac1 = arrivedaircraft.get(major);
-        }
-        Request evt6 = new Request(RequestRegistry.TRAFFIC_REQUEST_AIRCRAFTDEPARTING, new Payload(new Object[]{new TrafficRequest(aircraft, /*positiononrunway, runway, groundNet,*/ flightdestination)}));
-        //mal ueber ECS versuchen requestQueue.addRequest(evt6);
+        Request evt6 = new Request(RequestRegistry.TRAFFIC_REQUEST_AIRCRAFTDEPARTING, new Payload(new Object[]{new TrafficRequest(aircraft, flightdestination)}));
         SystemManager.putRequest(evt6);
-
     }
 
     public static void startFlight(Destination travelDestination, EcsEntity currentvehicle) {

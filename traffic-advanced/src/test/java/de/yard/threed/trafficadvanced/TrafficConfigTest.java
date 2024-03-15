@@ -44,6 +44,7 @@ public class TrafficConfigTest {
         Platform platform = FgTestFactory.initPlatformForTest(false, false);
 
         EngineTestFactory.loadBundleAndWait("traffic-advanced");
+        EngineTestFactory.loadBundleAndWait("traffic-fg");
 
     }
 
@@ -60,7 +61,7 @@ public class TrafficConfigTest {
 
         List<NativeNode> viewpoints ;
 
-        TrafficConfig eddkFlat = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), BundleResource.buildFromFullString("EDDK-flat.xml"));
+        TrafficConfig eddkFlat = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), BundleResource.buildFromFullString("flight/EDDK-flat.xml"));
         assertNotNull(eddkFlat);
         viewpoints = eddkFlat.getViewpoints();
         Assertions.assertEquals(2, viewpoints.size(), "viewpoints");
@@ -69,14 +70,14 @@ public class TrafficConfigTest {
         AirportDefinition ad = eddkFlat.findAirportDefinitionsByIcao("EDDK").get(0);
         Assertions.assertEquals(2, ad.getLocations().size(), "locations.EDDK.size");
 
-        TrafficConfig eddfFlat = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), BundleResource.buildFromFullString("EDDF-flat.xml"));
+        TrafficConfig eddfFlat = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), BundleResource.buildFromFullString("flight/EDDF-flat.xml"));
         assertNotNull(eddfFlat);
         viewpoints = eddfFlat.getViewpoints();
         Assertions.assertEquals(2, viewpoints.size(), "viewpoints");
         Assertions.assertEquals("TopView00", ConfigHelper.buildViewpoint(viewpoints.get(0)).name, "viewpoint0.name");
         Assertions.assertEquals("TopView", ConfigHelper.buildViewpoint(viewpoints.get(1)).name, "viewpoint1.name");
 
-        AirportDefinition eddk = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), BundleResource.buildFromFullString("EDDK.xml")).findAirportDefinitionsByIcao("EDDK").get(0);
+        AirportDefinition eddk = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), BundleResource.buildFromFullString("flight/EDDK.xml")).findAirportDefinitionsByIcao("EDDK").get(0);
         Assertions.assertNotNull(eddk, "eddk");
         Assertions.assertEquals(3, eddk.getVehicles().size(), "vehiclecnt");
         Assertions.assertEquals("737-800 AB", eddk.getVehicles().get(1).getName(), "vehicle1.name");
@@ -130,8 +131,8 @@ public class TrafficConfigTest {
 
     @Test
     public void testPoi() {
-        TrafficConfig worldPois = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), BundleResource.buildFromFullString("world-pois.xml"));
-
+        TrafficConfig worldPois = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), BundleResource.buildFromFullString("flight/world-pois.xml"));
+        assertNotNull(worldPois);
         PoiConfig poi = worldPois.getPoiByName("equator20000");
         Assertions.assertNotNull(poi, "poi");
         Assertions.assertEquals("equator20000", poi.getName(), "poi.name");

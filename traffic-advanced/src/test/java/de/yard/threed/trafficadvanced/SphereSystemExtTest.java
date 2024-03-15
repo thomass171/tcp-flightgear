@@ -67,7 +67,8 @@ public class SphereSystemExtTest {
                 ConfigurationByEnv.buildDefaultConfigurationWithEnv(new HashMap<>()));*/
         Platform platform = FgTestFactory.initPlatformForTest(false, false);
 
-        EngineTestFactory.loadBundleSync("traffic-advanced");
+        EngineTestFactory.loadBundleAndWait("traffic-advanced");
+        EngineTestFactory.loadBundleAndWait("traffic-fg");
 
         //5.12.23 TODO ?? AbstractSceneRunner.instance.httpClient = new AirportDataProviderMock();
     }
@@ -127,7 +128,7 @@ public class SphereSystemExtTest {
             //assertNull("", DefaultTrafficWorld.getInstance());
 
             //4.12.23 TrafficWorldConfig tw =  TrafficWorldConfig.readConfig("data-old", "TrafficWorld.xml");
-            TrafficConfig eddkFlat = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), BundleResource.buildFromFullString("EDDK-flat.xml"));
+            TrafficConfig eddkFlat = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), BundleResource.buildFromFullString("flight/EDDK-flat.xml"));
             assertNotNull(eddkFlat);
 
             SceneConfig sceneConfig = null;//4.12.23 tw.getScene(scene);

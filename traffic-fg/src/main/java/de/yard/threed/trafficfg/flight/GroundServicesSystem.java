@@ -133,8 +133,8 @@ public class GroundServicesSystem extends DefaultEcsSystem {
     // also need it for parking positions(?) and "followme" services.
     public static AirportConfig airport;
     // historical defaults for EDDK
-    public static String airportConfigBundle = "traffic-advanced";
-    public static String airportConfigFullName = "EDDK.xml";
+    public static String airportConfigBundle = "traffic-fg";
+    public static String airportConfigFullName = "flight/EDDK.xml";
     public static String TAG = "GroundServicesSystem";
 
     /**

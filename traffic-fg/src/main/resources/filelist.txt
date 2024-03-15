@@ -15,3 +15,8 @@ flight/Demo.xml
 flight/navigator.xml
 flight/navigator.pcm
 flight/EDDK-bluebird.xml
+flight/EDDK.xml
+flight/EDDK-flat.xml
+flight/EDDF.xml
+flight/EDDF-flat.xml
+flight/world-pois.xml

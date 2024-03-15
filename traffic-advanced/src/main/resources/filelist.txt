@@ -1,7 +1,2 @@
-EDDK.xml
-EDDK-flat.xml
-EDDF.xml
-EDDF-flat.xml
 vehicle-definitions.xml
-world-pois.xml
 Hangar.xml
