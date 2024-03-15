@@ -30,6 +30,13 @@
         <location>groundnet:184-183</location>
         <!-- die fuer 777? -->
         <location>groundnet:128-129</location>
+
+        <!-- 15.3.24: destinationlist formerly in GroundnetMetadata and in the far past used in AutomoveSystem. Its unclear whether and how
+        to use it. Today it seems useful to have groundservice focussed in some areas. So keep it for future use.
+        eddk.destinationlist.add("C_4");
+        eddk.destinationlist.add("E20");
+        eddk.destinationlist.add("C_7");
+        -->
     </airportdefinition>
 
     <!-- From  <scene name="Flight"> -->

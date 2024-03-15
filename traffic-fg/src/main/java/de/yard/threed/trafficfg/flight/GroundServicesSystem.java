@@ -4,10 +4,8 @@ import de.yard.threed.core.CharsetException;
 import de.yard.threed.core.Event;
 import de.yard.threed.core.EventType;
 import de.yard.threed.core.Payload;
-import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.XmlException;
-import de.yard.threed.core.loader.StringReader;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleData;
@@ -32,7 +30,6 @@ import de.yard.threed.graph.GraphNode;
 import de.yard.threed.graph.GraphPath;
 import de.yard.threed.graph.GraphPosition;
 import de.yard.threed.graph.TurnExtension;
-import de.yard.threed.traffic.JsonUtil;
 import de.yard.threed.traffic.NoElevationException;
 import de.yard.threed.traffic.RequestRegistry;
 import de.yard.threed.traffic.ScenerySystem;
@@ -42,7 +39,6 @@ import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.TrafficSystem;
 import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.traffic.config.VehicleDefinition;
-import de.yard.threed.traffic.config.XmlVehicleDefinition;
 import de.yard.threed.traffic.geodesy.MapProjection;
 import de.yard.threed.traffic.geodesy.SimpleMapProjection;
 import de.yard.threed.trafficcore.model.Airport;
@@ -363,27 +359,25 @@ public class GroundServicesSystem extends DefaultEcsSystem {
 
                     // code from AirportDataProviderMock
                     logger.debug("Adding airport with groundnet (fka AirportDataProviderMock)");
-                    GroundNetMetadata md = GroundNetMetadata.getMap().get(icao);
-                    if (md == null) {
-                        throw new RuntimeException("icao not found in GroundNetMetadata:" + icao);
-                    }
-                    //Wegen dependencies Daten aus Bundle
-                    BundleData b = GroundServicesSystem.getBundleForIcao(icao);
-                    if (b == null) {
+                    // Wegen dependencies Daten aus Bundle
+                    BundleData groundnetData = GroundServicesSystem.getGroundnetFromBundleForIcao(icao);
+                    if (groundnetData == null) {
                         throw new RuntimeException("no bundle groundnetdefinition found for " + icao);
                     }
                     String groundnetdefinition;
                     try {
-                        groundnetdefinition = b.getContentAsString();
+                        groundnetdefinition = groundnetData.getContentAsString();
                     } catch (CharsetException e) {
                         // TODO improved eror handling
                         throw new RuntimeException(e);
                     }
-                    Airport airport = md.airport;
-                    airport.setGroundNetXml(groundnetdefinition.replace("\n", ""));
-                    //wegen final compile error later
-                    Airport ap = airport;
-                    addAirport(ap);
+                    String groundnetXml = groundnetdefinition.replace("\n", "");
+                    AirportConfig airportConfig = AirportConfig.buildFromAirportConfig(airportConfigBundle, airportConfigFullName, icao, groundnetXml);
+                    if (airportConfig == null) {
+                        //keine config daten
+                        //15.3.24 TODO what? airport = new AirportConfig(ap);
+                    }
+                    GroundServicesSystem.airport = airportConfig;
                 }
                 //true because request was processed. No info about success.
                 return true;
@@ -391,26 +385,6 @@ public class GroundServicesSystem extends DefaultEcsSystem {
             }
         }
         return false;
-    }
-
-    /**
-     * Aus DefaultTrafficWorld
-     * 20.11.23: The use case for this method seems REST, but its always used via mock(?). Needs refactoring anyway.
-     */
-    private void addAirport(Airport/*Config*/ ap) {
-        //20.11.23 TrafficWorldConfig tw = TrafficWorldConfig.readDefault();
-        //20.11.23 AirportConfig airport = tw.getAirportConfig(ap.getIcao());
-        AirportConfig airport = AirportConfig.buildFromAirportConfig(airportConfigBundle, airportConfigFullName, ap.getIcao());
-        if (airport == null) {
-            //keine config daten
-            airport = new AirportConfig(ap);
-        } else {
-            airport.airport = ap;
-        }
-        //knownAirports.put(ap.getIcao(),/*new AirportConfig*/(airport));
-        GroundServicesSystem.airport = airport;
-        //TODO groundnet?
-
     }
 
     @Override
@@ -734,7 +708,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
      * @param icao
      * @return
      */
-    public static BundleData getBundleForIcao(String icao) {
+    public static BundleData getGroundnetFromBundleForIcao(String icao) {
         //BundleData data = BundleRegistry.getBundle("data-old").getResource(new BundleResource("flusi/" + icao + ".groundnet.xml"));
         BundleData data = BundleRegistry.getBundle("traffic-fg").getResource(new BundleResource("flight/" + icao + ".groundnet.xml"));
         return data;
@@ -914,7 +888,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
             groundnetdefinition = airport.getAirport().getGroundNetXml();
         } else {
             try {
-                groundnetdefinition = GroundServicesSystem.getBundleForIcao(airport.getAirport().getIcao()).getContentAsString();
+                groundnetdefinition = GroundServicesSystem.getGroundnetFromBundleForIcao(airport.getAirport().getIcao()).getContentAsString();
             } catch (CharsetException e) {
                 // TODO improved eror handling
                 throw new RuntimeException(e);

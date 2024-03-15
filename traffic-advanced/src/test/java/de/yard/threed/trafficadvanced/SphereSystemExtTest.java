@@ -95,7 +95,7 @@ public class SphereSystemExtTest {
         assertNotNull(projections);
         assertNotNull(projections.projection);
         assertTrue(projections.backProjection==null);
-        TestUtils.assertLatLon( GroundNetMetadata.getMap().get("EDDK").airport.getCenter(),projections.projection.getOrigin(),0.01,"EDDK origin");
+        TestUtils.assertLatLon( GroundNetMetadata.getAirport("EDDK").getCenter(),projections.projection.getOrigin(),0.01,"EDDK origin");
 
 
         List<ViewPoint> viewpoints = TrafficHelper.getViewpointsByDataprovider();

@@ -44,7 +44,6 @@ public class TrafficConfigTest {
         Platform platform = FgTestFactory.initPlatformForTest(false, false);
 
         EngineTestFactory.loadBundleAndWait("traffic-advanced");
-        EngineTestFactory.loadBundleAndWait("traffic-fg");
 
     }
 
@@ -59,31 +58,7 @@ public class TrafficConfigTest {
         Assertions.assertEquals(3, getVehicleConfig(vehicleDefinitions.getVehicleDefinitions(),"737-800 AB").getZoffset(), "vehicle1.zoffset");
         Assertions.assertEquals("738", getVehicleConfig(vehicleDefinitions.getVehicleDefinitions(),"737-800 AB").getModelType(), "vehicle1.zoffset");
 
-        List<NativeNode> viewpoints ;
-
-        TrafficConfig eddkFlat = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), BundleResource.buildFromFullString("flight/EDDK-flat.xml"));
-        assertNotNull(eddkFlat);
-        viewpoints = eddkFlat.getViewpoints();
-        Assertions.assertEquals(2, viewpoints.size(), "viewpoints");
-        Assertions.assertEquals("TopView00", ConfigHelper.buildViewpoint(viewpoints.get(0)).name, "viewpoint0.name");
-        Assertions.assertEquals("TopView", ConfigHelper.buildViewpoint(viewpoints.get(1)).name, "viewpoint1.name");
-        AirportDefinition ad = eddkFlat.findAirportDefinitionsByIcao("EDDK").get(0);
-        Assertions.assertEquals(2, ad.getLocations().size(), "locations.EDDK.size");
-
-        TrafficConfig eddfFlat = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), BundleResource.buildFromFullString("flight/EDDF-flat.xml"));
-        assertNotNull(eddfFlat);
-        viewpoints = eddfFlat.getViewpoints();
-        Assertions.assertEquals(2, viewpoints.size(), "viewpoints");
-        Assertions.assertEquals("TopView00", ConfigHelper.buildViewpoint(viewpoints.get(0)).name, "viewpoint0.name");
-        Assertions.assertEquals("TopView", ConfigHelper.buildViewpoint(viewpoints.get(1)).name, "viewpoint1.name");
-
-        AirportDefinition eddk = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), BundleResource.buildFromFullString("flight/EDDK.xml")).findAirportDefinitionsByIcao("EDDK").get(0);
-        Assertions.assertNotNull(eddk, "eddk");
-        Assertions.assertEquals(3, eddk.getVehicles().size(), "vehiclecnt");
-        Assertions.assertEquals("737-800 AB", eddk.getVehicles().get(1).getName(), "vehicle1.name");
-        Assertions.assertNotNull(getVehicleConfig(vehicleDefinitions.getVehicleDefinitions(), eddk.getVehicles().get(1).getName()), "vehicle1.config");
-        Assertions.assertEquals("parkpos:B_8", eddk.getVehicles().get(1).getLocation().location, "vehicle1.location");
-        Assertions.assertEquals("B_8", eddk.getVehicles().get(1).getLocation().getParkPos(), "vehicle1.parkpos");
+        Assertions.assertNotNull(getVehicleConfig(vehicleDefinitions.getVehicleDefinitions(), "737-800 AB"), "vehicle1.config");
 
         VehicleDefinition config = getVehicleConfig(vehicleDefinitions.getVehicleDefinitions(), "c172p");
         assertNotNull(config);
@@ -129,23 +104,7 @@ public class TrafficConfigTest {
        TestUtil.assertEquals("vehicles", 15/*bluebird14* /, tw.getVehicleCount());*/
     }
 
-    @Test
-    public void testPoi() {
-        TrafficConfig worldPois = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), BundleResource.buildFromFullString("flight/world-pois.xml"));
-        assertNotNull(worldPois);
-        PoiConfig poi = worldPois.getPoiByName("equator20000");
-        Assertions.assertNotNull(poi, "poi");
-        Assertions.assertEquals("equator20000", poi.getName(), "poi.name");
-        Assertions.assertEquals(WorldGlobal.equator020000.getElevationM(), poi.elevation, "poi.name");
-        poi = worldPois.getPoiByName("EDDK Overview");
-        Assertions.assertNotNull(poi, "poi");
-        Assertions.assertEquals("EDDK Overview", poi.getName(), "poi.name");
-        Assertions.assertEquals(WorldGlobal.eddkoverview.location.coordinates.getElevationM(), poi.elevation, "poi.name");
-        Assertions.assertEquals(WorldGlobal.eddkoverview.location.coordinates.getLonDeg().getDegree(), poi.longitude.getDegree(), 0.001, "poi.name");
-        Assertions.assertEquals(WorldGlobal.eddkoverview.location.coordinates.getLatDeg().getDegree(), poi.latitude.getDegree(), 0.001, "poi.name");
-        Assertions.assertEquals(WorldGlobal.eddkoverview.location.heading.getDegree(), poi.heading.getDegree(), "poi.name");
-        Assertions.assertEquals(WorldGlobal.eddkoverview.location.pitch.getDegree(), poi.pitch.getDegree(), "poi.name");
-    }
+
 
     private VehicleDefinition getVehicleConfig(List<NativeNode> vds, String name) {
         VehicleConfigDataProvider vcdp = new VehicleConfigDataProvider(

@@ -76,6 +76,8 @@ public class GroundNetTest {
     //MapProjection projection;
     //GroundNet groundnet;
     //Graph g;
+    // 15.3.24 Moved here from GroundNetMetadata. (Eine default Elevation ist zwar Quatsch, aber praktisch fuer Tests).
+    public static double DEFAULTELEVATION = 87;
 
     @BeforeEach
     public void setup() {
@@ -130,7 +132,7 @@ public class GroundNetTest {
     public void testGroundNetEDDKLikeFG() throws Exception {
 
         GroundNet groundnet = loadGroundNetForTest(0);
-        TestUtils.assertVector3(new Vector3(-1889.7698f, -295.14346f, /*TrafficWorld2D.getInstance().*/getAirport("EDDK").getElevation()), groundnet.groundnetgraph.getBaseGraph().getNode(0).getLocation(), "node0");
+        TestUtils.assertVector3(new Vector3(-1889.7698f, -295.14346f, /*TrafficWorld2D.getInstance().*/DEFAULTELEVATION), groundnet.groundnetgraph.getBaseGraph().getNode(0).getLocation(), "node0");
 
         /*GraphNode nodetosmooth = g.findNodeByName("90");
         List<GraphEdge> arcs = GraphUtils.smoothNode(g, nodetosmooth, 10, 77);
@@ -238,7 +240,7 @@ public class GroundNetTest {
         //tw =  TrafficWorldConfig.readConfig("data-old", "TrafficWorld.xml"/*"GroundServices"*/);
 
         GroundNet groundnet = loadGroundNetForTest(0);
-        double airportelevation = /*TrafficWorld2D.getInstance().*/getAirport("EDDK").getElevation();
+        double airportelevation = DEFAULTELEVATION;
 
         PositionHeading poshdg = new PositionHeading(new Vector3(-1200, 1300, airportelevation), new Degree(180));
         GraphEdge edgeintograph = groundnet.createPathIntoGroundNet(poshdg);
@@ -265,7 +267,7 @@ public class GroundNetTest {
         // tw =  TrafficWorldConfig.readConfig("data-old", "TrafficWorld.xml"/*"GroundServices"*/);
 
         GroundNet groundnet = loadGroundNetForTest(0);
-        double airportelevation = /*TrafficWorld2D.getInstance().*/getAirport("EDDK").getElevation();
+        double airportelevation = DEFAULTELEVATION;
 
         PositionHeading poshdg = new PositionHeading(new Vector3(-1200, 1300, airportelevation), new Degree(260));
         GraphEdge edgeintograph = groundnet.createPathIntoGroundNet(poshdg);
@@ -541,7 +543,7 @@ public class GroundNetTest {
 
         GroundNet groundnet = loadGroundNetForTest(0, "EDDK", false);
         Parking b_2 = groundnet.getParkPos("B_2");
-        double airportelevation = /*TrafficWorld2D.getInstance().*/getAirport("EDDK").getElevation();
+        double airportelevation = /*TrafficWorld2D.getInstance().*/DEFAULTELEVATION;
         ServicePoint sp = new ServicePoint(groundnet, null, b_2.node.getLocation(), b_2.heading, null, getAircraftConfiguration("747-400"), XmlVehicleDefinition.convertVehicleDefinitions(vehicleDefinitions.getVehicleDefinitions()));
 
         Vector3 doorpos = sp.aircraft.getCateringDoorPosition();
@@ -584,7 +586,7 @@ public class GroundNetTest {
 
 
     private void validatePathAltitude(GroundNet groundnet, GraphPath doorapproach) {
-        double airportelevation = /*TrafficWorld2D.getInstance().*/getAirport("EDDK").getElevation();
+        double airportelevation = /*TrafficWorld2D.getInstance().*/DEFAULTELEVATION;
 
         for (int i = 0; i < doorapproach.getSegmentCount(); i++) {
             GraphPathSegment s = doorapproach.getSegment(i);
@@ -603,7 +605,7 @@ public class GroundNetTest {
 
         GroundNet groundnet = loadGroundNetForTest(0, "EDDK", false);
         Parking b_2 = groundnet.getParkPos("B_2");
-        double airportelevation = /*TrafficWorld2D.getInstance().*/getAirport("EDDK").getElevation();
+        double airportelevation = /*TrafficWorld2D.getInstance().*/DEFAULTELEVATION;
 
         ServicePoint sp = new ServicePoint(groundnet, null, b_2.node.getLocation(), b_2.heading, null, /*TrafficWorld2D.getInstance().getConfiguration().*/getAircraftConfiguration("747-400"), XmlVehicleDefinition.convertVehicleDefinitions(vehicleDefinitions.getVehicleDefinitions()));
         TestUtils.assertVector3(new Vector3(-1698.4425f, 1320.0948f, airportelevation), sp.prjdoorpos, "prjdoorpos");
@@ -719,7 +721,7 @@ public class GroundNetTest {
         for (int i = 0; i < path.getSegmentCount(); i++) {
             GraphPathSegment seg = path.getSegment(i);
             //System.out.println("enternode:" + seg.getEnterNode().getLocation());
-            Assertions.assertEquals(GroundNetMetadata.DEFAULTELEVATION, seg.getEnterNode().getLocation().getZ(), "outline.z");
+            Assertions.assertEquals(DEFAULTELEVATION, seg.getEnterNode().getLocation().getZ(), "outline.z");
         }
         // despite outline the end must be at the door. Must be tested at edge because vehicle stops before doorpos.
         TestUtils.assertVector3(sp.doorEdge.getFrom().getLocation(), path.getSegment(path.getSegmentCount() - 1).getLeaveNode().getLocation(), "outline.end");
@@ -735,20 +737,20 @@ public class GroundNetTest {
 
         GroundNet groundnet = loadGroundNetForTest(0, "EDDK", false);
         Parking c_4 = groundnet.getParkPos("C_4");
-        double airportelevation = /*TrafficWorld2D.getInstance().*/getAirport("EDDK").getElevation();
+        double airportelevation = /*TrafficWorld2D.getInstance().*/DEFAULTELEVATION;
         ServicePoint sp = new ServicePoint(groundnet, null, c_4.node.getLocation(), c_4.heading, null, /*TrafficWorld2D.getInstance().getConfiguration().*/getAircraftConfiguration("738"), XmlVehicleDefinition.convertVehicleDefinitions(vehicleDefinitions.getVehicleDefinitions()));
         TestUtils.assertVector3(new Vector3(-1605.632f, 1535.3408f, airportelevation), sp.prjdoorpos, "prjdoorpos");
         TestUtils.assertVector3(new Vector3(-1592.258f, 1519.9026f, airportelevation), sp.prjleftwingapproachpoint, "prjleftwingapproachpoint");
         Assertions.assertEquals(4, sp.wingreturn.getLayer(), "wingreturnlayer");
-        TestUtils.assertVector3(new Vector3(-1592.258f, 1519.9026f, /*TrafficWorld2D.getInstance().*/getAirport("EDDK").getElevation()), sp.wingedge.from.getLocation(), "wingedge.from");
-        TestUtils.assertVector3(new Vector3(-1591.56f, 1499.9138f, /*TrafficWorld2D.getInstance().*/getAirport("EDDK").getElevation()), sp.wingedge.to.getLocation(), "wingedge.to");
+        TestUtils.assertVector3(new Vector3(-1592.258f, 1519.9026f, /*TrafficWorld2D.getInstance().*/DEFAULTELEVATION), sp.wingedge.from.getLocation(), "wingedge.from");
+        TestUtils.assertVector3(new Vector3(-1591.56f, 1499.9138f, /*TrafficWorld2D.getInstance().*/DEFAULTELEVATION), sp.wingedge.to.getLocation(), "wingedge.to");
         Assertions.assertEquals(TrafficGraph.MINIMUMPATHSEGMENTLEN, sp.wingedge.getLength(), 0.01, "wingedge.length");
-        TestUtils.assertVector3(new Vector3(-1591.211f, 1489.919f, /*TrafficWorld2D.getInstance().*/getAirport("EDDK").getElevation()), sp.wingreturn1.from.getLocation(), "wingreturn1.from");
-        TestUtils.assertVector3(new Vector3(-1572.19f, 1483.7386f, /*TrafficWorld2D.getInstance().*/getAirport("EDDK").getElevation()), sp.wingreturn1.to.getLocation(), "wingreturn1.to");
+        TestUtils.assertVector3(new Vector3(-1591.211f, 1489.919f, /*TrafficWorld2D.getInstance().*/DEFAULTELEVATION), sp.wingreturn1.from.getLocation(), "wingreturn1.from");
+        TestUtils.assertVector3(new Vector3(-1572.19f, 1483.7386f, /*TrafficWorld2D.getInstance().*/DEFAULTELEVATION), sp.wingreturn1.to.getLocation(), "wingreturn1.to");
 
         double wingapproachlen = sp.wingapproach.getLength();
         Assertions.assertEquals(30, wingapproachlen, 0.000001, "wingapproachlen");
-        TestUtils.assertVector3(new Vector3(-1570.4719f, 1522.2318f, /*TrafficWorld2D.getInstance().*/getAirport("EDDK").getElevation()), sp.prjrearpoint, "prjrearpoint");
+        TestUtils.assertVector3(new Vector3(-1570.4719f, 1522.2318f, /*TrafficWorld2D.getInstance().*/DEFAULTELEVATION), sp.prjrearpoint, "prjrearpoint");
         double doorbranchedgelen = sp.doorbranchedge.getLength();
         Assertions.assertEquals(152.25296f, doorbranchedgelen, 0.0001, "doorbranchedgelen");
         double wingbranchedgelen = sp.wingbranchedge.getLength();
@@ -786,7 +788,7 @@ public class GroundNetTest {
         //tw =  TrafficWorldConfig.readConfig("data-old", "TrafficWorld.xml"/*"GroundServices"*/);
 
         GroundNet groundnet = loadGroundNetForTest(0, "EDDK", false);
-        double airportelevation = /*TrafficWorld2D.getInstance().*/getAirport("EDDK").getElevation();
+        double airportelevation = /*TrafficWorld2D.getInstance().*/DEFAULTELEVATION;
 
         ServicePoint sp = new ServicePoint(groundnet, null, new Vector3(), new Degree(0), null, /*TrafficWorld2D.getInstance().getConfiguration().*/
                 getAircraftConfiguration("738"), XmlVehicleDefinition.convertVehicleDefinitions(vehicleDefinitions.getVehicleDefinitions()));
@@ -889,20 +891,6 @@ public class GroundNetTest {
 
         return vcdp.findVehicleDefinitionsByModelType(modeltype).get(0);
     }
-
-    private AirportConfig getAirport(String icao) {
-
-        //return null;//27.12.21 TrafficWorld2D.getInstance().getConfiguration().getAircraftConfiguration("738");
-
-        //20.11.23 refactored
-        // return tw.getAirportConfig(icao);
-
-        AirportDefinition definition = airportDefinitions.findAirportDefinitionsByIcao(icao).get(0);
-        // constructor extracted from previous implementation only setting icao and vehicle list.
-        // remainign parts are set somewhere else?
-        return new AirportConfig(icao, definition.getVehicles());
-    }
-
 
     /**
      * 15.8.17: Der path ist halt problemtisch. Kein TO DO mehr, weil es dafür smartere Wege, vleiicht sogar lanes geben muss.
@@ -1017,31 +1005,32 @@ public class GroundNetTest {
 
     public static GroundNet loadGroundNetForTesting(Bundle bundle, int smoothmode, String icao, boolean strict) throws NoElevationException {
 
-        AirportConfig airport = new AirportConfig(icao, new ArrayList<LocatedVehicle>());
-        //27.12.21 gsw.addAirport(airport.airport);
-        return loadGroundNetForTesting(bundle, smoothmode, icao, strict, new TerrainElevationProvider(airport.getElevation()));
+        return loadGroundNetForTesting(bundle, smoothmode, icao, strict, new TerrainElevationProvider(DEFAULTELEVATION));
 
     }
 
     public static GroundNet loadGroundNetForTesting(Bundle bundle, int smoothmode, String icao, boolean strict, TerrainElevationProvider elevationProvider) throws NoElevationException {
 
-        AirportConfig airport = new AirportConfig(icao, new ArrayList<LocatedVehicle>());
-        //evtl. noch vorhandene Provider loeschen
+        // remove existing provider
         SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, null);
         SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, elevationProvider);
         try {
             String gnet = "flight/" + icao + ".groundnet.xml";
             GroundNet.layoutmode = strict;
-            //TODO 31.3.20: GroundServicesSystem.loadGroundnet() verwenden
-            SimpleMapProjection projection = new SimpleMapProjection(/*TrafficWorld2D.*/SGGeod.fromLatLon(airport.getCenter()));
             //Bundle bundle = BundleRegistry.getBundle("test-resources");
             XmlDocument groundnetxml;
+            String gnxml;
             try {
-                groundnetxml = XmlDocument.buildXmlDocument(bundle.getResource(new BundleResource(gnet)).getContentAsString());
+                gnxml = bundle.getResource(new BundleResource(gnet)).getContentAsString();
+                groundnetxml = XmlDocument.buildXmlDocument(gnxml);
             } catch (CharsetException e) {
                 // TODO improved eror handling
                 throw new RuntimeException(e);
             }
+            //TODO 31.3.20: GroundServicesSystem.loadGroundnet() verwenden
+            AirportConfig airport = AirportConfig.buildFromAirportConfig("traffic-fg", "flight/" + icao.toUpperCase() + ".xml", icao, gnxml);
+
+            SimpleMapProjection projection = new SimpleMapProjection(/*TrafficWorld2D.*/SGGeod.fromLatLon(airport.getCenter()));
             GroundNet groundnet = new GroundNet(projection, groundnetxml, airport.getHome()/*"A20"* /, airport*/);
             groundnet.groundnetgraph.icao = icao;
             //27.12.21 gsw.addGroundNet(icao, groundnet);

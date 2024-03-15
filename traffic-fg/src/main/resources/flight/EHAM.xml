@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- Tile Definition for former 'TrafficScene' 3D EDDF
-
-  main scene setup
--->
+<!-- -->
 
 <c:config xmlns:c="http://www.example.org/tcp-22" name="a">
 
-    <airportdefinition icao="EDDF">
-        <home>V164</home>
-
+    <airportdefinition icao="EHAM">
     </airportdefinition>
 
 </c:config>

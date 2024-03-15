@@ -1,6 +1,7 @@
 package de.yard.threed.trafficfg.config;
 
 import de.yard.threed.core.LatLon;
+import de.yard.threed.core.Util;
 import de.yard.threed.core.platform.NativeNode;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
@@ -24,71 +25,51 @@ import java.util.List;
  * 16.5.20: Vor allem wird ein trafficgraph für Runways gebraucht. Groundnet nicht unbedingt.
  * 9.6.20:Aber Airport hier mit unterzubringen ist doch fragwürdig.
  * 20.11.23: Now we have AirportDefinition from XML config which is a new option.
+ * 15.3.24: Refactoring. Composition of AirportDefinition and Airport
  * <p>
  * Created on 23.02.18.
  */
 public class AirportConfig {
-    private String icao;
-    private GroundNetMetadata groundNetMetadata;
-    // 20.11.23 NativeNode->LocatedVehicle
-    List<LocatedVehicle> vehicles;
-    //17.6.20 public weil er bloederweise ueberschrieben werden muss
-    public Airport airport;
+    private Airport airport;
+    private AirportDefinition airportDefinition;
 
     /**
      * 9.6.20: Der Airport muss in GroundNetMetadata bekannt sein!
-     * @param icao
-     * @param vehicles
+     * 15.3.24: private because builder should be used
      */
-    public AirportConfig(String icao, List<LocatedVehicle> vehicles) {
-        //this.icao = icao;
-        this.vehicles = vehicles;
-        groundNetMetadata = GroundNetMetadata.getMap().get(icao);
-        //9.6.20
-        airport=groundNetMetadata.airport;
-    }
-
-    /**
-     * AlternativConstructor fuer wenn es keine Config Daten gibt.
-     * 23.5.2020
-     */
-    public AirportConfig(Airport airport) {
-        this.airport = airport;
+    private AirportConfig(AirportDefinition airportDefinition) {
+        this.airportDefinition = airportDefinition;
     }
 
     public String getHome() {
-        if (groundNetMetadata==null){
-            return null;
-        }
-        return groundNetMetadata.home;
+        return airportDefinition.getHome();
     }
 
     public LatLon getCenter() {
-        //if (airport!=null) {
-            return airport.getCenter();
-        //}
-        //return groundNetMetadata.airport.
-    }
-
-    public List<String> getDestinationlist() {
-        return groundNetMetadata.destinationlist;
+        return airport.getCenter();
     }
 
     public Runway[] getRunways() {
-        return /*groundNetMetadata.*/airport.getRunways();
+        return airport.getRunways();
     }
 
     public int getVehicleCount() {
-        return vehicles.size();
+        return airportDefinition.getVehicles().size();
     }
 
-    public /*20.11.23 SceneVehicle*/LocatedVehicle getVehicle(int index) {
-        return /*20.11.23 new SceneVehicle*/(vehicles.get(index));
+    public LocatedVehicle getVehicle(int index) {
+        return airportDefinition.getVehicles().get(index);
 
     }
 
-    public double getElevation() {
-        return groundNetMetadata.elevation;
+    /**
+     * 15.3.24: Having one elevation for an airport is just a quick solution for tests. Otherwise its confusing.
+     * So made private and fail for having this comment.
+     * @return
+     */
+    private double getElevation() {
+        Util.nomore();// return groundNetMetadata.elevation;
+        return 0;
     }
 
     public Airport getAirport() {
@@ -101,19 +82,22 @@ public class AirportConfig {
      *
      * @return
      */
-    public static AirportConfig buildFromAirportConfig(String bundlename, String fullname, String icao) {
+    public static AirportConfig buildFromAirportConfig(String bundlename, String fullname, String icao, String groundnetXml) {
         if (icao == null) {
             return null;
         }
 
         TrafficConfig defs = TrafficConfig.buildFromBundle(BundleRegistry.getBundle(bundlename), BundleResource.buildFromFullString(fullname));
-AirportDefinition airportDefinition = defs.findAirportDefinitionsByIcao(icao).get(0);
+        AirportDefinition airportDefinition = defs.findAirportDefinitionsByIcao(icao).get(0);
         /*for (int i = 0; i < airports.size(); i++) {
             NativeNode airportnode = airports.get(i);
             if (icao.equals(XmlHelper.getStringAttribute(airportnode, "icao", null))) {
                 return new AirportConfig(icao, XmlHelper.getChildNodeList(airportnode, "vehicles", "vehicle"));
             }
         }*/
-        return new AirportConfig(icao,airportDefinition.getVehicles());//null;
+        AirportConfig airportConfig = new AirportConfig(airportDefinition);
+        airportConfig.airport = GroundNetMetadata.getAirport(icao);
+        airportConfig.airport.setGroundNetXml(groundnetXml);
+        return airportConfig;
     }
 }

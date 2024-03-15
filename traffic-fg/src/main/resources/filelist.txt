@@ -20,3 +20,4 @@ flight/EDDK-flat.xml
 flight/EDDF.xml
 flight/EDDF-flat.xml
 flight/world-pois.xml
+flight/EHAM.xml
