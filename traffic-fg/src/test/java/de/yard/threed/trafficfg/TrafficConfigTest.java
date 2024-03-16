@@ -16,7 +16,6 @@ import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.traffic.config.ConfigAttributeFilter;
 import de.yard.threed.traffic.config.ConfigHelper;
 import de.yard.threed.traffic.config.PoiConfig;
-import de.yard.threed.traffic.config.SceneConfig;
 import de.yard.threed.traffic.config.VehicleConfigDataProvider;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.config.ViewpointConfig;

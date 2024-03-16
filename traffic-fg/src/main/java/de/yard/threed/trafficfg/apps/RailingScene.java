@@ -70,7 +70,6 @@ import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficSystem;
 import de.yard.threed.traffic.config.ConfigHelper;
-import de.yard.threed.traffic.config.SceneConfig;
 import de.yard.threed.traffic.config.VehicleConfigDataProvider;
 import de.yard.threed.traffic.config.XmlVehicleDefinition;
 
@@ -125,7 +124,7 @@ public class RailingScene extends Scene {
         vrInstance = VrInstance.buildFromArguments();
 
 
-        SphereSystem sphereSystem = new SphereSystem(null, null, null, null);
+        SphereSystem sphereSystem = new SphereSystem(null, null);
         SystemManager.addSystem(sphereSystem);
 
         //29.10.23: TrafficWorldConfig and TrafficWorldSystem replaced by SphereSystem more below

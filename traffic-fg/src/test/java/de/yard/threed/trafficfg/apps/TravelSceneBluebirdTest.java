@@ -47,6 +47,11 @@ public class TravelSceneBluebirdTest {
         run(false);
     }
 
+    @Test
+    public void testWithBluebirdAndFromRoute() throws Exception {
+        //t.b.c. 16.3.24
+    }
+
     public void run(boolean withBluebird) throws Exception {
 
         setup(withBluebird);

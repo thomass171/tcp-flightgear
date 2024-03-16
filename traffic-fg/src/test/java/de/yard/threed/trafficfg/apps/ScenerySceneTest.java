@@ -58,8 +58,8 @@ public class ScenerySceneTest {
 
         // 9 is typical and plausibel if all tiles are available. Why 10 with project bundles? TODO check
         assertEquals(10, FlightGearModuleScenery.getInstance().get_scenery().get_terrain_branch().getTransform().getChildCount(), "terraingroup.children");
-        // Was 12 with full scenery. 5 seems convincing with projects tile set.  EDDK,...
-        assertEquals(5, ReaderWriterSTG.btgLoaded.size(), "loaded btgs");
+        // Was 12 with full scenery. 5 seems convincing with projects tile set.  EDDK,.... Now 6 with EDKB added
+        assertEquals(6, ReaderWriterSTG.btgLoaded.size(), "loaded btgs");
 
     }
 

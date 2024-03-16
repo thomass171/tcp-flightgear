@@ -94,7 +94,6 @@ import de.yard.threed.traffic.VehicleBuiltDelegate;
 import de.yard.threed.traffic.VehicleLauncher;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.traffic.config.PoiConfig;
-import de.yard.threed.traffic.config.SceneConfig;
 import de.yard.threed.traffic.config.VehicleConfigDataProvider;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.config.XmlVehicleDefinition;
@@ -973,14 +972,6 @@ public class TravelScene extends FlightTravelScene {
     @Override
     public VehicleConfigDataProvider getVehicleConfigDataProvider() {
         return null;//4.12.23 new VehicleConfigDataProvider(tw.tw);
-    }
-
-    @Override
-    public SceneConfig getSceneConfig() {
-        //4.12.23 tw = TrafficWorldConfig.readConfig("data-old", "TrafficWorld.xml");
-        sceneConfig = null;//tw.getScene("Flight");
-
-        return sceneConfig;
     }
 
     @Override

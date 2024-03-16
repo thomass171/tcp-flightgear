@@ -1,4 +1,4 @@
-package de.yard.threed.trafficadvanced;
+package de.yard.threed.trafficfg;
 
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.Event;
@@ -8,32 +8,26 @@ import de.yard.threed.core.Payload;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
-import de.yard.threed.core.testutil.SimpleEventBusForTesting;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.ViewPoint;
 import de.yard.threed.engine.ecs.EcsTestHelper;
 import de.yard.threed.engine.ecs.SystemManager;
-import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.testutil.EngineTestFactory;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
-import de.yard.threed.javacommon.ConfigurationByEnv;
-import de.yard.threed.javacommon.JavaBundleResolverFactory;
-import de.yard.threed.javacommon.SimpleHeadlessPlatformFactory;
 import de.yard.threed.traffic.SphereProjections;
 import de.yard.threed.traffic.SphereSystem;
 import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.TrafficEventRegistry;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.geodesy.GeoCoordinate;
-import de.yard.threed.trafficadvanced.apps.FlatAirportScene;
 import de.yard.threed.trafficfg.flight.GroundNetMetadata;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static de.yard.threed.traffic.SphereSystem.USER_REQUEST_SPHERE;
@@ -41,11 +35,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
- * 16.3.24: See also traffic-fg:SphereSystemTest.
- * <p>
- * Created by thomass on 7.10.21.
+ * Extracted from traffic-advanced:SphereSystemExtTest
  */
-public class SphereSystemExtTest {
+public class SphereSystemTest {
 
     SceneNode world;
 
@@ -56,33 +48,20 @@ public class SphereSystemExtTest {
             public void init() {
                 world = new SceneNode();
 
-                //ohne Elevation wird kein groundnet geladen
-                //??SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, TerrainElevationProvider.buildForStaticAltitude(17));
 
             }
         };
 
-        /*5.12.23 EngineTestFactory.initPlatformForTest(new String[]{"engine", "data-old", "osmscenery", "traffic"},
-                new SimpleHeadlessPlatformFactory(new SimpleEventBusForTesting(),JavaBundleResolverFactory.bySimplePath(GranadaPlatform.GRANDA_BUNDLE_PATH)), initMethod,
-                ConfigurationByEnv.buildDefaultConfigurationWithEnv(new HashMap<>()));*/
         Platform platform = FgTestFactory.initPlatformForTest(false, false);
 
-        EngineTestFactory.loadBundleAndWait("traffic-advanced");
         EngineTestFactory.loadBundleAndWait("traffic-fg");
-
-        //5.12.23 TODO ?? AbstractSceneRunner.instance.httpClient = new AirportDataProviderMock();
     }
 
     @Test
-    public void testFlatEDDKWithConfigXml() throws Exception {
-        /*DefaultTrafficWorld.instance = null;
-        assertNull("", DefaultTrafficWorld.getInstance());
-
-        TrafficWorldConfig tw = new TrafficWorldConfig("data-old", "TrafficWorld.xml");
-        SceneConfig sceneConfig = tw.getScene("Flight");
-        new TrafficWorld2D(/*tw,* / sceneConfig);*/
-
-        startSimpleTest(FlatAirportScene.DEFAULT_TILENAME/*"dummy:EDDK"*/, "GroundServices");
+    @Disabled
+    public void testEDDKWithConfigXml() throws Exception {
+//TODO 16.3.24
+        startSimpleTest("traffic-fg:flight/EDDK.xml");
 
         List<Event> completeEvents = EcsTestHelper.getEventsFromHistory(TrafficEventRegistry.EVENT_LOCATIONCHANGED);
         assertEquals(1, completeEvents.size(), "completeEvents.size");
@@ -106,22 +85,7 @@ public class SphereSystemExtTest {
         //Woher kommt denn die vehiclelsit? Das muessten doch ca.5 oder 7 sein. assertEquals("vehiclelist", 1, TrafficSystem.vehiclelist.size());
     }
 
-
-
-    /*geht noch nicht wegen TrafficWorldSingleton @Test
-    public void testWithAirportService() throws Exception {
-        assertNull("",DefaultTrafficWorld.getInstance());
-
-        runSimpleTest();
-
-        assertNull("",DefaultTrafficWorld.getInstance());
-    }*/
-
-
-    private void runSimpleTest(String tilename) {
-    }
-
-    private void startSimpleTest(String tilename, String scene) {
+    private void startSimpleTest(String tilename) {
 
         SystemManager.addSystem(new SphereSystem(null, null));
 

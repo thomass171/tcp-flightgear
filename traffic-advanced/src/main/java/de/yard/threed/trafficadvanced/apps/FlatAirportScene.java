@@ -82,7 +82,6 @@ import de.yard.threed.traffic.TrafficSystem;
 import de.yard.threed.traffic.TravelSphere;
 import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.traffic.VehicleLauncher;
-import de.yard.threed.traffic.config.SceneConfig;
 import de.yard.threed.traffic.config.VehicleConfigDataProvider;
 import de.yard.threed.traffic.config.XmlVehicleDefinition;
 import de.yard.threed.traffic.flight.DoormarkerDelegate;
@@ -742,13 +741,6 @@ public class FlatAirportScene extends FlightTravelScene {
     @Override
     public EllipsoidCalculations getRbcp() {
         return new FgCalculations();
-    }
-
-    @Override
-    public SceneConfig getSceneConfig() {
-        initTrafficWorld("GroundServices", vehiclelistname);
-        sceneConfig = null;//4.12.23 /*27.12.21 DefaultTrafficWorld.getInstance().getConfiguration()*/tw.getScene("GroundServices");
-        return sceneConfig;
     }
 
     @Override

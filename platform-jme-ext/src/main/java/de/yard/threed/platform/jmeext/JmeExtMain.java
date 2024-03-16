@@ -55,12 +55,13 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         //properties.put("argv.enableFPC", "true");
         //18.11.19: NearView geht in VR eh nicht, darum damit üblicherweise auch sonst nicht arbeiten.
         //properties.put("argv.enableNearView", "true");
+        properties.put("enableNavigator", "true");
 
         //properties.put("argv.vehiclelist","GenericRoad");
 
         // traffic-fg
-        properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryScene");
-        properties.put("scene", "de.yard.threed.trafficfg.apps.RailingScene");
+        //properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryScene");
+        //properties.put("scene", "de.yard.threed.trafficfg.apps.RailingScene");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryViewerScene");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.FgModelPreviewScene");
