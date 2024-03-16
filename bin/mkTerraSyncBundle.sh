@@ -49,7 +49,8 @@ processTerraSyncFile() {
 		echo processing $filename":" $BASENAME $SUFFIX
 		case $SUFFIX in
 			# maybe 'rgb' should be discarded. Who can read it at all?
-			"xml"|"png"|"jpg"|"stg"|"rgb")
+			# 15.3.24: 'gltf' and 'bin' added
+			"xml"|"png"|"jpg"|"stg"|"rgb"|"gltf"|"bin")
 				if [ ! -r $DESTDIR/$BASENAME.$SUFFIX -o $FORCE = "1" ]
 				then
 					#echo cp file
