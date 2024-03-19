@@ -111,6 +111,7 @@ import de.yard.threed.trafficfg.SGGeodAltitudeProvider;
 import de.yard.threed.trafficfg.StgCycler;
 import de.yard.threed.trafficfg.TravelHelper;
 import de.yard.threed.trafficfg.VehicleEntityBuilder;
+import de.yard.threed.trafficfg.apps.TravelSceneBluebird;
 import de.yard.threed.trafficfg.config.ConfigHelper;
 import de.yard.threed.trafficfg.flight.FlightSystem;
 import de.yard.threed.trafficfg.flight.FlightVrControlPanel;
@@ -1074,6 +1075,12 @@ public class TravelScene extends FlightTravelScene {
         return controlmenu;
     }
 
-
+    /**
+     * 19.3.24: Now needed
+     */
+    public String getDefaultTilename() {
+        // from former hardcoded
+        return TravelSceneBluebird.formerInitialPositionEDDK.toString();
+    }
 }
 

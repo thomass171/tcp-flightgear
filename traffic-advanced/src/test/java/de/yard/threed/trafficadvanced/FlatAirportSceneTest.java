@@ -1,6 +1,7 @@
 package de.yard.threed.trafficadvanced;
 
 
+import de.yard.threed.core.Event;
 import de.yard.threed.core.Payload;
 import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector3;
@@ -13,6 +14,7 @@ import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.Texture;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsHelper;
+import de.yard.threed.engine.ecs.EcsTestHelper;
 import de.yard.threed.engine.ecs.EntityFilter;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.ecs.UserSystem;
@@ -27,6 +29,8 @@ import de.yard.threed.traffic.GraphTerrainSystem;
 import de.yard.threed.traffic.GraphVisualizationSystem;
 import de.yard.threed.traffic.RequestRegistry;
 import de.yard.threed.traffic.SphereProjections;
+import de.yard.threed.traffic.TrafficEventRegistry;
+import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.TrafficSystem;
 import de.yard.threed.traffic.VehicleComponent;
@@ -44,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static de.yard.threed.javanative.JavaUtil.sleepMs;
+import static de.yard.threed.traffic.SphereSystem.USER_REQUEST_SPHERE;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -93,21 +98,23 @@ public class FlatAirportSceneTest {
         //setup(null);
 
         assertEquals(INITIAL_FRAMES, sceneRunner.getFrameCount());
+        List<Request> requests = EcsTestHelper.getRequestsFromSystemTracker(USER_REQUEST_SPHERE);
+        assertEquals(1, requests.size());
 
         String[] bundleNames = BundleRegistry.getBundleNames();
         // 4 without 'data', but 'data' is needed, so 5
         assertEquals(5, bundleNames.length);
         assertNotNull(BundleRegistry.getBundle("fgdatabasic"));
 
-        // "Wayland" has two graph files that should have been loaded finally (via EVENT_LOCATIONCHANGED)
-       /* List<Event> completeEvents = EcsTestHelper.getEventsFromHistory(TrafficEventRegistry.EVENT_LOCATIONCHANGED);
-        assertEquals("EVENT_LOCATIONCHANGED.size", 1, completeEvents.size());
+        List<Event> completeEvents = EcsTestHelper.getEventsFromHistory(TrafficEventRegistry.TRAFFIC_EVENT_SPHERE_LOADED);
+        assertEquals( 1, completeEvents.size());
 
+        /*do we have these events here?
         completeEvents = EcsTestHelper.getEventsFromHistory(TrafficEventRegistry.TRAFFIC_EVENT_GRAPHLOADED);
-        assertEquals("TRAFFIC_EVENT_GRAPHLOADED.size", 2, completeEvents.size());
+        assertEquals( 2, completeEvents.size());
 
         TrafficGraph railwayGraph = TrafficHelper.getTrafficGraphByDataprovider(TrafficGraph.RAILWAY);
-        assertNotNull("railwayGraph", railwayGraph);*/
+        assertNotNull( railwayGraph);*/
 
         SphereProjections projections = TrafficHelper.getProjectionByDataprovider();
         assertNotNull(projections);

@@ -36,7 +36,9 @@ import de.yard.threed.trafficcore.model.Runway;
 import de.yard.threed.trafficfg.TrafficRequest;
 
 /**
- * On request moves an aircraft from airport to airport. In 2D only a local pattern('Platzrunde').
+ * On request moves an aircraft from airport to airport by creating one or more moving graphs.
+ * Moving itself is done by GraphMovingSystem as usual.
+ * In 2D only a local pattern('Platzrunde').
  * <p>
  * Was intended as TravelSystem.
  * <p>

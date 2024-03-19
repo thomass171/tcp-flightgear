@@ -63,7 +63,7 @@ public class SphereSystemTest {
 //TODO 16.3.24
         startSimpleTest("traffic-fg:flight/EDDK.xml");
 
-        List<Event> completeEvents = EcsTestHelper.getEventsFromHistory(TrafficEventRegistry.EVENT_LOCATIONCHANGED);
+        List<Event> completeEvents = EcsTestHelper.getEventsFromHistory(TrafficEventRegistry.TRAFFIC_EVENT_SPHERE_LOADED);
         assertEquals(1, completeEvents.size(), "completeEvents.size");
         // 1 because of TRAFFIC_REQUEST_LOADGROUNDNET
         assertEquals(1, SystemManager.getRequestCount(), "requests ");

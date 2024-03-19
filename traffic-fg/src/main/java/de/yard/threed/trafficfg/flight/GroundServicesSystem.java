@@ -149,7 +149,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
                         GraphEventRegistry.GRAPH_EVENT_PATHCOMPLETED,
                         TrafficEventRegistry.GROUNDNET_EVENT_LOADED,
                         TrafficEventRegistry.TRAFFIC_EVENT_AIRCRAFT_ARRIVE_REQUEST,
-                        TrafficEventRegistry.EVENT_LOCATIONCHANGED
+                        TrafficEventRegistry.TRAFFIC_EVENT_SPHERE_LOADED
                 });
         /*this.airport = airport;
         //2.3.18 this.visualizer = visualizer;

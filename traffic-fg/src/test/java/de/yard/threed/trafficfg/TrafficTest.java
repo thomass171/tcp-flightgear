@@ -93,7 +93,7 @@ public class TrafficTest {
         Assertions.assertEquals("holding", segment0.getEnterNode().getName(),"enternode");
         Assertions.assertEquals( "smoothbegin.takeoff", segment0.edge.getName(),"enternode");
         GraphNode firstnodeonpath = segment0.edge.getOppositeNode(segment0.getLeaveNode());
-        TrafficTestUtils.assertGeoCoordinate("platzrunde holding geod", ((NodeCoord) holding.customdata).coor, GeoCoordinate.fromLatLon(projection.unproject(Vector2.buildFromVector3(firstnodeonpath.getLocation())),0));
+        TrafficTestUtils.assertGeoCoordinate( ((NodeCoord) holding.customdata).coor, GeoCoordinate.fromLatLon(projection.unproject(Vector2.buildFromVector3(firstnodeonpath.getLocation())),0),"platzrunde holding geod");
 
         // Und jetzt in 3D ohne Projection. Make sure the correct elevation provider is used.
         tep = (TerrainElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION);

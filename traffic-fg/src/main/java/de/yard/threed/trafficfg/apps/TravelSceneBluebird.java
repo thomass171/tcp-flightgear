@@ -155,6 +155,8 @@ public class TravelSceneBluebird extends BasicTravelScene {
     // worldPois are contained in trafficConfig
     // TrafficConfig worldPois;
     TrafficConfig vdefs;
+    // 18.3.24 From former hard coded EDDK setup.
+    public static GeoCoordinate formerInitialPositionEDDK = new GeoCoordinate(new Degree(50.843675), new Degree(7.109709), 1150);
 
     @Override
     public String[] getPreInitBundle() {
@@ -630,6 +632,14 @@ public class TravelSceneBluebird extends BasicTravelScene {
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_CONTROLMENU));
         });
         return controlmenu;
+    }
+
+    /**
+     * 19.3.24: Now needed
+     */
+    public String getDefaultTilename() {
+        // from former hardcoded
+        return formerInitialPositionEDDK.toString();
     }
 }
 
