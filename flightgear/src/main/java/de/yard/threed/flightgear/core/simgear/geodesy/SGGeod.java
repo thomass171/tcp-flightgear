@@ -9,7 +9,7 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.traffic.geodesy.GeoCoordinate;
 
 /**
- * FG hat Parameter immer in der Reihenfolge lon/lat
+ * FG has parameter order lon/lat always.
  * Auch keine Setter aus dem gleichen Grund wie bei Vector!
  * 17.11.21: Deprecated because it might/should be replaced by LatLon for simple (2D) travelling.
  *

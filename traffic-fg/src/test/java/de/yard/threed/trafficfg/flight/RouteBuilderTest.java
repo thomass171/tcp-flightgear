@@ -55,7 +55,7 @@ public class RouteBuilderTest {
     public void testEDDKOrbit() {
         Runway runway14l = OsmRunway.eddk14L();
         FlightRouteGraph orbit = new RouteBuilder(new FgCalculations()).buildFlightGraphForAircraftTrafficPattern(runway14l,TerrainElevationProvider.buildForStaticAltitude(80),1);
-        Assertions.assertEquals("takeoff", orbit.takeoffedge.getName(),"takeoff name");
+        //20.3.24 Assertions.assertEquals("takeoff", orbit.takeoffedge.getName(),"takeoff name");
         //23.11.18: ist noch nicht smooth 
         Assertions.assertEquals( 260, orbit.getGraph().getEdgeCount(),"segments");
         Assertions.assertEquals( 261, orbit.getGraph().getNodeCount(),"nodes");

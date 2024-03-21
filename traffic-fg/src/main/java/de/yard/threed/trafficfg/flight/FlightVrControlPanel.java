@@ -100,7 +100,7 @@ public class FlightVrControlPanel {
         if (withLoad) {
             cp.addArea(panelGrid.getPosition(1, 0), new DimensionF(ControlPanelColWidth[1], ControlPanelRowHeight), () -> {
                 logger.debug("load clicked");
-                SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
+                SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null, null));
             }).setIcon(Icon.IconCharacter(11));
         }
         cp.addArea(panelGrid.getPosition(2, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {

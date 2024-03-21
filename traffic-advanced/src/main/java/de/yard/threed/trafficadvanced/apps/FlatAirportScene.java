@@ -389,7 +389,7 @@ public class FlatAirportScene extends FlightTravelScene {
                     SystemManager.putRequest(new Request(UserSystem.USER_REQUEST_TELEPORT, new Payload(new Object[]{new IntHolder(0)})));
                 }),
                 new MenuItem(null, new Text("Load", Color.RED, Color.LIGHTGRAY), () -> {
-                    SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
+                    SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null, null));
                     // close menu
                     InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
                 }),
@@ -520,7 +520,7 @@ public class FlatAirportScene extends FlightTravelScene {
             }
             //gsw.graphloaded = null;
             populated = true;
-            trafficSystem.groundNet = GroundServicesSystem.groundnetEDDK.groundnetgraph;
+            //20.3.24 now via TRAFFIC_EVENT_GRAPHLOADED trafficSystem.groundNet = GroundServicesSystem.groundnetEDDK.groundnetgraph;
         }
 
         // P ist key fuer Teleport

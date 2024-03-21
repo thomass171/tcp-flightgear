@@ -69,6 +69,7 @@ public class GroundNet {
     // ein Spezialfall. Auch in 3D Darstellung sollte Groundnet zumindest vorerst analog zu FG eine Projection verwenden.
     // 9.1.19: Das macht aber vieles (z.B. die Ermittlung der effektiven Rotation) ziemlich undurchsichtig. Vielleicht doch nur bei 2D projecten?
     // 29.5.19: Auch wenn auch in 3D eine 2D Projection verwendet wird, darf projection null, sein. Z.B. fuer Tests oder Nutzung bei Scenery.
+    // 21.3.24: IIRC projection is specific for this special groundnet, based on airport center.
     public MapProjection projection;
     //damit es wie in FG eine altitude gibt. Erstmal nicht, weils beim rendern der edges bloed ist. Fuer Tests aber schon
     //5.4.18: Umbenennen von virtualaltitude nach airportelevation?

@@ -152,7 +152,7 @@ public class TravelSceneTest {
         sceneRunner.runLimitedFrames(10);
 
         // load c172p
-        Request request = RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null);
+        Request request = RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null, null);
         SystemManager.putRequest(request);
         TestUtils.waitUntil(() -> {
             sceneRunner.runLimitedFrames(10);

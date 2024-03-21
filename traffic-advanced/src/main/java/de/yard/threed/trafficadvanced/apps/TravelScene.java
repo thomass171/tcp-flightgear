@@ -762,7 +762,7 @@ public class TravelScene extends FlightTravelScene {
 
             //gsw.graphloaded = null;
             populated = true;
-            trafficSystem.groundNet = GroundServicesSystem.groundnetEDDK.groundnetgraph;
+            //20.3.24 now via TRAFFIC_EVENT_GRAPHLOADED  trafficSystem.groundNet = GroundServicesSystem.groundnetEDDK.groundnetgraph;
         }
 
         if (Input.getKeyDown(KeyCode.D)) {
@@ -1066,7 +1066,7 @@ public class TravelScene extends FlightTravelScene {
         });
         // 'L' for load
         controlmenu.addButton(2, 0, 1, Icon.IconCharacter(11), () -> {
-            SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
+            SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null, null));
             //updateHud();
         });
         controlmenu.addButton(3, 0, 1, Icon.ICON_CLOSE, () -> {

@@ -13,6 +13,7 @@ import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.graph.Graph;
 import de.yard.threed.graph.GraphNode;
 import de.yard.threed.graph.GraphOrientation;
+import de.yard.threed.traffic.BasicRouteBuilder;
 import de.yard.threed.traffic.Destination;
 import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.GreatCircle;
@@ -30,14 +31,11 @@ import de.yard.threed.trafficfg.FgCalculations;
 /**
  * 15.2.18
  */
-public class RouteBuilder {
+public class RouteBuilder extends BasicRouteBuilder {
     static Log logger = Platform.getInstance().getLog(RouteBuilder.class);
-    public static double platzrundealtitude = 300;
-    public static double cruisingaltitude = 900;
-    EllipsoidCalculations rbcp;
 
     public RouteBuilder(EllipsoidCalculations rbcp) {
-        this.rbcp = rbcp;
+        super(rbcp);
     }
 
     /**
@@ -73,7 +71,7 @@ public class RouteBuilder {
      * @return
      */
     public FlightRouteGraph buildFlightGraphForAircraftTrafficPattern(Runway departing, TerrainElevationProvider elevationprovider, int pattern) {
-        Graph graph = buildTakeOffGraph(departing, platzrundealtitude, elevationprovider);
+        Graph graph = buildTakeOffGraph(departing, BasicRouteBuilder.platzrundealtitude, elevationprovider);
         GraphNode sidnode = graph.getNode(graph.getNodeCount() - 1);
         FlightRouteGraph flightRoute = null;
         Vector3 loc;
@@ -104,7 +102,7 @@ public class RouteBuilder {
                 //Local Orbit "Platzrunde" per Grosskreis
                 double orbitaltitude = 90000;
                 //climb 45 Degree
-                GeoCoordinate orbitentry = GeoUtil.applyCourseDistance(SGGeod.fromCart(sidnode.getLocation()),departingRunwayHelper.getHeading(), 90000).toGeoCoordinate();
+                GeoCoordinate orbitentry = GeoUtil.applyCourseDistance(SGGeod.fromCart(sidnode.getLocation()), departingRunwayHelper.getHeading(), 90000).toGeoCoordinate();
                 orbitentry.setElevationM(orbitaltitude);
                 GreatCircle earthOrbit = GreatCircle.fromDG(orbitentry, departingRunwayHelper.getHeading(), rbcp);
                 int segments = 256;
@@ -135,7 +133,7 @@ public class RouteBuilder {
                 if (true) throw new RuntimeException("deprecated");
                 double highorbitaltitude = 190000;
                 //climb 45 Degree
-                SGGeod highorbitentry = GeoUtil.applyCourseDistance(SGGeod.fromCart(sidnode.getLocation()),departingRunwayHelper.getHeading(), 90000);
+                SGGeod highorbitentry = GeoUtil.applyCourseDistance(SGGeod.fromCart(sidnode.getLocation()), departingRunwayHelper.getHeading(), 90000);
                 highorbitentry.setElevationM(highorbitaltitude);
                 GraphNode highlastnode = sidnode;
                 loc = highorbitentry.toCart();
@@ -149,7 +147,7 @@ public class RouteBuilder {
                 //29.2.2020: Ersetzt wohl (2).
                 double eorbitaltitude = 90000;
                 //climb 45 Degree
-                GeoCoordinate eorbitentry = GeoUtil.applyCourseDistance(SGGeod.fromCart(sidnode.getLocation()),departingRunwayHelper.getHeading(), 90000).toGeoCoordinate();
+                GeoCoordinate eorbitentry = GeoUtil.applyCourseDistance(SGGeod.fromCart(sidnode.getLocation()), departingRunwayHelper.getHeading(), 90000).toGeoCoordinate();
                 eorbitentry.setElevationM(eorbitaltitude);
                 GreatCircle eearthOrbit = GreatCircle.fromDG(eorbitentry, departingRunwayHelper.getHeading(), rbcp);
                 Graph graphToEquator = eearthOrbit.getGraphToEquator(256);
@@ -174,7 +172,7 @@ public class RouteBuilder {
             case 4:
                 // SID depart to a direction. Avoid spitzen Winkel durch additional node TODO
                 Degree heading = new Degree(270);
-                SGGeod lastpoint = GeoUtil.applyCourseDistance(SGGeod.fromCart(sidnode.getLocation()),heading.add(new Degree(90)), 600);
+                SGGeod lastpoint = GeoUtil.applyCourseDistance(SGGeod.fromCart(sidnode.getLocation()), heading.add(new Degree(90)), 600);
                 lastpoint.setElevationM(2000);
                 GraphNode last0 = graph.addNode("turn0", lastpoint.toCart());
                 graph.connectNodes(sidnode, last0, "abflug");
@@ -297,14 +295,14 @@ public class RouteBuilder {
         // entry sollte schon projected sein.
         //GraphNode entry = graph.addNode("entry", positiononrunway.getLocation());
 
-        GraphNode holding = graph.addNode("holding", rbcp.toCart(GeoCoordinate.fromLatLon(runwayHelper.getHoldingPoint(),0), elevationprovider));
+        GraphNode holding = graph.addNode("holding", rbcp.toCart(GeoCoordinate.fromLatLon(runwayHelper.getHoldingPoint(), 0), elevationprovider));
         //graph.connectNodes(entry,holding);
         //v1 ist fuer das smooting
         //GraphNode v1 = graph.addNode("v1", projection.projectWithAltitude(v1point,0));
         //graph.connectNodes(holding,v1);
-        GraphNode takeoff = graph.addNode("takeoff", rbcp.toCart(GeoCoordinate.fromLatLon(runwayHelper.getTakeoffPoint(),0), elevationprovider));
+        GraphNode takeoff = graph.addNode("takeoff", rbcp.toCart(GeoCoordinate.fromLatLon(runwayHelper.getTakeoffPoint(), 0), elevationprovider));
         graph.connectNodes(holding, takeoff, "starting");
-        SGGeod sidpoint = GeoUtil.applyCourseDistance(SGGeod.fromLatLon(runwayHelper.getTakeoffPoint()),runwayHelper.getHeading(), 3000);
+        SGGeod sidpoint = GeoUtil.applyCourseDistance(SGGeod.fromLatLon(runwayHelper.getTakeoffPoint()), runwayHelper.getHeading(), 3000);
         sidpoint.setElevationM(altitude);
         GraphNode sid = graph.addNode("sid", sidpoint.toCart());
         graph.connectNodes(takeoff, sid, "takeoff");
@@ -323,14 +321,14 @@ public class RouteBuilder {
      */
     public void addLandingGraph(Runway runway, Graph graph, GraphNode lastnode, double altitude, TerrainElevationProvider elevationprovider) {
         RunwayHelper runwayHelper = new RunwayHelper(runway, new FgCalculations());
-        SGGeod starpoint = GeoUtil.applyCourseDistance(SGGeod.fromLatLon(runwayHelper.getTakeoffPoint()),runwayHelper.getHeading().reverse(), 3000);
+        SGGeod starpoint = GeoUtil.applyCourseDistance(SGGeod.fromLatLon(runwayHelper.getTakeoffPoint()), runwayHelper.getHeading().reverse(), 3000);
         starpoint.setElevationM(altitude);
         GraphNode star = graph.addNode("star", starpoint.toCart());
         graph.connectNodes(lastnode, star);
 
-        GraphNode touchdown = graph.addNode("touchdown", rbcp.toCart(GeoCoordinate.fromLatLon(runwayHelper.getTouchdownpoint(),0), elevationprovider));
+        GraphNode touchdown = graph.addNode("touchdown", rbcp.toCart(GeoCoordinate.fromLatLon(runwayHelper.getTouchdownpoint(), 0), elevationprovider));
         graph.connectNodes(star, touchdown, "endanflug");
-        SGGeod endpoint = GeoUtil.applyCourseDistance(SGGeod.fromLatLon(runwayHelper.getTouchdownpoint()),runwayHelper.getHeading(), 1000);
+        SGGeod endpoint = GeoUtil.applyCourseDistance(SGGeod.fromLatLon(runwayHelper.getTouchdownpoint()), runwayHelper.getHeading(), 1000);
         GraphNode end = graph.addNode("endpoint", rbcp.toCart(endpoint.toGeoCoordinate(), elevationprovider));
         graph.connectNodes(touchdown, end);
 

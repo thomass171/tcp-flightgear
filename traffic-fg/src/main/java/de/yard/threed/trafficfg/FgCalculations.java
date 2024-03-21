@@ -76,23 +76,24 @@ public class FgCalculations implements EllipsoidCalculations {
 
     /**
      * 5.5.20: Wenn die Klasse nach core geht, das hier vielleicht woanders hin.
-     *
+     * 21.3.24: Decoupled from SGGeod
      * @param elevationprovider
      * @return
      */
     @Override
     public  Vector3 toCart(GeoCoordinate geoCoordinate, ElevationProvider elevationprovider) {
-        SGGeod sgGeod = SGGeod.fromGeoCoordinate(geoCoordinate);
-        Double elevation = sgGeod.getElevationM();
+        // 21.3.24: elevation in GeoCoordinate is optional meanwhile. So intermediate SGGeod will fail.
+        //SGGeod sgGeod = SGGeod.fromGeoCoordinate(geoCoordinate);
+        Double elevation = geoCoordinate.getElevationM();
         if (elevationprovider != null) {
-            elevation = elevationprovider.getElevation(sgGeod.getLatitudeDeg().getDegree(), sgGeod.getLongitudeDeg().getDegree());
+            elevation = elevationprovider.getElevation(geoCoordinate.getLatDeg().getDegree(), geoCoordinate.getLonDeg().getDegree());
         }
         if (elevation == null) {
             // warn, weil das zu falschen Positionen führne wird
             //logger.warn("no elevation. Using "+elevationM);
-            elevation = sgGeod.getElevationM();
+            elevation = 0.0;//sgGeod.getElevationM();
         }
-        return SGGeodesy.SGGeodToCart(sgGeod.getLonRad(), sgGeod.getLatRad(), (double)elevation);
+        return SGGeodesy.SGGeodToCart(geoCoordinate.getLonRad(), geoCoordinate.getLatRad(), (double)elevation);
 
     }
 

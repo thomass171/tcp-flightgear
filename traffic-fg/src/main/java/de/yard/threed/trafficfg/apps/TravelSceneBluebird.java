@@ -76,6 +76,7 @@ import de.yard.threed.graph.SimpleGraphVisualizer;
 import de.yard.threed.traffic.AbstractTerrainBuilder;
 import de.yard.threed.traffic.Destination;
 import de.yard.threed.traffic.EllipsoidCalculations;
+import de.yard.threed.traffic.GeoRoute;
 import de.yard.threed.traffic.GraphBackProjectionProvider;
 import de.yard.threed.traffic.GraphTerrainSystem;
 import de.yard.threed.traffic.GraphVisualizationSystem;
@@ -157,6 +158,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
     TrafficConfig vdefs;
     // 18.3.24 From former hard coded EDDK setup.
     public static GeoCoordinate formerInitialPositionEDDK = new GeoCoordinate(new Degree(50.843675), new Degree(7.109709), 1150);
+    GeoRoute initialRoute = null;
 
     @Override
     public String[] getPreInitBundle() {
@@ -255,6 +257,11 @@ public class TravelSceneBluebird extends BasicTravelScene {
 
     @Override
     protected void customProcessArguments() {
+        // 'basename' needs to be set aditionally.
+        String ir = Platform.getInstance().getConfiguration().getString("initialRoute");
+        if (ir != null) {
+            initialRoute = GeoRoute.parse(ir);
+        }
     }
 
     @Override
@@ -455,7 +462,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
         if (terrainavailable && GroundServicesSystem.groundnetEDDK != null && !populated) {
             //jetzt muesste ein Groundnet mit 2D Projection da sein.
             populated = true;
-            trafficSystem.groundNet = GroundServicesSystem.groundnetEDDK.groundnetgraph;
+            //20.3.24 now via TRAFFIC_EVENT_GRAPHLOADED trafficSystem.addTrafficGraph(GroundServicesSystem.groundnetEDDK.groundnetgraph);
         }
 
         if (Input.getKeyDown(KeyCode.D)) {

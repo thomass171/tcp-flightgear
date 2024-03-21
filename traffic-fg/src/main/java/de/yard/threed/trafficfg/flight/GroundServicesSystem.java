@@ -4,6 +4,7 @@ import de.yard.threed.core.CharsetException;
 import de.yard.threed.core.Event;
 import de.yard.threed.core.EventType;
 import de.yard.threed.core.Payload;
+import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.XmlException;
 import de.yard.threed.core.platform.Log;
@@ -904,6 +905,8 @@ public class GroundServicesSystem extends DefaultEcsSystem {
 
         GroundNet groundnet = new GroundNet(projection, groundnetxml, airport.getHome()/*, airport*/);
         groundnet.groundnetgraph.icao = airport.getAirport().getIcao();
+        // set a name for better logging/debugging just by a simple convention
+        groundnet.groundnetgraph.getBaseGraph().setName("groundnet." + StringUtils.toUpperCase(groundnet.groundnetgraph.icao));
         return groundnet;
     }
 
@@ -938,9 +941,12 @@ public class GroundServicesSystem extends DefaultEcsSystem {
                 ac.getAirport().setGroundNetXml(null);
                 //27.12.21trafficWorld.addGroundNet(ac.getAirport().getIcao(), groundNet);
                 GroundServicesSystem.groundnetEDDK = groundNet;
+                // 20.3.24: inform other about loaded trafficgraph. TrafficSystem will then send a request TRAFFIC_REQUEST_LOADVEHICLES.
+                String cluster = TrafficGraph.ROAD;
+                SystemManager.sendEvent(new Event(TrafficEventRegistry.TRAFFIC_EVENT_GRAPHLOADED, new Payload(groundNet.groundnetgraph, cluster)));
                 // 30.10.21: Vehicles cannot be loaded immediately, because they need to wait for example for elevation.
-                TrafficGraph trafficGraph = groundNet.groundnetgraph;
-                SystemManager.putRequest(RequestRegistry.buildLoadVehicles(trafficGraph));
+                //TrafficGraph trafficGraph = groundNet.groundnetgraph;
+                //SystemManager.putRequest(RequestRegistry.buildLoadVehicles(trafficGraph));
 
             } else {
                 logger.warn("pending groundnet not loaded");
