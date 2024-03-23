@@ -91,7 +91,7 @@ public class SphereSystemExtTest {
         Request request = SystemManager.getRequest(0);
         assertEquals("TRAFFIC_REQUEST_LOADGROUNDNET", request.getType().getLabel());
         //27.12.21 assertNotNull("", DefaultTrafficWorld.getInstance());
-        SphereProjections projections = TrafficHelper.getProjectionByDataprovider();
+        SphereProjections projections = TrafficHelper.getProjectionByDataprovider(null/*??*/);
         assertNotNull(projections);
         assertNotNull(projections.projection);
         assertTrue(projections.backProjection == null);

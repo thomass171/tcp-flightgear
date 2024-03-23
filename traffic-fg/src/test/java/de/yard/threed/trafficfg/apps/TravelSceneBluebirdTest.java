@@ -2,6 +2,10 @@ package de.yard.threed.trafficfg.apps;
 
 
 import de.yard.threed.core.Event;
+import de.yard.threed.core.LatLon;
+import de.yard.threed.core.LocalTransform;
+import de.yard.threed.core.Quaternion;
+import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
@@ -17,16 +21,24 @@ import de.yard.threed.engine.testutil.SceneRunnerForTesting;
 import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.graph.GraphMovingComponent;
+import de.yard.threed.graph.GraphMovingSystem;
+import de.yard.threed.graph.ProjectedGraph;
 import de.yard.threed.traffic.GeoRoute;
 import de.yard.threed.traffic.GraphVisualizationSystem;
+import de.yard.threed.traffic.RequestRegistry;
 import de.yard.threed.traffic.TrafficEventRegistry;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficHelper;
+import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.geodesy.GeoCoordinate;
 import de.yard.threed.traffic.testutils.TrafficTestUtils;
 import de.yard.threed.trafficcore.model.Vehicle;
+import de.yard.threed.trafficfg.TravelHelper;
+import de.yard.threed.trafficfg.flight.GroundNet;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
+import de.yard.threed.trafficfg.flight.Parking;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -38,10 +50,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  *
  */
+@Slf4j
 public class TravelSceneBluebirdTest {
     SceneRunnerForTesting sceneRunner;
     static final int INITIAL_FRAMES = 10;
-    Log log;
 
     /**
      *
@@ -115,12 +127,26 @@ public class TravelSceneBluebirdTest {
             return entities.size() == expectedNumberOfEntites;
         }, 60000);
 
+        GroundNet groundnetEDDK = GroundServicesSystem.groundnets.get("EDDK");
+        assertNotNull(groundnetEDDK);
+        //assertNotNull(groundnetEDDK.projection);
+        Parking home = groundnetEDDK.getVehicleHome();
+        assertEquals("A20", home.name);
+        // Even in 3D the groundnet graph is projected, which is seen by low coordinate values
+        assertTrue(Math.abs(home.node.getLocation().getX()) < 3000, "x-coordinate of groundnet node < 3000");
+        //LatLon backProjectedHome = groundnetEDDK.projection.unproject(Vector2.buildFromVector3(home.node.getLocation()));
+        //TODO assertEquals(51.0, Math.round(backProjectedHome.getLatDeg().getDegree()));
+
+        EcsEntity bluebird = null;
         if (withBluebird) {
-            EcsEntity bluebird = EcsHelper.findEntitiesByName("bluebird").get(0);
+            bluebird = EcsHelper.findEntitiesByName("bluebird").get(0);
             assertNotNull(bluebird);
+            VehicleComponent vehicleComponent = VehicleComponent.getVehicleComponent(bluebird);
+            //TODO not yet added assertNotNull(vehicleComponent);
             Vector3 posbluebird = bluebird.getSceneNode().getTransform().getPosition();
-            // die Werte sind plausibel
-            // TODO 3D ref values TestUtils.assertVector3(new Vector3(-1694.7482728026903, 1299.8451319338214, 0.0), pos747);
+            log.debug("posbluebird=" + posbluebird);
+            // ref values taken from visual test
+            TestUtils.assertVector3(new Vector3(4001277.6476712367, 500361.77258586703, 4925186.718276716), posbluebird);
 
             GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(bluebird);
             assertNotNull(gmc);
@@ -129,6 +155,14 @@ public class TravelSceneBluebirdTest {
             } else {
                 assertEquals("groundnet.EDDK", gmc.getGraph().getName());
             }
+            ProjectedGraph projectedGraph = (ProjectedGraph) gmc.getGraph();
+            assertNotNull(projectedGraph.backProjection);
+            LocalTransform posrot = GraphMovingSystem.getPosRot(gmc, projectedGraph.backProjection);
+            log.debug("posrot=" + posrot);
+            // ref values taken from visual test
+            TestUtils.assertVector3(new Vector3(4001277.6476712367, 500361.77258586703, 4925186.718276716), posrot.position);
+            // as always comparing a quaternion has a risk a false negative
+            TestUtils.assertQuaternion(new Quaternion(0.25616279537311326, 0.2155633415950961, 0.7906922999954207, 0.5125609766212603), posrot.rotation);
         }
 
         // 'visualizeTrack' is disabled by default
@@ -136,6 +170,22 @@ public class TravelSceneBluebirdTest {
         assertNull(graphVisualizationSystem);
 
         assertEquals(2, SceneNode.findByName("Scene Light").size());
+
+        if (withBluebird) {
+            GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(bluebird);
+            assertNull(gmc.getPath());
+            // start bluebird roundtrip
+            TravelHelper.startDefaultTrip(bluebird);
+
+           /* not possible until it has VehicleComponent
+           TestUtils.waitUntil(() -> {
+                TestHelper.processAsync();
+                return gmc.getPath() != null;
+            }, 2000);*/
+
+            TestHelper.processAsync();
+            // t.b.c.
+        }
     }
 
     /**
@@ -159,6 +209,5 @@ public class TravelSceneBluebirdTest {
 
         sceneRunner = (SceneRunnerForTesting) SceneRunnerForTesting.getInstance();
         sceneRunner.runLimitedFrames(INITIAL_FRAMES);
-        log = Platform.getInstance().getLog(TravelSceneBluebirdTest.class);
     }
 }

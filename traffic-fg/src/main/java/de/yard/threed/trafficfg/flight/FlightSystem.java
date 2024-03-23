@@ -166,7 +166,7 @@ public class FlightSystem extends DefaultEcsSystem {
         //27.12.21 vorerst immer EDDK
         // groundNet = DefaultTrafficWorld.getInstance().getGroundNet(icao);
         // runway = DefaultTrafficWorld.getInstance().getAirport(icao).getRunways()[0];
-        groundNet = GroundServicesSystem.groundnetEDDK;
+        groundNet = GroundServicesSystem.groundnets.get("EDDK");
         runway = GroundServicesSystem.airport.getRunways()[0];
         //}
         if (groundNet == null) {
@@ -259,7 +259,7 @@ public class FlightSystem extends DefaultEcsSystem {
         }
         // 28.9.18: Die projection ist wirklich nur fuer 2D? Klingt plausibel.
         FlightRouteGraph flightRoute = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRouteGraph(departing,
-                (/*27.12.21DefaultTrafficWorld.getInstance() == null*/false) ? null : TrafficHelper.getProjectionByDataprovider().projection, pattern);
+                (/*27.12.21DefaultTrafficWorld.getInstance() == null*/false) ? null : TrafficHelper.getProjectionByDataprovider(null/*??*/).projection, pattern);
         GraphPath smoothedflightpath = flightRoute.getPath();
         Graph graph = flightRoute.getGraph();
 

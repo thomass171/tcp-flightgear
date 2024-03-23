@@ -39,6 +39,7 @@ import de.yard.threed.graph.GraphUtils;
 import de.yard.threed.graph.TurnExtension;
 import de.yard.threed.traffic.NoElevationException;
 import de.yard.threed.traffic.PositionHeading;
+import de.yard.threed.traffic.SphereProjections;
 import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.config.ConfigHelper;
@@ -1031,7 +1032,7 @@ public class GroundNetTest {
             AirportConfig airport = AirportConfig.buildFromAirportConfig("traffic-fg", "flight/" + icao.toUpperCase() + ".xml", icao, gnxml);
 
             SimpleMapProjection projection = new SimpleMapProjection(/*TrafficWorld2D.*/SGGeod.fromLatLon(airport.getCenter()));
-            GroundNet groundnet = new GroundNet(projection, groundnetxml, airport.getHome()/*"A20"* /, airport*/);
+            GroundNet groundnet = new GroundNet(projection, null, groundnetxml, airport.getHome()/*"A20"* /, airport*/);
             groundnet.groundnetgraph.icao = icao;
             //27.12.21 gsw.addGroundNet(icao, groundnet);
             return groundnet;

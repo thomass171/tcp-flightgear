@@ -30,10 +30,12 @@ import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphNode;
 import de.yard.threed.graph.GraphPath;
 import de.yard.threed.graph.GraphPosition;
+import de.yard.threed.graph.GraphProjection;
 import de.yard.threed.graph.TurnExtension;
 import de.yard.threed.traffic.NoElevationException;
 import de.yard.threed.traffic.RequestRegistry;
 import de.yard.threed.traffic.ScenerySystem;
+import de.yard.threed.traffic.SphereProjections;
 import de.yard.threed.traffic.TrafficEventRegistry;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficHelper;
@@ -110,7 +112,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
     //public MapProjection projection;
     //TODO queuen?
     TrafficRequest request = null;
-    String homename;
+    //21.3.24 String homename;
     //public static Map<Integer, Schedule> schedules = new HashMap<Integer, Schedule>();
     //List<ScheduledAction> actionsactive = new ArrayList<ScheduledAction>();
     public static Map<Integer, ServicePoint> servicepoint = new HashMap<Integer, ServicePoint>();
@@ -123,8 +125,8 @@ public class GroundServicesSystem extends DefaultEcsSystem {
     public static boolean useSchedules = false;
     private SimpleMapProjection projection;
 
-    //27.12.21 Der Ersatz für: DefaultTrafficWorld.getInstance().getGroundNet("EDDK")
-    public static GroundNet groundnetEDDK;
+    //21.3.24: Now a map by icao(uppercase)
+    public static Map<String, GroundNet> groundnets = new HashMap<String, GroundNet>();
     //27.12.21: Und Ersatz fuer den Airport und TrafficWorldConfig in DefaultTrafficWorld.
     // Needed eg. for runways, but not for groundnet. So it might appear the wrong location here. But ground services might
     // also need it for parking positions(?) and "followme" services.
@@ -164,8 +166,9 @@ public class GroundServicesSystem extends DefaultEcsSystem {
     private void setGroundnetAndAirport(GroundNet groundnet, AirportConfig airport) {
         /*GroundServicesSystem.*/
         this.groundnet = groundnet;
+        this.groundnets.put(airport.getAirport().getIcao(), groundnet);
         //this.airport = airport;
-        this.homename = airport.getHome();
+       //21.3.24  this.homename = airport.getHome();
     }
 
     @Override
@@ -902,8 +905,11 @@ public class GroundServicesSystem extends DefaultEcsSystem {
         } catch (XmlException e) {
             throw new RuntimeException(e);
         }
-
-        GroundNet groundnet = new GroundNet(projection, groundnetxml, airport.getHome()/*, airport*/);
+        // projection is icao specific? thus cannot be a common?
+        SphereProjections sphereProjections = TrafficHelper.getProjectionByDataprovider(projection);
+        //sphereProjections.projection= (SimpleMapProjection) projection;
+        //GraphProjection backProjection = new GraphProjectionFlight3D(projection);
+        GroundNet groundnet = new GroundNet(projection, sphereProjections.backProjection, groundnetxml, airport.getHome()/*, airport*/);
         groundnet.groundnetgraph.icao = airport.getAirport().getIcao();
         // set a name for better logging/debugging just by a simple convention
         groundnet.groundnetgraph.getBaseGraph().setName("groundnet." + StringUtils.toUpperCase(groundnet.groundnetgraph.icao));
@@ -940,7 +946,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
                 //mark as loaded
                 ac.getAirport().setGroundNetXml(null);
                 //27.12.21trafficWorld.addGroundNet(ac.getAirport().getIcao(), groundNet);
-                GroundServicesSystem.groundnetEDDK = groundNet;
+                GroundServicesSystem.groundnets.put(ac.getAirport().getIcao(), groundNet);
                 // 20.3.24: inform other about loaded trafficgraph. TrafficSystem will then send a request TRAFFIC_REQUEST_LOADVEHICLES.
                 String cluster = TrafficGraph.ROAD;
                 SystemManager.sendEvent(new Event(TrafficEventRegistry.TRAFFIC_EVENT_GRAPHLOADED, new Payload(groundNet.groundnetgraph, cluster)));
@@ -971,7 +977,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
      * Erzeugt auch nur das Event
      */
     public static void requestVehicleMove(/*TrafficWorld2D*/Object gsw) {
-        TrafficEvent evt = new TrafficEvent(TrafficEventRegistry.TRAFFIC_EVENT_VEHICLEMOVEREQUEST, new TrafficRequest(GroundServiceComponent.VEHICLE_FOLLOME, GroundServicesSystem.groundnetEDDK.getParkPos("C_7")));
+        TrafficEvent evt = new TrafficEvent(TrafficEventRegistry.TRAFFIC_EVENT_VEHICLEMOVEREQUEST, new TrafficRequest(GroundServiceComponent.VEHICLE_FOLLOME, GroundServicesSystem.groundnets.get("EDDK").getParkPos("C_7")));
         SystemManager.sendEvent(evt);
     }
 
@@ -996,6 +1002,14 @@ public class GroundServicesSystem extends DefaultEcsSystem {
         }
         int eddks = SceneNode.findByName("Terrain/e000n50/e007n50/EDDK.gltf").size();
         return eddks > 0;
+    }
+
+    /**
+     * 21.3.24:just a quick hack after groundneteddk no longer is hardcoded.
+     * @return
+     */
+    public static GroundNet groundnetEDDK(){
+        return groundnets.get("EDDK");
     }
 }
 

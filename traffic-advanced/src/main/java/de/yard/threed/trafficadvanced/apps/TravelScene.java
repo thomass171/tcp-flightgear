@@ -733,13 +733,13 @@ public class TravelScene extends FlightTravelScene {
             terrainavailable = true;
         }
 
-        if (terrainavailable && GroundServicesSystem.groundnetEDDK != null && !populated) {
+        if (terrainavailable && GroundServicesSystem.groundnets.get("EDDK") != null && !populated) {
             //jetzt muesste ein Groundnet mit 2D Projection da sein.
 
             //4.10.18: Shuttle ist zu gross. Braucht XML Wrapper und GLTF. Darum vorerst unbrauchbar. TODO ueber config
             //GroundServicesScene.launchVehicle(configShuttle, orbit, new GraphPosition(orbit.getEdge(0)), TeleportComponent.getTeleportComponent(avatar.avatarE), world, null);
 
-            GroundNet groundnet = GroundServicesSystem.groundnetEDDK;
+            GroundNet groundnet = GroundServicesSystem.groundnets.get("EDDK");
             // jetzt noch die konfigurierten Vehicles, die einfach so rumfahren.
             // Avatar Cockpit Pos lasse ich mal weg. 11.5.19 Warum? Um Teleport auf echte Cockpits zu beschraenken?
              /*29.10.21 Now Per Request in TrafficSystem

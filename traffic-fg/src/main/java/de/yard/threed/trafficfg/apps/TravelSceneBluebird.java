@@ -459,7 +459,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
             terrainavailable = true;
         }
 
-        if (terrainavailable && GroundServicesSystem.groundnetEDDK != null && !populated) {
+        if (terrainavailable && GroundServicesSystem.groundnets.get("EDDK") != null && !populated) {
             //jetzt muesste ein Groundnet mit 2D Projection da sein.
             populated = true;
             //20.3.24 now via TRAFFIC_EVENT_GRAPHLOADED trafficSystem.addTrafficGraph(GroundServicesSystem.groundnetEDDK.groundnetgraph);

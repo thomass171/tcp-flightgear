@@ -100,7 +100,7 @@ public class TravelSceneTest {
         // vehicle need groundnet to be loaded.
         TestUtils.waitUntil(() -> {
             sceneRunner.runLimitedFrames(1);
-            return GroundServicesSystem.groundnetEDDK != null;
+            return GroundServicesSystem.groundnets.get("EDDK") != null;
         }, 60000);
 
         //11 passt: "Player",5 GS Vehicle (3 LSG?, 2 Goldhofert?, no delayed aircraft),  Vehicle from sceneconfig (747, 737, 738, Bravo), 3 Aircraft

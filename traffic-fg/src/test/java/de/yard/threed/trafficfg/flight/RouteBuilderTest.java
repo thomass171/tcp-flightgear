@@ -39,7 +39,7 @@ public class RouteBuilderTest {
         Runway runway14l = OsmRunway.eddk14L();
         //Geht ECS ueberhaupt im Test? Hmmm.Lassen wir mal.
         //EcsEntity aircraft = new EcsEntity(null, new GraphMovingComponent(null, null, null));
-        SimpleMapProjection projection = (SimpleMapProjection) groundnet.projection;
+        //21.3.24 SimpleMapProjection projection = (SimpleMapProjection) groundnet.projection;
         FlightRouteGraph flightpath = new RouteBuilder(new FgCalculations()).buildFlightGraphForAircraftTrafficPattern(runway14l/*,projection*/,TerrainElevationProvider.buildForStaticAltitude(80),0);
         System.out.println("flightpath=" + flightpath);
     }

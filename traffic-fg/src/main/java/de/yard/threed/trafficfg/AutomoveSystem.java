@@ -158,7 +158,7 @@ public class AutomoveSystem extends DefaultEcsSystem {
         /*if (gsc != null && !gsc.isIdle()) {
             return false;
         }*/
-        if (gmc.isMoving() != null) {
+        if (gmc.getPath() != null) {
             return false;
         }
        /*26.3.19  if (vhc.statechangetimestamp + maxidletimeinseconds * 1000 > ((Platform) Platform.getInstance()).currentTimeMillis()) {

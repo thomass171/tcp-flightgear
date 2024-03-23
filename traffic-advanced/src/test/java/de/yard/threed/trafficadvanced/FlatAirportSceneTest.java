@@ -116,7 +116,7 @@ public class FlatAirportSceneTest {
         TrafficGraph railwayGraph = TrafficHelper.getTrafficGraphByDataprovider(TrafficGraph.RAILWAY);
         assertNotNull( railwayGraph);*/
 
-        SphereProjections projections = TrafficHelper.getProjectionByDataprovider();
+        SphereProjections projections = TrafficHelper.getProjectionByDataprovider(null/*??*/);
         assertNotNull(projections);
         assertNotNull(projections.projection);
         assertTrue(projections.backProjection == null);
@@ -144,7 +144,7 @@ public class FlatAirportSceneTest {
         EcsEntity entity747 = EcsHelper.findEntitiesByName("747 KLM").get(0);
         assertNotNull(entity747);
         Vector3 pos747 = entity747.getSceneNode().getTransform().getPosition();
-        // die Werte sind plausibel
+        // values appear correct
         TestUtils.assertVector3(new Vector3(-1694.7482728026903, 1299.8451319338214, 0.0), pos747);
         // start auto move. From now on its non deterministic
 
@@ -184,6 +184,11 @@ public class FlatAirportSceneTest {
         NativeSceneNode garmin196 = SceneNode.findByName("Aircraft/Instruments-3d/garmin196/garmin196.gltf").get(0);
         assertTrue(Texture.hasTexture("screens.png"), "garmin.texture");
 
+        // start c172p roundtrip
+        SystemManager.putRequest(RequestRegistry.buildLoadVehicle(-1, null, null, null));
+
+        TestHelper.processAsync();
+        // t.b.c.
     }
 
     /**

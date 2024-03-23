@@ -23,6 +23,7 @@ import de.yard.threed.graph.GraphNodeFilter;
 import de.yard.threed.graph.GraphOrientation;
 import de.yard.threed.graph.GraphPath;
 import de.yard.threed.graph.GraphPosition;
+import de.yard.threed.graph.GraphProjection;
 import de.yard.threed.graph.GraphUtils;
 import de.yard.threed.graph.GraphValidator;
 import de.yard.threed.graph.TurnExtension;
@@ -31,6 +32,7 @@ import de.yard.threed.traffic.NoElevationException;
 import de.yard.threed.traffic.NodeCoord;
 import de.yard.threed.traffic.PositionHeading;
 import de.yard.threed.traffic.RunwayHelper;
+import de.yard.threed.traffic.SphereProjections;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.geodesy.ElevationProvider;
@@ -70,6 +72,7 @@ public class GroundNet {
     // 9.1.19: Das macht aber vieles (z.B. die Ermittlung der effektiven Rotation) ziemlich undurchsichtig. Vielleicht doch nur bei 2D projecten?
     // 29.5.19: Auch wenn auch in 3D eine 2D Projection verwendet wird, darf projection null, sein. Z.B. fuer Tests oder Nutzung bei Scenery.
     // 21.3.24: IIRC projection is specific for this special groundnet, based on airport center.
+    //21.3.24 Could be moved to ProjectedGraph
     public MapProjection projection;
     //damit es wie in FG eine altitude gibt. Erstmal nicht, weils beim rendern der edges bloed ist. Fuer Tests aber schon
     //5.4.18: Umbenennen von virtualaltitude nach airportelevation?
@@ -94,11 +97,10 @@ public class GroundNet {
      * 29.5.19: projection, homename,airport duefren null sein, zB. zur Nutzung bei Scenery.
      * 24.5.2020: No with exception when elevation not available.
      *
-     * @param projection
      * @param groundnetxml
      * @param homename
      */
-    public GroundNet(MapProjection projection, XmlDocument groundnetxml,/* int smoothmode,*/ String homename/*4.11.19, AirportConfig airport*/) throws NoElevationException {
+    public GroundNet(MapProjection projection, GraphProjection backProjection, XmlDocument groundnetxml,/* int smoothmode,*/ String homename/*4.11.19, AirportConfig airport*/) throws NoElevationException {
         //4.11.19 this.airport = airport;
         //this.airportelevation = (airport == null) ? 0 : airport.getElevation();
         // Vector3 centerc = center.toCart();
@@ -109,7 +111,11 @@ public class GroundNet {
             validator = new GroundNetGraphValidator();
         }
         GraphUtils.strict = layoutmode;
-        groundnetgraph = new TrafficGraph(validator, GraphOrientation.buildForZ0());
+        //if (projection != null) {
+            groundnetgraph = new TrafficGraph(validator, GraphOrientation.buildForZ0(), backProjection);
+        /*} else {
+            groundnetgraph = new TrafficGraph(validator, GraphOrientation.buildForZ0());
+        }*/
         TrafficGraph.MINIMUMPATHSEGMENTLEN = 2 * TrafficGraph.SMOOTHINGRADIUS;
         if (layoutmode) {
             TrafficGraph.MINIMUMPATHSEGMENTLEN = 8;
@@ -226,7 +232,7 @@ public class GroundNet {
         NativeAttributeList attrs = node.getAttributes();
         // name muss der index sein, denn darueber wird gesucht.
         String name = attrs.getNamedItem("index").getValue();
-        GeoCoordinate coor = new GeoCoordinate( Degree.parseDegree(attrs.getNamedItem("lat").getValue()),Degree.parseDegree(attrs.getNamedItem("lon").getValue()),0);
+        GeoCoordinate coor = new GeoCoordinate(Degree.parseDegree(attrs.getNamedItem("lat").getValue()), Degree.parseDegree(attrs.getNamedItem("lon").getValue()), 0);
         return addNodeByProjecting(name, coor);
     }
 
@@ -235,7 +241,7 @@ public class GroundNet {
         double/*Elevation*/ elevation = 0;
         if (projection == null) {
             EllipsoidCalculations rbcp = TrafficHelper.getEllipsoidConversionsProviderByDataprovider();
-            point = rbcp.toCart(coor,null);
+            point = rbcp.toCart(coor, null);
         } else {
             Vector2 projected = projection.project(coor);
             //elevation = TrafficWorld2D.getElevationForLocation(airport, coor);
@@ -746,14 +752,14 @@ public class GroundNet {
     }
 
     public void createRunwayEntry(Runway runway) throws NoElevationException {
-        RunwayHelper runwayHelper=new RunwayHelper(runway,TrafficHelper.getEllipsoidConversionsProviderByDataprovider());
+        RunwayHelper runwayHelper = new RunwayHelper(runway, TrafficHelper.getEllipsoidConversionsProviderByDataprovider());
         GraphNode positiononrunway = groundnetgraph.getBaseGraph().findNodeByName(runway.enternodefromgroundnet);
         if (positiononrunway == null) {
             logger.warn("positiononrunway not found: " + runway.enternodefromgroundnet + " on " + runway.getName());
             return;
         }
-        GeoCoordinate entrypoint = GeoCoordinate.fromLatLon(runwayHelper.getEntrypoint(),0);
-        GeoCoordinate holdingpoint = GeoCoordinate.fromLatLon(runwayHelper.getHoldingPoint(),0);
+        GeoCoordinate entrypoint = GeoCoordinate.fromLatLon(runwayHelper.getEntrypoint(), 0);
+        GeoCoordinate holdingpoint = GeoCoordinate.fromLatLon(runwayHelper.getHoldingPoint(), 0);
         //, String runwayname
         GraphNode entry = addNodeByProjecting("entry", entrypoint);
         // 12.5.20: Das mit dem Holding ist ja so eone Sache. Jetzt mal unterschieden für beide Richtungen, zugeschnitten auf EDDK 14L.
@@ -796,7 +802,8 @@ public class GroundNet {
         double alt;//4.11.19  = airport.getElevation();//default
         boolean needsupdate = false;
         //var info = geodinfo(pos.lat(), pos.lon());
-        /*MA31 Terrain*/ElevationProvider tep = (/*MA31Terrain*/ElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION);
+        /*MA31 Terrain*/
+        ElevationProvider tep = (/*MA31Terrain*/ElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION);
         Double ele = null;
         if (tep != null) {
             ele = tep.getElevation(coor.getLatDeg().getDegree(), coor.getLonDeg().getDegree());//num(info[0]);

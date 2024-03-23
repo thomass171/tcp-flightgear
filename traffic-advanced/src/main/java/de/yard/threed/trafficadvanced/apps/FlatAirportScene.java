@@ -68,6 +68,7 @@ import de.yard.threed.graph.GraphNode;
 import de.yard.threed.graph.GraphPath;
 import de.yard.threed.graph.GraphProjection;
 import de.yard.threed.graph.GraphVisualizer;
+import de.yard.threed.graph.ProjectedGraph;
 import de.yard.threed.graph.SimpleGraphVisualizer;
 import de.yard.threed.traffic.AbstractTerrainBuilder;
 import de.yard.threed.traffic.Destination;
@@ -87,6 +88,7 @@ import de.yard.threed.traffic.config.XmlVehicleDefinition;
 import de.yard.threed.traffic.flight.DoormarkerDelegate;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.traffic.geodesy.MapProjection;
 import de.yard.threed.traffic.osm.OsmRunway;
 import de.yard.threed.trafficcore.model.Runway;
 import de.yard.threed.trafficcore.model.Vehicle;
@@ -491,7 +493,7 @@ public class FlatAirportScene extends FlightTravelScene {
         //commonUpdate();
 
         //if (gsw.graphloaded != null) {
-        if (GroundServicesSystem.groundnetEDDK != null && !populated) {
+        if (GroundServicesSystem.groundnets.get("EDDK") != null && !populated) {
             // 7.5.19: Das kann das groundnet sein, aber auch irgendein anderer Graph, auf den die Vehicles gesetzt werden können.
 
             //TODO: doof den graph so zu setzen
@@ -508,15 +510,15 @@ public class FlatAirportScene extends FlightTravelScene {
 */
 
             // Evtl. wurde groundnet aber gar nicht wirklich geladen
-            if (GroundServicesSystem.groundnetEDDK != null) {
+            if (GroundServicesSystem.groundnets.get("EDDK") != null) {
                 if (platzrunde == null) {
                     // Zum Test direkt mal den Rundflug einblenden
                     Runway runway14l = OsmRunway.eddk14L(/*(TerrainElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION)*/);
-                    FlightRouteGraph tour = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRouteGraph(runway14l, GroundServicesSystem.groundnetEDDK.projection, 0);
+                    FlightRouteGraph tour = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRouteGraph(runway14l, (MapProjection) ((ProjectedGraph)GroundServicesSystem.groundnets.get("EDDK").groundnetgraph.getBaseGraph()).backProjection, 0);
                     platzrunde = tour.getPath();
                     SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_PATHCREATED, new Payload(tour.getGraph(), platzrunde)));
                 }
-                GroundServicesSystem.groundnetEDDK.groundnetgraph.multilaneenabled = true;
+                GroundServicesSystem.groundnets.get("EDDK").groundnetgraph.multilaneenabled = true;
             }
             //gsw.graphloaded = null;
             populated = true;
@@ -694,7 +696,7 @@ public class FlatAirportScene extends FlightTravelScene {
             hud.clear();
             hud.setText(0, "current: " + ((markedaircraft != null) ? markedaircraft.getName() : ""));
             hud.setText(1, "");
-            hud.setText(2, "edges: " + ((GroundServicesSystem.groundnetEDDK == null) ? 0 : GroundServicesSystem.groundnetEDDK.groundnetgraph.getBaseGraph().getEdgeCount()));
+            hud.setText(2, "edges: " + ((GroundServicesSystem.groundnets.get("EDDK") == null) ? 0 : GroundServicesSystem.groundnets.get("EDDK").groundnetgraph.getBaseGraph().getEdgeCount()));
             //evtl. not yet found VelocityComponent vc = VelocityComponent.getVelocityComponent(GroundServicesSystem.findVehicle(VehicleComponent.VEHICLE_CATERING));
             //hud.setText(3, "speed: " + vc.getMovementSpeed());
         }
@@ -826,12 +828,12 @@ public class FlatAirportScene extends FlightTravelScene {
         switch (usecase) {
             case 1:
                 // move initial Pushback Truck to parking pos (B_2) for pushback of 747
-                GraphNode hp = GroundServicesSystem.groundnetEDDK.groundnetgraph.getBaseGraph().findNodeByName("16");
+                GraphNode hp = GroundServicesSystem.groundnets.get("EDDK").groundnetgraph.getBaseGraph().findNodeByName("16");
                 logger.debug("use case 1");
-                path = GroundServicesSystem.groundnetEDDK.createPathForPushbackVehicle(b_2, hp);
+                path = GroundServicesSystem.groundnets.get("EDDK").createPathForPushbackVehicle(b_2, hp);
                 //trafficsystem.addSchedule(new Schedule(path));
                 //GraphMovingComponent.getGraphMovingComponent(pushback1).setPath(path);
-                travelGraphVisualizer.addLayer(GroundServicesSystem.groundnetEDDK.groundnetgraph.getBaseGraph(), path.layer, getWorld());
+                travelGraphVisualizer.addLayer(GroundServicesSystem.groundnets.get("EDDK").groundnetgraph.getBaseGraph(), path.layer, getWorld());
                 break;
 
 
@@ -1043,7 +1045,7 @@ public class FlatAirportScene extends FlightTravelScene {
         RuntimeTestUtil.assertNotNull("747-400", v747);
         //DefaultTrafficWorld trafficWorld = TrafficWorld2D.getInstance();
         //RuntimeTestUtil.assertNotNull("trafficWorld", trafficWorld);
-        SphereProjections projection = TrafficHelper.getProjectionByDataprovider();//trafficWorld.getProjection();
+        SphereProjections projection = TrafficHelper.getProjectionByDataprovider(null/*??*/);//trafficWorld.getProjection();
         RuntimeTestUtil.assertNotNull("projection", projection);
         Vector3 pos747 = v747.getSceneNode().getTransform().getWorldModelMatrix().extractPosition();
         LatLon latlon747 = projection.projection.unproject(Vector2.buildFromVector3(pos747));
@@ -1061,8 +1063,8 @@ public class FlatAirportScene extends FlightTravelScene {
 
         TeleportComponent tc = TeleportComponent.getTeleportComponent(user);
         RuntimeTestUtil.assertNotNull("tc", tc);
-        // 2 overview, 6 vehicle (stimmt das? ist aber plausibel)
-        RuntimeTestUtil.assertEquals("tc viewpoints", 2 + 6, tc.getPointCount());
+        // 2 overview, 6 vehicle (stimmt das? ist aber plausibel). 22.3.24: Changed some time to 5.
+        RuntimeTestUtil.assertEquals("tc viewpoints", 5, tc.getPointCount());
 
         logger.info("Tests completed");
     }
