@@ -38,6 +38,8 @@ import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.testutils.TrafficTestUtils;
 import de.yard.threed.trafficadvanced.apps.FlatAirportScene;
 import de.yard.threed.trafficcore.model.Vehicle;
+import de.yard.threed.trafficfg.TravelSceneTestHelper;
+import de.yard.threed.trafficfg.apps.TravelSceneBluebird;
 import de.yard.threed.trafficfg.flight.GroundNetMetadata;
 import de.yard.threed.trafficfg.flight.GroundServiceComponent;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
@@ -139,6 +141,11 @@ public class FlatAirportSceneTest {
             return entities.size() == expectedNumberOfEntites;
         }, 40000);
 
+        // 23.5.24: Is 0.0 really correct elevation. Routebuilder should have converted original 3D->2D.
+        TravelSceneTestHelper.validatePlatzrunde(((FlatAirportScene)sceneRunner.ascene).platzrundeForVisualizationOnly, 0.0, false);
+
+        TravelSceneTestHelper.validateGroundnet();
+
         validateStaticEDDK(enableDoormarker);
 
         EcsEntity entity747 = EcsHelper.findEntitiesByName("747 KLM").get(0);
@@ -185,10 +192,12 @@ public class FlatAirportSceneTest {
         assertTrue(Texture.hasTexture("screens.png"), "garmin.texture");
 
         // start c172p roundtrip
-        SystemManager.putRequest(RequestRegistry.buildLoadVehicle(-1, null, null, null));
+        //SystemManager.putRequest(RequestRegistry.buildLoadVehicle(-1, null, null, null));
 
-        TestHelper.processAsync();
-        // t.b.c.
+        // start c172p and wait until it has a flight route
+        TravelSceneTestHelper.assertDefaultTrip(sceneRunner, c172p, false);
+
+
     }
 
     /**

@@ -87,7 +87,7 @@ public class SphereSystemTest {
 
     private void startSimpleTest(String tilename) {
 
-        SystemManager.addSystem(new SphereSystem(null, null));
+        SystemManager.addSystem(new SphereSystem( null));
 
         SystemManager.putRequest(new Request(USER_REQUEST_SPHERE, new Payload(tilename, new ArrayList())));
         //ein Request muss anliegen

@@ -124,7 +124,7 @@ public class RailingScene extends Scene {
         vrInstance = VrInstance.buildFromArguments();
 
 
-        SphereSystem sphereSystem = new SphereSystem(null, null);
+        SphereSystem sphereSystem = new SphereSystem(null);
         SystemManager.addSystem(sphereSystem);
 
         //29.10.23: TrafficWorldConfig and TrafficWorldSystem replaced by SphereSystem more below

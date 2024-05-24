@@ -4,50 +4,36 @@ package de.yard.threed.trafficfg.apps;
 import de.yard.threed.core.Color;
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.Dimension;
-import de.yard.threed.core.DimensionF;
 import de.yard.threed.core.Event;
 import de.yard.threed.core.IntHolder;
 import de.yard.threed.core.LocalTransform;
-import de.yard.threed.core.MathUtil2;
+import de.yard.threed.core.ObjectBuilder;
 import de.yard.threed.core.Payload;
 import de.yard.threed.core.Quaternion;
 import de.yard.threed.core.SpinnerHandler;
-import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
-import de.yard.threed.core.geometry.Primitives;
-import de.yard.threed.core.geometry.SimpleGeometry;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.testutil.RuntimeTestUtil;
 import de.yard.threed.engine.Camera;
-import de.yard.threed.engine.FirstPersonController;
-import de.yard.threed.engine.GenericGeometry;
 import de.yard.threed.engine.Input;
 import de.yard.threed.engine.KeyCode;
 import de.yard.threed.engine.Light;
-import de.yard.threed.engine.Material;
-import de.yard.threed.engine.Mesh;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.apps.ModelSamples;
 import de.yard.threed.engine.ecs.EcsEntity;
-import de.yard.threed.engine.ecs.EcsHelper;
 import de.yard.threed.engine.ecs.EcsSystem;
 import de.yard.threed.engine.ecs.InputToRequestSystem;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.ecs.TeleportComponent;
 import de.yard.threed.engine.ecs.UserSystem;
-import de.yard.threed.engine.gui.ControlMenuBuilder;
 import de.yard.threed.engine.gui.ControlPanel;
-import de.yard.threed.engine.gui.ControlPanelArea;
-import de.yard.threed.engine.gui.FovElement;
 import de.yard.threed.engine.gui.GuiGrid;
 import de.yard.threed.engine.gui.Icon;
 import de.yard.threed.engine.gui.MenuItem;
-import de.yard.threed.engine.gui.PanelGrid;
 import de.yard.threed.engine.gui.Text;
-import de.yard.threed.engine.gui.TextTexture;
 import de.yard.threed.engine.platform.EngineHelper;
 import de.yard.threed.engine.platform.ProcessPolicy;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
@@ -56,7 +42,9 @@ import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.engine.util.NearView;
 import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.flightgear.FgBundleHelper;
-import de.yard.threed.flightgear.FgTerrainBuilder;
+import de.yard.threed.traffic.BuilderRegistry;
+import de.yard.threed.traffic.SphereSystem;
+import de.yard.threed.trafficfg.fgadapter.FgTerrainBuilder;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearMain;
 import de.yard.threed.flightgear.SimpleBundleResourceProvider;
@@ -73,7 +61,7 @@ import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphMovingSystem;
 import de.yard.threed.graph.GraphPosition;
 import de.yard.threed.graph.SimpleGraphVisualizer;
-import de.yard.threed.traffic.AbstractTerrainBuilder;
+import de.yard.threed.traffic.AbstractSceneryBuilder;
 import de.yard.threed.traffic.Destination;
 import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.GeoRoute;
@@ -81,52 +69,45 @@ import de.yard.threed.traffic.GraphBackProjectionProvider;
 import de.yard.threed.traffic.GraphTerrainSystem;
 import de.yard.threed.traffic.GraphVisualizationSystem;
 import de.yard.threed.traffic.LightDefinition;
-import de.yard.threed.traffic.RequestRegistry;
 import de.yard.threed.traffic.ScenerySystem;
-import de.yard.threed.traffic.SolarSystem;
 import de.yard.threed.traffic.TrafficConfig;
-import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.TrafficSystem;
-import de.yard.threed.traffic.VehicleBuiltDelegate;
-import de.yard.threed.traffic.VehicleLauncher;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.traffic.apps.BasicTravelScene;
 import de.yard.threed.traffic.config.PoiConfig;
 import de.yard.threed.traffic.config.VehicleConfigDataProvider;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.config.XmlVehicleDefinition;
-import de.yard.threed.traffic.flight.DoormarkerDelegate;
 import de.yard.threed.traffic.flight.FlightLocation;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.traffic.geodesy.GeoCoordinate;
 import de.yard.threed.traffic.osm.OsmRunway;
 import de.yard.threed.trafficcore.config.AirportDefinition;
 import de.yard.threed.trafficcore.model.Runway;
-import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.AutomoveSystem;
 import de.yard.threed.trafficfg.FgBackProjectionProvider;
 import de.yard.threed.trafficfg.FgCalculations;
 import de.yard.threed.trafficfg.SGGeodAltitudeProvider;
-import de.yard.threed.trafficfg.StgCycler;
 import de.yard.threed.trafficfg.TravelHelper;
 import de.yard.threed.trafficfg.VehicleEntityBuilder;
-import de.yard.threed.trafficfg.config.ConfigHelper;
 import de.yard.threed.trafficfg.fgadapter.FlightGearSystem;
 import de.yard.threed.trafficfg.flight.FlightSystem;
 import de.yard.threed.trafficfg.flight.FlightVrControlPanel;
-import de.yard.threed.trafficfg.flight.GroundNet;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
 import de.yard.threed.trafficfg.flight.RouteBuilder;
+import de.yard.threed.trafficfg.flight.TravelSceneHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+
+import static de.yard.threed.trafficfg.flight.TravelSceneHelper.getSphereWorld;
 
 
 /**
- * Like the big TravelScene, but only bluebird (no external, so much simpler.
+ * Cloned/derived from big TravelScene, but only bluebird (no external, so much simpler.
  * No Ground services (but groundnet), no aircraft marking.
+ * Due to required groundnet and available scenery this is limited to EDDK.
  * <p>
  * Full sgmaterial is not available
  */
@@ -136,10 +117,6 @@ public class TravelSceneBluebird extends BasicTravelScene {
     private static final int WIDTH = 1024;
     private static final int HEIGHT = 768;
 
-    // Wofuer ist die world Zwsichenebene. Zum adjusten?
-    // 20.3.18: Ja, zum komplettverschieben von allem, um Artefakte wegen Rundungsproblemen zu
-    // vermeiden. Das ist was anderes als die Scene.world.
-    SceneNode world;
     static Vector3 camerapositioninmodel = new Vector3(0, 0.6f, 0);
 
     // freecam ist mal für Tests
@@ -147,7 +124,8 @@ public class TravelSceneBluebird extends BasicTravelScene {
     // erste Position. 6/17: 3=equator,4=Dahlem ,5=EDDK
     int startpos = 5;
     Graph orbit;
-    private FlightRouteGraph platzrunde/*, orbittour*/;
+    // public for testing
+    public FlightRouteGraph platzrundeForVisualizationOnly/*, orbittour*/;
     VehicleDefinition configShuttle;
     private EcsEntity orbitingvehicle = null;
     private boolean avatarInited = false;
@@ -172,8 +150,6 @@ public class TravelSceneBluebird extends BasicTravelScene {
         logger.debug("init Flight");
 
         vehiclelistname = "VehiclesWithCockpit";
-        world = new SceneNode();
-        world.setName("FlightWorld");
 
         FlightGearMain.initFG(new FlightLocation(WorldGlobal.equator020000, new Degree(0), new Degree(0)), null);
         FgBundleHelper.addProvider(new SimpleBundleResourceProvider("fgdatabasicmodel"));
@@ -186,13 +162,16 @@ public class TravelSceneBluebird extends BasicTravelScene {
         TerrainElevationProvider tep = TerrainElevationProvider.buildForStaticAltitude(80);
         SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, tep);
 
+        /*14.5.24 decoupled to SphereSystem/config
         ScenerySystem ts = new ScenerySystem(world);
         AbstractTerrainBuilder terrainBuilder = new FgTerrainBuilder();
         terrainBuilder.init(world);
         ts.setTerrainBuilder(terrainBuilder);
         SystemManager.addSystem(ts, 0);
+
         // TerrainElevationProvider was created in FgTerrainBuilder. Needs help because EDDK groundnet exceeds EDDK tile, so define a default value 68.
         ((TerrainElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION)).setDefaultAltitude(68.0);
+*/
 
         SystemManager.addSystem(new AutomoveSystem());
 
@@ -213,13 +192,13 @@ public class TravelSceneBluebird extends BasicTravelScene {
         if (cube != null) {
             cube.getTransform().setPosition(new Vector3(3987743.8f, 480804.66f, 4937917.5f));
             //cube.setPosition(new Vector3(0, 0, 0));
-            world.attach(cube);
+            getSphereWorld().attach(cube);
         }
-        addToWorld(world);
+        //16.5.24: Moved to SphereSystem addToWorld(world);
 
         //visualizeTrack soll auch im usermode verfuegbar sein.
         if (visualizeTrack) {
-            SystemManager.addSystem(new GraphVisualizationSystem(new SimpleGraphVisualizer(world)));
+            SystemManager.addSystem(new GraphVisualizationSystem(new SimpleGraphVisualizer(getSphereWorld())));
         }
         EllipsoidCalculations rbcp = TrafficHelper.getEllipsoidConversionsProviderByDataprovider();
 
@@ -331,7 +310,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
         SceneNode needleforfg = bluebird.scenenode;
         TeleportComponent navigatorpc = new TeleportComponent(needleforfg);
 
-        SceneNode parent = world;
+        SceneNode parent = getSphereWorld();
         for (PoiConfig poi : getPoiList(trafficConfig/*worldPois*/)) {
             navigatorpc.addPosition(poi.getName(), parent.getTransform(), poi.getTransform(new FgCalculations()));
         }
@@ -371,8 +350,8 @@ public class TravelSceneBluebird extends BasicTravelScene {
     @Override
     public LightDefinition[] getLight() {
         return new LightDefinition[]{
-                new LightDefinition(Color.WHITE, new Vector3(0, 30000000, 20000000)),
-                new LightDefinition(Color.WHITE, new Vector3(0, -30000000, -20000000)),
+        /*15.5.24   now in EDDK-sphere.xml      new LightDefinition(Color.WHITE, new Vector3(0, 30000000, 20000000)),
+                new LightDefinition(Color.WHITE, new Vector3(0, -30000000, -20000000)),*/
         };
     }
 
@@ -453,11 +432,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
             }
         }
 
-        // Platzrunde (und wakeup) erst anlegen, wenn das Terrain da ist und worldadjustment durch ist. Schwierig zu erkennen
-        boolean terrainavailable = false;
-        if (AbstractSceneRunner.getInstance().getFrameCount() > 50) {
-            terrainavailable = true;
-        }
+        boolean terrainavailable = TravelSceneHelper.hasTerrain();
 
         if (terrainavailable && GroundServicesSystem.groundnets.get("EDDK") != null && !populated) {
             //jetzt muesste ein Groundnet mit 2D Projection da sein.
@@ -475,12 +450,12 @@ public class TravelSceneBluebird extends BasicTravelScene {
         }
 
         // Platzrunde erst anlegen, wenn das Terrain da ist und worldadjustment durch ist.
-        if (platzrunde == null && terrainavailable) {
+        if (platzrundeForVisualizationOnly == null && terrainavailable) {
             logger.info("Building Platzrunde");
             // Zum Test direkt mal den Rundflug einblenden
             Runway runway14l = OsmRunway.eddk14L();
-            platzrunde = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRouteGraph(runway14l, null, 0);
-            SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_PATHCREATED, new Payload(platzrunde.getGraph(), platzrunde.getPath())));
+            platzrundeForVisualizationOnly = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRouteGraph(runway14l, null, 0);
+            SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_PATHCREATED, new Payload(platzrundeForVisualizationOnly.getGraph(), platzrundeForVisualizationOnly.getPath())));
         }
         /*18.10.19: Warum soll die denn schon vcorab angelegt werden?
         if (orbittour == null) {
@@ -606,18 +581,18 @@ public class TravelSceneBluebird extends BasicTravelScene {
     @Override
     protected void runTests() {
         logger.info("Running tests");
-        FlightGearMain.runFlightgearTests(world.getTransform().getPosition());
-        RuntimeTestUtil.assertNotNull("platzrunde", platzrunde);
+        FlightGearMain.runFlightgearTests(getSphereWorld().getTransform().getPosition());
+        RuntimeTestUtil.assertNotNull("platzrunde", platzrundeForVisualizationOnly);
         //altitude kann eh nicht auf den Zentimmeter exakt sein.
-        RuntimeTestUtil.assertFloat("holding.altitude", 71, SGGeod.fromCart(platzrunde.getPath().getSegment(0).getEnterNode().getLocation()).getElevationM(), 1);
-        RuntimeTestUtil.assertFloat("landing.altitude", 71, SGGeod.fromCart(platzrunde.getPath().getSegment(platzrunde.getPath().getSegmentCount() - 1).getEnterNode().getLocation()).getElevationM(), 1);
+        RuntimeTestUtil.assertFloat("holding.altitude", 71, SGGeod.fromCart(platzrundeForVisualizationOnly.getPath().getSegment(0).getEnterNode().getLocation()).getElevationM(), 1);
+        RuntimeTestUtil.assertFloat("landing.altitude", 71, SGGeod.fromCart(platzrundeForVisualizationOnly.getPath().getSegment(platzrundeForVisualizationOnly.getPath().getSegmentCount() - 1).getEnterNode().getLocation()).getElevationM(), 1);
 
         logger.info("Tests completed");
     }
 
     //@Override
     protected SceneNode getDestinationNode() {
-        return world;
+        return getSphereWorld();
     }
 
     /**
@@ -646,7 +621,10 @@ public class TravelSceneBluebird extends BasicTravelScene {
      */
     public String getDefaultTilename() {
         // from former hardcoded
-        return formerInitialPositionEDDK.toString();
+        // 14.5.24: now use config file
+        //return formerInitialPositionEDDK.toString();
+        TravelSceneHelper.registerFgTerrainBuilder();
+        return "traffic-fg:flight/EDDK-sphere.xml";
     }
 }
 

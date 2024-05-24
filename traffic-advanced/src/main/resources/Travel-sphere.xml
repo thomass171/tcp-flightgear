@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 14.5.24 Tile Definition for traditional EDDK 3D FG TravelScene. But not limited to EDDK.-->
+
+<c:config xmlns:c="http://www.example.org/tcp-22">
+
+    <terrain>
+        <builder type="scenery" name="FgTerrainBuilder"/>
+    </terrain>
+
+    <!-- lights taken from lights in TravelScene -->
+    <light color="white" direction="0, 30000000, 20000000"/>
+    <light color="white" direction="0,-30000000,-20000000"/>
+
+    <!-- initialPosition might be set here, but maybe its better as parameter combined with initialRoute
+    From former hard coded EDDK setup (formerInitialPositionEDDK).-->
+    <!-- for now keep it hard coded in SphereSystem-->
+
+    <trafficgraph groundnet="EDDK"/>
+
+</c:config>
+
+
+

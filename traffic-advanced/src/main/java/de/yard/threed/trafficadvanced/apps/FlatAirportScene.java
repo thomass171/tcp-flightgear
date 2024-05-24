@@ -70,9 +70,10 @@ import de.yard.threed.graph.GraphProjection;
 import de.yard.threed.graph.GraphVisualizer;
 import de.yard.threed.graph.ProjectedGraph;
 import de.yard.threed.graph.SimpleGraphVisualizer;
-import de.yard.threed.traffic.AbstractTerrainBuilder;
+import de.yard.threed.traffic.AbstractSceneryBuilder;
 import de.yard.threed.traffic.Destination;
 import de.yard.threed.traffic.EllipsoidCalculations;
+import de.yard.threed.traffic.EllipsoidConversionsProvider;
 import de.yard.threed.traffic.GraphVisualizationSystem;
 import de.yard.threed.traffic.PositionHeading;
 import de.yard.threed.traffic.RequestRegistry;
@@ -154,7 +155,7 @@ public class FlatAirportScene extends FlightTravelScene {
     //Vielleicht ist das auch nicht der richtige Weg. GroundServicesScsnen soll ja 2D sein.
     //Und groundnet wird vorerst weiter wie in FG intern in 2D arbeiten.
     //public static boolean delayedprojection = false;
-    GraphPath platzrunde;
+    public FlightRouteGraph platzrundeForVisualizationOnly;
     //10.12.21 GraphTerrainSystem graphTerrainsystem;
     // Visualizer nur fuer Graphpath, nicht Terrain.
     private TravelGraphVisualizer travelGraphVisualizer;
@@ -184,6 +185,10 @@ public class FlatAirportScene extends FlightTravelScene {
     @Override
     public void customInit() {
         logger.debug("customInit FlatAirportScene");
+
+        // 16.5.24 Now needed explicitly as no longer set by SphereSystem if no TerrainBuilder exists. Thats OK
+        // so far as there seems to be no generic solution. This is just a 2D scene needing 3D conversions.
+        SystemManager.putDataProvider("ellipsoidconversionprovider", new EllipsoidConversionsProvider(getRbcp()));
 
         //29.1.23 AbstractSceneRunner.instance.httpClient = new AirportDataProviderMock();
         SystemManager.addSystem(new GroundServicesSystem());
@@ -353,7 +358,7 @@ public class FlatAirportScene extends FlightTravelScene {
     }
 
     @Override
-    public AbstractTerrainBuilder getTerrainBuilder() {
+    public AbstractSceneryBuilder getTerrainBuilder() {
         return new GroundNetTerrainBuilder();
     }
 
@@ -511,12 +516,15 @@ public class FlatAirportScene extends FlightTravelScene {
 
             // Evtl. wurde groundnet aber gar nicht wirklich geladen
             if (GroundServicesSystem.groundnets.get("EDDK") != null) {
-                if (platzrunde == null) {
+                if (platzrundeForVisualizationOnly == null) {
                     // Zum Test direkt mal den Rundflug einblenden
                     Runway runway14l = OsmRunway.eddk14L(/*(TerrainElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION)*/);
-                    FlightRouteGraph tour = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRouteGraph(runway14l, (MapProjection) ((ProjectedGraph)GroundServicesSystem.groundnets.get("EDDK").groundnetgraph.getBaseGraph()).backProjection, 0);
-                    platzrunde = tour.getPath();
-                    SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_PATHCREATED, new Payload(tour.getGraph(), platzrunde)));
+                    // 24.5.24: No idea whether backprojection from graph ever worked. Seems to be nonsense. Try what FlightSystem does.
+                    //MapProjection prj = (MapProjection) ((ProjectedGraph)GroundServicesSystem.groundnets.get("EDDK").groundnetgraph.getBaseGraph()).backProjection;
+                    MapProjection prj = TrafficHelper.getProjectionByDataprovider(null/*??*/).projection;
+                    FlightRouteGraph tour = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRouteGraph(runway14l,prj, 0);
+                    platzrundeForVisualizationOnly = tour;//.getPath();
+                    SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_PATHCREATED, new Payload(tour.getGraph(), platzrundeForVisualizationOnly.getPath())));
                 }
                 GroundServicesSystem.groundnets.get("EDDK").groundnetgraph.multilaneenabled = true;
             }

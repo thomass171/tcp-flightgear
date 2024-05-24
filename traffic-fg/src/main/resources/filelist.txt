@@ -21,3 +21,4 @@ flight/EDDF.xml
 flight/EDDF-flat.xml
 flight/world-pois.xml
 flight/EHAM.xml
+flight/EDDK-sphere.xml

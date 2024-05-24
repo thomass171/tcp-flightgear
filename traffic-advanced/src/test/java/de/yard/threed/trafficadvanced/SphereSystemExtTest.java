@@ -123,7 +123,7 @@ public class SphereSystemExtTest {
 
     private void startSimpleTest(String tilename, String scene) {
 
-        SystemManager.addSystem(new SphereSystem(null, null));
+        SystemManager.addSystem(new SphereSystem( null));
 
         SystemManager.putRequest(new Request(USER_REQUEST_SPHERE, new Payload(tilename, new ArrayList())));
         //ein Request muss anliegen

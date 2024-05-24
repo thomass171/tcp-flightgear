@@ -45,6 +45,11 @@
             <angle>-90,-90,0</angle>
         </transform>
     </BaseTransformForVehicleOnGraph>
+
+    <!-- EDDK center from formerly hard coded in SphereSystem and GroundNetMetadata-->
+    <projection center="50.86538,7.139103"/>
+
+    <trafficgraph groundnet="EDDK"/>
 </c:config>
 
 

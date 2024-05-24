@@ -17,7 +17,8 @@ import de.yard.threed.graph.GraphEdge;
 import de.yard.threed.graph.GraphNode;
 import de.yard.threed.graph.GraphOrientation;
 import de.yard.threed.graph.GraphVisualizer;
-import de.yard.threed.traffic.AbstractTerrainBuilder;
+import de.yard.threed.traffic.AbstractSceneryBuilder;
+import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.GraphTerrainVisualizer;
 import de.yard.threed.traffic.geodesy.GeoCoordinate;
 import de.yard.threed.traffic.geodesy.MapProjection;
@@ -28,7 +29,7 @@ import de.yard.threed.trafficfg.config.AirportConfig;
  * Extrahiert aus GraphTerrainSystem
  * 27.12.21
  */
-public class GroundNetTerrainBuilder implements AbstractTerrainBuilder {
+public class GroundNetTerrainBuilder implements AbstractSceneryBuilder {
 
     @Override
     public void init(SceneNode destinationNode) {
@@ -95,6 +96,12 @@ public class GroundNetTerrainBuilder implements AbstractTerrainBuilder {
 
             return sn;
         }
+        return null;
+    }
+
+    @Override
+    public EllipsoidCalculations getEllipsoidCalculations() {
+        Util.notyet();
         return null;
     }
 }

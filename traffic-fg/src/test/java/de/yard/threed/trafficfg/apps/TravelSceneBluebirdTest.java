@@ -4,13 +4,17 @@ package de.yard.threed.trafficfg.apps;
 import de.yard.threed.core.Event;
 import de.yard.threed.core.LatLon;
 import de.yard.threed.core.LocalTransform;
+import de.yard.threed.core.MathUtil2;
 import de.yard.threed.core.Quaternion;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
+import de.yard.threed.core.platform.NativeNode;
+import de.yard.threed.core.platform.NativeSceneNode;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.testutil.TestUtils;
+import de.yard.threed.engine.Light;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsHelper;
@@ -23,18 +27,24 @@ import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphMovingSystem;
 import de.yard.threed.graph.ProjectedGraph;
+import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.GeoRoute;
+import de.yard.threed.traffic.GraphTerrainSystem;
 import de.yard.threed.traffic.GraphVisualizationSystem;
 import de.yard.threed.traffic.RequestRegistry;
+import de.yard.threed.traffic.SphereProjections;
+import de.yard.threed.traffic.SphereSystem;
 import de.yard.threed.traffic.TrafficEventRegistry;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.traffic.geodesy.SimpleMapProjection;
 import de.yard.threed.traffic.testutils.TrafficTestUtils;
 import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.TravelHelper;
+import de.yard.threed.trafficfg.TravelSceneTestHelper;
 import de.yard.threed.trafficfg.flight.GroundNet;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
 import de.yard.threed.trafficfg.flight.Parking;
@@ -81,6 +91,12 @@ public class TravelSceneBluebirdTest {
         setup(withBluebird, basename, initialRoute);
 
         assertEquals(INITIAL_FRAMES, sceneRunner.getFrameCount());
+        SphereSystem sphereSystem = (SphereSystem) SystemManager.findSystem(SphereSystem.TAG);
+        // world is set in SphereSystem.init()
+        assertNotNull(sphereSystem.world);
+        TravelSceneTestHelper.waitForSphereLoaded(sceneRunner);
+
+        TravelSceneTestHelper.validateSphereProjections();
 
         String[] bundleNames = BundleRegistry.getBundleNames();
         // 5 appears correct
@@ -98,6 +114,10 @@ public class TravelSceneBluebirdTest {
         } else {
             TrafficTestUtils.assertGeoCoordinate(TravelSceneBluebird.formerInitialPositionEDDK, initialPosition, "initialPosition");
         }
+
+        assertFalse(((GraphTerrainSystem) SystemManager.findSystem(GraphTerrainSystem.TAG)).enabled);
+        EllipsoidCalculations ellipsoidCalculations = TrafficHelper.getEllipsoidConversionsProviderByDataprovider();
+        assertNotNull(ellipsoidCalculations);
 
         // 'bluebird' isn't in vehiclelist but set by property 'initialVehicle'
         List<Vehicle> vehiclelist = TrafficHelper.getVehicleListByDataprovider();
@@ -127,15 +147,12 @@ public class TravelSceneBluebirdTest {
             return entities.size() == expectedNumberOfEntites;
         }, 60000);
 
-        GroundNet groundnetEDDK = GroundServicesSystem.groundnets.get("EDDK");
-        assertNotNull(groundnetEDDK);
-        //assertNotNull(groundnetEDDK.projection);
-        Parking home = groundnetEDDK.getVehicleHome();
-        assertEquals("A20", home.name);
-        // Even in 3D the groundnet graph is projected, which is seen by low coordinate values
-        assertTrue(Math.abs(home.node.getLocation().getX()) < 3000, "x-coordinate of groundnet node < 3000");
-        //LatLon backProjectedHome = groundnetEDDK.projection.unproject(Vector2.buildFromVector3(home.node.getLocation()));
-        //TODO assertEquals(51.0, Math.round(backProjectedHome.getLatDeg().getDegree()));
+        // 20.5.24 elevation 68.8 is the result of limited EDDK elevation provider (default elevation). But runway should have
+        // correct elevation. Value differs slightly to TravelScene!?
+        TravelSceneTestHelper.validatePlatzrunde(((TravelSceneBluebird)sceneRunner.ascene).platzrundeForVisualizationOnly, 71.31074148467441, true);
+
+        TravelSceneTestHelper.validateGroundnet();
+
 
         EcsEntity bluebird = null;
         if (withBluebird) {
@@ -156,8 +173,8 @@ public class TravelSceneBluebirdTest {
                 assertEquals("groundnet.EDDK", gmc.getGraph().getName());
             }
             ProjectedGraph projectedGraph = (ProjectedGraph) gmc.getGraph();
-            assertNotNull(projectedGraph.backProjection);
-            LocalTransform posrot = GraphMovingSystem.getPosRot(gmc, projectedGraph.backProjection);
+            // 24.5.24 private now assertNotNull(projectedGraph.backProjection);
+            LocalTransform posrot = GraphMovingSystem.getPosRot(gmc/*, projectedGraph.backProjection*/);
             log.debug("posrot=" + posrot);
             // ref values taken from visual test
             TestUtils.assertVector3(new Vector3(4001277.6476712367, 500361.77258586703, 4925186.718276716), posrot.position);
@@ -169,22 +186,19 @@ public class TravelSceneBluebirdTest {
         GraphVisualizationSystem graphVisualizationSystem = (GraphVisualizationSystem) SystemManager.findSystem(GraphVisualizationSystem.TAG);
         assertNull(graphVisualizationSystem);
 
-        assertEquals(2, SceneNode.findByName("Scene Light").size());
+        List<NativeSceneNode> lights = SceneNode.findByName("Scene Light");
+        assertEquals(2, lights.size());
+        for (int i = 0; i < 2; i++) {
+            // seems to be no way to retrieve light
+            //assertEquals(30000000, Math.abs(lights.get(0).getTransform().getDirection().getY()));
+        }
 
         if (withBluebird) {
-            GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(bluebird);
-            assertNull(gmc.getPath());
+
             // start bluebird roundtrip
-            TravelHelper.startDefaultTrip(bluebird);
+            TravelSceneTestHelper.assertDefaultTrip(sceneRunner, bluebird, true);
 
-           /* not possible until it has VehicleComponent
-           TestUtils.waitUntil(() -> {
-                TestHelper.processAsync();
-                return gmc.getPath() != null;
-            }, 2000);*/
 
-            TestHelper.processAsync();
-            // t.b.c.
         }
     }
 

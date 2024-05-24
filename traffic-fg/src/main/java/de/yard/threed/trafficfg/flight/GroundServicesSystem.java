@@ -160,7 +160,10 @@ public class GroundServicesSystem extends DefaultEcsSystem {
         this.homename = airport.getHome();*/
         //this.groundnet = groundnet;
         this.name = "GroundServicesSystem";
-
+        // 22.5.24: Reset statics for more reliable tests
+        servicepoint.clear();
+        groundnets.clear();
+        airport = null;
     }
 
     private void setGroundnetAndAirport(GroundNet groundnet, AirportConfig airport) {
@@ -387,6 +390,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
                 return true;
 
             }
+            logger.debug("Aborting TRAFFIC_REQUEST_LOADGROUNDNET due to missing terrain for " + icao);
         }
         return false;
     }
@@ -997,10 +1001,14 @@ public class GroundServicesSystem extends DefaultEcsSystem {
      */
     private boolean hasTerrainTempSolution(String icao) {
         // Difficult to find a generic 2D/3D solution.
-        if (SystemManager.findSystem(ScenerySystem.TAG) == null) {
+        // 16.5.24 Existing ScenerySystem can no longer be used to decide. It also exists in 2D now. Looking for terrainbuilder
+        // is surely a better solution.
+        //if (SystemManager.findSystem(ScenerySystem.TAG) == null) {
+        if (!((ScenerySystem)SystemManager.findSystem(ScenerySystem.TAG)).hasTerrainBuilder()) {
             return true;
         }
         int eddks = SceneNode.findByName("Terrain/e000n50/e007n50/EDDK.gltf").size();
+        logger.debug("No EDDK scene nodes, so no terrain yet");
         return eddks > 0;
     }
 

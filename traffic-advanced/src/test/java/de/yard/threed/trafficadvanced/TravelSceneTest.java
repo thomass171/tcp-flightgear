@@ -1,6 +1,8 @@
 package de.yard.threed.trafficadvanced;
 
 
+import de.yard.threed.core.Event;
+import de.yard.threed.core.LatLon;
 import de.yard.threed.core.Payload;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
@@ -22,16 +24,24 @@ import de.yard.threed.engine.testutil.SceneRunnerForTesting;
 import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.graph.GraphMovingComponent;
+import de.yard.threed.graph.GraphPath;
 import de.yard.threed.traffic.GraphTerrainSystem;
 import de.yard.threed.traffic.GraphVisualizationSystem;
 import de.yard.threed.traffic.RequestRegistry;
 import de.yard.threed.traffic.SphereProjections;
+import de.yard.threed.traffic.SphereSystem;
+import de.yard.threed.traffic.TrafficEventRegistry;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.TrafficSystem;
 import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.traffic.config.VehicleDefinition;
+import de.yard.threed.traffic.geodesy.SimpleMapProjection;
 import de.yard.threed.trafficadvanced.apps.FlatAirportScene;
+import de.yard.threed.trafficadvanced.apps.TravelScene;
 import de.yard.threed.trafficcore.model.Vehicle;
+import de.yard.threed.trafficfg.TravelHelper;
+import de.yard.threed.trafficfg.TravelSceneTestHelper;
+import de.yard.threed.trafficfg.apps.TravelSceneBluebird;
 import de.yard.threed.trafficfg.flight.GroundNetMetadata;
 import de.yard.threed.trafficfg.flight.GroundServiceComponent;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
@@ -73,17 +83,17 @@ public class TravelSceneTest {
         Log log = Platform.getInstance().getLog(TravelSceneTest.class);
 
         assertEquals(INITIAL_FRAMES, sceneRunner.getFrameCount());
+        SphereSystem sphereSystem = (SphereSystem) SystemManager.findSystem(SphereSystem.TAG);
+        // world is set in SphereSystem.init()
+        assertNotNull(sphereSystem.world);
+        TravelSceneTestHelper.waitForSphereLoaded(sceneRunner);
+
+        TravelSceneTestHelper.validateSphereProjections();
 
         String[] bundleNames = BundleRegistry.getBundleNames();
         // 7 appears correct, but without "Terrasync-model" its only 6.
         assertEquals(6, bundleNames.length);
         assertNotNull(BundleRegistry.getBundle("fgdatabasic"));
-
-        /*5.2.24??SphereProjections projections = TrafficHelper.getProjectionByDataprovider();
-        assertNotNull(projections);
-        assertNotNull(projections.projection);
-        assertTrue(projections.backProjection == null);
-        TestUtils.assertLatLon(GroundNetMetadata.getMap().get("EDDK").airport.getCenter(), projections.projection.getOrigin(), 0.01, "EDDK origin");*/
 
         sceneRunner.runLimitedFrames(50);
         EcsEntity userEntity = SystemManager.findEntities(e -> "Freds account name".equals(e.getName())).get(0);
@@ -114,6 +124,12 @@ public class TravelSceneTest {
             return entities.size() == expectedNumberOfEntites;
         }, 60000);
 
+        // 20.5.24 elevation 68.8 is the result of limited EDDK elevation provider (default elevation). But runway should have
+        // correct elevation. Value differs slightly to TravelSceneBluebird!?
+        TravelSceneTestHelper.validatePlatzrunde(((TravelScene)sceneRunner.ascene).platzrundeForVisualizationOnly, 70.60974991063463, true);
+
+        TravelSceneTestHelper.validateGroundnet();
+
         validateStaticEDDK(enableDoormarker);
         if (enableNavigator) {
             // 2*3 for navigator, 2 for LSG, 1 for 738, position not tested.
@@ -124,7 +140,7 @@ public class TravelSceneTest {
             EcsTestHelper.assertTeleportComponent(navigator, 10, 4, null);
         } else {
             // without navigator we only have the eddk overview viewpoint
-            EcsTestHelper.assertTeleportComponent(userEntity,  1 + 2 + 1, 3, null);
+            EcsTestHelper.assertTeleportComponent(userEntity, 1 + 2 + 1, 3, null);
         }
 
         EcsEntity entity747 = EcsHelper.findEntitiesByName("747 KLM").get(0);
@@ -170,6 +186,11 @@ public class TravelSceneTest {
         // garmin has multiple components and names. just look for one
         NativeSceneNode garmin196 = SceneNode.findByName("Aircraft/Instruments-3d/garmin196/garmin196.gltf").get(0);
         assertTrue(Texture.hasTexture("screens.png"), "garmin.texture");
+        GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(c172p);
+        assertEquals("groundnet.EDDK", gmc.getGraph().getName());
+
+        // start c172p and wait until it has a flight route
+        TravelSceneTestHelper.assertDefaultTrip(sceneRunner, c172p, true);
 
     }
 

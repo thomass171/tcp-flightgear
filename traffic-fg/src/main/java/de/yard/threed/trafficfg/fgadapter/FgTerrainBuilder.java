@@ -1,4 +1,4 @@
-package de.yard.threed.flightgear;
+package de.yard.threed.trafficfg.fgadapter;
 
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.LocalTransform;
@@ -8,24 +8,30 @@ import de.yard.threed.core.Vector3;
 import de.yard.threed.core.geometry.Rectangle;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
-import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.apps.ModelSamples;
 import de.yard.threed.engine.ecs.SystemManager;
+import de.yard.threed.flightgear.FgBundleHelper;
+import de.yard.threed.flightgear.FlightGearMain;
+import de.yard.threed.flightgear.PositionInit;
+import de.yard.threed.flightgear.SimpleBundleResourceProvider;
+import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.core.flightgear.scenery.FGTileMgr;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.graph.GraphNode;
-import de.yard.threed.traffic.AbstractTerrainBuilder;
+import de.yard.threed.traffic.AbstractSceneryBuilder;
+import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.traffic.flight.FlightLocation;
 import de.yard.threed.traffic.geodesy.MapProjection;
+import de.yard.threed.trafficfg.FgCalculations;
 
 /**
  * Extracted from TravelScene and TerrainSystem.
  */
-public class FgTerrainBuilder implements AbstractTerrainBuilder {
+public class FgTerrainBuilder implements AbstractSceneryBuilder {
     Log logger = Platform.getInstance().getLog(FgTerrainBuilder.class);
     //range, so wie es von FG gelogged wurde.
     double range_m = 32000;
@@ -106,6 +112,11 @@ public class FgTerrainBuilder implements AbstractTerrainBuilder {
     @Override
     public SceneNode buildParkingNode(GraphNode n) {
         return null;
+    }
+
+    @Override
+    public EllipsoidCalculations getEllipsoidCalculations() {
+        return new FgCalculations();
     }
 
     /**

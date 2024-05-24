@@ -120,7 +120,7 @@ public class TrafficTest {
         //grob geschaetzt
         float distancetosid = 3500;
         gmc.moveForward(distancetosid);
-        LocalTransform posrot = GraphMovingSystem.getPosRot(gmc, null);
+        LocalTransform posrot = GraphMovingSystem.getPosRot(gmc/*, null*/);
         SGGeod coor = SGGeod.fromCart(posrot.position);
         //die konkreten Werte uebernommen, aber plausibel sind sie
         FgTestUtils.assertSGGeod("sid.coor", new SGGeod(new Degree(7.162683f), new Degree(50.857273f), 100), coor);
