@@ -39,7 +39,8 @@ public class TravelSceneHelper {
 
             // TerrainElevationProvider was created in FgTerrainBuilder. Needs help because EDDK groundnet exceeds EDDK tile, so define a default value 68.
             // 15.5.24: This can only be a temp workaround! TODO remove it early
-            ((TerrainElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION)).setDefaultAltitude(68.8);
+            // 29.5.24: Is it really needed for groundnet. It leads to real malfunction with initialRoute. Try without
+            //((TerrainElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION)).setDefaultAltitude(68.8);
             return terrainBuilder;
         });
     }

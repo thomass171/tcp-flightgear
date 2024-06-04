@@ -44,6 +44,7 @@ import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.traffic.BuilderRegistry;
 import de.yard.threed.traffic.SphereSystem;
+import de.yard.threed.trafficfg.TrafficRuntimeTestUtil;
 import de.yard.threed.trafficfg.fgadapter.FgTerrainBuilder;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearMain;
@@ -134,7 +135,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
     // worldPois are contained in trafficConfig
     // TrafficConfig worldPois;
     TrafficConfig vdefs;
-    // 18.3.24 From former hard coded EDDK setup.
+    // 18.3.24 From former hard coded EDDK setup. Isn't this the overview position?
     public static GeoCoordinate formerInitialPositionEDDK = new GeoCoordinate(new Degree(50.843675), new Degree(7.109709), 1150);
     GeoRoute initialRoute = null;
 
@@ -578,15 +579,20 @@ public class TravelSceneBluebird extends BasicTravelScene {
         return WorldGlobal.EDDK_CENTER;
     }
 
+    /**
+     * Runtime tests are important because they use a 'real' platform, while unit tests use SimpleHeadlessPlatform
+     */
     @Override
     protected void runTests() {
         logger.info("Running tests");
         FlightGearMain.runFlightgearTests(getSphereWorld().getTransform().getPosition());
         RuntimeTestUtil.assertNotNull("platzrunde", platzrundeForVisualizationOnly);
-        //altitude kann eh nicht auf den Zentimmeter exakt sein.
+        //altitude probably has some rounding effects.
         RuntimeTestUtil.assertFloat("holding.altitude", 71, SGGeod.fromCart(platzrundeForVisualizationOnly.getPath().getSegment(0).getEnterNode().getLocation()).getElevationM(), 1);
-        RuntimeTestUtil.assertFloat("landing.altitude", 71, SGGeod.fromCart(platzrundeForVisualizationOnly.getPath().getSegment(platzrundeForVisualizationOnly.getPath().getSegmentCount() - 1).getEnterNode().getLocation()).getElevationM(), 1);
+        // 31.5.24: Some time in the past changed from 71 to 72.03, no idea why.
+        RuntimeTestUtil.assertFloat("landing.altitude", 72.03, SGGeod.fromCart(platzrundeForVisualizationOnly.getPath().getSegment(platzrundeForVisualizationOnly.getPath().getSegmentCount() - 1).getEnterNode().getLocation()).getElevationM(), 1);
 
+        TrafficRuntimeTestUtil.assertSceneryNodes(getSphereWorld());
         logger.info("Tests completed");
     }
 

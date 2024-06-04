@@ -76,7 +76,8 @@ public class FGTileMgr extends DefaultSGSubsystem {
         _disableNasalHooks = FGProperties.fgGetNode("/sim/temp/disable-scenery-nasal", true);
         _scenery_loaded = FGProperties.fgGetNode("/sim/sceneryloaded", true);
         _scenery_override = FGProperties.fgGetNode("/sim/sceneryloaded-override", true);
-        _pager = FGScenery.getPagerSingleton();
+        // 2.6.24 only have one pager that is here.
+        _pager = new SceneryPager();//FGScenery.getPagerSingleton();
         _enableCache = true;
         this.terrainonly = terrainonly;
     }
@@ -164,7 +165,8 @@ public class FGTileMgr extends DefaultSGSubsystem {
      * Update the various queues maintained by the tilemgr (private
      * internal function, do not call directly.)
      * <p>
-     * public zum testen
+     * public for testen
+     * 30.5.24: Is this really loading scnery (via SceneryPager)? apparently
      */
     public void update_queues(boolean isDownloadingScenery) {
         //TODO osg::FrameStamp * framestamp                = FGGlobals.globals.get_renderer().getViewer().getFrameStamp();
@@ -367,6 +369,10 @@ public class FGTileMgr extends DefaultSGSubsystem {
         SGBucket bucket = new SGBucket(bucketIndex);
 
         return false;//TODO _terra_sync.isTileDirPending(bucket.gen_base_path());
+    }
+
+    public SceneryPager getPager() {
+        return _pager;
     }
 }
 

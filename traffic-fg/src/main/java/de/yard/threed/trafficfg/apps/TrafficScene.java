@@ -58,9 +58,9 @@ import java.util.List;
  * - old stuff removed
  * - unwanted stuff removed (hud, navigator, cubes,pillars and other marker, stgcycler, shuttle, Alpha7 use case, orbit).
  * - currently unavailable stuff commented (like GroundServices). Marked with "NOT-YET"
- *
+ * <p>
  * Currently this class is just an indicator for what is missing.
- *
+ * <p>
  * Idea is: Should be sufiicent to override some methods and rely on the super class for everything else. But that will be a long way to go.
  * <p>
  * Views according to config.
@@ -130,7 +130,7 @@ public class TrafficScene extends BasicTravelScene {
             //20.11.23 "NOT-YET"SystemManager.addSystem(new GraphVisualizationSystem(new SimpleGraphVisualizer(world)));
         }
         EllipsoidCalculations rbcp = TrafficHelper.getEllipsoidConversionsProviderByDataprovider();
-        SceneNode helpline = ModelSamples.buildLine(rbcp.toCart(WorldGlobal.eddkoverview.location.coordinates, null), rbcp.toCart(WorldGlobal.elsdorf2000.location.coordinates, null), Color.ORANGE);
+        SceneNode helpline = ModelSamples.buildLine(rbcp.toCart(WorldGlobal.eddkoverview.location.coordinates, null, null), rbcp.toCart(WorldGlobal.elsdorf2000.location.coordinates, null, null), Color.ORANGE);
         world.attach(helpline);
 
         //20.11.23 "NOT-YET"SystemManager.addSystem(new FlightSystem());
@@ -152,8 +152,8 @@ public class TrafficScene extends BasicTravelScene {
 
         //groundnet is set later
         //20.11.23 "NOT-YET"trafficSystem.locationList=getLocationList();
-        trafficSystem.destinationNode=getDestinationNode();
-        trafficSystem.nearView=nearView;
+        trafficSystem.destinationNode = getDestinationNode();
+        trafficSystem.nearView = nearView;
         trafficSystem.setVehicleLoader(new FgVehicleLoader());
     }
 

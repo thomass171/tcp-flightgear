@@ -28,7 +28,10 @@ import de.yard.threed.traffic.flight.FlightLocation;
 import de.yard.threed.traffic.geodesy.MapProjection;
 import de.yard.threed.trafficfg.FgCalculations;
 
+import java.util.List;
+
 /**
+ * Wrapper for low level FGTileMgrScheduler, FGTileMgr and SceneryPager
  * Extracted from TravelScene and TerrainSystem.
  */
 public class FgTerrainBuilder implements AbstractSceneryBuilder {
@@ -70,6 +73,11 @@ public class FgTerrainBuilder implements AbstractSceneryBuilder {
         //TODO 25.11.21: Wo kommt denn der her, der hier erst gelöscht werden muss?
         SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, null);
         SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, tep);
+
+        //31.5.24: attach to world move from updateForPosition to here.
+        //29.3.18: Das Umhaengen muss/sollte vielleich gar nicht sein. Wohl aber der ganze FGScenery
+        //world.attach(FlightGearModuleScenery.getInstance().get_scenery().get_terrain_branch());
+        world.attach(FlightGearModuleScenery.getInstance().get_scenery().get_scene_graph());
     }
 
     @Override
@@ -81,7 +89,7 @@ public class FgTerrainBuilder implements AbstractSceneryBuilder {
         FlightLocation fl = FlightLocation.fromPosRot(newpos);
         PositionInit.initPositionFromGeod(fl);
 
-        logger.debug("process: fgenabled=" + fgenabled + ",fginited=" + FlightGearModuleScenery.inited);
+        logger.debug("updateForPosition: fgenabled=" + fgenabled + ",fginited=" + FlightGearModuleScenery.inited);
 
         if (!fgenabled || !FlightGearModuleScenery.inited)
             return;
@@ -94,9 +102,7 @@ public class FgTerrainBuilder implements AbstractSceneryBuilder {
         tilemgr.schedule_tiles_at(SGGeod.fromGeoCoordinate(fl.coordinates)/*WorldGlobal.greenwichtilecenter*/, range_m);
         tilemgr.schedule_tiles_at(SGGeod.fromGeoCoordinate(fl.coordinates)/*WorldGlobal.greenwichtilecenter*/, range_m);
         tilemgr.update_queues(false);
-        //29.3.18: Das Umhaengen muss/sollte vielleich gar nicht sein. Wohl aber der ganze FGScenery
-        //world.attach(FlightGearModuleScenery.getInstance().get_scenery().get_terrain_branch());
-        world.attach(FlightGearModuleScenery.getInstance().get_scenery().get_scene_graph());
+        //31.5.24: attach to world moved to init()
     }
 
     @Override
@@ -117,6 +123,14 @@ public class FgTerrainBuilder implements AbstractSceneryBuilder {
     @Override
     public EllipsoidCalculations getEllipsoidCalculations() {
         return new FgCalculations();
+    }
+
+    public List<String> getLoadedBundles(){
+        return FlightGearModuleScenery.getInstance().get_tile_mgr().getPager().loadedBundle;
+    }
+
+    public List<String> getFailedBundles(){
+        return FlightGearModuleScenery.getInstance().get_tile_mgr().getPager().failedBundle;
     }
 
     /**

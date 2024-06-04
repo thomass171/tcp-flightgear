@@ -19,7 +19,7 @@ public class TerrainElevationProvider implements de.yard.threed.engine.ecs.DataP
     Log logger = Platform.getInstance().getLog(TerrainElevationProvider.class);
     Double altitude = null;
     private SceneNode world;
-    // optional value if detection fails.
+    // optional value if detection fails. 29.5.24 Except for testing this appears nonsense
     Double defaultAltitude = null;
 
     public TerrainElevationProvider() {
@@ -73,6 +73,11 @@ public class TerrainElevationProvider implements de.yard.threed.engine.ecs.DataP
         return (double) altitude;
     }
 
+    /**
+     * only for testing meanwhile
+     * @param v
+     */
+    @Deprecated
     public void setDefaultAltitude(double v) {
         defaultAltitude = v;
     }

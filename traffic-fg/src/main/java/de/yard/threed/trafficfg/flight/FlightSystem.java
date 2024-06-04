@@ -298,7 +298,7 @@ public class FlightSystem extends DefaultEcsSystem {
         Graph trafficGraph = gmc.getGraph();
 
         EllipsoidCalculations rbcp = TrafficHelper.getEllipsoidConversionsProviderByDataprovider();
-        Vector3 starte1 = rbcp.toCart(localOrbitEntry.equatorentry, null);
+        Vector3 starte1 = rbcp.toCart(localOrbitEntry.equatorentry, null, null);
         Graph graph = SolarSystem.buildLocalOrbitGraph(starte1);
         GraphPosition position = new GraphPosition(graph.getEdge(0));
         gmc.setGraph(graph, position, null);

@@ -17,6 +17,8 @@ import de.yard.threed.engine.ecs.EcsHelper;
 import de.yard.threed.engine.ecs.EcsTestHelper;
 import de.yard.threed.engine.ecs.EntityFilter;
 import de.yard.threed.engine.ecs.SystemManager;
+import de.yard.threed.engine.ecs.TeleportComponent;
+import de.yard.threed.engine.ecs.TeleporterSystem;
 import de.yard.threed.engine.ecs.UserSystem;
 import de.yard.threed.engine.ecs.VelocityComponent;
 import de.yard.threed.engine.platform.common.Request;
@@ -69,15 +71,24 @@ public class TravelSceneTest {
      */
     @Test
     public void testWithDoormarkerAndNavigator() throws Exception {
-        run(true, true);
+        run(true, true, false);
     }
 
     @Test
     public void testWithoutDoormarker() throws Exception {
-        run(false, false);
+        run(false, false, false);
     }
 
-    public void run(boolean enableDoormarker, boolean enableNavigator) throws Exception {
+    @Test
+    public void testNavigatorWorldTeleport() throws Exception {
+        run(false, true, true);
+    }
+
+    public void run(boolean enableDoormarker, boolean enableNavigator, boolean worldTeleport) throws Exception {
+
+        if (worldTeleport && !enableNavigator){
+            fail("invalid");
+        }
 
         setup(enableDoormarker, enableNavigator);
         Log log = Platform.getInstance().getLog(TravelSceneTest.class);
@@ -136,8 +147,27 @@ public class TravelSceneTest {
             EcsTestHelper.assertTeleportComponent(userEntity, 3 + 3 + 2 + 1, 8, null);
             EcsEntity navigator = EcsHelper.findEntitiesByName("Navigator").get(0);
             assertNotNull(navigator);
-            // 10 and 4 appears correct
+            // from 'world-pois.xml' 10 are listed. 4 appears correct which is current EDDK navigator overview position, but who set index 4??
             EcsTestHelper.assertTeleportComponent(navigator, 10, 4, null);
+            TeleportComponent navigatorTeleportComponent =TeleportComponent.getTeleportComponent(navigator);
+            assertEquals("Dahlem 1300", navigatorTeleportComponent.getPointLabel(3));
+            assertEquals("EDDK Overview", navigatorTeleportComponent.getPointLabel(4));
+            assertEquals("greenwich500", navigatorTeleportComponent.getPointLabel(8));
+
+            if (worldTeleport) {
+                // 25.5.24: teleporting to greenwich difficult with current TeleporterSystem workflow
+
+                ((TeleporterSystem) SystemManager.findSystem(TeleporterSystem.TAG)).setActivetc(navigatorTeleportComponent);
+                SystemManager.putRequest(UserSystem.buildTeleportRequest(userEntity.getId(), 4, "greenwich500"));
+
+                TestUtils.waitUntil(() -> {
+                    sceneRunner.runLimitedFrames(10);
+                    sleepMs(100);
+                    return SceneNode.findByName("Objects/w010n50/w001n51/London-Bridge.xml").size() > 0;
+                }, 30000);
+                // terminate here. The rest is tested by other tests.
+                return;
+            }
         } else {
             // without navigator we only have the eddk overview viewpoint
             EcsTestHelper.assertTeleportComponent(userEntity, 1 + 2 + 1, 3, null);

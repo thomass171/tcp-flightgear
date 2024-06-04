@@ -241,7 +241,7 @@ public class GroundNet {
         double/*Elevation*/ elevation = 0;
         if (projection == null) {
             EllipsoidCalculations rbcp = TrafficHelper.getEllipsoidConversionsProviderByDataprovider();
-            point = rbcp.toCart(coor, null);
+            point = rbcp.toCart(coor, null, null);
         } else {
             Vector2 projected = projection.project(coor);
             //elevation = TrafficWorld2D.getElevationForLocation(airport, coor);

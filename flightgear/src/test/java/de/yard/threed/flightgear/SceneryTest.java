@@ -492,6 +492,19 @@ public class SceneryTest {
 
     }
 
+    public static SceneNode loadSTGFromBundleAndWait(int tile) throws Exception {
+        EngineTestFactory.loadBundleAndWait(FlightGear.getBucketBundleName(""+tile));
+        Bundle bundle = BundleRegistry.getBundle("Terrasync-"+tile);
+        assertNotNull(bundle);
+
+        return loadSTGAndWait(tile);
+    }
+
+    /**
+     * The loaded STG will not be attached to world (or anything else). That should be done by the caller.
+     * However the STG is roughly validated.
+     * Never returns null.
+     */
     public static SceneNode loadSTGAndWait(int tile) throws Exception {
 
         EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("" + tile));
@@ -513,6 +526,7 @@ public class SceneryTest {
             return isSTGLoaded(rr, ModelAssertions.objectsPerTile.get(tile));
         }, 30000);
         log.debug(rr.dump("  ", 0));
+        assertNotNull(rr);
         // TODO validate its not in world yet
         return rr;
     }

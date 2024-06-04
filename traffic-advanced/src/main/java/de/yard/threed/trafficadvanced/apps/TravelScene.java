@@ -1,6 +1,5 @@
 package de.yard.threed.trafficadvanced.apps;
 
-
 import de.yard.threed.core.Color;
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.Dimension;
@@ -119,14 +118,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
 /**
  * <p>
- * Views:
- * 1) Blick über Elsdorf auf Ufo/Pilot und Landschaft
- * 2) Blick aus Ufo (attached)
- * 3) ...
- * <p>
+ * Worlds views are from world-pois.xml (only with enableNavigator).
  * Der Pilot selber kann umgesetzt werden, er ist aber unsichtbar (zumindest soll er unsichtbar sein.
  * Er ist ein praktisches Hilfsmittel, um die Rotationen intuitiver zu gestalten.
  * <p>
@@ -149,7 +143,7 @@ import java.util.List;
  * p cyclen position des Models. Das aktuelle Model bewegt sich mitsamt Pilot an andere Position. (11.1.17: Navigator setzt ausser Start auch POI List)
  * t teleport zweistufig (mit CTRL). Nutzt auch die POI Liste.
  * <p>
- * Cyclen der Position ist Model abhängig. Nur Navigator hat POI Liste. Shuttle hat ORbit. 777-200 hat EDDK C4.
+ * Cyclen der Position ist Model abhängig. Only Navigator has POI list. 777-200 has EDDK C4.
  * <p>
  * PGAGEUP/PAGEDOWN um Höhe zu ändern (23.1.17: nur navigator).
  * <p>
@@ -158,7 +152,7 @@ import java.util.List;
  * 8.5.19:Analog GroundService... umbenannt: FlightScene->TravelScene
  * 26.10.21: Echte outside viewpoints wie Flat gibts hier doch gar nicht, oder?
  * 30.1.24: Still uses bundles from local directory (full Terrasync). But full sgmaterial is not available). See todo at bundlelist.
- * 13.3.24: Navigator and helper model disabled by default (currently also disables sescond level world teleports)
+ * 13.3.24: Navigator and helper model disabled by default (currently also disables second level world teleports)
  * 17.5.24: Probably makes no sense to extend from TravelSceneBluebird. Better extract common code to systems
  * or helper.
  */
@@ -168,11 +162,7 @@ public class TravelScene extends FlightTravelScene {
     private static final int WIDTH = 1024;
     private static final int HEIGHT = 768;
     double y = 2;
-    double shuttleheight = WorldGlobal.km(200);
     FirstPersonController fps;
-    boolean shuttleinorbit;
-    //EcsEntity[] vm;
-    static Vector3 camerapositioninmodel = new Vector3(0, 0.6f, 0);
 
     // freecam ist mal für Tests
     //22.10.21 boolean freecam = false;
@@ -185,7 +175,6 @@ public class TravelScene extends FlightTravelScene {
     Graph orbit;
     //22.10.21 boolean useteleport = true; public for testing
     public FlightRouteGraph platzrundeForVisualizationOnly/*, orbittour*/;
-    VehicleDefinition configShuttle;
     private EcsEntity orbitingvehicle = null;
     private boolean avatarInited = false;
     private boolean enableDoormarker = false;
@@ -248,7 +237,6 @@ public class TravelScene extends FlightTravelScene {
             hud.setText(0, " ");
         }
 
-        //4.12.23 configShuttle = ConfigHelper.getVehicleConfig(tw.tw, "simpleShuttle");
         orbit = RouteBuilder.buildEquatorOrbit();
 
         //nearView soll nur die Vehicle abdecken.
@@ -283,7 +271,7 @@ public class TravelScene extends FlightTravelScene {
         }
         //17.5.24 provider not yet ready? EllipsoidCalculations rbcp = TrafficHelper.getEllipsoidConversionsProviderByDataprovider();
         EllipsoidCalculations rbcp = new FgCalculations();
-        SceneNode helpline = ModelSamples.buildLine(rbcp.toCart(WorldGlobal.eddkoverview.location.coordinates, null), rbcp.toCart(WorldGlobal.elsdorf2000.location.coordinates, null), Color.ORANGE);
+        SceneNode helpline = ModelSamples.buildLine(rbcp.toCart(WorldGlobal.eddkoverview.location.coordinates, null, null), rbcp.toCart(WorldGlobal.elsdorf2000.location.coordinates, null, null), Color.ORANGE);
         TravelSceneHelper.getSphereWorld().attach(helpline);
 
         SystemManager.addSystem(new FlightSystem());
@@ -475,32 +463,6 @@ public class TravelScene extends FlightTravelScene {
         return poilist;
     }
 
-    /**
-     * Kann sich z.Z. nur in einem einzigen Orbit bewegen.
-     */
-    private EcsEntity buildShuttle(TeleportComponent avatarpc) {
-        EcsEntity shuttle = null;//15.6.21 TODO wrong package new EcsEntity(ModelSamples.buildShuttle());
-        shuttle.setName("Shuttle");
-        //ViewpointComponent vc = new ViewpointComponent(shuttle.scenenode/*pilot/*shuttle.scenenode*/);
-        Vector3 ueberaquator = new Vector3(WorldGlobal.EARTHRADIUS + shuttleheight, 0, 0);
-
-        //shuttle.scenenode.object3d.setPosition(ueberaquator);
-        shuttle.helpernode = shuttle.scenenode;
-
-        // attached hinten auf dem Shuttle (7m hoeher, 13 nach hinten, Blick nach vorn
-        avatarpc.addPosition("", shuttle.scenenode.getTransform(), new LocalTransform(new Vector3(0, 257, 423), Quaternion.buildFromAngles(new Degree(0), new Degree(0), new Degree(0))));
-        //shuttle.addComponent(vc);
-
-        TeleportComponent pc = new TeleportComponent(shuttle.scenenode);
-        SceneNode parent = TravelSceneHelper.getSphereWorld();
-        pc.addPosition("", parent.getTransform(), new LocalTransform(ueberaquator, new Quaternion()));
-
-        shuttle.addComponent(pc);
-
-        return shuttle;
-    }
-
-
     @Override
     public void initSettings(Settings settings) {
         //settings.targetframerate = 10;
@@ -508,9 +470,6 @@ public class TravelScene extends FlightTravelScene {
         //17.10.18: Jetzt kann man VR mal riskieren
         settings.vrready = true;
         settings.minfilter = EngineHelper.TRILINEAR;
-        //9.2.20 Versuch weegen TOPOFTHEWORLD. Jetzt erst bei Spherewechsel.
-        //settings.far   = 2000000000f;
-
     }
 
     @Override
@@ -657,15 +616,10 @@ public class TravelScene extends FlightTravelScene {
         return FlightLocation.rotateFromYupToFgWorld(model);
     }
 
-
-    Degree angle = new Degree(1);
-
     boolean populated = false;
 
     @Override
     public void customUpdate(double currentdelta) {
-        //double currentdelta = getDeltaTime();
-        //commonUpdate();
 
         if (!avatarInited) {
 
@@ -677,7 +631,7 @@ public class TravelScene extends FlightTravelScene {
             } else {
                 // Event 'EVENT_POSITIONCHANGED' needs to be published for triggering terrain loading. Is done either implcitly by navigators
                 // loading first teleport step or from here without navigator by first teleport step.
-                // 30.1.24: 'navigator.gltf' not found for some time now. Leads to repeatedly 'not fond' logging.
+                // 30.1.24: Navigator has second level world teleport
                 if (enableNavigator) {
                     buildNavigator(avatartc);
                 } else {
@@ -686,14 +640,8 @@ public class TravelScene extends FlightTravelScene {
                     loc.rotation = loc.rotation.multiply(new OpenGlProcessPolicy(null).opengl2fg.extractQuaternion());
                     avatartc.addPosition(loc);
                     avatartc.stepTo(0);
-                    // additional TeleportComponent for second level world teleport. Avatar/User already has a TeleportComponent. So we need a different
-                    // entity. But this doesn't work. Hmm, the navigator is really missing for the second level. Skip for now.
-                    /*EcsEntity dummy = new EcsEntity(new SceneNode());
-                    TeleportComponent secondLevelTeleport = new TeleportComponent(dummy.getSceneNode());
-                    for (PoiConfig poi : getPoiList(worldPois)) {
-                        secondLevelTeleport.addPosition(poi.getName(), world.getTransform(), poi.getTransform(new FgCalculations()));
-                    }
-                    dummy.addComponent(secondLevelTeleport);*/
+                    // Avatar/User already has a TeleportComponent, so we cannot add second level world teleport.
+                    // (would need a different entity(eg. navigator))
                 }
                 if (teleporterSystem != null) {
                     teleporterSystem.setActivetc(avatartc);
@@ -714,9 +662,6 @@ public class TravelScene extends FlightTravelScene {
 
         if (terrainavailable && GroundServicesSystem.groundnets.get("EDDK") != null && !populated) {
             //jetzt muesste ein Groundnet mit 2D Projection da sein.
-
-            //4.10.18: Shuttle ist zu gross. Braucht XML Wrapper und GLTF. Darum vorerst unbrauchbar. TODO ueber config
-            //GroundServicesScene.launchVehicle(configShuttle, orbit, new GraphPosition(orbit.getEdge(0)), TeleportComponent.getTeleportComponent(avatar.avatarE), world, null);
 
             GroundNet groundnet = GroundServicesSystem.groundnets.get("EDDK");
             // jetzt noch die konfigurierten Vehicles, die einfach so rumfahren.
@@ -759,28 +704,8 @@ public class TravelScene extends FlightTravelScene {
 
         if (fps != null) {
             fps.update(currentdelta);
-        } else {
-            if (Input.getKeyDown(KeyCode.S)) {
-                /*TODO 9.1.17 if (Input.getKey(KeyCode.LeftShift)/* || Input.getKeyDown(KeyCode.RightShift)* /) {
-                    if (getShuttle().shuttlespeed > 0) {
-                        getShuttle().shuttlespeed -= 0.1f;
-                    }
-                } else {
-                    getShuttle().shuttlespeed += 0.1f;
-
-                }*/
-            }
-
         }
 
-        /*TODO 9.1.17 if (shuttleinorbit) {
-            getShuttle().shuttlelocation -= getShuttle().shuttlespeed * currentdelta;
-            getShuttle().adjustShuttleOrbitPosition();
-        }*/
-        //logger.debug("shuttle.worldmodelmatrix="+new Matrix4(shuttle.getWorldModelMatrix()).dump(" "));
-        // tile.rotateX(angle);
-        // tile.rotateY(angle);
-        // tile.rotateZ(angle);
         adjustDimensions();
 
         if (Input.getKeyDown(KeyCode.Alpha7)) {
@@ -991,23 +916,9 @@ public class TravelScene extends FlightTravelScene {
         //world.getTransform().setPosition(new Vector3(0, 0, -TOPOFTHEWORLD));
     }
 
-   
-    /*TODO to MovingSystem void adjustShuttleOrbitPosition() {
-        double x =  Math.cos(shuttlelocation);
-        double z =  Math.sin(shuttlelocation);
-        if (model != null) {
-            model.object3d.setPosition(new Vector3(x * (WorldGlobal.EARTHRADIUS + shuttleheight), 0, z * (WorldGlobal.EARTHRADIUS + shuttleheight)));
-
-            //logger.debug("shuttlelocation="+shuttlelocation);
-            Quaternion rotation = new Quaternion(new Degree(0), Degree.buildFromRadians(-shuttlelocation), new Degree(0));
-            model.object3d.setRotation(rotation);
-            //if (z >= 0) {
-            //		rotation = Quaternion.Euler (90, -z * 90, 0);
-            //	} else {
-
-        }
-    }*/
-
+    /**
+     * Runtime tests are important because they use a 'real' platform, while unit tests use SimpleHeadlessPlatform
+     */
     @Override
     protected void runTests() {
         logger.info("Running tests");

@@ -15,11 +15,16 @@ import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.core.platform.Config;
 import de.yard.threed.core.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by thomass on 22.08.16.
  */
 public class SceneryPager {//extends lic osgDB::DatabasePager
     Log logger = Platform.getInstance().getLog(SceneryPager.class);
+    public List<String> loadedBundle = new ArrayList<String>();
+    public List<String> failedBundle = new ArrayList<String>();
 
     public SceneryPager() {
     }
@@ -49,13 +54,19 @@ public class SceneryPager {//extends lic osgDB::DatabasePager
                     if (ReaderWriterSTG.terrainloaddebuglog) {
                         logger.debug("bundle loaded for " + fileName);
                     }
+                    if (b1 == null) {
+                        failedBundle.add(bundlename);
+                    }else {
+                        loadedBundle.add(bundlename);
+                    }
                     SGLoaderOptions opt = new SGLoaderOptions();
                     opt.materialLib = ((SGReaderWriterOptions) options).getMaterialLib();
                     opt.setPropertyNode(((SGReaderWriterOptions) options).getPropertyNode());
                     //8.6.17: STG ist so speziell, die nicht mehr hinten rum über Registry/readnode etc. laden soll, sondern direkt.
                     //4.1.18: per GLTF. Das STG; Laden wird auch wieder vielfach async sein.
                     opt.usegltf = true;
-                    /*BuildResult*/SceneNode result = new ReaderWriterSTG().build(fileName, options, opt);
+                    /*BuildResult*/
+                    SceneNode result = new ReaderWriterSTG().build(fileName, options, opt);
                     if (result != null /*&& result.getNode() != null*/) {
                         SceneNode n1 = result;//.getNode();
                         if (n1 != null) {

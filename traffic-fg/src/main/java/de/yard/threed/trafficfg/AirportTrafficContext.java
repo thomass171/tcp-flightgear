@@ -49,7 +49,7 @@ public class AirportTrafficContext implements TrafficContext {
             GeoCoordinate southwest = GeoCoordinate.fromLatLon(southwestL, 0);
             //TODO das ist doch eine EDDK Kruecke
             southwest.setElevationM(75);
-            Parking parking = groundnet.getParkPosNearCoordinates(rbcp.toCart(southwest, null));
+            Parking parking = groundnet.getParkPosNearCoordinates(rbcp.toCart(southwest, null, null));
             if (parking != null) {
                 logger.debug("new aircraft at parking " + parking);
                 GraphPosition newgraphposition = groundnet.getParkingPosition(parking);

@@ -1,10 +1,13 @@
 package de.yard.threed.trafficfg;
 
 import de.yard.threed.core.Degree;
+import de.yard.threed.core.GeneralParameterHandler;
 import de.yard.threed.core.LatLon;
 import de.yard.threed.core.MathUtil2;
 import de.yard.threed.core.Quaternion;
 import de.yard.threed.core.Vector3;
+import de.yard.threed.core.platform.Log;
+import de.yard.threed.core.platform.Platform;
 import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.geodesy.ElevationProvider;
 import de.yard.threed.flightgear.core.simgear.geodesy.FgMath;
@@ -16,6 +19,8 @@ import de.yard.threed.flightgear.core.simgear.geodesy.SGGeodesy;
  * The flightgear implementation of EllipsoidCalculations.
  */
 public class FgCalculations implements EllipsoidCalculations {
+
+    private static Log logger = Platform.getInstance().getLog(FgCalculations.class);
 
     //Taken from FG
     public static double ERAD = 6378138.12;
@@ -81,7 +86,7 @@ public class FgCalculations implements EllipsoidCalculations {
      * @return
      */
     @Override
-    public  Vector3 toCart(GeoCoordinate geoCoordinate, ElevationProvider elevationprovider) {
+    public  Vector3 toCart(GeoCoordinate geoCoordinate, ElevationProvider elevationprovider, GeneralParameterHandler<GeoCoordinate> missingElevationHandler) {
         // 21.3.24: elevation in GeoCoordinate is optional meanwhile. So intermediate SGGeod will fail.
         //SGGeod sgGeod = SGGeod.fromGeoCoordinate(geoCoordinate);
         Double elevation = geoCoordinate.getElevationM();
@@ -89,9 +94,12 @@ public class FgCalculations implements EllipsoidCalculations {
             elevation = elevationprovider.getElevation(geoCoordinate.getLatDeg().getDegree(), geoCoordinate.getLonDeg().getDegree());
         }
         if (elevation == null) {
-            // warn, weil das zu falschen Positionen führne wird
-            //logger.warn("no elevation. Using "+elevationM);
-            elevation = 0.0;//sgGeod.getElevationM();
+            // 29.5.24: No longer hide this problem but report to delegate. For avoiding NPE continue for now with workaround.
+            missingElevationHandler.handle(geoCoordinate);
+            // warn, because it might lead to too low positions, which is hard to analyze
+            // using 180 instead of 0 helps for visual detection of the problem. Wrong it is in any case.
+            logger.warn("no elevation. Using 180.0");
+            elevation = 180.0;
         }
         return SGGeodesy.SGGeodToCart(geoCoordinate.getLonRad(), geoCoordinate.getLatRad(), (double)elevation);
 

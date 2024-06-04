@@ -78,14 +78,11 @@ public class AnimationSystemTest {
 
         // clean entities?
 
-        EngineTestFactory.loadBundleAndWait(FlightGear.getBucketBundleName("3072824"));
-        Bundle bundle3072824 = BundleRegistry.getBundle("Terrasync-3072824");
-        assertNotNull(bundle3072824);
         // AC policy. Probably not needed in test.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
 
         // 3072824.stg exists twice (in Objects and in Terrain). Both should be loaded.
-        SceneNode destinationNode = SceneryTest.loadSTGAndWait(3072824);
+        SceneNode destinationNode = SceneryTest.loadSTGFromBundleAndWait(3072824);
         assertNotNull(destinationNode);
 
         // egkk_tower has many animations. Cuurently only 2 are loaded(?) probably due to missing textures and submodel.

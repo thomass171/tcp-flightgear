@@ -39,11 +39,12 @@ public class FGScenery extends DefaultSGSubsystem {
     Group models_branch, aircraft_branch, interior_branch;
     //terrain_branch enthaelt nicht nur das eigentliche Terrain, sondern auch die Sceneryobjekte (buidlings etc).
     private Group terrain_branch;
-    /*osg::ref_ptr<flightgear::*/ SceneryPager _pager;
+    // 2.6.24 only have one pager that is in FgTileMgr.
+    /*osg::ref_ptr<flightgear::*/ //SceneryPager _pager;
     ScenerySwitchListener _listener;
 
     public FGScenery() {
-        _pager = getPagerSingleton();
+        //2.6.24 _pager = getPagerSingleton();
     }
 
 
@@ -87,6 +88,9 @@ public class FGScenery extends DefaultSGSubsystem {
         }
         
         //24.3.18: MA22 und überhaupt. Das muss doch auch in world. Ja, aber in die FlightWorld! Und das macht TerrainSystem
+        // 30.5.24 really? TerrainSystem/ScenerySystem don't add it.
+        // 3.6.24: Scene.world is wrong anyway. Should be Sphere.world. That is set
+        // in FgTerrainBuilder.
         //Scene.getCurrent().addToWorld(scene_graph);
 
     }
@@ -294,22 +298,22 @@ public class FGScenery extends DefaultSGSubsystem {
     /*    bool scenery_available(const SGGeod& position, double range_m);*/
 
     // Static because access to the pager isType needed before the rest of
-// the scenery isType initialized.
-    static SceneryPager pager;
+// the scenery isType initialized. 2.6.24: Really?
+    //1.6.24 static SceneryPager pager;
 
-    static SceneryPager getPagerSingleton() {
-        if (pager == null)
+    /*1.6.24 static SceneryPager getPagerSingleton() {
+        /*1.6.24if (pager == null)
             pager = new SceneryPager();
-        return pager/*.get()*/;
-    }
+        return _pager/*.get()* /;
+    }*/
 
-    static void resetPagerSingleton() {
+    /*1.6.24 static void resetPagerSingleton() {
         pager = null;
-    }
+    }*/
 
-    public SceneryPager getPager() {
-        return _pager/*.get()*/;
-    }
+    /*2.6.24 is in FGTilemgr now public SceneryPager getPager() {
+        return _pager/*.get()* /;
+    }*/
 }
 
 

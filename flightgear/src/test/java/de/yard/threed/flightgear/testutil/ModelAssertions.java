@@ -272,6 +272,15 @@ public class ModelAssertions {
                 "Objects/e000n50/e007n50/egkk_tower.xml",
                 "Objects/e000n50/e007n50/windturbine.xml"
         });
+        objectsPerTile.put(3072816, new String[]{
+                // 1.6.24 what do we expect here?
+        });
+        objectsPerTile.put(3056435, new String[]{
+                // 1.6.24 what do we expect here?
+        });
+        objectsPerTile.put(3056443, new String[]{
+                // 1.6.24 what do we expect here?
+        });
         return objectsPerTile;
     }
 }

@@ -47,6 +47,8 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         //properties.put("initialVehicle", "c172p");
         //properties.put("initialVehicle", "777");
         //properties.put("initialVehicle", "bluebird");
+        //properties.put("initialRoute", "wp:50.768,7.1672000->takeoff:50.7692,7.1617000->wp:50.7704,7.1557->wp:50.8176,7.0999->wp:50.8519,7.0921->touchdown:50.8625,7.1317000->wp:50.8662999,7.1443999");
+
 
         //properties.put("argv.basename","B55-B477");
         //properties.put("argv.basename","B55-B477-small");
@@ -62,7 +64,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         // traffic-fg
         //properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryScene");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.RailingScene");
-        properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
+        //properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryViewerScene");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.FgModelPreviewScene");
         boolean demo = false;
@@ -73,9 +75,9 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         }
 
         // traffic-advanced
-        properties.put("scene", "de.yard.threed.trafficadvanced.apps.FlatAirportScene");
+        //properties.put("scene", "de.yard.threed.trafficadvanced.apps.FlatAirportScene");
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
-        //properties.put("scene", "de.yard.threed.trafficadvanced.apps.HangarScene");
+        properties.put("scene", "de.yard.threed.trafficadvanced.apps.HangarScene");
 
         return properties;
     }
