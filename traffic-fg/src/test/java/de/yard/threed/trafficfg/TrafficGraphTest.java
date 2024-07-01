@@ -144,7 +144,7 @@ public class TrafficGraphTest {
         Assertions.assertEquals(exlen, path.getSegment(0).edge.getLength());
         GraphMovingComponent gmc = new GraphMovingComponent(null);
         gmc.setGraph(osm, null, null);
-        gmc.setPath(path);
+        gmc.setPath(path, true);
         gmc.moveForward(8);
         //position immer noch auf back arc. plausiblen Wert übernommen
         float backarclen = 9.759678f;
@@ -192,7 +192,7 @@ public class TrafficGraphTest {
         Assertions.assertEquals(0, path.startposition.edgeposition, "startposition.edgeposition");
         Assertions.assertFalse(path.startposition.isReverseOrientation(), "startposition.edge.name");
         GraphTestUtil.assertGraphPosition("startposition.edge.name", gmc.getCurrentposition(), start);
-        gmc.setPath(path);
+        gmc.setPath(path, true);
         GraphTestUtil.assertGraphPosition("startposition.edge.name", gmc.getCurrentposition(), path.startposition);
         gmc.moveForward(8);
 

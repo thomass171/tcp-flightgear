@@ -206,7 +206,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
                 }
                 if (!followme.reachedaircraft) {
                     followme.reachedaircraft = true;
-                    GraphMovingComponent.getGraphMovingComponent(followme.aircraft).setPath(followme.aircraftpath);
+                    GraphMovingComponent.getGraphMovingComponent(followme.aircraft).setPath(followme.aircraftpath, true);
                     GraphEdge last = followme.aircraftpath.getLast().edge;
                     TurnExtension teardropturnatparking = groundnet.groundnetgraph.addTearDropTurn(last.to, last, true, followme.teardropturn.getLayer());
                     /*if (visualizer != null) {
@@ -216,7 +216,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
 
 
                     GraphPath followmepath = groundnet.groundnetgraph.createPathFromGraphPosition(gmc1.getCurrentposition(), teardropturnatparking.arc.to, null, null);
-                    gmc1.setPath(followmepath);
+                    gmc1.setPath(followmepath, true);
                 }
             } else {
                 if (followme.reachedaircraft) {
@@ -553,7 +553,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
         }
         //path.startposition = startposition;
         SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_PATHCREATED, new Payload(groundnet.groundnetgraph, path)));
-        gmc.setPath(path);
+        gmc.setPath(path, true);
         return true;
     }
 
@@ -645,7 +645,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
         SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_LAYERCREATED, new Payload(groundnet.groundnetgraph, new Integer(followmepath.layer))));
 
         // 3. move followme vehicle to aircraft
-        GraphMovingComponent.getGraphMovingComponent(followmecar).setPath(followmepath);
+        GraphMovingComponent.getGraphMovingComponent(followmecar).setPath(followmepath, true);
 
         // move aircraft
         //((GraphMovingComponent) aircraft.getComponent(GraphMovingComponent.TAG)).setPath(path);
@@ -753,7 +753,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
             return;
         }
         logger.debug("set approachpath:" + approach);
-        gmc.setPath(approach);
+        gmc.setPath(approach, true);
         if (!vehicle.lockEntity(this)) {
             logger.error("Lock vehicle failed");
         }
@@ -786,7 +786,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
         } else {
             return;
         }
-        gmc.setPath(path);
+        gmc.setPath(path, true);
     }
 
     /**
@@ -811,7 +811,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
             return;
         }
         GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(vehicle);
-        gmc.setPath(returnpath);
+        gmc.setPath(returnpath, true);
         gsc.setStateIdle();
     }
 
@@ -1042,7 +1042,7 @@ class FollowMe {
         if (!isdeparting && reachedparkingpos != 0 && (Platform.getInstance()).currentTimeMillis() - reachedparkingpos > 3000) {
             GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(followmecar);
             GraphPath departpath = groundnet.groundnetgraph.createPathFromGraphPosition(gmc.getCurrentposition(), groundnet.getFollowmeHome(), null, null);
-            gmc.setPath(departpath);
+            gmc.setPath(departpath, true);
             isdeparting = true;
         }
     }

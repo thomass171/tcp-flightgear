@@ -111,9 +111,8 @@ public class TrafficTest {
         // mal sehen, ob die Position auf dem Graph auch richtig ermittelt wird. 
         // "start" auf "holding" (erste Node im Graph) wird ueber path.startposition gesetzt. Die muss aber auf smoothed edge sein.
         GraphMovingComponent gmc = new GraphMovingComponent();
-        gmc.setAutomoveEnabled(false);
         gmc.setGraph(graph, null, null);
-        gmc.setPath(smoothedflightpath);
+        gmc.setPath(smoothedflightpath, false);
         //Stimmt die Position im Graph?
         GraphPathSegment firstseg = smoothedflightpath.getSegment(0);
         GraphTestUtil.assertGraphPosition("am holding", new GraphPosition(firstseg.edge), smoothedflightpath.startposition);

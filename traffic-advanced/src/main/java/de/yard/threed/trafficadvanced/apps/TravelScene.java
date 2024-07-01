@@ -429,7 +429,7 @@ public class TravelScene extends FlightTravelScene {
                     avatarpc.stepTo(0);
                     addPoisToNavigator(ecsEntity);
                     addPoisToNavigator(ecsEntity);
-                })}), new FgVehicleLoader());
+                })}), new FgVehicleLoader(), null);
     }
 
     private void addPoisToNavigator(EcsEntity navigator) {
@@ -681,7 +681,7 @@ public class TravelScene extends FlightTravelScene {
                 TrafficGraph trafficgraph = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildSimpleTestRouteB8toC4(/*gsw.*/groundnet);
                 VehicleLauncher.launchVehicle(new Vehicle("c172p"), configc172p, trafficgraph, new GraphPosition(trafficgraph.getBaseGraph().getEdge(0)),
                         TeleportComponent.getTeleportComponent(UserSystem.getInitialUser()), TravelSceneHelper.getSphereWorld(), null,
-                        /*4.12.23 sceneConfig.getBaseTransformForVehicleOnGraph()*/TrafficSystem.baseTransformForVehicleOnGraph, null, new ArrayList<VehicleBuiltDelegate>(), new FgVehicleLoader());
+                        /*4.12.23 sceneConfig.getBaseTransformForVehicleOnGraph()*/TrafficSystem.baseTransformForVehicleOnGraph, null, new ArrayList<VehicleBuiltDelegate>(), new FgVehicleLoader(), null);
             }
 
             //gsw.graphloaded = null;
@@ -832,7 +832,7 @@ public class TravelScene extends FlightTravelScene {
         route.getPath().startposition = new GraphPosition(startedge);
         gmc.setGraph(route.getGraph(), route.getPath().startposition, null);
 
-        gmc.setPath(route.getPath());
+        gmc.setPath(route.getPath(), true);
         logger.debug("starting route ");
         orbitingvehicle = currentvehicle;
         //VelocityComponent.getVelocityComponent(orbitingvehicle).hasHyperSpeed=true;

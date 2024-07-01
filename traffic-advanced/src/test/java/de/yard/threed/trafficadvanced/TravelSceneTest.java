@@ -218,9 +218,20 @@ public class TravelSceneTest {
         assertTrue(Texture.hasTexture("screens.png"), "garmin.texture");
         GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(c172p);
         assertEquals("groundnet.EDDK", gmc.getGraph().getName());
+        // has the graph attached where it is located (groundnet)
+        assertNotNull(gmc.getGraph());
+        assertFalse(gmc.hasAutomove());
+        assertNull(gmc.getPath());
 
-        // start c172p and wait until it has a flight route
+        // start c172p and wait until it has a flight route (first will be move to runway)
         TravelSceneTestHelper.assertDefaultTrip(sceneRunner, c172p, true);
+        TestUtils.waitUntil(() -> {
+            sceneRunner.runLimitedFrames(2);
+            sleepMs(10);
+            return gmc.getPath() != null;
+        }, 5000);
+
+        assertTrue(gmc.hasAutomove());
 
     }
 

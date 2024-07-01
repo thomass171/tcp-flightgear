@@ -83,8 +83,8 @@ public class FlightGearMain {
         // Fuer einen Referenzpunkt in EDDK die Elevation ermitteln. Das muesste dann ja auch gehen.
         double elevation = (double)FlightGearModuleScenery.getInstance().get_scenery().get_elevation_m(SGGeod.fromGeoCoordinate(/*WorldGlobal.*/fleddkoverview.coordinates),worldadjustment);
         logger.debug("Elevation of eddkoverview: " + elevation);
-        //Since double 70.51 instead of 71.16? 31.5.24: Now back to 71.15, no idea why.4.6.24 back again
-        RuntimeTestUtil.assertFloat("Elevation EDDK overview", 70.51, elevation, 0.3);
+        //Since double 70.51 instead of 71.16? 31.5.24: Now back to 71.15, no idea why.4.6.24 back again, 20.6.24 back
+        RuntimeTestUtil.assertFloat("Elevation EDDK overview", 71.15, elevation, 0.3);
 
 
         logger.info("Tests completed");

@@ -171,7 +171,7 @@ public class GroundNetTest {
         Assertions.assertEquals("nodes:0:269;233:13;", gr.getStatistic(), "statistics");
         GraphMovingComponent gmc = new GraphMovingComponent();
         gmc.setGraph(null, startposition, null);
-        gmc.setPath(path);
+        gmc.setPath(path, true);
         gmc.moveForward(100000);
         GraphEdge edge7_207 = gr.findEdgeByName("7-207"/*"smoothend.207"*/);
         //3.8.17: Der bleibt jetzt am Pathende stehen statt auf Layer 0 zu gehen (Wiki).
@@ -192,7 +192,7 @@ public class GroundNetTest {
         Assertions.assertEquals("nodes:0:269;1:56;", gr.getStatistic(), "statistics");
         gmc = new GraphMovingComponent();
         gmc.setGraph(groundnet.groundnetgraph.getBaseGraph(), a20position, null);
-        gmc.setPath(path);
+        gmc.setPath(path, true);
         gmc.moveForward(100000);
         GraphEdge edge6_206 = gr.findEdgeByName("6-206");
         assertPosition(new GraphPosition(edge6_206, edge6_206.getLength(), true), gmc.getCurrentposition());
@@ -210,7 +210,7 @@ public class GroundNetTest {
         Assertions.assertEquals(17.89897f, Vector3.getDistance(center, groundnet.groundnetgraph.getBaseGraph().findNodeByName("125").getLocation()), 0.0001, "arccenter distance to 125");
         gmc = new GraphMovingComponent();
         gmc.setGraph(groundnet.groundnetgraph.getBaseGraph(), c_4position, null);
-        gmc.setPath(path);
+        gmc.setPath(path, true);
         gmc.moveForward(100000);
         gr.removeLayer(path.layer);
         Assertions.assertEquals(269, gr.getEdgeCount(), "edges");
@@ -411,7 +411,7 @@ public class GroundNetTest {
         // path komplett abfahren.
         GraphMovingComponent gmc = new GraphMovingComponent();
         gmc.setGraph(null, start, null);
-        gmc.setPath(path);
+        gmc.setPath(path, true);
         GraphPath completed = gmc.moveForward(100000);
         Assertions.assertNotNull(completed, "completed.path");
         // path muss completed sein und die Position echt auf C_7, nicht mehr auf smmothed path
@@ -448,7 +448,7 @@ public class GroundNetTest {
         // path komplett abfahren.
         GraphMovingComponent gmc = new GraphMovingComponent();
         gmc.setGraph(null, start, null);
-        gmc.setPath(path);
+        gmc.setPath(path, true);
         GraphPath completed = gmc.moveForward(100000);
         Assertions.assertNotNull(completed, "completed.path");
         // path muss completed sein und die Position echt auf C_4, nicht mehr auf smmothed path

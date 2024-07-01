@@ -465,8 +465,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
         }*/
         //needed somehow?? FlatAirportScene.adjustASI();
 
-        //26.10.18: Jetzt 'S' statt Alpha6. Aber nicht im FPC mode ohne Avatar.
-        if (Input.getKeyDown(KeyCode.S) /*10.3.22&& AvatarSystem.getAvatar() != null*/) {
+        if (Input.getKeyDown(KeyCode.S)) {
             TravelHelper.startDefaultTrip(getAvatarVehicle());
         }
     }
@@ -525,7 +524,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
         route.getPath().startposition = new GraphPosition(startedge);
         gmc.setGraph(route.getGraph(), route.getPath().startposition, null);
 
-        gmc.setPath(route.getPath());
+        gmc.setPath(route.getPath(), true);
         logger.debug("starting route ");
         orbitingvehicle = currentvehicle;
         //VelocityComponent.getVelocityComponent(orbitingvehicle).hasHyperSpeed=true;

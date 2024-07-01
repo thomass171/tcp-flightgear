@@ -8,6 +8,7 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.platform.common.Request;
+import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.traffic.Destination;
 import de.yard.threed.traffic.RequestRegistry;
 
@@ -26,7 +27,6 @@ public class TravelHelper {
      * 9.5.19: Auf jeden Fall ist es wirklich für einen Flug (und damit wechsel des Graphen) nicht für innerhalb eines Graph.
      * <p>
      * Just send a request for a 'depart'.
-     *
      */
     public static void startFlight(EcsEntity aircraft, Destination flightdestination) {
 
@@ -48,29 +48,19 @@ public class TravelHelper {
     }
 
     /**
-     * "Use case 6" bzw. Key 's'.
-     * Platzrunde oder sonstige "Rundreise".
-     *
-     * 27.12.21:Von BasicTravelScene nach hier.
+     * "Use case Key 's'". Some roundtrip or similar.
+     * It is not properly defined what the default trip is. Traditionally its a 'Platzrunde' started from a position on groundnet via TRAFFIC_REQUEST_AIRCRAFTDEPARTING.
+     * 26.6.24: Now it can also be a 'initialRoute'.
      */
     public static void startDefaultTrip(EcsEntity avatarvehicle) {
         logger.info("Starting default trip");
-        if (true/*24.5.20 trafficWorld.currentairport != null*/) {
-            // Mir airport geht ein Rundflug
-            startFlight(Destination.buildRoundtrip(0), avatarvehicle);
+        GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(avatarvehicle);
+        if (gmc.getPath() != null) {
+            // path already set from 'initialRoute'? Just use it.
+            gmc.setAutomove(true);
         } else {
-            // 8.5.19: Dann innerhalb des TrafficGraph eine (Rund)reise. Naja, erstmal irgendwo hin.
-            //einfach erstmal c172p, weil die verfuegbar ist
-            //muss auch per Request gehen, damit aus einem System das Vehicle gelockt wird.
-
-            Util.nomore();
-           /*27.12.21 EcsEntity vehicle = findVehicleByName("c172p");
-            TrafficGraph trafficGraph = getGroundNet();
-            GraphNode destination = trafficGraph.getBaseGraph().getNode(rand.nextInt() % trafficGraph.getBaseGraph().getNodeCount());
-            Request evt6 = new Request(RequestRegistry.TRAFFIC_REQUEST_VEHICLE_MOVE, new Payload(vehicle, trafficGraph, destination));
-            //mal ueber ECS versuchen
-            SystemManager.putRequest(evt6);
-*/
+            // A roundtrip build by FlightSystem
+            startFlight(Destination.buildRoundtrip(0), avatarvehicle);
         }
     }
 

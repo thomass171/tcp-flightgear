@@ -195,7 +195,7 @@ public class FlightSystem extends DefaultEcsSystem {
         path.setName("toTakeoff");
         SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_PATHCREATED, new Payload(groundNet.groundnetgraph, path)));
         logger.debug("set path:" + path);
-        gmc.setPath(path);
+        gmc.setPath(path, true);
         Destination takeoffDestination = Destination.buildForTakeoff(runway);
         //vhc.taxiingfortakeoff = true;
         //vhc.runway = runway;
@@ -276,7 +276,7 @@ public class FlightSystem extends DefaultEcsSystem {
 
         gmc.setGraph(graph, null, null);
 
-        gmc.setPath(smoothedflightpath);
+        gmc.setPath(smoothedflightpath, true);
 
         //travelDestination.
 
