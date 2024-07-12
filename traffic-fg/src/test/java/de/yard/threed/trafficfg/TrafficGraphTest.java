@@ -13,6 +13,7 @@ import de.yard.threed.engine.testutil.EngineTestFactory;
 import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
+import de.yard.threed.graph.DefaultEdgeBasedRotationProvider;
 import de.yard.threed.graph.DefaultGraphPathConstraintProvider;
 import de.yard.threed.graph.Graph;
 import de.yard.threed.graph.GraphEdge;
@@ -52,14 +53,14 @@ public class TrafficGraphTest {
         Platform platform = FgTestFactory.initPlatformForTest(false, false);
 
         //FgTestFactory.addBundleFromProjectDirectory("traffic-fg", "data/extended-config");
-         bundleAirportsConfig = BundleRegistry.getBundle("traffic-fg");
+        bundleAirportsConfig = BundleRegistry.getBundle("traffic-fg");
     }
 
     /**
      * Simple Edge mit Nordrichtung
      */
     @Test
-    public void test1() {
+    public void testNorthpole() {
         // an der Stelle, an der die Identiy resultiert (Nordpol). Mit Edge Richtung -x. Wenn man keine Himmelsrichtung verwendet, ist das auch keine
         // Singularität.
         Graph graph = new Graph(GraphOrientation.buildForFG());
@@ -70,12 +71,11 @@ public class TrafficGraphTest {
         GraphNode n2 = graph.addNode("n2", new Vector3(-1000, n1.getLocation().getY(), n1.getLocation().getZ()));
         GraphEdge edge = graph.connectNodes(n1, n2);
         GraphPosition position = new GraphPosition(edge);
-        Quaternion rotation = graph.orientation.get3DRotation(false, edge.getEffectiveBeginDirection(), edge);
+        Quaternion rotation = DefaultEdgeBasedRotationProvider.get3DRotation(false, edge.getEffectiveBeginDirection(), graph.getGraphOrientation().getUpVector(edge));
         //22.3.18: Ist das auch richtig? Laut dot product sind die beiden nicht gleich. Ist das Singularitaet? TODO klaeren. Bleibt erstmal Fehler.
         //29.3.18: jetzt mit upVector passt das wieder.
-        TestUtils.assertQuaternion(new Quaternion(), rotation);
-        //TestUtils.assertQuaternion("", new Quaternion(0,-1,0,0), rotation);
-        //TestUtils.assertQuaternion("", new Quaternion(-0.5f,-0.5f,0.5f,0.5f), rotation);
+        //11.7.24: Values changed again after clarification of graph rotations. appear correct.Really?
+        TestUtils.assertQuaternion(new Quaternion(0.5,0.5,0.5,0.5), rotation);
         System.out.println("dot product: " + Quaternion.getDotProduct(new Quaternion(), new Quaternion(0, -1, 0, 0)));
 
         FgCalculations fgc = new FgCalculations();
@@ -87,18 +87,21 @@ public class TrafficGraphTest {
         edge = graph.connectNodes(n1, n2);
         //10.5.18 rotation = graph.orientation.getLocal3DRotation(edge, edge.getEffectiveBeginDirection());
         //10.5.18 TestUtils.assertQuaternion("", new Quaternion(), rotation);
+    }
 
-        // ueber Equator
-        graph = new Graph(GraphOrientation.buildForFG());
-        coor = new SGGeod(new Degree(0), new Degree(0), 0);
-        n1 = graph.addNode("n1", coor.toCart());
-        n2 = graph.addNode("n2", fgc.toCart(GeoUtil.applyCourseDistance(coor.toGeoCoordinate(), new Degree(0), 50)));
-        edge = graph.connectNodes(n1, n2);
-        rotation = graph.orientation.get3DRotation(false, edge.getEffectiveBeginDirection(), edge);
+    @Test
+    public void testEquator() {
+        FgCalculations fgc = new FgCalculations();
+        Graph graph = new Graph(GraphOrientation.buildForFG());
+        SGGeod coor = new SGGeod(new Degree(0), new Degree(0), 0);
+        GraphNode n1 = graph.addNode("n1", coor.toCart());
+        GraphNode n2 = graph.addNode("n2", fgc.toCart(GeoUtil.applyCourseDistance(coor.toGeoCoordinate(), new Degree(0), 50)));
+        GraphEdge edge = graph.connectNodes(n1, n2);
+        Quaternion rotation = DefaultEdgeBasedRotationProvider.get3DRotation(false, edge.getEffectiveBeginDirection(), graph.getGraphOrientation().getUpVector(edge));
         //TestUtils.assertQuaternion("equator", new Quaternion(new Degree(180),new Degree(0),new Degree(-90)), rotation);
         //Die Referenzwerte ergeben sich aus rotieren der Identity vom Norpol, sonst lassen die sich aber nicht so recht erklaeren. Platzrunde bestaetigt es aber.
-        TestUtils.assertQuaternion(Quaternion.buildFromAngles(new Degree(0), new Degree(90), new Degree(0)), rotation, "equator");
-
+        //11.7.24: Values changed again after clarification of graph rotations. Value appears correct. Really?
+        TestUtils.assertQuaternion(new Quaternion(0.7071067811851897,0.7071067811851895,0,0), rotation, "equator");
     }
 
     @Test
@@ -111,10 +114,9 @@ public class TrafficGraphTest {
         SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, TerrainElevationProvider.buildForStaticAltitude(80));
         Graph graph = new RouteBuilder(new FgCalculations()).buildSimpleTestRouteB8toC4(groundnet).getBaseGraph();
         GraphEdge edge = graph.getEdge(0);
-        Quaternion rotation = graph.orientation.get3DRotation(false, edge.getEffectiveBeginDirection(), edge);
-        //Die Werte einfach ueernommen, nach die c172 Orientierung in FlightScene richtig war.
-        //Seit upVector geht das nicht mehr. 30.11.23: No it works again. Surprise surprise.
-        TestUtils.assertQuaternion( new Quaternion(-0.06929136f,0.32748893f,-0.07918669f,0.9389777f), rotation);
+        Quaternion rotation = DefaultEdgeBasedRotationProvider.get3DRotation(false, edge.getEffectiveBeginDirection(), graph.getGraphOrientation().getUpVector(edge));
+        //11.7.24: Values changes again after clarification of graph rotations. Value appears correct.
+        TestUtils.assertQuaternion(new Quaternion(0.6379110889005392, 0.6285977907848587, 0.23125252230335044, 0.3800743756246422), rotation);
 
     }
 

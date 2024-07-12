@@ -25,6 +25,7 @@ import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.testutil.SceneRunnerForTesting;
 import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
+import de.yard.threed.graph.DefaultEdgeBasedRotationProvider;
 import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphPath;
 import de.yard.threed.traffic.GraphTerrainSystem;
@@ -52,6 +53,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.List;
 
+import static de.yard.threed.core.testutil.TestUtils.assertQuaternion;
 import static de.yard.threed.javanative.JavaUtil.sleepMs;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -222,6 +224,7 @@ public class TravelSceneTest {
         assertNotNull(gmc.getGraph());
         assertFalse(gmc.hasAutomove());
         assertNull(gmc.getPath());
+        assertQuaternion(DefaultEdgeBasedRotationProvider.getFgVehicleForwardRotation(), gmc.customModelRotation);
 
         // start c172p and wait until it has a flight route (first will be move to runway)
         TravelSceneTestHelper.assertDefaultTrip(sceneRunner, c172p, true);

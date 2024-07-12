@@ -112,8 +112,6 @@ public class TravelSceneBluebirdTest {
         sceneRunner.runLimitedFrames(50);
         // now all major initing should have been done
 
-        assertNull(TrafficSystem.baseTransformForVehicleOnGraph);
-
         FgTerrainBuilder fgTerrainBuilder = (FgTerrainBuilder) ((ScenerySystem) SystemManager.findSystem(ScenerySystem.TAG)).getTerrainBuilder();
         // Even though tiles are loaded async, they should exist now. 10 in total appears correct (9 surrounding+EDDK?). But only 4 are really available in project.
         // EDKB.btg and EDDK are part of 3072816. Why fail 15 instead of 6? or 12? Values differ for some reason. So

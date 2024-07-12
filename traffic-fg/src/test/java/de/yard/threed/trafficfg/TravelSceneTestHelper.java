@@ -32,7 +32,7 @@ public class TravelSceneTestHelper {
      */
     public static void assertDefaultTrip(SceneRunnerForTesting sceneRunner, EcsEntity aircraft,
                                          boolean expectGeoCartGraphCoordinates) throws Exception {
-// start c172p and wait until it has a flight route
+        // start aircraft (eg.c172p) and wait until it has a flight route
         GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(aircraft);
         assertNull(gmc.getPath());
         TravelHelper.startDefaultTrip(aircraft);
@@ -44,10 +44,10 @@ public class TravelSceneTestHelper {
 
         Graph graph = gmc.getGraph();
         assertFalse(graph instanceof ProjectedGraph);
-        GraphPath graphPath=gmc.getPath();
+        GraphPath graphPath = gmc.getPath();
         assertNotNull(graphPath);
 
-validateGraphCoordinates(graph,expectGeoCartGraphCoordinates);
+        validateGraphCoordinates(graph, expectGeoCartGraphCoordinates);
 
     }
 
@@ -59,11 +59,11 @@ validateGraphCoordinates(graph,expectGeoCartGraphCoordinates);
         //??TestUtils.assertLatLon(GroundNetMetadata.getMap().get("EDDK").airport.getCenter(), projections.projection.getOrigin(), 0.01, "EDDK origin");*/
     }
 
-    public static void validatePlatzrunde(FlightRouteGraph platzrunde, double expectedElevation,  boolean expectGeoCartGraphCoordinates) {
+    public static void validatePlatzrunde(FlightRouteGraph platzrunde, double expectedElevation, boolean expectGeoCartGraphCoordinates) {
         EllipsoidCalculations rbcp = TrafficHelper.getEllipsoidConversionsProviderByDataprovider();
         assertNotNull(rbcp);
 
-        validateGraphCoordinates(platzrunde.getGraph(),expectGeoCartGraphCoordinates);
+        validateGraphCoordinates(platzrunde.getGraph(), expectGeoCartGraphCoordinates);
 
         Vector3 firstLocation = platzrunde.getGraph().getNode(0).getLocation();
         if (expectGeoCartGraphCoordinates) {
@@ -78,7 +78,7 @@ validateGraphCoordinates(graph,expectGeoCartGraphCoordinates);
         }
     }
 
-    private static void validateGraphCoordinates(Graph graph,  boolean expectGeoCartGraphCoordinates){
+    private static void validateGraphCoordinates(Graph graph, boolean expectGeoCartGraphCoordinates) {
         for (int i = 0; i < graph.getNodeCount(); i++) {
             Vector3 location = graph.getNode(i).getLocation();
             if (expectGeoCartGraphCoordinates) {
@@ -92,7 +92,7 @@ validateGraphCoordinates(graph,expectGeoCartGraphCoordinates);
     public static void waitForSphereLoaded(SceneRunnerForTesting sceneRunner) throws Exception {
         TestUtils.waitUntil(() -> {
             sceneRunner.runLimitedFrames(1);
-            return  EcsTestHelper.getEventsFromHistory(TrafficEventRegistry.TRAFFIC_EVENT_SPHERE_LOADED).size() > 0;
+            return EcsTestHelper.getEventsFromHistory(TrafficEventRegistry.TRAFFIC_EVENT_SPHERE_LOADED).size() > 0;
         }, 60000);
     }
 
@@ -106,5 +106,7 @@ validateGraphCoordinates(graph,expectGeoCartGraphCoordinates);
         assertTrue(Math.abs(home.node.getLocation().getX()) < 3000, "x-coordinate of groundnet node < 3000");
         //LatLon backProjectedHome = groundnetEDDK.projection.unproject(Vector2.buildFromVector3(home.node.getLocation()));
         //TODO assertEquals(51.0, Math.round(backProjectedHome.getLatDeg().getDegree()));
+
+        assertEquals("z0", groundnetEDDK.groundnetgraph.getBaseGraph().getGraphOrientation().getName());
     }
 }

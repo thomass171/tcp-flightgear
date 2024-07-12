@@ -423,7 +423,7 @@ public class TravelScene extends FlightTravelScene {
         VehicleDefinition vehicleConfig = ConfigHelper.getVehicleConfig(trafficConfig.getVehicleDefinitions(), "Navigator");
 
         VehicleLauncher.launchVehicle(new Vehicle("Navigator"), vehicleConfig, null, null, avatarpc, getWorld(), null,
-                /*4.12.23 sceneConfig.getBaseTransformForVehicleOnGraph()*/TrafficSystem.baseTransformForVehicleOnGraph, null/*nearView*/, Arrays.asList(new VehicleBuiltDelegate[]{((ecsEntity, config) -> {
+                /*4.12.23 sceneConfig.getBaseTransformForVehicleOnGraph()*//*TrafficSystem.baseTransformForVehicleOnGraph*/null, null/*nearView*/, Arrays.asList(new VehicleBuiltDelegate[]{((ecsEntity, config) -> {
 
                     // Weil der TeleporterSystem.init schon gelaufen ist, muss auch "needsupdate" gesetzt werden, darum stepTo().
                     avatarpc.stepTo(0);
@@ -681,7 +681,7 @@ public class TravelScene extends FlightTravelScene {
                 TrafficGraph trafficgraph = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildSimpleTestRouteB8toC4(/*gsw.*/groundnet);
                 VehicleLauncher.launchVehicle(new Vehicle("c172p"), configc172p, trafficgraph, new GraphPosition(trafficgraph.getBaseGraph().getEdge(0)),
                         TeleportComponent.getTeleportComponent(UserSystem.getInitialUser()), TravelSceneHelper.getSphereWorld(), null,
-                        /*4.12.23 sceneConfig.getBaseTransformForVehicleOnGraph()*/TrafficSystem.baseTransformForVehicleOnGraph, null, new ArrayList<VehicleBuiltDelegate>(), new FgVehicleLoader(), null);
+                        /*4.12.23 sceneConfig.getBaseTransformForVehicleOnGraph()*//*TrafficSystem.baseTransformForVehicleOnGraph*/null, null, new ArrayList<VehicleBuiltDelegate>(), new FgVehicleLoader(), null);
             }
 
             //gsw.graphloaded = null;

@@ -70,7 +70,7 @@ public class GroundNetTerrainBuilder implements AbstractSceneryBuilder {
             GraphEdge edge = graph.connectNodes(start, end);
             //8.3.21: GraphTerrainVisualizer wird hier gebraucht. Da sind die Ableitungen im Visualizer nicht passend genug.
             if (visualizer instanceof GraphTerrainVisualizer) {
-                SceneNode sn = ((GraphTerrainVisualizer) visualizer).buildEdge(edge, Color.GREEN, 10, 0, gn.groundnetgraph.getBaseGraph().orientation);
+                SceneNode sn = ((GraphTerrainVisualizer) visualizer).buildEdge(edge, Color.GREEN, 10, 0, gn.groundnetgraph.getBaseGraph().getGraphOrientation());
                 //verdeckt graph? Nö.
                 Scene.getCurrent().addToWorld(sn);
             } else {

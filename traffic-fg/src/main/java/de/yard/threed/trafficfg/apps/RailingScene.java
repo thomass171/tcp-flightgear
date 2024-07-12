@@ -236,7 +236,6 @@ public class RailingScene extends Scene {
         //XmlDocument xmlRailingConfig = XmlDocument.buildFromBundle("traffic-fg", "railing/Railing.xml");
         TrafficConfig xmlRailingConfig = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"),
                 new BundleResource("railing/Railing.xml"));
-        TrafficSystem.baseTransformForVehicleOnGraph = xmlRailingConfig.getBaseTransformForVehicleOnGraph();
         //XmlDocument xmlVehicleConfig = XmlDocument.buildFromBundle("traffic-fg", "railing/locomotive.xml");
         TrafficConfig xmlVehicleConfig = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"),
                 new BundleResource("railing/locomotive.xml"));

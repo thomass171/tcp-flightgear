@@ -114,7 +114,7 @@ public class TravelGraphVisualizer extends DefaultGraphVisualizer {
 
     public SceneNode buildEdge(Graph graph, GraphEdge edge, Color color, double width, double elevation) {
         // 9.12.21 Hier wird eine "Road" als blaues schmales Band dargestellt.
-        SceneNode model = TerrainBuilder.buildEdgeArea(edge, width, color, elevation, graph.orientation);
+        SceneNode model = TerrainBuilder.buildEdgeArea(edge, width, color, elevation, graph.getGraphOrientation());
         model.setName(edge.getName());
         return model;
     }
