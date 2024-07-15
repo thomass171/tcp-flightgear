@@ -22,7 +22,7 @@ function addPanel(label, contentProvider, optionalElement) {
 /*
  * 31.1.24: vr is no longer a boolean but either null,'VR' or 'AR'.
  */
-function launchSingleScene(scene,vrMode,nearview,hud,initialVehicle) {
+function launchSingleScene(scene,vrMode,nearview,hud,initialVehicle,initialRoute) {
 
     var args = new Map();
     addCommonArgs(args, "");
@@ -33,6 +33,9 @@ function launchSingleScene(scene,vrMode,nearview,hud,initialVehicle) {
     args.set("enableNearView",nearview);
     if (initialVehicle != null) {
         args.set("initialVehicle",initialVehicle);
+    }
+    if (initialRoute != null) {
+        args.set("initialRoute",initialRoute);
     }
     launchScene(scene,args);
 }

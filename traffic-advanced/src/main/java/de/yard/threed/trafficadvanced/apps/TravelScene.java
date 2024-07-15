@@ -394,7 +394,8 @@ public class TravelScene extends FlightTravelScene {
         logger.debug("startTrip:" + trips[tripindex]);
         switch (tripindex) {
             case 0:
-                TravelHelper.startFlight(Destination.buildRoundtrip(0), getAvatarVehicle());
+                // 13.7.24 Don't ignore initialRoute TravelHelper.startFlight(Destination.buildRoundtrip(0), getAvatarVehicle());
+                TravelHelper.startDefaultTrip(getAvatarVehicle());
                 break;
             case 1:
                 TravelHelper.startFlight(Destination.buildRoundtrip(1), getAvatarVehicle());
