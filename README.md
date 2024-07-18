@@ -6,9 +6,8 @@ open source flight simulator written in C++ and using OSG under GPL.
 Main objective is to have Flightgear scenery and aircraft models 
 available in traveling scenes running in a browser (including VR).
 
-Also this is still WiP!
-
-See https://thomass171.github.io/tcp-flightgear/tcp-flightgear.html for examples.
+Also this is still WiP! See also the [examples](https://thomass171.github.io/tcp-flightgear/tcp-flightgear.html) and
+my [Blog](https://thomass171.github.io/blog).
 
 # Building And Deploying
 
@@ -114,13 +113,22 @@ Flightgear needs data for
 See also 'fg-raw-data/Readme.md' about data. 
 
 ## Scenery data
-Flightgear scenery data is stored by 'TerraySync' in a directory tree.
+Flightgear scenery data is stored by 'TerraySync' in a directory tree with three sub dirs
+
+  * 'Terrain'
+  * 'Objects': Tiles like 'Terrain'. Contains tile specific model
+  * 'Models': Shared model (like wind turbine)
+
+
 This project contains a subset of FG tiles around EDDK for unit testing and illustrating.
 The full set is available via a proxy server...
 
 Bundle building for scenery differs from other bundles (mkTerraSyncBundle.sh). The original TerraSync
 directory structure is retained and just directory files are added in the root of the tree.
 So the bundles are a kind of overlay on the TerraSync structure.
+
+The bundle for 'Models' with a dir file 'directory-model.txt' isn't used currently. And
+it might be too large.
 
 btg-files are converted to gltf files during bundle building. Even though converted to gltf, the bundle directory will still list the filename with
 suffix 'btg'.

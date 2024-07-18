@@ -1,16 +1,16 @@
 #!/bin/sh
 #
 # Create a directory txt file for a single STG by its number (Bucketindex?).
-# Eg. 3056435.stg will have directory-3056435.txt
-# Direectories always reside in top dir (See '2018 layout style').
+# Eg. 3056435.stg will have directory-3056435.txt.
+#
+# Needs to be executed in the destination directory and needs to know the source directory (TERRASYNCDIR).
+#
+# The name mkStgBundle.sh is confusing (it once was for bundle building)
+# Directories always reside in top dir (See '2018 layout style').
 # The directory will list terrain and object files of the STG. 'ac' filenames will keep suffix 'ac' even though
 # the models were converted to 'gltf'. The loader is aware of that.
 #
-#	Erstellt ein Bundle fuer ein einzelnes STG File, bzw. alle zu einer Nummer.
-#	1.1.18: Deprecated zugunsten von mkTerraSyncBundle.sh.
-#	Kann standalone oder embedded aufgerufen werden, muss aber im gewuenschten
-#	Verzeichnis stehen.
-#	erstellt aber kein modeldirectory mehr.
+#	Not for creating 'Model' directory (directory-model.txt).
 #	Der processStaticObject ist erforderlich um zu ermitteln, zu welchem Bundle denn die
 #	in Objects liegenden Model Dateien gehoeren. Da kommen ja mehrere STGs/Bundles in Frage.
 #
@@ -25,6 +25,9 @@ usage() {
 	exit 1
 }
 
+#
+# Extract an ac filename that is referenced in an XML file
+#
 extractacfile() {
 	grep "\\.ac" $TERRASYNCDIR/$1 | awk -F'>' '{print $2}' | awk -F'<' '{print $1}'
 	checkrc grep
@@ -121,7 +124,7 @@ do
 	export DIRNAME
 	#echo "dirname=$DIRNAME"
 	echo $filename >> $DIRECTORY
-	#cd $TERRASYNCDIR/$DIRNAME && checkrc
+
 	# "ac" und "btg" Eintraege werden im directory durch gltf ersetzt
 	# der bin Eintrag fuer gltf kommt noch so dazu
 	awk '{

@@ -1,14 +1,23 @@
 #!/bin/sh
 #
-# Bundle TerraSync data in the '2018 layout style'. Reads all files in $TERRASYNCDIR (if no option is set)
-# and copies/converts the files.
+# Bundle TerraSync data in the '2018 layout style'. Reads all files from
+#   $TERRASYNCDIR (default is $PROJECT_HOME/fg-raw-data/terrasync, might be overwritten by cmd arg)
+# and copies/converts the files to
+#   $TERRASYNCBUNDLEDIR(default is $HOSTDIRFG/bundles/TerraSync).
+#
 # Per Option an alternatives dir can be set for bundling Custom Sceneries.
 #  - just copies (no rsync Probleme/Loeschungen)
 #  - es wird nicht mehr versucht, nur die in stg verwendeten Model zu bundeln, einfach alles
-#  - der Aufbau/die Struktur der Bundle bleibt aber erhalten. Die Terrain und Objects STGs
-#  - kommen ins selbe Bundle.
+#  - der Aufbau/die Struktur der Bundle bleibt aber erhalten.
 #
-# Option -f for overwriting (for EDDK)
+# The Terrain and Objects STGs result in the same bundle (directory-no.txt).
+#
+# Option -f for force overwriting existing destination files
+# Option -v for verbose
+#
+# For converting a TerraSync tree on an external disk the command
+#   sh bin/mkTerraSyncBundle.sh -o /Volumes/Flightgear/TerraSync-Full /Volumes/Flightgear/TerraSync
+# can be used. This takes appx 8 hours for a 11GB TerraSync size.
 #	
 #
 
@@ -91,7 +100,7 @@ processTerraSyncFile() {
 }
 
 #
-# is it really a valid terrasync tree?
+# is $TERRASYNCDIR really a valid terrasync tree?
 #
 validateTERRASYNCDIR() {
   [ ! -d $TERRASYNCDIR/Objects ] && error "No Objects subdir in $TERRASYNCDIR"
@@ -101,8 +110,7 @@ validateTERRASYNCDIR() {
 
 export TERRASYNCBUNDLEDIR=$HOSTDIRFG/bundles/TerraSync
 
-mkdir -p $TERRASYNCBUNDLEDIR
-checkrc mkdir
+
 
 FORCE=0
 if [ "$1" = "-f" ]
@@ -115,6 +123,19 @@ then
 	export VERBOSE=1
 	shift
 fi
+if [ "$1" = "-o" ]
+then
+  shift
+	export TERRASYNCBUNDLEDIR=$1
+	if [ ! -d $TERRASYNCBUNDLEDIR ]
+	then
+	    error $TERRASYNCBUNDLEDIR not found
+	fi
+	shift
+fi
+
+mkdir -p $TERRASYNCBUNDLEDIR
+checkrc mkdir
 
 # TERRASYNCDIR is the source for this conversion, which is the destination of terry sync.
 export TERRASYNCDIR=$PROJECT_HOME/fg-raw-data/terrasync
@@ -144,10 +165,8 @@ fi
 
 
 
-#jetzt das model directory. Frueher waren da auch model aus Objects drin. Jetzt erstmal nicht mehr
-#19.5.18: Was passiert hier jetzt? Die Dateien sind jetzt alle in die Bundleverzeichnisse
-#kopiert.
-# Now create directory files ('directory[-no].txt'), first for generic model ...
+
+# Now create directory files ('directory[-no].txt'), first for shared model ...
 echo "Completed. Building generic model directory..."
 MODELDIRECTORY=$TERRASYNCBUNDLEDIR/directory-model.txt
 cd $TERRASYNCBUNDLEDIR && checkrc
