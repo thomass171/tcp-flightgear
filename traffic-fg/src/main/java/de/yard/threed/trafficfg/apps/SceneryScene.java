@@ -157,7 +157,7 @@ public class SceneryScene extends Scene {
 
         InputToRequestSystem inputToRequestSystem = new InputToRequestSystem();
 
-        FirstPersonMovingSystem.addDefaultKeyBindings(inputToRequestSystem);
+        FirstPersonMovingSystem.addDefaultKeyBindingsforContinuousMovement(inputToRequestSystem);
         SystemManager.addSystem(inputToRequestSystem);
 
         FirstPersonMovingSystem firstPersonMovingSystem = FirstPersonMovingSystem.buildFromConfiguration();

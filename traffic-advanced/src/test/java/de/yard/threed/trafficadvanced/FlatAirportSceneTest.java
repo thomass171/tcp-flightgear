@@ -142,7 +142,7 @@ public class FlatAirportSceneTest {
         }, 40000);
 
         // 23.5.24: Is 0.0 really correct elevation. Routebuilder should have converted original 3D->2D.
-        TravelSceneTestHelper.validatePlatzrunde(((FlatAirportScene)sceneRunner.ascene).platzrundeForVisualizationOnly, 0.0, false);
+        TravelSceneTestHelper.validatePlatzrunde(((FlatAirportScene)sceneRunner.ascene).platzrundeForVisualizationOnly, 0.0, 0.0, false);
 
         TravelSceneTestHelper.validateGroundnet();
 

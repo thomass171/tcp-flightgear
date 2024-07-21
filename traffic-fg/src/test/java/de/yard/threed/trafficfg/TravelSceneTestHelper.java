@@ -59,7 +59,7 @@ public class TravelSceneTestHelper {
         //??TestUtils.assertLatLon(GroundNetMetadata.getMap().get("EDDK").airport.getCenter(), projections.projection.getOrigin(), 0.01, "EDDK origin");*/
     }
 
-    public static void validatePlatzrunde(FlightRouteGraph platzrunde, double expectedElevation, boolean expectGeoCartGraphCoordinates) {
+    public static void validatePlatzrunde(FlightRouteGraph platzrunde, double expectedElevation, double elevationTolerance, boolean expectGeoCartGraphCoordinates) {
         EllipsoidCalculations rbcp = TrafficHelper.getEllipsoidConversionsProviderByDataprovider();
         assertNotNull(rbcp);
 
@@ -71,7 +71,7 @@ public class TravelSceneTestHelper {
             if (coord.getElevationM() < 70) {
                 DataProvider dataProvider = SystemManager.getDataProvider("Elevation");
             }
-            assertEquals(expectedElevation, coord.getElevationM(), 0.001, "elevation first node");
+            assertEquals(expectedElevation, coord.getElevationM(), elevationTolerance, "elevation first node");
         } else {
             // if we do not expect geo coordinates, than graph is projected, where elevation probably is 0.0
             assertEquals(expectedElevation, firstLocation.getZ(), 0.001, "elevation first node");

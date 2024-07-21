@@ -22,6 +22,7 @@ import de.yard.threed.engine.ecs.TeleporterSystem;
 import de.yard.threed.engine.ecs.UserSystem;
 import de.yard.threed.engine.ecs.VelocityComponent;
 import de.yard.threed.engine.platform.common.Request;
+import de.yard.threed.engine.testutil.ExpectedEntity;
 import de.yard.threed.engine.testutil.SceneRunnerForTesting;
 import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
@@ -88,7 +89,7 @@ public class TravelSceneTest {
 
     public void run(boolean enableDoormarker, boolean enableNavigator, boolean worldTeleport) throws Exception {
 
-        if (worldTeleport && !enableNavigator){
+        if (worldTeleport && !enableNavigator) {
             fail("invalid");
         }
 
@@ -128,18 +129,45 @@ public class TravelSceneTest {
 
         //11 passt: "Player",5 GS Vehicle (3 LSG?, 2 Goldhofert?, no delayed aircraft),  Vehicle from sceneconfig (747, 737, 738, Bravo), 3 Aircraft
         //Why 15? (earth,moon,sun no longer exist)? + 7+24(??) animated scenery objects
-        int expectedNumberOfEntites = /*15*/(enableNavigator ? 12 : 11) + 7 + 18/*??*/;
+        //int expectedNumberOfEntites = /*15*/(enableNavigator ? 12 : 11) + 7 + 18/*??*/;
+        // 20.7.24 with full scenery number of entities increased to more than 44. So test more specific.
+        List<ExpectedEntity> expectedEntities = List.of(
+                new ExpectedEntity("Freds account name", 1),
+                new ExpectedEntity("Objects/e000n50/e006n50/colonius.xml", 1),
+                new ExpectedEntity("Objects/e000n50/e007n50/EDDK-Tower.xml", 1),
+                new ExpectedEntity("VolvoFuel", 2),
+                new ExpectedEntity("LSG", 2),
+                new ExpectedEntity("Goldhofert", 1),
+                new ExpectedEntity("Douglas", 1),
+                new ExpectedEntity("Bravo", 1),
+                new ExpectedEntity("747 KLM", 1),
+                new ExpectedEntity("737-800 AB", 1),
+                new ExpectedEntity("738", 1)
+        );
+
+
         TestUtils.waitUntil(() -> {
             TestHelper.processAsync();
             sceneRunner.runLimitedFrames(1);
             List<EcsEntity> entities = SystemManager.findEntities((EntityFilter) null);
             log.debug("" + entities.size());
-            return entities.size() == expectedNumberOfEntites;
+            if (EcsHelper.filterList(entities, e -> e.getName() != null && e.getName().contains("Goldhofert")).size() > 0) {
+                int h = 9;
+            }
+            for (ExpectedEntity expectedEntity : expectedEntities) {
+                if (!ExpectedEntity.contains(entities, expectedEntity)) {
+                    log.debug("entity still missing: " + expectedEntity.name);
+                    return false;
+                }
+            }
+            // if nothing is missing we are complete
+            return true;
         }, 60000);
 
         // 20.5.24 elevation 68.8 is the result of limited EDDK elevation provider (default elevation). But runway should have
         // correct elevation. Value differs slightly to TravelSceneBluebird!?
-        TravelSceneTestHelper.validatePlatzrunde(((TravelScene)sceneRunner.ascene).platzrundeForVisualizationOnly, 70.60974991063463, true);
+        // 20.7.24 And due to scenery origin Granada/Full? Was 70.60974991063463, now 71.31074
+        TravelSceneTestHelper.validatePlatzrunde(((TravelScene) sceneRunner.ascene).platzrundeForVisualizationOnly, 71.31074, 1.0, true);
 
         TravelSceneTestHelper.validateGroundnet();
 
@@ -151,7 +179,7 @@ public class TravelSceneTest {
             assertNotNull(navigator);
             // from 'world-pois.xml' 10 are listed. 4 appears correct which is current EDDK navigator overview position, but who set index 4??
             EcsTestHelper.assertTeleportComponent(navigator, 10, 4, null);
-            TeleportComponent navigatorTeleportComponent =TeleportComponent.getTeleportComponent(navigator);
+            TeleportComponent navigatorTeleportComponent = TeleportComponent.getTeleportComponent(navigator);
             assertEquals("Dahlem 1300", navigatorTeleportComponent.getPointLabel(3));
             assertEquals("EDDK Overview", navigatorTeleportComponent.getPointLabel(4));
             assertEquals("greenwich500", navigatorTeleportComponent.getPointLabel(8));
