@@ -186,9 +186,8 @@ public class SceneryViewerScene extends Scene {
         if (materialmode == 2) {
             boptions.setMaterialLib(FlightGearModuleScenery.getInstance().get_matlib());
         }
-        if (FlightGearSettings.customTerraSync) {
-            boptions.usegltf = true;
-        }
+        boptions.usegltf = true;
+
         // boptions.setPropertyNode(new SGPropertyNode());
         // boptions.getDatabasePathList().add(fghome + "/TerraSync");
 

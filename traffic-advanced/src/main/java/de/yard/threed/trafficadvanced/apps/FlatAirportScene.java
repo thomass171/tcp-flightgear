@@ -91,6 +91,7 @@ import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.traffic.geodesy.GeoCoordinate;
 import de.yard.threed.traffic.geodesy.MapProjection;
 import de.yard.threed.traffic.osm.OsmRunway;
+import de.yard.threed.trafficadvanced.AdvancedConfiguration;
 import de.yard.threed.trafficcore.model.Runway;
 import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.AutomoveSystem;
@@ -174,7 +175,7 @@ public class FlatAirportScene extends FlightTravelScene {
         //30.12.23 FlightGearSettings.FGROOTCOREBUNDLE,"fgdatabasic" now have provider for bundlepool, no longer GRANADADIR
         // "fgdatabasic" in project is only a small subset. The external should have 'before' prio to load instead of subset.
         // "data" is needed for taxiway ground texture.
-        Platform.getInstance().addBundleResolver(new HttpBundleResolver("fgdatabasic@https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"), true);
+        Platform.getInstance().addBundleResolver(new HttpBundleResolver("fgdatabasic@" +  AdvancedConfiguration.BUNDLEPOOL_URL), true);
         return new String[]{"engine", "data", FlightGearSettings.FGROOTCOREBUNDLE, "fgdatabasic", /*9.12.23 "data-old", "fgdatabasic", FlightGearSettings.FGROOTCOREBUNDLE, "osmscenery",*/
                 "traffic-advanced", "traffic-fg"};
     }

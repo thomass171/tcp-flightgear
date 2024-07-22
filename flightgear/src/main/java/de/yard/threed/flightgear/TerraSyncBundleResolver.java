@@ -24,55 +24,13 @@ public class TerraSyncBundleResolver extends BundleResolver {
     @Override
     public ResourcePath resolveBundle(String bundleName) {
         if (StringUtils.startsWith(bundleName, TERRAYSYNCPREFIX)) {
-            // bucket or model bundle
-            String effname = StringUtils.substringAfter(bundleName, "-");
-            /*14.9.21 if (perhttp) {
-                if (customTerraSync) {
-                    return "bundles/TerraSync";
-                }else{
-                    return "TerraSync";
-                }
-            }*/
-            if (FlightGearSettings.customTerraSync) {
-                //return Platform.getInstance().bundledir + "/TerraSync";
-                ResourcePath bundlePath = new ResourcePath(basePath + "/TerraSync");
-                Platform.getInstance().getLog(TerraSyncBundleResolver.class).debug("bundlePath=" + bundlePath.getPath());
-                return bundlePath;
-            } else {
-                // 25.7.21: Dieser Zweig soll wohl seit 2018 gar nicht mehr genutzt werden.
-                String fghome = Platform.getInstance().getConfiguration().getString("FG_HOME");
-                if (fghome == null) {
-                    //26.7.21:Besser aussteigen als nachher ewig die URsache zu suchen
-                    throw new RuntimeException("fghome is null");
-                }
-                Util.nomore();
-                return null;//14.9.21 fghome + "/TerraSync";
-            }
+            ResourcePath bundlePath = new ResourcePath(basePath + "/TerraSync");
+            Platform.getInstance().getLog(TerraSyncBundleResolver.class).debug("bundlePath=" + bundlePath.getPath());
+            return bundlePath;
+        }
+        // Once (pre 2018) was checking FG_ROOT and FG_HOME also
 
-        }
-        /*30.1.18: normales Bundle  if (bundlename.equals(SGMaterialLib.BUNDLENAME) || StringUtils.startsWith(bundlename, BundleRegistry.FGROOTCOREBUNDLE)) {
-            if (perhttp) {
-                return "fg_root";
-            }
-            String fgroot = Platform.getInstance().getSystemProperty("FG_ROOT");
-            if (fgroot == null){
-                //loggen geht hier nicht.
-                //System.out.println("FG_ROOT not set as system property");
-            }
-            return fgroot;
-        }
-       if (StringUtils.startsWith(bundlename, BundleRegistry.FGHOMECOREBUNDLE)) {
-            if (perhttp) {
-                return "fg_home";
-            }
-            String fghome = Platform.getInstance().getSystemProperty("FG_HOME");
-            if (fghome == null){
-                //loggen geht hier nicht.
-                //System.out.println("FG_HOME not set as system property");
-            }
-            return fghome;
-        }*/
-        // Dann ist es wohl ein Standardbundle oder sonstwas fuer andere Resolver.
+        // Probably a standard bundle that is resolved by some other resolver. Forward to next resolver.
         return null;
 
     }

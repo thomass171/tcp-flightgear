@@ -52,6 +52,7 @@ import de.yard.threed.engine.util.NearView;
 import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.traffic.AbstractSceneryBuilder;
+import de.yard.threed.trafficadvanced.AdvancedConfiguration;
 import de.yard.threed.trafficfg.fgadapter.FgTerrainBuilder;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearMain;
@@ -185,13 +186,8 @@ public class TravelScene extends FlightTravelScene {
 
     @Override
     public String[] getPreInitBundle() {
-        // "fgdatabasic","sgmaterial" and "TerraySync" in project are only a small subset. The external should have 'before' prio to load instead of subset.
-        //  There is no way to add a file system resolver here, so use the external also for desktop. This has the benefit
-        // of revealing loading problems also during development.
-        Platform.getInstance().addBundleResolver(new HttpBundleResolver("fgdatabasic@https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"), true);
-        Platform.getInstance().addBundleResolver(new HttpBundleResolver("sgmaterial@https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"), true);
-        //30.1.24: The default TerraSyncBundleResolver points to "bundles" in webgl.
-        Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver("https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"), true);
+        AdvancedConfiguration.setAdvancedBundleResolver();
+
         //13.12.23 "fgdatabasicmodel" is loaded later when needed during vehicle loading.
         // "data" is needed for taxiway ground texture.
         return new String[]{"engine", "data-old", "data", "fgdatabasic", "sgmaterial",

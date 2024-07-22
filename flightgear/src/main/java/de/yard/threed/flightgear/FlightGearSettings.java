@@ -7,9 +7,5 @@ public class FlightGearSettings {
     //Wenn es da mal wichtige Daten gibt, bilden die halt ein neues Bundle
     //public static String FGHOMECOREBUNDLE = "fghomecore";
 
-    // 26.7.21: Rekonstruiert aus Historie: Muss true sein, damit FG_HOME nicht mehr gesetzt sein muss (ca 2018).
-    // 29.12.21: Aus BundleRegistry nach hier verschoben.
-    public static boolean customTerraSync = true;
-
 
 }

@@ -41,6 +41,7 @@ import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.engine.vr.VrOffsetWrapper;
+import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.trafficfg.fgadapter.FgTerrainBuilder;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearMain;
@@ -254,7 +255,11 @@ public class SceneryScene extends Scene {
             fpmc.getFirstPersonTransformer().setMovementSpeed(150);
             userEntity.addComponent(fpmc);
 
-            LocalTransform loc = WorldGlobal.eddkoverview.location.toPosRot(ellipsoidCalculations);
+            FlightLocation initialFlightLocation = TrafficHelper.getInitialFlightLocation();
+            if (initialFlightLocation == null) {
+                initialFlightLocation = WorldGlobal.eddkoverview.location;
+            }
+            LocalTransform loc = initialFlightLocation.toPosRot(ellipsoidCalculations);
             transform.setPosition(loc.position);
             // Base rotation to make user node a FG model ...
             rotation = new OpenGlProcessPolicy(null).opengl2fg.extractQuaternion();

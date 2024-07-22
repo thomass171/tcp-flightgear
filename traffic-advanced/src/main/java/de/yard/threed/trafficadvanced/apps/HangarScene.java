@@ -76,6 +76,7 @@ import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.VehicleLauncher;
 import de.yard.threed.traffic.VehicleLoaderResult;
 import de.yard.threed.traffic.config.VehicleDefinition;
+import de.yard.threed.trafficadvanced.AdvancedConfiguration;
 import de.yard.threed.trafficcore.model.Vehicle;
 
 import java.util.ArrayList;
@@ -264,7 +265,7 @@ public class HangarScene extends Scene {
         // "fgdatabasic" in project is only a small subset. The external should have 'before' prio to load instead of subset.
         // "data" is needed for taxiway ground texture.
         // "railing" is a relict from using 'loc"
-        Platform.getInstance().addBundleResolver(new HttpBundleResolver("fgdatabasic@https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool"), true);
+        Platform.getInstance().addBundleResolver(new HttpBundleResolver("fgdatabasic@" + AdvancedConfiguration.BUNDLEPOOL_URL), true);
         return new String[]{"engine", "traffic-advanced"/*5.12.23 "data-old"*/,
                 "data", /*30.1.24"railing",*//*BundleRegistry.FGHOMECOREBUNDLE,*/
                 FlightGearSettings.FGROOTCOREBUNDLE};
