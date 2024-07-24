@@ -79,9 +79,10 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.HangarScene");
 
-        /*properties.put("initialLocation", "51.47752,0,500");
+        // Greenwich
+        properties.put("initialLocation", "51.47752,0,500");
         properties.put("initialHeading", "270");
-        properties.put("scene", "de.yard.threed.trafficadvanced.apps.AdvancedSceneryScene");*/
+        properties.put("scene", "de.yard.threed.trafficadvanced.apps.AdvancedSceneryScene");
 
         return properties;
     }

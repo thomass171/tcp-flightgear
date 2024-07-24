@@ -93,7 +93,7 @@ public class SGMaterialLib {
             // Read name node purely for logging purposes
             SGPropertyNode nameNode = node.getChild("name");
             if (nameNode != null) {
-                logger.info(/*SG_LOG( SG_TERRAIN, SG_INFO,*/ "Loading region " + nameNode.getStringValue());
+                logger.info(/*SG_LOG( SG_TERRAIN, SG_INFO,*/ "Loading region(PropertyList) '" + nameNode.getStringValue() + "' from " +mpath);
             }
 
             // Read list of areas

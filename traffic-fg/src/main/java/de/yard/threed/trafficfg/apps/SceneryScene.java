@@ -101,9 +101,10 @@ public class SceneryScene extends Scene {
     public String[] getPreInitBundle() {
 
         //'TerraSync-model' is loaded in preinit to avoid async issues if done later. Needs required custom resolver be available in plaform setup
+        // 21.7.24: TerraSync-model isn't used anyway currently due to flag 'ignoreshared'. So save the time and memory for loading it.
         // "fgdatabasic" and "traffic-fg" are needed for bluebird
         // 'TerraySync' is loaded at runtime by TerraSyncBundleResolver' that is set up by the platform(using HOSTDIRFG on desktop and "bundles" in webgl)
-        return new String[]{"engine", FlightGear.getBucketBundleName("model"), "sgmaterial", "fgdatabasic", "traffic-fg"};
+        return new String[]{"engine", /*FlightGear.getBucketBundleName("model"),*/ "sgmaterial", "fgdatabasic", "traffic-fg"};
     }
 
     /**

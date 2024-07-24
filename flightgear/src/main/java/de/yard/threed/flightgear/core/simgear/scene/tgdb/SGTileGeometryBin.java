@@ -331,6 +331,7 @@ public class SGTileGeometryBin extends SGTriangleBin {
         //osg::Geode* geode = new osg::Geode;
         //SGMaterialTriangleMap::const_iterator i;
         //for (i = materialTriangleMap.begin(); i != materialTriangleMap.end(); ++i) {
+        // Is 'ii' the land class name like 'CropGrass'?
         for (String ii : materialTriangleMap.keySet()) {
             SGTexturedTriangleBin i = materialTriangleMap.get(ii);
             /*osg::Geometry**/
@@ -352,8 +353,8 @@ public class SGTileGeometryBin extends SGTriangleBin {
                         }
                     }
                     GeoMat geoMat = new GeoMat(geometry, pmat);
-                    // landclass is used for logging. Not working
-                    // geoMat.landclass = ii;
+                    // landclass is used for logging. Not working. Why not?
+                    geoMat.landclass = ii;
                     geos.add(geoMat);
                 }
             } else {

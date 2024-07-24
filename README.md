@@ -133,6 +133,28 @@ it might be too large.
 btg-files are converted to gltf files during bundle building. Even though converted to gltf, the bundle directory will still list the filename with
 suffix 'btg'.
 
+## Terrain(btg) conversion
+The btg files contain a terrain mesh with a land class assigned to each
+mesh element (triangle?). During rendering the land class is mapped
+to a material (texture/effect) depending on the region and season.
+So far so good. The idea of material definition however isn't that clear.
+Probably a material/landclass name should be unique per region and season, but
+probably it isn't. At least not reliable.
+
+Since we convert the btg files to gltf in an external process (mkTerraSyncBundle.sh), we cannot consider seasons efficiently. We
+could consider region, but currently don't do so. We
+just use Europe/Summer.
+
+There are some materials like
+
+  * pc_helipad
+  * SoneSort
+  * pa_helipad
+  * Crop
+  * Shrub
+
+that might be defined nowhere. This needs further investigation.
+
 ## Aircraft Model
 This project contains the aircraft model 'bluebird' for unit testing and illustrating.
 

@@ -105,6 +105,7 @@ public class Obj {
                     LoaderGLTF.load(new ResourceLoaderFromBundle(bpath), delegate);
 
             } else {
+                // 22.7.24: This branch is still in use. So we cannot move LoaderBTG to tools yet.
                 //load from BTG
 
                 BundleData ins = null;

@@ -34,6 +34,13 @@ import java.util.List;
 
 /**
  * In Anlehnung an mat.[hc]xx
+ *
+ * Corresponds to a material element in one of the sgmaterial XML files. Properties are
+ * - an effect(name?). Is this the identifier? Probably not because not unique like 'Effects/urban'.
+ * - multiple names
+ * - a texture(name)
+ * - a.s.o.
+ *
  * <p/>
  * Created by thomass on 23.02.16.
  */
@@ -45,6 +52,7 @@ public class SGMaterial extends BVHMaterial {
     ////////////////////////////////////////////////////////////////////
 
     // texture status
+    // List increases with every found texture. Thus remains empty if no texture is found.
     /*std::vector<_internal_state>*/ public List<InternalState> _status = new ArrayList<InternalState>();
 
     // texture size
@@ -654,11 +662,12 @@ public class SGMaterial extends BVHMaterial {
     /**
      * Get the textured state.
      * texIndex apparently might result from landclass in BTG file.
+     * 23.7.24: Probably means 'get one of the textures listed in XML'.
      */
     public FGEffect get_one_effect(int texIndex) {
         // SGGuard<SGMutex> g(_lock);
         if (_status.isEmpty()) {
-            logger.warn(/*SG_LOG( SG_GENERAL, SG_WARN,*/ "No effect available.");
+            logger.warn("No effect available. Maybe no texture found at all for effect '" + effect + "'");
             return null;
         }
 

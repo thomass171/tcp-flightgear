@@ -494,8 +494,8 @@ public class LoaderBTG extends BinaryLoader {
     }
 
     /**
-     * Implementation for BTG. Moved from Obj.cxx/java to here.
-     *
+     * BinaryLoader implementation for BTG. Convert BTG data to PML format. Moved from Obj.cxx/java to here.
+     * This includes mapping of the BTG land classes to material known in matlib.
      * @return
      */
     @Override
@@ -557,9 +557,6 @@ public class LoaderBTG extends BinaryLoader {
             nodes[i] = hlOr.transform(nodes[i]);
         tile.set_wgs84_nodes(nodes);
 
-        tsch_log("SGLoadBTG nodes=%d\n",nodes.size());
-
-
         SGQuatf hlOrf(hlOr[0], hlOr[1], hlOr[2], hlOr[3]);
         std::vector<SGVec3f> normals = tile.get_normals();
         for (unsigned i = 0; i < normals.size(); ++i)
@@ -596,7 +593,7 @@ public class LoaderBTG extends BinaryLoader {
                 //das Material selber hat auch noch keinen Namen. Ohne matlib ist mat aber null
                 //5.10.23: Is there a solution if mat is null? Maybe just don't add it. 'gm.landclass' is not set properly.
                 if (gm.mat == null) {
-                    logger.error("No material for land class '?'. Will lead to hole in tile!");
+                    logger.error("No material for land class '" + gm.landclass + "'. Will lead to hole in tile!");
                 } else {
                     ppfile.materials.add(gm.mat.duplicate("" + index));
                 }

@@ -143,7 +143,8 @@ public class TravelSceneBluebird extends BasicTravelScene {
     public String[] getPreInitBundle() {
         // "fgdatabasic" and "traffic-fg" are needed for bluebird
         // 'TerraySync' is loaded at runtime by TerraSyncBundleResolver' that is set up by the platform(using HOSTDIRFG on desktop and "bundles" in webgl)
-        return new String[]{"engine", FlightGear.getBucketBundleName("model"), "sgmaterial", "fgdatabasic", "traffic-fg"};
+        // 21.7.24: TerraSync-model isn't used anyway currently due to flag 'ignoreshared'. So save the time and memory for loading it.
+        return new String[]{"engine", /*FlightGear.getBucketBundleName("model"),*/ "sgmaterial", "fgdatabasic", "traffic-fg"};
     }
 
     @Override

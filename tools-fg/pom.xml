@@ -75,6 +75,14 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.20</version>
+            <!-- provided because its not needed during runtime, only for tests!-->
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>

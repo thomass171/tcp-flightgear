@@ -17,7 +17,7 @@
 #
 # For converting a TerraSync tree on an external disk the command
 #   sh bin/mkTerraSyncBundle.sh -o /Volumes/Flightgear/TerraSync-Full /Volumes/Flightgear/TerraSync
-# can be used. This takes appx 8 hours for a 11GB TerraSync size.
+# can be used. Be sure to use a full "sgmaterial" bundle instead of the subset. Conversion takes appx 8 hours for a 11GB TerraSync size.
 #	
 #
 

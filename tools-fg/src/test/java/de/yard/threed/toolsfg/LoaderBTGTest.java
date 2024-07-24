@@ -26,9 +26,11 @@ import de.yard.threed.javacommon.FileReader;
 import de.yard.threed.tools.GltfBuilderResult;
 import de.yard.threed.tools.GltfProcessor;
 import de.yard.threed.toolsfg.testutil.BtgModelAssertions;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -45,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * From LoaderExtTest.
  * Created by thomass on 08.02.16.
  */
+@Slf4j
 public class LoaderBTGTest {
     // 'fullFG' needed for sgmaterial via bundle
     static Platform platform = FgTestFactory.initPlatformForTest(true, true);
@@ -107,5 +110,35 @@ public class LoaderBTGTest {
         assertEquals(34, ppfile.materials.size());
         assertEquals(0, tileGeometryBin.materialNotFound.size());
 
+    }
+
+    /**
+     * Test of external file (not in project). Loading these shows the effect of using a subset of sgmaterial.
+     * Some material is not found, thus some land classes can't be resolved and holes remain in the terrain.
+     */
+    @Test
+    public void testExternalGreenwichBTGs() throws Exception {
+
+        String btgfile = "/Users/thomas/tmp/2941787.btg.gz";
+        //String btgfile = "/Users/thomas/tmp/2958168.btg.gz";
+        File file = new File(btgfile);
+        if (file.exists()) {
+            InputStream ins = new GZIPInputStream(new FileInputStream(file));
+            byte[] buf = FileReader.readFully(ins);
+            ByteArrayInputStream b = new ByteArrayInputStream(new SimpleByteBuffer(buf));
+
+            LoaderBTG loaderBTG = new LoaderBTG(b, null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()), btgfile);
+            //assertEquals(4070, loaderBTG.tri_materials.size());
+
+            PortableModelList ppfile = loaderBTG.preProcess();
+            SGTileGeometryBin tileGeometryBin = loaderBTG.tileGeometryBin;
+            // 16 just taken as reference
+            assertEquals(16, tileGeometryBin.materialTriangleMap.size());
+            // some materials are  missing:
+            //assertEquals(34, ppfile.materials.size());
+            assertEquals(4, tileGeometryBin.materialNotFound.size());
+        } else {
+            log.debug("External BTG file not found. Test skipped");
+        }
     }
 }

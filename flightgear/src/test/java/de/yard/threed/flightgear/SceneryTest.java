@@ -72,7 +72,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * <p>
  * Also for tests of Scenery Bundles
  * 30.9.19: TestFactory laedt schon FG Teile.
- *
+ * 22.7.24: LoaderBTG tests should move to tools?
  * <p>
  * Created by thomass on 09.08.16.
  */
