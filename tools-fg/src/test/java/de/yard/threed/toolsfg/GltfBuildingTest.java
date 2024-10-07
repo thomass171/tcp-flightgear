@@ -32,7 +32,7 @@ import java.util.Optional;
  */
 public class GltfBuildingTest {
     // 'fullFG' needed for sgmaterial via bundle.
-    static Platform platform = FgTestFactory.initPlatformForTest(true,true);
+    static Platform platform = FgTestFactory.initPlatformForTest(true, true, true);
 
     /**
      *
@@ -47,7 +47,7 @@ public class GltfBuildingTest {
         BundleResource gltfbr = new BundleResource(new InMemoryBundle("windturbine", lf.gltfstring, lf.bin), "windturbine.gltf");
         try {
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, null);
-            ModelAssertions.assertWindturbine(lf1.doload(), 2);
+            ModelAssertions.assertWindturbine(lf1.doload(), 2, true);
         } catch (InvalidDataException e) {
             Assert.fail(e.getMessage());
         }
@@ -66,7 +66,7 @@ public class GltfBuildingTest {
             // Den texturebasepath einfach mal so setzen
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, new ResourcePath("flusi"));
             //8 vertices und 30 indices?
-            ModelAssertions.assertEgkkTower(lf1.doload(), 8, 30, true, false);
+            ModelAssertions.assertEgkkTower(lf1.doload(), /*18.9.24 8*/30, 30);
         } catch (InvalidDataException e) {
             Assert.fail(e.getMessage());
         }
@@ -76,19 +76,15 @@ public class GltfBuildingTest {
      *
      */
     @Test
-    public void testCreateCDU777() throws IOException {
+    public void testCreateCDU777() throws Exception {
 
         String acfile = "flightgear/src/test/resources/models/CDU-777-boeing.ac";
         GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(acfile), Optional.empty());
 
         BundleResource gltfbr = new BundleResource(new InMemoryBundle("boeing", lf.gltfstring, lf.bin), "boeing.gltf");
-        try {
-            // Den texturebasepath einfach mal so setzen
-            LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, new ResourcePath("flusi"));
-            ModelAssertions.assertCDU777(lf1.doload(), true);
-        } catch (InvalidDataException e) {
-            Assert.fail(e.getMessage());
-        }
+        // Den texturebasepath einfach mal so setzen
+        LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, new ResourcePath("flusi"));
+        ModelAssertions.assertCDU777(lf1.doload(), true);
     }
 
     //11.9.21 needs BTG-Loader plugin in GltfProcessor
@@ -104,7 +100,7 @@ public class GltfBuildingTest {
                 // Den texturebasepath einfach mal so setzen
                 LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, new ResourcePath("flusi/terrain/3056410-gltf"));
                 // Das GLTF wurde mit matlib erstellt
-                ModelAssertions.assertRefbtg(lf1.doload(), true);
+                ModelAssertions.assertRefbtg(lf1.doload(), true, true);
             } catch (InvalidDataException e) {
                 Assert.fail(e.getMessage());
             }
@@ -129,7 +125,7 @@ public class GltfBuildingTest {
             // Den texturebasepath einfach mal so setzen
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, new ResourcePath("flusi/terrain/3056410-gltf"));
             // Das GLTF wurde ohne matlib erstellt
-            ModelAssertions.assertRefbtg(lf1.doload(), false);
+            ModelAssertions.assertRefbtg(lf1.doload(), false, true);
         } catch (InvalidDataException e) {
             Assert.fail(e.getMessage());
         }
@@ -141,7 +137,7 @@ public class GltfBuildingTest {
      * followme.ac has many nested kids.
      */
     @Test
-    public void testCreateFollowmeGltf() throws IOException {
+    public void testCreateFollowmeGltf() throws Exception {
 
         String acfile = "flightgear/src/test/resources/models/followme.ac";
         GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(acfile), Optional.empty());
@@ -150,11 +146,22 @@ public class GltfBuildingTest {
         Assertions.assertNotNull(gltf, "parsedgltf");
         //System.out.println(lf.gltfstring);
         BundleResource gltfbr = new BundleResource(new InMemoryBundle("followme", lf.gltfstring, lf.bin), "followme.gltf");
-        try {
-            LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, null);
-            ModelAssertions.assertFollowMe(lf1.doload(), 38);
-        } catch (InvalidDataException e) {
-            Assert.fail(e.getMessage());
-        }
+        LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, null);
+        ModelAssertions.assertFollowMe(lf1.doload(), /*38*/21);
+    }
+
+    /**
+     *
+     */
+    @Test
+    public void testYoke() throws Exception {
+
+        String acfile = "fg-raw-data/fgdatabasic/Aircraft/Instruments-3d/yoke/yoke.ac";
+        GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(acfile), Optional.empty());
+        NativeJsonValue gltf = platform.parseJson(lf.gltfstring);
+        Assertions.assertNotNull(gltf, "parsedgltf");
+        BundleResource gltfbr = new BundleResource(new InMemoryBundle("yoke", lf.gltfstring, lf.bin), "yoke.gltf");
+        LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, null);
+        de.yard.threed.toolsfg.testutil.ModelAssertions.assertYoke(lf1.doload(), true);
     }
 }

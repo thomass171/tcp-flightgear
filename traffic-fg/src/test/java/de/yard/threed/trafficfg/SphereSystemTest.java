@@ -52,7 +52,7 @@ public class SphereSystemTest {
             }
         };
 
-        Platform platform = FgTestFactory.initPlatformForTest(false, false);
+        Platform platform = FgTestFactory.initPlatformForTest(false, false, false);
 
         EngineTestFactory.loadBundleAndWait("traffic-fg");
     }

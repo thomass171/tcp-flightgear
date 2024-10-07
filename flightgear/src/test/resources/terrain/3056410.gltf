@@ -762,7 +762,11 @@
           },
           "indices": 3,
           "material": "Grassland"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 4,
@@ -771,7 +775,11 @@
           },
           "indices": 7,
           "material": "DryCrop"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 8,
@@ -780,7 +788,11 @@
           },
           "indices": 11,
           "material": "Railroad"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 12,
@@ -789,7 +801,11 @@
           },
           "indices": 15,
           "material": "Industrial"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 16,
@@ -798,7 +814,11 @@
           },
           "indices": 19,
           "material": "OpenMining"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 20,
@@ -807,7 +827,11 @@
           },
           "indices": 23,
           "material": "Road"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 24,
@@ -816,7 +840,11 @@
           },
           "indices": 27,
           "material": "DeciduousForest"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 28,
@@ -825,7 +853,11 @@
           },
           "indices": 31,
           "material": "EvergreenForest"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 32,
@@ -834,7 +866,11 @@
           },
           "indices": 35,
           "material": "ComplexCrop"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 36,
@@ -843,7 +879,11 @@
           },
           "indices": 39,
           "material": "Scrub"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 40,
@@ -852,7 +892,11 @@
           },
           "indices": 43,
           "material": "Town"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 44,
@@ -861,7 +905,11 @@
           },
           "indices": 47,
           "material": "NaturalCrop"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 48,
@@ -870,7 +918,11 @@
           },
           "indices": 51,
           "material": "Airport"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 52,
@@ -879,7 +931,11 @@
           },
           "indices": 55,
           "material": "Freeway"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 56,
@@ -888,7 +944,11 @@
           },
           "indices": 59,
           "material": "CropGrass"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 60,
@@ -897,7 +957,11 @@
           },
           "indices": 63,
           "material": "Stream"
-        },
+        }
+      ]
+    },
+    {
+      "primitives": [
         {
           "attributes": {
             "POSITION": 64,
@@ -912,12 +976,82 @@
   ],
   "nodes": [
     {
+      "name": "btgroot-3056410",
       "translation": [
         4043285.3570991084,
         469612.0020948129,
         4893927.379192775
       ],
+      "children": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ]
+    },
+    {
       "mesh": 0
+    },
+    {
+      "mesh": 1
+    },
+    {
+      "mesh": 2
+    },
+    {
+      "mesh": 3
+    },
+    {
+      "mesh": 4
+    },
+    {
+      "mesh": 5
+    },
+    {
+      "mesh": 6
+    },
+    {
+      "mesh": 7
+    },
+    {
+      "mesh": 8
+    },
+    {
+      "mesh": 9
+    },
+    {
+      "mesh": 10
+    },
+    {
+      "mesh": 11
+    },
+    {
+      "mesh": 12
+    },
+    {
+      "mesh": 13
+    },
+    {
+      "mesh": 14
+    },
+    {
+      "mesh": 15
+    },
+    {
+      "mesh": 16
     }
   ],
   "materials": [],
@@ -925,7 +1059,24 @@
     {
       "name": "Scene",
       "nodes": [
-        0
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
       ]
     }
   ],

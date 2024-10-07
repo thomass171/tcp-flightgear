@@ -3,14 +3,24 @@ package de.yard.threed.flightgear.core.simgear.scene.model;
 import de.yard.threed.core.CharsetException;
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.Matrix4;
+import de.yard.threed.core.ModelBuildDelegate;
+import de.yard.threed.core.ModelPreparedDelegate;
 import de.yard.threed.core.Quaternion;
 import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector3;
+import de.yard.threed.core.loader.PreparedModel;
+import de.yard.threed.core.platform.AsyncHttpResponse;
+import de.yard.threed.core.platform.AsyncJobDelegate;
+import de.yard.threed.core.platform.NativeBundleResourceLoader;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.ResourceLoader;
+import de.yard.threed.engine.loader.PortableModelBuilder;
 import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
+import de.yard.threed.engine.platform.ResourceLoaderFromDelayedBundle;
+import de.yard.threed.engine.platform.common.AbstractSceneRunner;
+import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.FgModelHelper;
 import de.yard.threed.flightgear.LoaderOptions;
@@ -42,12 +52,15 @@ import de.yard.threed.core.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static de.yard.threed.engine.platform.EngineHelper.LOADER_APPLYACPOLICY;
+import static de.yard.threed.flightgear.FgModelHelper.mapFilename;
+
 
 /**
  * Reading a XML properylist file.
  * <p>
  * 28.12.16: Der Versuch, das ganze ECS maessig aufzudröseln ist zwecklos. Dafür sind die Model zu sehr ineinander verschachtelt (submodel ineinander und propertylist includes).
- *
+ * <p>
  * 24.1.17: Er braucht aber auch z.B. AircraftResourceProvider oder andere.
  * 10.4.17: "Saubere" Variante mit Bundle. ist kein lookup per osgDB.findDataFile() erforderlich. Die Klasse muss trotzdem auch simple Model (z.B. ac laden koennen, weil
  * sie rekursiv aufgerufen wird.
@@ -203,6 +216,7 @@ public class SGReaderWriterXML {
      * 15.09.17: Jetzt async. Das ist ein kompletter Umbau des Ablaufs.
      * xx.xx.?? bpath is considered to be not null and "(SG)path" no longer is an option!
      * 12.02.24: exclusive for XML? (not yet)
+     * 25.08.24: Even though we have bundleless ResourceLoader meanwhile, we stay with bundle for easier handling of nested XMLs.
      *
      * @return
      */
@@ -313,7 +327,7 @@ public class SGReaderWriterXML {
             // No XML but just a model without XML wrapper. For submodels inside XMLs that do not reference
             // other XML but directly ac model files.
             // Nothing to do here.
-            int h=9;
+            int h = 9;
             Util.nomore();
         }
 
@@ -444,12 +458,12 @@ public class SGReaderWriterXML {
 
             SGPath submodelPath = null;
             BundleResource bsubmodelpath = null;
-                bsubmodelpath = FgBundleHelper.findPath(subPathStr, bpath);
-                if (bsubmodelpath == null) {
-                    logger.error("Failed (sub model path is null) to load file: \"" + subPathStr + "\"");
-                    failedList.add(subPathStr);
-                    continue;
-                }
+            bsubmodelpath = FgBundleHelper.findPath(subPathStr, bpath);
+            if (bsubmodelpath == null) {
+                logger.error("Failed (sub model path is null) to load file: \"" + subPathStr + "\"");
+                failedList.add(subPathStr);
+                continue;
+            }
 
             if (sub_props.hasChild("usage")) { /* We don't want load this file and its content now */
                 boolean isInterior = sub_props.getStringValue("usage").equals("interior");
@@ -466,11 +480,11 @@ public class SGReaderWriterXML {
                 BuildResult submodelresult = sgLoad3DModel_internal(bsubmodelpath,/*MA23 submodelPath, options/*.get()* /,
                     sub_props.getNode("overlay"),*/ boptions, modeldelegate);
                 submodelresultNode = new SceneNode(submodelresult.getNode());
-            }else{
+            } else {
                 BundleResource finalbsubmodelpath = bsubmodelpath;
                 SceneNode destinationNode = new SceneNode();
                 destinationNode.setName(finalbsubmodelpath.getFullName());
-                submodelresultNode=destinationNode;
+                submodelresultNode = destinationNode;
                 FgModelHelper.buildNativeModel(new ResourceLoaderFromBundle(finalbsubmodelpath), btexturepath, (BuildResult result) -> {
                     if (result.getNode() != null) {
                         destinationNode.attach(new SceneNode(result.getNode()));
@@ -585,16 +599,21 @@ public class SGReaderWriterXML {
         group.setName("XmlDestination");
         // 6.2.24: Be more specific with name setting
 
-            group.setName(bpath.getFullName());
+        group.setName(bpath.getFullName());
 
         BuildResult xmlresult = new BuildResult(group.nativescenenode/*, animationList*/);
         // 15.9.17: und jetzt das noch fehlende Model. Ob async oder nicht, erst jetzt einhaengen.
         if (pendingbmodelpath != null) {
-            // das eigentliche Modelfile (z.B. ac) wieder async laden.
+            // Load ac/gltf. Not for XML. The needed data (gltf) might
+            // 1) already be available in a loaded bundle
+            // 2) to be loaded via HTTP in general
+            // 3) in a delayed/dummy bundle (26.8.24).
             BundleResource finalpendingbmodelpath = pendingbmodelpath;
             BundleResource finalbpath = bpath;
-            FgModelHelper.buildNativeModel(new ResourceLoaderFromBundle(pendingbmodelpath), btexturepath, (BuildResult result) -> {
-                // result sollte es immer geben. 
+            ResourcePath finalbtexturepath = btexturepath;
+
+            ModelBuildDelegate modelBuildDelegate = (BuildResult result) -> {
+                // result sollte es immer geben.
                 if (result != null && result.getNode() != null) {
 
                     group.attach(new SceneNode(result.getNode()));
@@ -608,8 +627,22 @@ public class SGReaderWriterXML {
                 } else {
                     logger.error("model built failed for " + finalpendingbmodelpath.getFullName());
                 }
+            };
 
-            }, boptions.usegltf ? EngineHelper.LOADER_USEGLTF : 0);
+            if (pendingbmodelpath.bundle.isDelayed()) {
+                int options1 = boptions.usegltf ? EngineHelper.LOADER_USEGLTF : 0;
+                if (pendingbmodelpath.getFullName().endsWith("ac")) {
+                    options1 |= LOADER_APPLYACPOLICY;
+                }
+                final int options2 = options1;
+                // probably "TerraSync-model".
+                //FgModelHelper.buildNativeModel(new ResourceLoaderFromDelayedBundle(pendingbmodelpath, bundleResourceLoader)/*resourceLoader*/,
+                // finalbtexturepath, modelBuildDelegate, boptions.usegltf ? EngineHelper.LOADER_USEGLTF : 0);
+                FgModelHelper.buildSharedModel(pendingbmodelpath, finalbtexturepath, modelBuildDelegate, options2);
+
+            } else {
+                FgModelHelper.buildNativeModel(new ResourceLoaderFromBundle(pendingbmodelpath)/*resourceLoader*/, btexturepath, modelBuildDelegate, boptions.usegltf ? EngineHelper.LOADER_USEGLTF : 0);
+            }
         } else {
             // dann muss es ja da sein
             group.attach(model);
@@ -635,7 +668,7 @@ public class SGReaderWriterXML {
             osgDB::writeNodeFile ( * returngroup, outputfile);
         }*/
 
-        logger.debug("sgLoad3DModel_internal completed for "+bpath.getFullQualifiedName());
+        logger.debug("sgLoad3DModel_internal completed for " + bpath.getFullQualifiedName());
 
         loadedList.add(bpath.getFullQualifiedName());
         return xmlresult;//group;//returngroup/*.release()*/;

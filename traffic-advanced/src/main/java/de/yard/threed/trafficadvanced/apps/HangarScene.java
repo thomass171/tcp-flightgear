@@ -85,12 +85,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 22.12.18: Vielleicht als VehicleViewer ausbauen? Aber es gibt ja noch ModelPreviewScene. Wie grenzt sich das dann ab?
- * Die CockpitScene setzt jedenfalls auf TrafficWorld.xml und ECS (z.B. TeleporterSystem). Aber nicht auf TrafficWorld(graph etc).
+ * Scene for viewing vehicles from outside and cockpit, but without vehicle movement.
+ * Also in AR mode. 777 CDU is used for menu.
+ * <p>
+ * Different from FgModelPreviewScene which
+ * is more an model inspector and allows rotating and scaling.
+ * <p>
+ * Uses ECS (eg. TeleporterSystem) but no graphs.
+ * <p>
  * Was ist mit Animationen?
- * 02.10.19: Zur Abgrenzung zu ModelPreviewScene: Da kann man Objekte drehen/scalen hier nicht. Dafuer kann man hier ins Cockpit, da nicht.
+ * <p>
  * Und bzgl. Animationen: Die kann man hier im Vehicle dann nutz/testbar machen.
- * Weil es gut passt und es hier noch kein Menu gibt, CDU als HUD menu verwenden.
+ * <p>
  * Vielleicht kann man dies zu einer HangarScene mit allen Vehicles ausbauen, auch mit Nutzung von ShadowModellen und Teleport.
  * 18.10.19: x/y/z Kalibrierung hat falsche Orientierung.
  * Ich leg für hier mal wie Railing y=0 Ebene fest, einfach, damit es anders ist als FlatTravelScene.
@@ -112,8 +118,8 @@ public class HangarScene extends Scene {
     FirstPersonController fps = null;
     boolean usearp = true;
     int vehicleindex = 0;
-    /*4.12.23 TrafficWorldConfig*/ TrafficConfig tw;
-    SceneNode hud;
+    TrafficConfig tw;
+    // loaded from VehiclesWithCockpit" in "vehicle-definitions.xml" (and hardcoded bluebird)
     public List<String> vehiclelist = new ArrayList<String>();
     MenuCycler menuCycler = null;
     boolean avatarInited = false;
@@ -132,25 +138,22 @@ public class HangarScene extends Scene {
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
 
-        //Camera camera = getDefaultCamera();
-        //5.12.23 tw = new TrafficWorldConfig("data-old", "TrafficWorld.xml");
-        //5.12.23 TrafficWorldConfig railing = new TrafficWorldConfig("railing", "config/Railing.xml");
         tw = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), BundleResource.buildFromFullString("Hangar.xml"));
 
-        List<Vehicle> vlist = /*20.11.23 tw*/FlightTravelScene.getVehicleListByName("VehiclesWithCockpit");
+        List<Vehicle> vlist = FlightTravelScene.getVehicleListByName("VehiclesWithCockpit");
 
+        // 8.8.24: hardcoded bluebird added
+        vehiclelist.add("bluebird");
         for (int i = 0; i < vlist.size(); i++) {
             vehiclelist.add(vlist.get(i).getName());
         }
 
         buttonDelegates.put("up", () -> {
             logger.info("up");
-            /*avatar*/
             Observer.getInstance().fineTune(true);
         });
         buttonDelegates.put("down", () -> {
             logger.info("down");
-            /*avatar*/
             Observer.getInstance().fineTune(false);
         });
 
@@ -162,22 +165,17 @@ public class HangarScene extends Scene {
         SystemManager.addSystem(new AvatarSystem());
 
         TeleporterSystem ts = new TeleporterSystem();
-        //anim ist zu ruckelig/fehlerhaft
+        //anim is stuttering
         ts.setAnimated(false);
         SystemManager.addSystem(ts, 0);
 
         ObserverSystem viewingsystem = new ObserverSystem(true);
         SystemManager.addSystem(viewingsystem, 0);
 
-        //z.B. fuer Click in CDU menu
+        //z.B. for click in CDU menu
         AnimationUpdateSystem animationUpdateSystem = new AnimationUpdateSystem();
         SystemManager.addSystem(animationUpdateSystem, 0);
 
-
-        AbstractSceneRunner.instance.loadBundle("fgdatabasic", (Bundle b1) -> {
-            logger.debug("fgdatabasic loaded.");
-            // initial model is loaded later
-        });
         //addToWorld(ModelSamples.buildAxisHelper(200, 1));
 
         if (usearp) {
@@ -192,11 +190,11 @@ public class HangarScene extends Scene {
 
             GuiGrid menu = new GuiGrid(new DimensionF(width, width * 0.7), -5, -4.9, 1, 6, 3, GuiGrid.GREEN_SEMITRANSPARENT);
             // In der Mitte rechts ein Button mit Image
-            menu.addButton(/*new Request(rs.REQUEST_CLOSE),*/ 4, 1, 1, Icon.ICON_CLOSE, () -> {
+            menu.addButton(4, 1, 1, Icon.ICON_CLOSE, () -> {
                 menuCycler.close();
             });
             // und unten in der Mitte ein breiter Button mit Text
-            menu.addButton(/*new Request(rs.REQUEST_CLOSE),*/ 2, 0, 2, new Text("Load", Color.BLUE, Color.LIGHTBLUE), () -> {
+            menu.addButton(2, 0, 2, new Text("Load", Color.BLUE, Color.LIGHTBLUE), () -> {
                 //unpraktisch weil man vielleicht weiter möchte rs.menuCycler.close();
                 addNextVehicle();
             });
@@ -230,7 +228,6 @@ public class HangarScene extends Scene {
             addToWorld(ground);
         }
 
-
         if (vrInstance != null) {
             // Even in VR the observer will be attached to avatar later
             observer.attach(vrInstance.getController(0));
@@ -257,18 +254,16 @@ public class HangarScene extends Scene {
 
     protected void processArguments() {
         initialVehicle = Platform.getInstance().getConfiguration().getString("initialVehicle");
-
     }
 
     @Override
     public String[] getPreInitBundle() {
         // "fgdatabasic" in project is only a small subset. The external should have 'before' prio to load instead of subset.
         // "data" is needed for taxiway ground texture.
-        // "railing" is a relict from using 'loc"
+        // 9.8.24: "traffic-fg" for bluebird
+        // Also "fgdatabasic" preloaded, because otherwise its loaded 'on demand', which only works with long loading vehicles, but not quick like bluebird.
         Platform.getInstance().addBundleResolver(new HttpBundleResolver("fgdatabasic@" + AdvancedConfiguration.BUNDLEPOOL_URL), true);
-        return new String[]{"engine", "traffic-advanced"/*5.12.23 "data-old"*/,
-                "data", /*30.1.24"railing",*//*BundleRegistry.FGHOMECOREBUNDLE,*/
-                FlightGearSettings.FGROOTCOREBUNDLE};
+        return new String[]{"engine", "traffic-advanced", "data", "traffic-fg", "fgdatabasic", FlightGearSettings.FGROOTCOREBUNDLE};
     }
 
     @Override
@@ -341,18 +336,6 @@ public class HangarScene extends Scene {
         Observer.getInstance().update();
     }
 
-    /**
-     * Nicht zu gross machen wegen WebGL. Da muss man sonst scrollen.
-     *
-     * @return
-     */
-    /*1.2.24 @Override
-    public Dimension getPreferredDimension() {
-        if (((Platform) Platform.getInstance()).isDevmode()) {
-            return new Dimension(1024, 768);
-        }
-        return null;
-    }*/
     public void addNextVehicle() {
         vehicleindex += 1;
         if (vehicleindex >= vehiclelist.size()) {
@@ -364,24 +347,22 @@ public class HangarScene extends Scene {
 
     private void newModel(int index) {
 
-        //FlightGearAircraft aircraft = FlightGearAircraft.aircrafts[index];
         VehicleDefinition config;
-        //if (index < vehiclelist.size()){
-        //5.12.23 config = ConfigHelper.getVehicleConfig(tw.tw, vehiclelist.get(index));
 
+        String newVehicle = vehiclelist.get(index);
         // 4.1.24: 'bluebird' is in other config file, so currently not available
-        Bundle bnd = BundleRegistry.getBundle("traffic-advanced");
-        TrafficConfig vehicleDefinitions = TrafficConfig.buildFromBundle(bnd, BundleResource.buildFromFullString("vehicle-definitions.xml"));
-        config = vehicleDefinitions.findVehicleDefinitionsByName(vehiclelist.get(index)).get(0);
-
-
-
-       /* }else{
-            config=tw.getAircraftConfig(aircraftlist.get(index-vehiclelist.size()));
-        }*/
-
+        // 8.8.24: Now bluebird is hardcoded at beginning of list
+        if (newVehicle.equals("bluebird")) {
+            Bundle bnd = BundleRegistry.getBundle("traffic-fg");
+            TrafficConfig vehicleDefinitions = TrafficConfig.buildFromBundle(bnd, BundleResource.buildFromFullString("flight/vehicle-definitions.xml"));
+            config = vehicleDefinitions.findVehicleDefinitionsByName(newVehicle).get(0);
+        } else {
+            Bundle bnd = BundleRegistry.getBundle("traffic-advanced");
+            TrafficConfig vehicleDefinitions = TrafficConfig.buildFromBundle(bnd, BundleResource.buildFromFullString("vehicle-definitions.xml"));
+            config = vehicleDefinitions.findVehicleDefinitionsByName(newVehicle).get(0);
+        }
         // 18.10.19: TrafficHelper geht hier nicht, weil das Vehicle nicht auf einen Graph kommt. Naja, da koennte man ja null übergeben, oder ähnlich.
-        new FgVehicleLoader()/*FgVehicleLauncher*/.loadVehicle(new Vehicle(vehiclelist.get(index)), config, (SceneNode container, VehicleLoaderResult loaderResult/*List<SGAnimation> animationList, SGPropertyNode propertyNode,*/, SceneNode lowresNode) -> {
+        new FgVehicleLoader()/*FgVehicleLauncher*/.loadVehicle(new Vehicle(newVehicle), config, (SceneNode container, VehicleLoaderResult loaderResult/*List<SGAnimation> animationList, SGPropertyNode propertyNode,*/, SceneNode lowresNode) -> {
             //SceneNode basenode=container;
             SceneNode basenode = VehicleLauncher.getModelNodeFromVehicleNode(container);
             SceneNode currentaircraft = container;
@@ -402,7 +383,7 @@ public class HangarScene extends Scene {
             Vector3 destination = new Vector3();
             if (isAR()) {
                 double scale = 0.03;
-                if (StringUtils.contains(vehiclelist.get(index), "777")) {
+                if (StringUtils.contains(newVehicle, "777")) {
                     scale = 0.006;
                 }
                 currentaircraft.getTransform().setScale(new Vector3(scale, scale, scale));
@@ -416,7 +397,6 @@ public class HangarScene extends Scene {
             }
             currentaircraft.getTransform().setPosition(destination);
             addToWorld(currentaircraft);
-
 
             // 1.2.24: Make it an entity to be grabable
             EcsEntity modelEntity = new EcsEntity(currentaircraft);
@@ -445,7 +425,7 @@ public class HangarScene extends Scene {
      */
     private ControlPanel buildVrControlPanel(Map<String, ButtonDelegate> buttonDelegates) {
         Color backGround = Color.LIGHTBLUE;
-        Material mat = Material.buildBasicMaterial(backGround, false);
+        Material mat = Material.buildBasicMaterial(backGround, null);
 
         double ControlPanelWidth = 0.6;
         double ControlPanelRowHeight = 0.1;
@@ -507,7 +487,6 @@ class CockpitMenuBuilder implements MenuProvider {
 
     CockpitMenuBuilder(HangarScene sc) {
         this.sc = sc;
-
     }
 
     @Override
@@ -517,8 +496,7 @@ class CockpitMenuBuilder implements MenuProvider {
 
     @Override
     public Transform getAttachNode() {
-        return Observer.getInstance().getTransform();//tem.getAvatar().getNode();//getFaceNode();
-        //rs.getDefaultCamera().getCarrier();
+        return Observer.getInstance().getTransform();
     }
 
     @Override
@@ -532,14 +510,12 @@ class CockpitMenuBuilder implements MenuProvider {
 
     @Override
     public void menuBuilt() {
-
     }
 }
 
 /**
- * Ob der an deferred Cam kommen sollte? Wegen VR?
- * Weils in VR eigentlich kein HUD gibt, besser nicht.
- * Ich versuchs mal an die default Cam. Zwar in Cam Space, aber nicht deferred.
+ * Attach to deferred Cam? And in VR?
+ * Try default camera. VR probably needs other solution.
  */
 class CockpitCduMenu implements Menu {
     Log logger;
@@ -548,7 +524,6 @@ class CockpitCduMenu implements Menu {
 
     CockpitCduMenu(Camera camera, Log logger) {
         this.logger = logger;
-        // Einen Cube links oben
 
         cduCarrier = new SceneNode();
 
@@ -575,28 +550,25 @@ class CockpitCduMenu implements Menu {
 
     @Override
     public SceneNode getNode() {
-        return cduCarrier;//getDefaultCamera().getCarrier();
+        return cduCarrier;
     }
 
     @Override
     public boolean checkForClickedArea(Ray ray) {
-        // das geht doch alles ueber PickAnimation. 6.11.19: Auch in VR?
+        // uses PickAnimation?. 6.11.19: Also in VR?
         return false;
     }
 
     @Override
     public void checkForSelectionByKey(int position) {
-
     }
 
     @Override
     public void remove() {
-        //TODO check/test das er weg ist
+        //TODO check/test it is gone
         SystemManager.removeEntity(entity);
         SceneNode.removeSceneNode(cduCarrier);
         entity = null;
         cduCarrier = null;
     }
-
-
 }

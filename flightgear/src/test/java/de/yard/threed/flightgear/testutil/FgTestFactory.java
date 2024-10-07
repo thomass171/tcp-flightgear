@@ -21,6 +21,7 @@ import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialLib;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.engine.platform.common.ModelLoader;
+import de.yard.threed.flightgear.core.simgear.scene.model.SGModelLib;
 import de.yard.threed.flightgear.core.simgear.scene.tgdb.ReaderWriterSTG;
 import de.yard.threed.javacommon.ConfigurationByEnv;
 import de.yard.threed.javacommon.DefaultResourceReader;
@@ -46,31 +47,32 @@ public class FgTestFactory {
 
     @Deprecated
     public static Platform initPlatformForTestWithFgResolver() {
-        return initPlatformForTest(new HashMap<>(), true, true);
+        return initPlatformForTest(new HashMap<>(), true, true, true);
     }
 
     @Deprecated
     public static Platform initPlatformForTest() {
-        return initPlatformForTest(new HashMap<>(), true, false);
+        return initPlatformForTest(new HashMap<>(), true, false, false);
     }
 
     @Deprecated
     public static Platform initPlatformForTest(HashMap<String, String> properties) {
-        return initPlatformForTest(properties, false, true);
+        return initPlatformForTest(properties, false, true, true);
 
     }
 
-    public static Platform initPlatformForTest(boolean addTestResourcesBundle, boolean fullFG) {
-        return initPlatformForTest(new HashMap<>(), addTestResourcesBundle, fullFG);
+    public static Platform initPlatformForTest(boolean addTestResourcesBundle, boolean addTerraSyncResolver, boolean addMaterialLib) {
+        return initPlatformForTest(new HashMap<>(), addTestResourcesBundle, addTerraSyncResolver, addMaterialLib);
     }
 
     /**
      * FG Resolver are probably not needed or trigger false positive results in tools.
      */
-    public static Platform initPlatformForTest(HashMap<String, String> properties, boolean addTestResourcesBundle, boolean fullFG) {
+    public static Platform initPlatformForTest(HashMap<String, String> properties, boolean addTestResourcesBundle, boolean addTerraSyncResolver, boolean addMaterialLib) {
 
         FgBundleHelper.clear();
         ReaderWriterSTG.btgLoaded.clear();
+        SGModelLib.clear();
 
         // 29.12.21: Some bundles need to be loaded after init()
         // 12.9.23: FlightGearSettings.FGROOTCOREBUNDLE might be needed in future for aircraft loading (apparently not needed for bluebird)
@@ -94,7 +96,7 @@ public class FgTestFactory {
                 configuration1 -> {
                     // use AdvancedHeadlessPlatform to have AsyncHelper and thus model loading
                     PlatformInternals platformInternals = AdvancedHeadlessPlatform.init(configuration1, new SimpleEventBusForTesting());
-                    if (fullFG) {
+                    if (addTerraSyncResolver) {
                         Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver(configuration1.getString("HOSTDIRFG") + "/bundles"));
                     }
                     Platform.getInstance().addBundleResolver(new SimpleBundleResolver(configuration1.getString("HOSTDIRFG") + "/bundles", new DefaultResourceReader()));
@@ -103,7 +105,7 @@ public class FgTestFactory {
 
         if (!forScene) {
             //platform.addBundleResolver(new SimpleBundleResolver(configuration.getString("HOSTDIRFG") + "/bundles", new DefaultResourceReader()));
-            if (fullFG) {
+            if (addMaterialLib) {
                 // material is needed in following setup
                 EngineTestFactory.loadBundleSync(SGMaterialLib.BUNDLENAME);
 

@@ -3,7 +3,7 @@ package de.yard.threed.toolsfg;
 import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.loader.LoadedObject;
 import de.yard.threed.core.loader.LoaderGLTF;
-import de.yard.threed.core.loader.PortableModelList;
+import de.yard.threed.core.loader.PortableModel;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
@@ -55,9 +55,9 @@ public class LoaderBTGBuilderTest {
 
             // eigentlich geht das Laden ueber die Platform. Nur wegen Test werden die dahinterliegenden Klassen hier direkt aufgerufen.
             LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, null);
-            PortableModelList ppfile = lf1.doload();
+            PortableModel ppfile = lf1.doload();
             // LoaderBTGBuilder should provide matlib
-            ModelAssertions.assertRefbtg(ppfile, true);
+            ModelAssertions.assertRefbtg(ppfile, true, true);
         } catch (Exception e) {
             throw new RuntimeException("Error opening or reading gltf file", e);
         }

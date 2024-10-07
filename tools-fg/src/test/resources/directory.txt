@@ -1,3 +1,2 @@
 models/windturbine.ac
-models/ac3d-ref.ac
 terrain/3056410.btg

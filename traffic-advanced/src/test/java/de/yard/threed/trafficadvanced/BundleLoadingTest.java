@@ -44,7 +44,7 @@ public class BundleLoadingTest {
         String baseUrl = "https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool";
         NativeBundleResourceLoader resourceLoader = Platform.getInstance().buildResourceLoader(bundleName, baseUrl);
 
-        bundleLoader.loadBundle(bundleName, bundle -> {
+        bundleLoader.loadBundle(bundleName, false, bundle -> {
             log.debug("got it");
             loadedBundle.add(bundle);
         }, resourceLoader);
@@ -80,7 +80,7 @@ public class BundleLoadingTest {
 
         List<Bundle> loadedBundle = new ArrayList();
 
-        bundleLoader.loadBundle(bundleName, bundle -> {
+        bundleLoader.loadBundle(bundleName, false, bundle -> {
             log.debug("got it");
             loadedBundle.add(bundle);
         }, resourceLoader);

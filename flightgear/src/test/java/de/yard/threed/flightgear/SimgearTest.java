@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
  * Created by thomass on 27.11.15.
  */
 public class SimgearTest {
-    static Platform platform = FgTestFactory.initPlatformForTest(true,true);
+    static Platform platform = FgTestFactory.initPlatformForTest(true,true,true);
 
     String modelfile = "models/efis-ctl1.xml";
     String testfile777200 = "models/777-200.xml";

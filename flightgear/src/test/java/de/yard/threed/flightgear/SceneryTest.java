@@ -6,7 +6,8 @@ import de.yard.threed.core.GeneralParameterHandler;
 import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.loader.InvalidDataException;
 import de.yard.threed.core.loader.LoaderGLTF;
-import de.yard.threed.core.loader.PortableModelList;
+import de.yard.threed.core.loader.PortableModel;
+import de.yard.threed.core.loader.PreparedModel;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.Scene;
@@ -35,6 +36,7 @@ import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialCache;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialLib;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
+import de.yard.threed.flightgear.core.simgear.scene.model.SGModelLib;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.flightgear.testutil.ModelAssertions;
 
@@ -81,7 +83,7 @@ public class SceneryTest {
 
     @BeforeAll
     static void setup() {
-        FgTestFactory.initPlatformForTest(true, true);
+        FgTestFactory.initPlatformForTest(true, true, true);
     }
 
     /**
@@ -90,11 +92,7 @@ public class SceneryTest {
     @Test
     public void testLoadRefBTG() throws Exception {
         Obj obj = new Obj();
-        //TestFactory.loadBundleSync(SGMaterialLib.BUNDLENAME);
-        // bis 7, weil dort das Material geladen wird.
-        //FlightGear.init(7, FlightGear.argv);
-        //FlightGearModuleBasic.init(null, null);
-        //FlightGearModuleScenery.init(false);
+
         Texture.resetTexturePool();
         //12.9.23: BTG should no longer considered a use case in Obj.SGLoadBTG()?
         LoaderOptions loaderoptions = new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib());
@@ -130,18 +128,10 @@ public class SceneryTest {
             TestHelper.processAsync();
             return validated.getValue();
         }, 10000);
-
-
     }
 
     @Test
-    public void testLoadBTG2() throws Exception {
-        //TestFactory.loadBundleSync(SGMaterialLib.BUNDLENAME);
-        //TestFactory.loadBundleSync(FlightGear.getBucketBundleName("3056410"));
-        // bis 7, weil dort das Material geladen wird.
-        //MA23FlightGear.init(7, FlightGear.argv);
-        //FlightGearModuleBasic.init(null, null);
-        //FlightGearModuleScenery.init(false);
+    public void testLoadBTG3056410() throws Exception {
 
         SGReaderWriterOptions options = new SGReaderWriterOptions();
         final BooleanHolder validated = new BooleanHolder(false);
@@ -157,8 +147,6 @@ public class SceneryTest {
             TestHelper.processAsync();
             return validated.getValue();
         }, 10000);
-
-
     }
 
     /**
@@ -173,8 +161,8 @@ public class SceneryTest {
         BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "terrain/3072816.btg");
         BundleData ins = br.bundle.getResource(br);
         try {
-            PortableModelList ppfile = new LoaderBTG(new ByteArrayInputStream(ins.b), null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()), br.getFullName()).preProcess();
-            ModelAssertions.assertBTG3072816(ppfile, true);
+            PortableModel ppfile = new LoaderBTG(new ByteArrayInputStream(ins.b), null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()), br.getFullName()).buildPortableModel();
+            ModelAssertions.assertBTG3072816(ppfile, true, false);
         } catch (InvalidDataException e) {
             throw new RuntimeException(e);
         }
@@ -231,15 +219,19 @@ public class SceneryTest {
      * Also for testing TerraSync Bundle
      */
     @Test
-    public void testSTG3072816() {
+    public void testSTG3072816() throws Exception {
         //MA17Registry.setReadFileCallback(ModelRegistry.getInstance());
-        EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("3072816"));
-        EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("model"));
+        EngineTestFactory.loadBundleAndWait(FlightGear.getBucketBundleName("3072816"));
+        //25.8.24 "TerraSync-model" should be "delayed"!
+        EngineTestFactory.loadBundleAndWait(FlightGear.getBucketBundleName("model"), true);
         Bundle bundle3072816 = BundleRegistry.getBundle("Terrasync-3072816");
         assertNotNull(bundle3072816, "bundle3072816");
         Bundle bundlemodel = BundleRegistry.getBundle("Terrasync-model");
         assertNotNull(bundlemodel, "bundlemodel");
         assertNotNull(bundle3072816.getResource("Objects/e000n50/e007n50/moffett-hangar-n-211.xml"), "moffett-hangar-n-211");
+
+        String beaconGLTF = "Models/Airport/beacon.gltf";
+        assertNull(bundlemodel.getResource(beaconGLTF));
 
         /* 8.10.23:Commented because tile 3072856 isn't content of project
         EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("3072856"));
@@ -263,7 +255,7 @@ public class SceneryTest {
         } catch (InvalidDataException e) {
             Assert.fail(e.getMessage());
         }
-        PortableModelList ppfile = lf1.preProcess();
+        PortableModel ppfile = lf1.preProcess();
 
         LoaderOptions opt = new LoaderOptions();
         opt.usegltf = true;
@@ -272,24 +264,43 @@ public class SceneryTest {
         assertNotNull(node);
         end of tile3072856 test */
 
-        // Das 3072816.stg hat ein paar mehr Zeilen als bloss das btg. Gibt es einmal in Objects und einmal in Terrain. 
-        // Beide muessen gelesen werden.
+        // 3072816.stg has a few lines more than just btg. exists twice (in Objects and in Terrain).
+        // Both should be loaded. TODO check
         Options options = new Options();
         LoaderOptions opt = new LoaderOptions();
         opt.usegltf = true;
 
-        Group rr = new ReaderWriterSTG().build("3072816.stg", options, opt);
+        Group rr = new ReaderWriterSTG().build("3072816.stg", options, opt, false);
         if (rr/*.getNode()*/ == null) {
             Assert.fail("node isType null. 3072816.stg failed");
         }
-        // only reading the STG doesn't add it to world. XMLs are loaded sync and available immediately?
+
+        // Probably many many GLTFS are queued to be loaded
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return AbstractSceneRunner.getInstance().futures.size() == 0;
+        }, 31000);
+
+        // only reading the STG doesn't add it to world. XMLs are loaded sync and available immediately, but for GLTFs we had to wait.
         log.debug(rr.dump("  ", 0));
 
         ModelAssertions.assertSTG3072816(rr);
+
+        // used/needed parts of delayed bundle should now be loaded. Check only one
+        assertNotNull(bundlemodel.getResource(beaconGLTF));
+
+        // Cache should be used for windturbine, windsock, beacon. 25.9.24 and 'Models/Airport/light-pole-gray-38m.gltf'
+        assertEquals(4, SGModelLib.preparedModelCache.cache.size());
+        PreparedModel preparedModelBeacon = SGModelLib.preparedModelCache.get("Models/Airport/beacon.gltf");
+        assertNotNull(preparedModelBeacon);
+        assertEquals(2, preparedModelBeacon.useCounter);
+        assertEquals(3, SGModelLib.preparedModelCache.get("Models/Airport/windsock.gltf").useCounter);
+        assertEquals(3, SGModelLib.preparedModelCache.get("Models/Power/windturbine.gltf").useCounter);
     }
 
     /**
-     * 3072824.stg contains airports EDDK (only objects, terrain is in 3072816)
+     * Objects/3072824.stg contains airports EDDK (only objects, Terrain/3072824.stg only contains 3072824.btg,
+     * but 3072816 contains main terrain part of EDDK)
      * Also for testing TerraSync Bundle
      */
     @Test
@@ -299,7 +310,7 @@ public class SceneryTest {
         setup();
 
         EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("3072824"));
-        EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("model"));
+        //25.8.24 Bundle EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("model"));
         Bundle bundle3072824 = BundleRegistry.getBundle("Terrasync-3072824");
         assertNotNull(bundle3072824, "bundle30728124");
         assertNotNull(bundle3072824.getResource("Objects/e000n50/e007n50/EDDK-Terminal1.xml"), "EDDK-Terminal1");
@@ -310,7 +321,8 @@ public class SceneryTest {
         LoaderOptions opt = new LoaderOptions();
         opt.usegltf = true;
 
-        Group rr = new ReaderWriterSTG().build("3072824.stg", options, opt);
+        ReaderWriterSTG readerWriterSTG = new ReaderWriterSTG();
+        Group rr = readerWriterSTG.build("3072824.stg", options, opt, true);
         if (rr == null) {
             Assert.fail("node is null. 3072824.stg failed");
         }
@@ -424,7 +436,8 @@ public class SceneryTest {
         //26.2.24 pager wants to load it itself! So be sure remove it. EngineTestFactory.loadBundleSync(BundleRegistry.TERRAYSYNCPREFIX + "3072816");
         BundleRegistry.unregister(BundleRegistry.TERRAYSYNCPREFIX + "3072816");
 
-        //26.2.24 not used/needed anyway EngineTestFactory.loadBundleSync(BundleRegistry.TERRAYSYNCPREFIX + "model");
+        // 2.9.24 now used again, not used/needed anyway before
+        EngineTestFactory.loadBundleSync(BundleRegistry.TERRAYSYNCPREFIX + "model");
         SceneryPager sceneryPager = new SceneryPager();
         //ModelRegistry.getInstance().registerCallbacks();
         //Registry.setReadFileCallback(ModelRegistry.getInstance());
@@ -463,12 +476,12 @@ public class SceneryTest {
 
         //AbstractLoader tile = LoaderGLTF.buildLoader(bpath, null);
         BooleanHolder loaded = new BooleanHolder(false);
-        LoaderGLTF.load(new ResourceLoaderFromBundle(bpath), new GeneralParameterHandler<PortableModelList>() {
+        LoaderGLTF.load(new ResourceLoaderFromBundle(bpath), new GeneralParameterHandler<PortableModel>() {
             @Override
-            public void handle(PortableModelList ppfile) {
-                //PortableModelList ppfile = tile.preProcess();
+            public void handle(PortableModel ppfile) {
+                //PortableModel ppfile = tile.preProcess();
 
-                ModelAssertions.assertRefbtg(ppfile, false);
+                ModelAssertions.assertRefbtg(ppfile, false, true);
 
                 SGMaterialLib matlib = SGMaterialTest.initSGMaterialLib();
                 SGMaterialCache matcache = null;
@@ -493,8 +506,8 @@ public class SceneryTest {
     }
 
     public static SceneNode loadSTGFromBundleAndWait(int tile) throws Exception {
-        EngineTestFactory.loadBundleAndWait(FlightGear.getBucketBundleName(""+tile));
-        Bundle bundle = BundleRegistry.getBundle("Terrasync-"+tile);
+        EngineTestFactory.loadBundleAndWait(FlightGear.getBucketBundleName("" + tile));
+        Bundle bundle = BundleRegistry.getBundle("Terrasync-" + tile);
         assertNotNull(bundle);
 
         return loadSTGAndWait(tile);
@@ -516,7 +529,7 @@ public class SceneryTest {
         opt.usegltf = true;
         // property node not needed for now
 
-        Group rr = new ReaderWriterSTG().build(tile + ".stg", options, opt);
+        Group rr = new ReaderWriterSTG().build(tile + ".stg", options, opt, true);
         if (rr/*.getNode()*/ == null) {
             fail("node is null. " + tile + ".stg failed");
         }

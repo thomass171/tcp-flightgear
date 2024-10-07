@@ -302,7 +302,7 @@ public class SceneryViewerScene extends Scene {
     public void initSettings(Settings settings) {
         settings.aasamples = 4;
         // In Unity kommen sonst diverse Laufzeitfehler. Und der blaue Würfel wird damit auch korrekt verdeckt.
-        settings.near = new Float(40);
+        settings.near = Float.valueOf(40);
     }
 
     @Override
@@ -506,7 +506,7 @@ public class SceneryViewerScene extends Scene {
         double size2 = 100;
 
         List</*7.2.18 Native*/Vector3> vertices = new ArrayList<Vector3>();
-        FaceList faces = new FaceList();
+        FaceList faces = new FaceList(true);
         vertices.add(position.add(new Vector3(size2, -size2, 0)));
         vertices.add(position.add(new Vector3(size2, size2, 0)));
         vertices.add(position.add(new Vector3(-size2, size2, 0)));
@@ -520,7 +520,7 @@ public class SceneryViewerScene extends Scene {
         faces.faces.add(new Face3(2, 3, 0, uv3, uv2, uv1));
         //faces.faces.add(new Face3(2, 1, 0, uv3, uv0, uv1));
         //faces.faces.add(new Face3(0, 3, 2, uv1, uv2, uv3));
-        SimpleGeometry geo = GeometryHelper.prepareGeometry(vertices, new SmartArrayList<FaceList>(faces), null, false, new Degree(30), false, null).get(0);
+        SimpleGeometry geo = GeometryHelper.prepareGeometry(vertices, new SmartArrayList<FaceList>(faces), null, false, new Degree(30)).get(0);
         Material mat = Material.buildBasicMaterial(Texture.buildBundleTexture("data", "images/river.jpg"));
         SceneNode tile = new SceneNode(new Mesh(new GenericGeometry(geo), mat));
         tile.setName("North Tile");
@@ -542,7 +542,7 @@ public class SceneryViewerScene extends Scene {
             if (terrainonly) {
                 options.pluginstringdata.put("SimGear::FG_ONLY_TERRAIN", "ON");
             }
-            Group rr = new ReaderWriterSTG().build(stgfile, options, boptions);
+            Group rr = new ReaderWriterSTG().build(stgfile, options, boptions, true);
             if (rr != null) {
                 world.attach(rr);
                 stgcycler.currentStgTile = rr;

@@ -251,7 +251,7 @@ public class TravelSceneBluebirdTest {
             properties.put("initialRoute", initialRoute);
         }
 
-        FgTestFactory.initPlatformForTest(properties, false, true);
+        FgTestFactory.initPlatformForTest(properties, false, true, true);
 
         sceneRunner = (SceneRunnerForTesting) SceneRunnerForTesting.getInstance();
         sceneRunner.runLimitedFrames(INITIAL_FRAMES);

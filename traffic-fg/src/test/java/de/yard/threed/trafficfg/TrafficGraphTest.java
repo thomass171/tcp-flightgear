@@ -50,7 +50,7 @@ public class TrafficGraphTest {
 
     @BeforeEach
     void setup() {
-        Platform platform = FgTestFactory.initPlatformForTest(false, false);
+        Platform platform = FgTestFactory.initPlatformForTest(false, false, false);
 
         //FgTestFactory.addBundleFromProjectDirectory("traffic-fg", "data/extended-config");
         bundleAirportsConfig = BundleRegistry.getBundle("traffic-fg");

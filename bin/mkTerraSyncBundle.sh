@@ -57,7 +57,7 @@ processTerraSyncFile() {
 		export DIRNAME SUFFIX DESTDIR BASENAME
 		echo processing $filename":" $BASENAME $SUFFIX
 		case $SUFFIX in
-			# maybe 'rgb' should be discarded. Who can read it at all?
+			# maybe 'rgb' should be discarded. Who can read it at all? (3.9.24 many base model use 'rgb'!)
 			# 15.3.24: 'gltf' and 'bin' added
 			"xml"|"png"|"jpg"|"stg"|"rgb"|"gltf"|"bin")
 				if [ ! -r $DESTDIR/$BASENAME.$SUFFIX -o $FORCE = "1" ]
@@ -167,6 +167,7 @@ fi
 
 
 # Now create directory files ('directory[-no].txt'), first for shared model ...
+# 25.8.24: Even though we don't load it fully, we build TerraSync-model bundle directory (also files are still converted).
 echo "Completed. Building generic model directory..."
 MODELDIRECTORY=$TERRASYNCBUNDLEDIR/directory-model.txt
 cd $TERRASYNCBUNDLEDIR && checkrc

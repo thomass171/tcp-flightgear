@@ -2,13 +2,14 @@ package de.yard.threed.flightgear;
 
 import de.yard.threed.core.BooleanHolder;
 import de.yard.threed.core.BuildResult;
+import de.yard.threed.core.ModelBuildDelegate;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.loader.InvalidDataException;
 import de.yard.threed.core.loader.LoaderAC;
 import de.yard.threed.core.loader.LoaderGLTF;
 import de.yard.threed.core.loader.PortableMaterial;
 import de.yard.threed.core.loader.PortableModelDefinition;
-import de.yard.threed.core.loader.PortableModelList;
+import de.yard.threed.core.loader.PortableModel;
 import de.yard.threed.core.loader.StringReader;
 import de.yard.threed.core.platform.NativeSceneNode;
 import de.yard.threed.core.platform.Platform;
@@ -18,6 +19,7 @@ import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.ResourcePath;
 import de.yard.threed.core.testutil.TestUtils;
+import de.yard.threed.engine.Scene;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.platform.EngineHelper;
 import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
@@ -50,7 +52,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 public class ModelTest {
     // fullFG for having TerraSyncBundleResolver
-    static Platform platform = FgTestFactory.initPlatformForTest(true, true);
+    static Platform platform = FgTestFactory.initPlatformForTest(true, true, true);
 
     /**
      * Test isn't suited because 777 isn't bundled.
@@ -78,22 +80,24 @@ public class ModelTest {
         AsyncHelper.cleanup();
         AbstractSceneRunner.getInstance().cleanup();
 
-        EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("model"));
+        EngineTestFactory.loadBundleAndWait(FlightGear.getBucketBundleName("model"), true);
 
         Bundle bundlemodel = BundleRegistry.getBundle("Terrasync-model");
 
         // This windturbine.gltf is from earlier bundle build. 'ac' is mapped to 'gltf'.
         BundleResource resource = new BundleResource(bundlemodel, "Models/Power/windturbine.ac");
 
-        SceneNode node = FgModelHelper.mappedasyncModelLoad(new ResourceLoaderFromBundle(resource));
+        BooleanHolder modelBuilt = new BooleanHolder();
+        assertEquals(0, SceneNode.findByName("Blade3").size());
 
-        assertEquals(0, node.findNodeByName("Blade3").size());
-        // modelbuildvalues not available for checking
+        FgModelHelper.buildSharedModel(resource, null, result -> modelBuilt.setValue(true));
 
-        TestHelper.processAsync();
-        TestHelper.processAsync();
-        TestHelper.processAsync();
-        assertEquals(1, node.findNodeByName("Blade3").size());
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return modelBuilt.getValue();
+        }, 10000);
+
+        assertEquals(1, SceneNode.findByName("Blade3").size());
     }
 
     /**
@@ -144,8 +148,10 @@ public class ModelTest {
         SceneNode egkkTowerNode = destinationNodes.get(0).findNodeByName("Objects/e000n50/e007n50/egkk_tower.gltf").get(0);
         assertNotNull(egkkTowerNode);
 
-        TestUtil.assertEquals("number of kids", 6, egkkTowerNode.getTransform().getChildren().size());
-        TestUtil.assertNotNull("kid(0) mesh", egkkTowerNode.getTransform().getChild(0).getSceneNode().getMesh());
+        TestUtil.assertEquals("number of kids gltfroot", 1, egkkTowerNode.getTransform().getChildren().size());
+        TestUtil.assertEquals("number of kids ac-root", 1, egkkTowerNode.getTransform().getChild(0).getChildren().size());
+        TestUtil.assertEquals("number of kids", 6, egkkTowerNode.getTransform().getChild(0).getChild(0).getChildren().size());
+        TestUtil.assertNotNull("kid(0) mesh", egkkTowerNode.getTransform().getChild(0).getChild(0).getChild(0).getSceneNode().getMesh());
 
     }
 
@@ -191,6 +197,33 @@ public class ModelTest {
         TestUtil.assertFalse("", BundleRegistry.getBundle(BUNDLENAMEDELAYED).contains("flusi/egkk_tower.bin"));
         TestUtil.assertEquals("callbackdone", "done", callbackdone.toString());
 
+    }
+
+    /**
+     *
+     */
+    @Test
+    public void testWindsock() throws Exception {
+
+        EngineTestFactory.loadBundleAndWait(FlightGear.getBucketBundleName("model"), true);
+
+        Bundle bundlemodel = BundleRegistry.getBundle("Terrasync-model");
+        assertTrue(bundlemodel.isDelayed());
+
+        // This windsock.gltf is from earlier bundle build. 'ac' is mapped to 'gltf'. Should find 'gltf' file even with 'ac' file specified.
+        BooleanHolder modelBuilt = new BooleanHolder();
+        assertEquals(0, SceneNode.findByName("Poll").size());
+
+        FgModelHelper.buildSharedModel(new BundleResource(bundlemodel, "Models/Airport/windsock.ac"), null, result -> modelBuilt.setValue(true));
+
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return modelBuilt.getValue();
+        }, 10000);
+        log.debug(Scene.getCurrent().getWorld().dump("  ", 1));
+
+        assertEquals(1, SceneNode.findByName("Poll").size());
+        ModelAssertions.assertWindsock();
     }
 
 }

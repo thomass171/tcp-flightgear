@@ -18,6 +18,7 @@ import de.yard.threed.engine.Input;
 import de.yard.threed.engine.Material;
 import de.yard.threed.engine.Mesh;
 import de.yard.threed.engine.Ray;
+import de.yard.threed.engine.Scene;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.apps.ModelPreviewScene;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
@@ -48,10 +49,16 @@ import java.util.List;
  * 22.12.18: Not using trafficConfig. But "AircraftDir" is needed for FG aitcraft. Doesn't know "optionals" and
  * "zoffset" and so on. But that is acceptable.
  * FG Animations are supported manually (outside ECS).
+ * Keys are
+ * 1: move forward
+ * 2: move backward
+ * +: scale up
+ * -: scale down
  * <p>
  * Model with visual aimations:
  * - Windturbine(index 1)
  * - tower radar(0)
+ * - beacon
  * <p>
  * Only for XML? Should due to super class.
  */
@@ -64,8 +71,10 @@ public class FgModelPreviewScene extends ModelPreviewScene {
     FlightGearProperties flightGearProperties = new FlightGearProperties();
 
     /**
-     * 9.1.18: Vorne stehen die Bundlenamen (vor dem ersten ':') oder ein 'A' als Kenner fuer ein FGAircraft (mit Zusatzdefinitionen), H ist TerraSync-model
-     * 9.1.22:Trenner ist jetzt ':' statt '-'
+     * 9.1.18: Starts with bundle name (before of first ':') or a 'A' als
+     * Kenner fuer ein FGAircraft (mit Zusatzdefinitionen), H is TerraSync-model,
+     * T is TerraSync
+     * 9.1.22: Separator now is ':' instead of '-'
      */
     @Override
     public String[] getModelList() {
@@ -106,10 +115,16 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                 "EDDK-final/EDDK-Terminal1.xml",
                 "EDDK-EDDK-StarB.gltf",
                 "railing-loc.xml",
+                // 26
                 "bluebird:Models/bluebird.xml",
                 "traffic-fg:flight/navigator.xml",
                 "fgdatabasic:Aircraft/Instruments-3d/pedals/pedals.xml",
-
+                "H:Models/Airport/windsock.xml",
+                "H:Models/Airport/beacon.xml",
+                // 31
+                "T3072824:Objects/e000n50/e007n50/EDDK-Station.gltf",
+                "T3072816:Objects/e000n50/e007n50/egkk_maint_1_1.gltf",
+                "H:Models/Airport/Jetway/jetway-movable.xml",
         };
     }
 
@@ -122,7 +137,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
 
     @Override
     public void customInit() {
-        major = 3;
+        major = 33;
         arp = initFG();
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
@@ -255,8 +270,8 @@ public class FgModelPreviewScene extends ModelPreviewScene {
             result = SGReaderWriterXML.buildModelFromBundleXML(br, opt, (bpath, destinationNode, alist) -> {
                 if (alist != null) {
                     animationList.addAll(alist);
-
                 }
+                logger.debug(Scene.getCurrent().getWorld().dump("  ", 1));
             });
         } else {
             //9.1.22 result = new BuildResult(ModelFactory.asyncModelLoad(br, EngineHelper.LOADER_USEGLTF).nativescenenode);

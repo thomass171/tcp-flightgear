@@ -6,7 +6,7 @@ import de.yard.threed.core.geometry.SimpleGeometry;
 import de.yard.threed.core.loader.GeoMat;
 import de.yard.threed.core.loader.PortableMaterial;
 import de.yard.threed.core.loader.PortableModelDefinition;
-import de.yard.threed.core.loader.PortableModelList;
+import de.yard.threed.core.loader.PortableModel;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.flightgear.core.CppHashMap;
 import de.yard.threed.flightgear.core.osg.Group;
@@ -84,7 +84,7 @@ public class SGTileGeometryBin extends SGTriangleBin {
         /*const std::vector<SGVec3d>& */
         List<Vector3> vertices = obj.get_wgs84_nodes();
         /*const std::vector<SGVec3f>&*/
-        List<Vector3> normals = obj.loadedfile.objects.get(0).normals;
+        List<Vector3> normals = obj.loadedfile.object.normals;
         /*const std::vector<SGVec2f>&*/
         List<Vector2> texCoords = obj.get_texcoords();
         /*const int_list&*/

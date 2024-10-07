@@ -4,7 +4,7 @@ import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.loader.LoadedObject;
 import de.yard.threed.core.loader.LoaderAC;
 import de.yard.threed.core.loader.PortableModelDefinition;
-import de.yard.threed.core.loader.PortableModelList;
+import de.yard.threed.core.loader.PortableModel;
 import de.yard.threed.core.loader.StringReader;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.Bundle;
@@ -24,12 +24,15 @@ import de.yard.threed.flightgear.testutil.FgTestFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 
 /**
- * Test for AC loader with some FG models.
+ * Test for AC loader with some FG models for which the native ac-file is available in test-resources.
+ * Located in tcp-flightgear due to copyright issues.
  */
 public class LoaderACTest {
-    static Platform platform = FgTestFactory.initPlatformForTest(true,false);
+    static Platform platform = FgTestFactory.initPlatformForTest(true,false,false);
 
 
     @Test
@@ -38,8 +41,8 @@ public class LoaderACTest {
             BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "models/FuelOilAmps.ac");
             LoaderAC ac = new LoaderAC(new StringReader(br.bundle.getResource(br).getContentAsString()), br);
             System.out.println(ac.loadedfile.dumpMaterial("\n"));
-            Assertions.assertEquals( 1, ac.loadedfile.objects.size());
-            LoadedObject world = ac.loadedfile.objects.get(0);
+            assertNotNull(ac.loadedfile.object);
+            LoadedObject world = ac.loadedfile.object;
             Assertions.assertEquals( "FuelOilAmps", world.name,"world.name");
             System.out.println(ac.loadedfile.dumpObject("", world, "\n"));
             Assertions.assertEquals( 1, world.kids.size(),"world kids");
@@ -57,13 +60,13 @@ public class LoaderACTest {
                 //TestUtil.assertFace4("face 0", new int[]{3, 2, 1, 0}, (Face4) ac.objects.get(0).kids.get(0).getFaceLists().get(0).get(0));
             }
             //22.12.17 auch PP testen
-            PortableModelList ppfile = ac.preProcess();
-            PortableModelDefinition ppworld = ppfile.getObject(0);
+            PortableModel ppfile = ac.buildPortableModel();
+            PortableModelDefinition ppworld = ppfile.getRoot().kids.get(0);
             Assertions.assertEquals("FuelOilAmps", ppworld.name,"world.name");
             //ist null TestUtil.assertEquals("source", "ss", ppfile.source.name);
             PortableModelDefinition ppgroup = ppworld.kids.get(0);
             //dein Material hat keine Textur
-            Assertions.assertEquals( "FuelOilAmps.png", ppfile.materials.get(1).texture,"texture");
+            Assertions.assertEquals( "FuelOilAmps.png", ppfile.materials.get(0).getTexture(),"texture");
 
 
         } catch (Exception e) {
@@ -79,8 +82,8 @@ public class LoaderACTest {
 
             //LoaderAC ac = new LoaderAC(FileReader.getFileStream(new BundleResource("flusi/ControlLight.ac")), false);
             System.out.println(ac.loadedfile.dumpMaterial("\n"));
-            Assertions.assertEquals( 1, ac.loadedfile.objects.size());
-            LoadedObject world = ac.loadedfile.objects.get(0);
+            assertNotNull(ac.loadedfile.object);
+            LoadedObject world = ac.loadedfile.object;
             System.out.println(ac.loadedfile.dumpObject("", world, "\n"));
             Assertions.assertEquals( 2, world.kids.size(),"world kids");
             LoadedObject cylinder = world.kids.get(0);

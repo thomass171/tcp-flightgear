@@ -8,6 +8,7 @@ import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleData;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.core.resource.ResourcePath;
 import de.yard.threed.core.resource.URL;
 import de.yard.threed.core.testutil.TestBundle;
 import de.yard.threed.core.testutil.TestUtils;
@@ -15,8 +16,12 @@ import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.testutil.EngineTestFactory;
+import de.yard.threed.engine.testutil.EngineTestUtils;
 import de.yard.threed.engine.testutil.TestHelper;
+import de.yard.threed.flightgear.core.FlightGear;
+import de.yard.threed.flightgear.core.SGLoaderOptions;
 import de.yard.threed.flightgear.core.flightgear.main.AircraftResourceProvider;
+import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGMaterialAnimation;
@@ -24,6 +29,7 @@ import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGRotateAnimation;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -33,11 +39,12 @@ import static de.yard.threed.core.testutil.TestUtils.loadFileFromTestResources;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- *
+ * Also for SGAnimation.
  */
 @Slf4j
 public class SGReaderWriterXMLTest {
-    Platform platform = FgTestFactory.initPlatformForTest(true, false);
+    // 19.8.24: Now also has TerraSync bundle
+    Platform platform = FgTestFactory.initPlatformForTest(true, true, false);
 
     @Test
     public void testXmlTestModel() {
@@ -61,7 +68,7 @@ public class SGReaderWriterXMLTest {
         assertEquals("xmltestmodel/test-main.xml->[" + "" +
                 "submodel->xmltestmodel/test-submodel.xml," +
                 "plainsubmodel->xmltestmodel/cube.ac" +
-                "]", TestHelper.getHierarchy(resultNode, 8));
+                "]", EngineTestUtils.getHierarchy(resultNode, 8));
         assertEquals(0, animationList.size(), "animations");
 
         TestHelper.processAsync();
@@ -74,10 +81,10 @@ public class SGReaderWriterXMLTest {
         log.debug(resultNode.dump("  ", 0));
         // Now has not only 'submodel' but also gltf.
         assertEquals("xmltestmodel/test-main.xml->" +
-                        "[submodel->xmltestmodel/test-submodel.xml->ACProcessPolicy.root node->ACProcessPolicy.transform node->xmltestmodel/loc.gltf," +
-                        "plainsubmodel->xmltestmodel/cube.ac->ACProcessPolicy.root node->ACProcessPolicy.transform node->xmltestmodel/cube.gltf-><no name>," +
-                        "ACProcessPolicy.root node->ACProcessPolicy.transform node->xmltestmodel/loc.gltf->center back translate->Spin Animation Group->center 0 translate]",
-                TestHelper.getHierarchy(resultNode, 6));
+                        "[submodel->xmltestmodel/test-submodel.xml->ACProcessPolicy.root node->ACProcessPolicy.transform node->xmltestmodel/loc.gltf->gltfroot," +
+                        "plainsubmodel->xmltestmodel/cube.ac->ACProcessPolicy.root node->ACProcessPolicy.transform node->xmltestmodel/cube.gltf->gltfroot," +
+                        "ACProcessPolicy.root node->ACProcessPolicy.transform node->xmltestmodel/loc.gltf->gltfroot->center back translate->Spin Animation Group]",
+                EngineTestUtils.getHierarchy(resultNode, 6));
 
         assertEquals(2, animationList.size(), "animations");
         assertNotNull(((SGMaterialAnimation) animationList.get(0)).group, "group");
@@ -177,10 +184,10 @@ public class SGReaderWriterXMLTest {
 
         log.debug(resultNode.dump("  ", 0));
         assertEquals("Models/777-200.xml->[" +
-                        "Firetruck1->Models/Airport/Vehicle/hoskosh-ti-1500.ac->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Airport/Vehicle/hoskosh-ti-1500.gltf-><no name>," +
-                        "Firetruck2->Models/Airport/Vehicle/hoskosh-ti-1500.ac->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Airport/Vehicle/hoskosh-ti-1500.gltf-><no name>," +
-                        "ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/777-200.gltf-><no name>]",
-                TestHelper.getHierarchy(resultNode, 6));
+                        "Firetruck1->Models/Airport/Vehicle/hoskosh-ti-1500.ac->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Airport/Vehicle/hoskosh-ti-1500.gltf->gltfroot," +
+                        "Firetruck2->Models/Airport/Vehicle/hoskosh-ti-1500.ac->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Airport/Vehicle/hoskosh-ti-1500.gltf->gltfroot," +
+                        "ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/777-200.gltf->gltfroot-><no name>]",
+                EngineTestUtils.getHierarchy(resultNode, 6));
 
         List<String> modelsBuilt = AbstractSceneRunner.getInstance().systemTracker.getModelsBuilt();
         assertEquals(3, modelsBuilt.size());
@@ -211,6 +218,61 @@ public class SGReaderWriterXMLTest {
         assertNull(result.getNode());
     }
 
+    /**
+     * async ein Model laden und pruefen, dass z.B. Animationen drin sind
+     */
+    @Test
+    public void testWindturbineAnimationsWithAsync() throws Exception {
+        //Test setup should cleanup TestHelper.cleanupAsync();
+
+        // Kruecke zur Entkopplung des Modelload von AC policy.
+        ModelLoader.processPolicy = new ACProcessPolicy(null);
+
+        List<SGAnimation> animationList = new ArrayList<SGAnimation>();
+        SGLoaderOptions opt = new SGLoaderOptions();
+        opt.setPropertyNode(new SGPropertyNode("" + "-root")/*FGGlobals.getInstance().get_props()*/);
+
+        EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("model"));
+
+        Bundle bundlemodel = BundleRegistry.getBundle("Terrasync-model");
+        assertNotNull(bundlemodel);
+
+        BuildResult result = SGReaderWriterXMLTest.loadModelAndWait(new BundleResource(bundlemodel, "Models/Power/windturbine.xml"), animationList,
+                2, "Models/Power/windturbine.xml");
+        SGReaderWriterXMLTest.validateWindturbineAnimations(new SceneNode(result.getNode()), animationList);
+
+        animationList.clear();
+        result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundlemodel, "Models/Power/windturbine.xml"), null, (bpath, destinationNode, alist) -> {
+            if (alist != null) {
+                animationList.addAll(alist);//  xmlloaddelegate.modelComplete( animationList);
+            }
+        });
+        assertEquals(0, animationList.size(), "animations");
+        TestHelper.processAsync();
+        TestHelper.processAsync();
+        SGReaderWriterXMLTest.validateWindturbineAnimations(new SceneNode(result.getNode()), animationList);
+    }
+
+    /**
+     * See also README.md
+     */
+    public static void validateWindturbineAnimations(SceneNode node, List<SGAnimation> animationList) {
+        log.debug(node.dump("  ", 0));
+        assertEquals(2, animationList.size(), "animations");
+        assertNotNull(((SGRotateAnimation) animationList.get(0)).rotategroup, "rotationgroup");
+        assertNotNull(((SGRotateAnimation) animationList.get(1)).rotategroup, "rotationgroup");
+
+        SceneNode tower = node.findNodeByName("Tower").get(0);
+        SceneNode acWorld = node.findNodeByName("ac-world").get(0);
+        // skip intermediate node
+        SceneNode firstSpinAnimationGroup = EngineTestUtils.getChild(acWorld, 1, 0);
+        validateAnimationGroup(firstSpinAnimationGroup, "Spin Animation Group", new String[]{"Generator", "center back translate"});
+        SceneNode secondSpinAnimationGroup = EngineTestUtils.getChild(firstSpinAnimationGroup, 0, 1, 0);
+        validateAnimationGroup(secondSpinAnimationGroup, "Spin Animation Group", new String[]{"Shaft", "Hub", "Blade1", "Blade2", "Blade3"});
+
+        assertEquals("Models/Power/windturbine.xml->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Power/windturbine.gltf->gltfroot->ac-world->[Tower,center back translate]", EngineTestUtils.getHierarchy(node, 6));
+
+    }
 
     /**
      * Waits until animationlist is complete. This also means, the model is loaded.
@@ -230,16 +292,14 @@ public class SGReaderWriterXMLTest {
         return result;
     }
 
-    public static BuildResult loadModelBundleLess(URL url, List<SGAnimation> animationList) {
-        Util.notyet();
-        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(null, null, (bpath, destinationNode, alist) -> {
-            if (alist != null) {
-                animationList.addAll(alist);
-            }
-        });
-        assertEquals(0, animationList.size(), "animations");
-        TestHelper.processAsync();
-        TestHelper.processAsync();
-        return result;
+    private static void validateAnimationGroup(SceneNode animationNode, String expectedName, String[] expectedGrandChildren) {
+        assertEquals(expectedName, animationNode.getName());
+        // skip intermediate node
+        assertEquals(1, animationNode.getTransform().getChildCount());
+        animationNode = animationNode.getTransform().getChild(0).getSceneNode();
+        assertEquals(expectedGrandChildren.length, animationNode.getTransform().getChildCount());
+        for (int i = 0; i < expectedGrandChildren.length; i++) {
+            assertEquals(expectedGrandChildren[i], animationNode.getTransform().getChild(i).getSceneNode().getName());
+        }
     }
 }

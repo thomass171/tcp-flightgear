@@ -112,11 +112,9 @@ public class FGEffect /*extends Effect*/ {
                 StringUtils.endsWith(image, "naturalcrop1.png")) {
             material = Material.buildBasicMaterial(Color.YELLOW);
         } else {*/
-            materialdefinition = new PortableMaterial();//Material.buildLambertMaterial(texture);
+            materialdefinition = new PortableMaterial(null, image, true,true);//Material.buildLambertMaterial(texture);
         //material.setName("SGMaterial id= "+uniqueid);
-        materialdefinition.texture=image;
-        materialdefinition.wraps=true;
-        materialdefinition.wrapt=true;
+
         //}
 
         return true;

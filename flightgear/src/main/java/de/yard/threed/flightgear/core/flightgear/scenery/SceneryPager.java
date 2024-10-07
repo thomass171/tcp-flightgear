@@ -66,7 +66,9 @@ public class SceneryPager {//extends lic osgDB::DatabasePager
                     //4.1.18: per GLTF. Das STG; Laden wird auch wieder vielfach async sein.
                     opt.usegltf = true;
                     /*BuildResult*/
-                    SceneNode result = new ReaderWriterSTG().build(fileName, options, opt);
+                    // 30.8.24: Now with shared
+                    boolean ignoreshared = false;
+                    SceneNode result = new ReaderWriterSTG().build(fileName, options, opt, ignoreshared);
                     if (result != null /*&& result.getNode() != null*/) {
                         SceneNode n1 = result;//.getNode();
                         if (n1 != null) {

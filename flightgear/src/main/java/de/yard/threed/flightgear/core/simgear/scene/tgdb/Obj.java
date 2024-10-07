@@ -1,13 +1,14 @@
 package de.yard.threed.flightgear.core.simgear.scene.tgdb;
 
 import de.yard.threed.core.GeneralParameterHandler;
+import de.yard.threed.core.Util;
 import de.yard.threed.core.geometry.SimpleGeometry;
 import de.yard.threed.core.loader.AbstractLoader;
 import de.yard.threed.core.loader.InvalidDataException;
 import de.yard.threed.core.loader.LoaderGLTF;
 import de.yard.threed.core.loader.PortableMaterial;
 import de.yard.threed.core.loader.PortableModelDefinition;
-import de.yard.threed.core.loader.PortableModelList;
+import de.yard.threed.core.loader.PortableModel;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
@@ -50,15 +51,16 @@ public class Obj {
      * Bundle muss schon geladen sein. Suffix ".gz" darf nicht mit angegeben werden.
      * 14.12.17: Wegen preprocess zerlegt in alten SGLoadBTG und neuen SGbuildBTG.
      * 15.2.24: Now async
+     *
      * @return
      */
     public void/*Node*/ SGLoadBTG(BundleResource bpath, SGReaderWriterOptions options, LoaderOptions boptions, GeneralParameterHandler<Node> delegate) {
-        SGLoadBTG(bpath, options, boptions, 222, new GeneralParameterHandler<PortableModelList>() {
+        SGLoadBTG(bpath, options, boptions, 222, new GeneralParameterHandler<PortableModel>() {
             @Override
-            public void handle(PortableModelList ppfile) {
+            public void handle(PortableModel ppfile) {
                 if (ppfile == null) {
                     //already logged
-                    return ;
+                    return;
                 }
                 Node node = SGbuildBTG(ppfile, boptions != null ? boptions.materialLib : null);
                 delegate.handle(node);
@@ -71,11 +73,11 @@ public class Obj {
      * Runs sync. Bundle must have been loaded already.
      * 15.2.14: No longer sync but asnyc like LoaderGLTF.
      */
-    public void /*PortableModelList/*Node*/ SGLoadBTG(BundleResource bpath, SGReaderWriterOptions options, LoaderOptions boptions, int dummy,  GeneralParameterHandler<PortableModelList> delegate) {
+    public void /*PortableModel/*Node*/ SGLoadBTG(BundleResource bpath, SGReaderWriterOptions options, LoaderOptions boptions, int dummy, GeneralParameterHandler<PortableModel> delegate) {
         //tsch_log("obj.cxx::SGLoadBTG(%d) path=%s \n",0,path.c_str());
 
         /*SGBinObject*/
-        AbstractLoader tile=null;
+        AbstractLoader tile = null;
         //if (!tile.read_bin(path))
         //    return NULL;
         if (bpath == null) {
@@ -102,7 +104,7 @@ public class Obj {
                     return /*null*/;
                 }
 
-                    LoaderGLTF.load(new ResourceLoaderFromBundle(bpath), delegate);
+                LoaderGLTF.load(new ResourceLoaderFromBundle(bpath), delegate);
 
             } else {
                 // 22.7.24: This branch is still in use. So we cannot move LoaderBTG to tools yet.
@@ -123,7 +125,7 @@ public class Obj {
                     throw new RuntimeException(e);
                 }
                 // Code moved to LoaderBTG.preProcess();
-                PortableModelList ppfile = tile.preProcess();
+                PortableModel ppfile = tile.buildPortableModel();
                 //ppfile.btgcenter = ((LoaderBTG)tile).center;
                 delegate.handle(ppfile);
             }
@@ -139,12 +141,13 @@ public class Obj {
      *
      * @return
      */
-    public Node SGbuildBTG(PortableModelList ppfile, SGMaterialLib matlib) {
+    public Node SGbuildBTG(PortableModel ppfile, SGMaterialLib matlib) {
         boolean simplifyDistant = false;
         boolean simplifyNear = false;
         boolean useVBOs = false;
 
-        Vector3 center = (ppfile.getObject(0).translation);
+        PortableModelDefinition btgroot = getBtgDefinitionFromPortableModel(ppfile);
+        Vector3 center = btgroot.translation;
 
         SGMaterialCache matcache = null;
         if (matlib != null) {
@@ -228,8 +231,10 @@ public class Obj {
      * 18.04.2019: ppfile contains no material. matcache is "optional". If null, wireframe will be created.
      * 30.9.23: Moved here from SGTileGeometryBin.
      */
-    public Node getSurfaceGeometryPart2(/*List<GeoMat> geos*/PortableModelList ppfile, boolean useVBOs, SGMaterialCache matcache) {
-        if (ppfile.getObjectCount() == 0)
+    public Node getSurfaceGeometryPart2(/*List<GeoMat> geos*/PortableModel ppfile, boolean useVBOs, SGMaterialCache matcache) {
+        PortableModelDefinition btgroot = getBtgDefinitionFromPortableModel(ppfile);
+
+        if (btgroot == null)
             return null;
 
         EffectGeode eg = null;
@@ -243,10 +248,10 @@ public class Obj {
         //SGMaterialTriangleMap::const_iterator i;
         //for (i = materialTriangleMap.begin(); i != materialTriangleMap.end(); ++i) {
         //for (String ii : materialTriangleMap.keySet()) {
-        for (int k = 0; k < ppfile.getObjectCount(); k++) {
-            PortableModelDefinition po = ppfile.getObject(k);
-            for (int index = 0; index < po.geolist.size(); index++) {
-                SimpleGeometry p = po.geolist.get(index);
+        for (int k = 0; k < btgroot.kids.size(); k++) {
+            PortableModelDefinition po = btgroot.kids.get(k);
+            //for (int index = 0; index < po.geolist.size(); index++) {
+            SimpleGeometry p = po.geo;//list.get(index);
 
             /*in Part1 SGTexturedTriangleBin i = materialTriangleMap.get(ii);
              SimpleGeometry geometry = i/*->getSecond* /.buildGeometry(useVBOs);
@@ -254,54 +259,54 @@ public class Obj {
             if (matcache != null) {
                 mat = matcache.find(ii/*->getFirst* /);
             }*/
-                PortableMaterial mat=null;
-                String matname = po.geolistmaterial.get(index);
-                // matcache should be available, otherwise there will no material later very likely. (wireframe)
-                if (ppfile.materials.size() == 0 && matcache != null) {
-                    SGMaterial sgmat = matcache.find(matname);
-                    //31.12.17: TODO textureindx mal klaeren!
-                    //5.10.23: TODO use getEffectMaterialByTextureIndex
-                    int textureindex = 0;
-                    FGEffect oneEffect = sgmat.get_one_effect(textureindex);
-                    if (oneEffect == null) {
-                        logger.warn("No effect available at " + textureindex + " for " + matname);
-                    }else {
-                        mat = (sgmat != null) ? (oneEffect.getMaterialDefinition()) :null;
-                    }
+            PortableMaterial mat = null;
+            String matname = po.material;//geolistmaterial.get(index);
+            // matcache should be available, otherwise there will no material later very likely. (wireframe)
+            if (ppfile.materials.size() == 0 && matcache != null) {
+                SGMaterial sgmat = matcache.find(matname);
+                //31.12.17: TODO textureindx mal klaeren!
+                //5.10.23: TODO use getEffectMaterialByTextureIndex
+                int textureindex = 0;
+                FGEffect oneEffect = sgmat.get_one_effect(textureindex);
+                if (oneEffect == null) {
+                    logger.warn("No effect available at " + textureindex + " for " + matname);
                 } else {
-                    mat = ppfile.findMaterial(matname);
+                    mat = (sgmat != null) ? (oneEffect.getMaterialDefinition()) : null;
                 }
-                // FG-DIFF
-                // Zu FG abweichende implementierung. Wenn es kein Material gibt, wireframe setzen. Fuer Testen vielleicht ganz gut. Ob auf Dauer auch?
-                // In FG wird das Material ueber Effect in EffectGeode (teilweise ueber Callback) abgebildet. Effect verbindet direkt zum Shader.
-                // Darueber wird zumindest wohl die Textur definiert. Hier jetzt das Mesh direkt erzeugen.
-                eg = new EffectGeode();
-                // FG-DIFF immer derselbe Name ist doch bloed. Es ist auch nicht erkennbar, dass FG da Logik dran hat. 12.12.17: Tja, jetzt hab ich aber keinen Namen.
-                //eg.setName("EffectGeode");
-                eg.setName(po.name);// + ii+"("+i.getNumTriangles()+" tris)");
-
-                if (mat != null) {
-                    //12.12.17: im Effect ist das "endgültige" Material enthalten. Der EffectGeode treagt dazu nichts bei, zumindest nichts bekanntes.
-                    //Darum kommt jetzt auch nur noch "echtes" Material rein (wegen preprocess)
-                    eg.material = mat;
-                    //eg.setMaterial(p.mat);
-                    //Effect e = p.mat.get_one_effect(p.textureindex);///*->getSecond*/.getTextureIndex()));
-                    //eg.setEffect(e);
-                    foundMaterial.add(matname);
-                } else {
-                    // 31.12.17 das log ich mal als warning, weils wirklich ein Grund zur Warnung ist
-                    // 18.04.19 das wird dann halt wireframe
-                    logger.warn("no material " + matname + " found");
-                    eg.setMaterial(null);
-                    notFoundMaterial.add(matname);
-                }
-                //eg.addDrawable(geometry);
-                //eg.runGenerators(geometry);  // Generate extra data needed by effect
-                if (group != null) {
-                    group.attach(eg);
-                }
-                eg.buildMesh(p/*.geo*/);
+            } else {
+                mat = ppfile.findMaterial(matname);
             }
+            // FG-DIFF
+            // Zu FG abweichende implementierung. Wenn es kein Material gibt, wireframe setzen. Fuer Testen vielleicht ganz gut. Ob auf Dauer auch?
+            // In FG wird das Material ueber Effect in EffectGeode (teilweise ueber Callback) abgebildet. Effect verbindet direkt zum Shader.
+            // Darueber wird zumindest wohl die Textur definiert. Hier jetzt das Mesh direkt erzeugen.
+            eg = new EffectGeode();
+            // FG-DIFF immer derselbe Name ist doch bloed. Es ist auch nicht erkennbar, dass FG da Logik dran hat. 12.12.17: Tja, jetzt hab ich aber keinen Namen.
+            //eg.setName("EffectGeode");
+            eg.setName(po.name);// + ii+"("+i.getNumTriangles()+" tris)");
+
+            if (mat != null) {
+                //12.12.17: im Effect ist das "endgültige" Material enthalten. Der EffectGeode treagt dazu nichts bei, zumindest nichts bekanntes.
+                //Darum kommt jetzt auch nur noch "echtes" Material rein (wegen preprocess)
+                eg.material = mat;
+                //eg.setMaterial(p.mat);
+                //Effect e = p.mat.get_one_effect(p.textureindex);///*->getSecond*/.getTextureIndex()));
+                //eg.setEffect(e);
+                foundMaterial.add(matname);
+            } else {
+                // 31.12.17 das log ich mal als warning, weils wirklich ein Grund zur Warnung ist
+                // 18.04.19 das wird dann halt wireframe
+                logger.warn("no material " + matname + " found");
+                eg.setMaterial(null);
+                notFoundMaterial.add(matname);
+            }
+            //eg.addDrawable(geometry);
+            //eg.runGenerators(geometry);  // Generate extra data needed by effect
+            if (group != null) {
+                group.attach(eg);
+            }
+            eg.buildMesh(p/*.geo*/);
+            //}
         }
 
         if (group != null) {
@@ -311,5 +316,14 @@ public class Obj {
         }
     }
 
-
+    /**
+     * 31.7.24 When PortableModel is from GLTF, the btg is one level lower than from real BTG.
+     * Real BTGs are used in tests.
+     */
+    public PortableModelDefinition getBtgDefinitionFromPortableModel(PortableModel portableModel) {
+        if (portableModel.getRoot() != null && LoaderGLTF.GLTF_ROOT.equals(portableModel.getRoot().getName())) {
+            return portableModel.getRoot().kids.get(0);
+        }
+        return portableModel.getRoot();
+    }
 }

@@ -10,6 +10,7 @@ import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.testutil.EngineTestFactory;
+import de.yard.threed.engine.testutil.EngineTestUtils;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.WorldGlobal;
@@ -30,7 +31,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static de.yard.threed.engine.testutil.TestUtils.assertViewPoint;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -45,7 +45,7 @@ public class TrafficConfigTest {
 
     @BeforeAll
     static void setup() {
-        Platform platform = FgTestFactory.initPlatformForTest(false, false);
+        Platform platform = FgTestFactory.initPlatformForTest(false, false, false);
 
         EngineTestFactory.loadBundleAndWait("traffic-fg");
 
@@ -62,7 +62,7 @@ public class TrafficConfigTest {
         //SceneConfig sceneConfig = railing.getScene("Railing");
         List<NativeNode> viewpoints = railing.getViewpoints();
         assertEquals(3, viewpoints.size());
-        assertViewPoint("view3", new LocalTransform(new Vector3(40, 10, -10),
+        EngineTestUtils.assertViewPoint("view3", new LocalTransform(new Vector3(40, 10, -10),
                 Quaternion.buildFromAngles(new Degree(-20), new Degree(0), new Degree(0))), ConfigHelper.buildViewpoint(viewpoints.get(2)));
     }
 

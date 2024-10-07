@@ -40,6 +40,7 @@ public abstract class SGAnimation {
     String _name;
     SGPropertyNode _configNode;
     SGPropertyNode _modelRoot;
+    // The objects listed in the animation definition
     protected List<String> _objectNames = new ArrayList<String>();
 
     List<Node> _installedAnimations;
@@ -67,12 +68,13 @@ public abstract class SGAnimation {
     /**
      * Build animation from XML content?
      */
-    static SGAnimation/*boolean*/ animate(Node node, SGPropertyNode configNode,
+    static SGAnimation/*boolean*/ animate(Node xmlNodeOfCurrentModel, SGPropertyNode configNode,
                                           SGPropertyNode modelRoot,
                                           Options options,
                                           String path, int i) {
         String type = configNode.getStringValue("type", "none");
         SGAnimation animation = null;
+        long startTime = Platform.getInstance().currentTimeMillis();
         if (type.equals("alpha-test")) {
             // SGAlphaTestAnimation animInst(configNode, modelRoot);
             // animInst.apply(node);
@@ -94,7 +96,7 @@ public abstract class SGAnimation {
         } else if (type.equals("material")) {
             //SGMaterialAnimation animInst(configNode, modelRoot, options, path);
             SGMaterialAnimation animInst = new SGMaterialAnimation(configNode, modelRoot);
-            animInst.apply(node);
+            animInst.apply(xmlNodeOfCurrentModel);
             animation = animInst;
         } else if (type.equals("noshadow")) {
             //SGShadowAnimation animInst(configNode, modelRoot);
@@ -102,7 +104,7 @@ public abstract class SGAnimation {
         } else if (type.equals("pick")) {
 
              SGPickAnimation animInst = new SGPickAnimation(configNode, modelRoot);
-            animInst.apply(node);
+            animInst.apply(xmlNodeOfCurrentModel);
             animation = animInst;
         } else if (type.equals("knob")) {
             // SGKnobAnimation animInst(configNode, modelRoot);
@@ -115,7 +117,7 @@ public abstract class SGAnimation {
             // animInst.apply(node);
         } else if (type.equals("rotate") || type.equals("spin")) {
             SGRotateAnimation animInst = new SGRotateAnimation(configNode, modelRoot);
-            animInst.apply(node);
+            animInst.apply(xmlNodeOfCurrentModel);
             animation = animInst;
         } else if (type.equals("scale")) {
             //SGScaleAnimation animInst(configNode, modelRoot);
@@ -149,7 +151,13 @@ public abstract class SGAnimation {
             logger.warn("Animation not created: " + type);
             return null;
         }
-
+        if (animation != null) {
+            long took = Platform.getInstance().currentTimeMillis() - startTime;
+            if (took > 5) {
+                // 5ms seems to be a good threshold currently
+                logger.warn("Building " + animation.getClass().getName() + " took " + took +" ms");
+            }
+        }
         return animation;
     }
 
@@ -168,7 +176,7 @@ public abstract class SGAnimation {
      * 4.10.19: Das ist doch sehr spezifisch für Animationen, die neue Nodes (AnimationGroup) brauchen.
      * @param
      */
-    protected void apply(Node group) {
+    protected void apply(Node xmlNodeOfCurrentModel) {
 
         // the trick isType to getFirst traverse the children and then
         // possibly splice in a new group node if required.
@@ -188,7 +196,7 @@ public abstract class SGAnimation {
         //for (nameIt = _objectNames.begin(); nameIt != _objectNames.end(); ++nameIt)
         for (String nameIt : _objectNames) {
             // ob der Cast so ideal ist?
-            animationGroup = installInGroup(nameIt, (Group) group, animationGroup);
+            animationGroup = installInGroup(nameIt, (Group) xmlNodeOfCurrentModel, animationGroup);
         }
     }
 
@@ -330,7 +338,8 @@ public abstract class SGAnimation {
     }
 
     /**
-     * Ein Object in eine AnimationGroup einhaengen. Wenns noch keine AnimationGroup gibt, eine anlegen.
+     * Move an animated object from the current location in the object tree to an AnimationGroup.
+     * The AnimationGroup is created if it not yet exists.
      *
      * Das mit der AnimationGroup koennte fuer mehrere Animations auf EINER Node sein. Dann kann
      * man das evtl. in einer abbilden. Scheint aber zu frickelig.
@@ -341,17 +350,20 @@ public abstract class SGAnimation {
      * Kann (bei Fehlern) auch null liefern.
      *
      * @param name
-     * @param group
+     * @param xmlNodeOfCurrentModel
      */
-    AnimationGroup installInGroup(String name, Group group, AnimationGroup animationGroup) {
-        //int i = group.getNumChildren() - 1;
+    AnimationGroup installInGroup(String name, Group xmlNodeOfCurrentModel, AnimationGroup animationGroup) {
+        // 17.8.24: The original implementation used NodeVisitor/traverse for finding a child (children might be deeper inside tree?). Because we
+        // don't have this, we use recursive findNodeByName(). Maybe its not really the same. And there might be duplicate names. Hmm.
+        // But more severe, findNodeByName() is a performance killer (~40ms) at least in JME. Better use platform finder.
+        //int i = group.getTransform().getChildCount() - 1;
         //for (; 0 <= i; --i) {
-        // rekursiv suchen, weil ich keinen traverse habe. Das ist sicherlich nicht 100% vergleichbar.
-        // 7.10.17: Und es kann je nach Loder (zB. gltf) Nodedubletten geben. Wie sich das auswirkt? Wer weiss.
+        long startTime = Platform.getInstance().currentTimeMillis();
         SceneNode child = null;
-        List<SceneNode> nlist = group.findNodeByName(name);//getChild(i);
+        //List<SceneNode> nlist = xmlNodeOfCurrentModel.findNodeByName(name);//getChild(i);
+        List<NativeSceneNode> nlist = Platform.getInstance().findNodeByName(name,xmlNodeOfCurrentModel.nativescenenode);//getChild(i);
         if (nlist.size()>0){
-            child = nlist.get(0);
+            child = new SceneNode(nlist.get(0));
         }
         if (child == null) {
             // 10.10.18: debug statt warn um es disablen zu können. Kommt sehr oft.
@@ -360,6 +372,8 @@ public abstract class SGAnimation {
             }
             return null;
         }
+        //logger.debug("installInGroup took " + (Platform.getInstance().currentTimeMillis() - startTime) + " ms");
+
         // Check if this one isType already processed
             /*TODO if (std::find(_installedAnimations.begin(),
                     _installedAnimations.end(), child)
@@ -373,8 +387,8 @@ public abstract class SGAnimation {
 
             // Mit createAnimationGroup() wird eine Ebene fuer die Animation eingezogen.
             // Mir fehlt wohl der traverse, so dass die group zu weit oben ist. Darum gebe ich den Parent rein.
-            // Die Implementierung hier ist total undurchsichtig. Evtl. ist die Rotation aber ohne AC gedacht?? 
-            // Bei radar die z-Achse. Aber trotzdem, dan ist es an der falschen Stelle. 
+            // Die Implementierung hier ist total undurchsichtig. Evtl. ist die Rotation aber ohne AC gedacht??
+            // Bei radar die z-Achse. Aber trotzdem, dan ist es an der falschen Stelle.
             // Die AnimationGroup kommt an den Parent des ersten Child. Damit bekommt man auch Cascades.
             // create a group node on demand
             //TODO ? if (!animationGroup.valid()) {

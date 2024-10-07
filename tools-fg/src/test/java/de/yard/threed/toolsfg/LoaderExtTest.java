@@ -10,7 +10,7 @@ import de.yard.threed.core.loader.LoadedObject;
 import de.yard.threed.core.loader.LoaderAC;
 import de.yard.threed.core.loader.PortableMaterial;
 import de.yard.threed.core.loader.PortableModelDefinition;
-import de.yard.threed.core.loader.PortableModelList;
+import de.yard.threed.core.loader.PortableModel;
 import de.yard.threed.core.loader.StringReader;
 import de.yard.threed.core.platform.NativeJsonValue;
 import de.yard.threed.core.platform.Platform;
@@ -59,7 +59,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Created by thomass on 08.02.16.
  */
 public class LoaderExtTest {
-    static Platform platform = FgTestFactory.initPlatformForTest(true, false);
+    static Platform platform = FgTestFactory.initPlatformForTest(true, false, false);
 
 
     @Test
@@ -67,16 +67,16 @@ public class LoaderExtTest {
 
         String acfile = "flightgear/src/test/resources/models/CDU-777-boeing.ac";
 
-        LoaderAC ac = new LoaderAC(new StringReader(FileReader.readAsString(new File(TestUtils.locatedTestFile(acfile)))), true);
+        LoaderAC ac = new LoaderAC(new StringReader(FileReader.readAsString(new File(TestUtils.locatedTestFile(acfile)))), false);
 
         System.out.println(ac.loadedfile.dumpMaterial("\n"));
-        assertEquals(84, ac.loadedfile.objects.size());
-        LoadedObject knob = ac.loadedfile.objects.get(0);
+        assertEquals(84, ac.loadedfile.object.kids.size());
+        LoadedObject knob = ac.loadedfile.object.kids.get(0);
         //TestUtil.assertEquals("group kids", 0, cylinder.kids.size());
         assertEquals(1, knob.getFaceLists().size(), "facelists");
         TestUtil.assertVector3("loc", new Vector3(0.016473f, 0.004128f, -0.046148f), knob.location);
         //TestUtil.assertEquals("face4", 24, cylinder.getFaceLists().get(0).faces.size());
-        PortableModelList ppfile = ac.preProcess();
+        PortableModel ppfile = ac.buildPortableModel();
         ModelAssertions.assertCDU777(ppfile, false);
     }
 
@@ -92,10 +92,13 @@ public class LoaderExtTest {
         InputStream inputStream = new GZIPInputStream(new FileInputStream(TestUtils.locatedTestFile(acfile)));
         String rawac = new String(IOUtils.toByteArray(inputStream), StandardCharsets.ISO_8859_1);
 
-        boolean ignoreacworld = true;
+        // 6.8.24: No longer ignore ac 'world'
+        boolean ignoreacworld = false;
         LoaderAC loaderAC = new LoaderAC(new StringReader(rawac), ignoreacworld);
-        PortableModelList ac = loaderAC.preProcess();
-
+        PortableModel ac = loaderAC.buildPortableModel();
+        if (ac.getName() == null) {
+            ac.setName("777-200");
+        }
         GltfBuilder gltfbuilder = new GltfBuilder();
         GltfBuilderResult lf = gltfbuilder.process(ac);
 
@@ -106,12 +109,12 @@ public class LoaderExtTest {
 
         BooleanHolder loaded = new BooleanHolder(false);
 
-        ModelLoader.readGltfModelFromBundle(new ResourceLoaderFromBundle(gltfbr), false, 0, new GeneralParameterHandler<PortableModelList>() {
+        ModelLoader.readGltfModel(new ResourceLoaderFromBundle(gltfbr), new GeneralParameterHandler<PortableModel>() {
             @Override
-            public void handle(PortableModelList pml) {
+            public void handle(PortableModel pml) {
                 //18.10.23: set defaulttexturebasepath to make check happy. TODO check intention and fix
                 pml.defaulttexturebasepath = new ResourcePath("flusi");
-                check777200(pml, !ignoreacworld);
+                check777200(pml, true, !ignoreacworld);
                 loaded.setValue(true);
             }
         });
@@ -123,100 +126,5 @@ public class LoaderExtTest {
 
     }
 
-    /**
-     * a3cd-ref
-     * Skizze 10
-     */
-    @Test
-    public void testTriangulateAndNormalBuildingAc3dRef() throws Exception {
-        PortableModelList loadedfile;
-        BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "models/ac3d-ref.ac");
-        LoaderAC ac = new LoaderAC(new StringReader(br.bundle.getResource(br).getContentAsString()), br);
 
-        loadedfile = ac.preProcess();//28.10.23 ModelLoader.readModelFromBundle(new BundleResource(BundleRegistry.getBundle("data-old"),"model/ac3d-ref.ac"), false,0);
-
-        PortableModelDefinition ac3drefflat = loadedfile.getObject(0).kids.get(0);
-        checkRefCylinder(ac3drefflat, true);
-        PortableModelDefinition ac3drefsmooth = loadedfile.getObject(0).kids.get(1);
-        checkRefCylinder(ac3drefsmooth, false);
-    }
-
-    /**
-     * Den RefCylinder pruefen, der entwder mit flat oder smoothshading erstellt wurde.
-     *
-     * @param ac3dref
-     * @param flat
-     */
-    private void checkRefCylinder(PortableModelDefinition ac3dref, boolean flat) {
-        Vector3 refnormal0 = new Vector3(0.92387956f, 0, -0.38268346f);
-        Vector3 refnormal1 = new Vector3(0.38268346f, 0, -0.92387956f);
-        Vector3 refnormal0smooth = new Vector3(1, 0, 0);
-        //Die Refwerte sind einfach uebernommen, scheinen aber nicht ganz richtig. x und z sollten doch absolut gleich sein.TODO
-        Vector3 refnormal1smooth = new Vector3(0.603748f, 0, -0.603748f);
-        int segments = 8;
-        /*ist schon preprocessed TestUtil.assertEquals("vertices", (segments + 1) * 2, ac3dref.vertices.size());
-        List<SimpleGeometry> geolist = GeometryHelper.prepareGeometry(ac3dref.vertices, ac3dref.faces, null, false, ac3dref.crease);*/
-        SimpleGeometry geo = ac3dref.geolist.get(0);
-        // Bei der flat Variante gibt es wegen duplizierter Vertices fast doppelt zu viel.
-        int basesize = (segments + 1) * 2;
-        int size = basesize;
-        if (flat) {
-            size += (segments - 1) * 2;
-        }
-        TestUtil.assertEquals("vertices", size, geo.getVertices().size());
-        TestUtil.assertEquals("normals", size, geo.getNormals().size());
-        TestUtil.assertEquals("indices", 2 * 8 * 3, geo.getIndices().length);
-
-        // Die erste zwei Faces pruefen.
-        TestUtil.assertFace3("face3 0", new int[]{0, 2, 1}, geo.getIndices(), 0);
-        TestUtil.assertFace3("face3 1", new int[]{3, 1, 2}, geo.getIndices(), 1);
-        // Sollten im Face dieselbe Normale haben (bei flat auch in Normallist)
-        //TODO TestUtil.assertVector3("facenormals", ((Face3) geo.getFaces().faces.get(0)).normal, refnormal0);
-        //TODO TestUtil.assertVector3("facenormals", ((Face3) geo.getFaces().faces.get(0)).normal, ((Face3) geo.getFaces().faces.get(1)).normal);
-        if (flat) {
-            // Die zweiten zwei Faces pruefen.
-            TestUtil.assertFace3("face3 2", new int[]{18, 4, 19}, geo.getIndices(), 2);
-            TestUtil.assertFace3("face3 3", new int[]{5, 19, 4}, geo.getIndices(), 3);
-            // Der Vertex 2 muesste der erste duplizierte sein, der 3 der zweite; also die linke Seite von Face 2
-            // 15.12.16: Das Duplizieren geht nicht mehr so systematisch. Darum nicht darauf verlassen; die Face Reihenfolge hat sich aber eigentlich nicht geändert.
-            // Duplizierung ist doch noch so wie hier angenommen. TODO Mit assertFaceIndexNormals kann man doch jetzt auch alle Normale testen
-            TestUtil.assertFaceIndexNormals(geo.getIndices(), geo.getNormals(), new int[]{0, 1}, refnormal0);
-            for (int i = 0; i < 4; i++) {
-                TestUtil.assertVector3("facenormals " + i + ":", refnormal0, geo.getNormals().getElement(i));
-            }
-
-            TestUtil.assertVector3("facenormals", refnormal1, geo.getNormals().getElement(basesize));
-            TestUtil.assertVector3("facenormals", refnormal1, geo.getNormals().getElement(basesize + 1));
-            TestUtil.assertVector3("facenormals", refnormal1, geo.getNormals().getElement(4));
-            TestUtil.assertVector3("facenormals", refnormal1, geo.getNormals().getElement(5));
-            //Fuer die restlichen pruefen, dass sie identisch sind
-            for (int i = 0; i < segments - 1; i++) {
-                Vector3 refn = geo.getNormals().getElement(4 + (i * 2));
-                TestUtil.assertVector3("facenormals " + i, refn, geo.getNormals().getElement(basesize + (i * 2)));
-                TestUtil.assertVector3("facenormals " + i, refn, geo.getNormals().getElement(basesize + (i * 2) + 1));
-                TestUtil.assertVector3("facenormals " + i, refn, geo.getNormals().getElement(5 + (i * 2)));
-            }
-
-            TestUtil.assertFace3("face3 2", new int[]{basesize + 0, 4, basesize + 1}, geo.getIndices(), 2);
-
-        } else {
-            //Die Normalen an den Ausenkanten (0,1 und am Ende) stimmen nicht, weil die Geo nicht geschlossen ist und damit an der Kante nicht
-            //gemittelt werden kann.
-            //TODO stimmt nicht ganz TestUtil.assertVector3("smoothvertexnormals", refnormal1smooth, geo.normals.get(2));
-            //TODO stimmt nicht ganz TestUtil.assertVector3("smoothvertexnormals", refnormal1smooth, geo.normals.get(3));
-
-        }
-
-        // TestUtil.assertFace3("face3 2", new int[]{0, 1, 2}, (Face3) f.faces.get(2));
-        //TestUtil.assertFace3("face3 3", new int[]{0, 2, 3}, (Face3) f.faces.get(3));
-
-        /*
-        // 4xFace3 ergibt eine VBO Groesse von 12
-        TestUtil.assertEquals("Anzahl Normals", 12, normals.size());
-        // die ersten 6 Normalen zeigen alle nach unten (y=-1), die anderen 6 nach oben
-        for (int i = 0; i < 6; i++) {
-            TestUtil.assertVector3("normal down" + i, new Vector3(0, -1, 0), normals.get(i));
-            TestUtil.assertVector3("normal up " + i, new Vector3(0, 1, 0), normals.get(6 + i));
-        }*/
-    }
 }

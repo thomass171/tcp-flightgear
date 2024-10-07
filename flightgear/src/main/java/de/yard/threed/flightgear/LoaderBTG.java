@@ -10,8 +10,9 @@ import de.yard.threed.core.loader.BinaryLoader;
 import de.yard.threed.core.loader.GeoMat;
 import de.yard.threed.core.loader.InvalidDataException;
 import de.yard.threed.core.loader.LoadedObject;
+import de.yard.threed.core.loader.PortableMaterial;
 import de.yard.threed.core.loader.PortableModelDefinition;
-import de.yard.threed.core.loader.PortableModelList;
+import de.yard.threed.core.loader.PortableModel;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.flightgear.core.group_tci_list;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialCache;
@@ -165,6 +166,8 @@ public class LoaderBTG extends BinaryLoader {
 
     public SGTileGeometryBin tileGeometryBin;
 
+    public static String BTG_ROOT = "btgroot";
+
     /**
      * Anscheinend ist das ganze ein einziges Object.
      */
@@ -173,6 +176,8 @@ public class LoaderBTG extends BinaryLoader {
         this.options = options;
         this.boptions = boptions;
         this.source = source;
+        // 25.9.24: Needs new class extension
+        loadedfile = new LoadedBtgFile();
         load();
     }
 
@@ -193,9 +198,10 @@ public class LoaderBTG extends BinaryLoader {
         //sgSimpleBuffer buf;// (32768);  // 32 Kb
 
         BTGObject currentobject = new BTGObject();
-        loadedfile.objects.add(currentobject);
+        //25.9.24 loadedfile.objects.add(currentobject);
+        loadedfile.object = currentobject;
         // zero out structures
-        loadedfile.gbs_center = null;// new SGVec3d(0, 0, 0);
+        ((LoadedBtgFile)loadedfile).gbs_center = null;// new SGVec3d(0, 0, 0);
         gbs_radius = (float) 0.0;
 
         //wgs84_nodes = new ArrayList();
@@ -331,7 +337,7 @@ public class LoaderBTG extends BinaryLoader {
                 for (j = 0; j < nelements; ++j) {
                     nbytes = buf.readUInt();//sgReadUInt(fp);
                     ByteArrayInputStream buf1 = buf.readSubbuffer(nbytes);//sgReadBytes(fp, nbytes/*, ptr*/);
-                    loadedfile.gbs_center = readVec3d(buf1);
+                    ((LoadedBtgFile)loadedfile).gbs_center = readVec3d(buf1);
                     gbs_radius = buf1.readFloat();
                 }
             } else if (obj_type == SG_VERTEX_LIST) {
@@ -499,7 +505,7 @@ public class LoaderBTG extends BinaryLoader {
      * @return
      */
     @Override
-    public PortableModelList preProcess() {
+    public PortableModel buildPortableModel() {
         SGMaterialLib matlib = null;
         /*osg::ref_ptr<*/
         SGMaterialCache matcache = null;
@@ -537,7 +543,7 @@ public class LoaderBTG extends BinaryLoader {
 
         //TODO double
         /*SGVec3d*/
-        center = (/*tile.*/loadedfile.gbs_center);
+        center = (/*tile.*/((LoadedBtgFile)loadedfile).gbs_center);
         SGGeod geodPos = SGGeod.fromCart(center);
         //SGQuatd hlOr = SGQuatd::fromLonLat(geodPos)*SGQuatd::fromEulerDeg(0, 0, 180);
 
@@ -572,26 +578,36 @@ public class LoaderBTG extends BinaryLoader {
 
 
         List<GeoMat> gml = tileGeometryBin.getSurfaceGeometryPart1(matcache, useVBOs);
-        PortableModelList ppfile = new PortableModelList(null, (List<GeoMat>) null/*gml*/);
-        ppfile.setName(source);
         // eine Objectliste oder geoliste? Mal doch lieber geoliste. Scheint irgendwie passender.
         PortableModelDefinition ppo = new PortableModelDefinition();
-        ppo.geolist = new ArrayList<SimpleGeometry>();
-        ppo.geolistmaterial = new ArrayList<String>();
+        //1.8.24 ppo.geolist = new ArrayList<SimpleGeometry>();
+        //1.8.24 ppo.geolistmaterial = new ArrayList<String>();
         ppo.translation = center;
-        ppfile.addModel(ppo);
+
+        // 31.7.24: Since PortableModel no longer has a top level list, we need a synthetic root node like GLTF
+        // uses? BTG content will end in 'kids' (with hierarchy from file). Maybe source is a path. Maybe better last part only which should be the bucket.
+        ppo.setName(BTG_ROOT+"-"+StringUtils.substringBeforeLast(StringUtils.substringAfterLast(source,"/"),".btg"));
+
+        PortableModel ppfile = new PortableModel(ppo, null, (List<GeoMat>) null/*gml*/);
+        ppfile.setName(source);
+
         int index = 0;
         for (GeoMat gm : gml) {
-            ppo.geolist.add(gm.geo);
+            //ppo.geolist.add(gm.geo);
+            String gmMaterial;
             if (matlib == null) {
                 //landdclass als material name
-                ppo.geolistmaterial.add(gm.landclass);
+                ////1.8.24  ppo.geolistmaterial.add(gm.landclass);
+                gmMaterial = gm.landclass;
             } else {
                 // Einfach den Index als Material name. Vorsicht: Materials werden teilweise mehrfach verwendet! Darum duplizieren.
-                ppo.geolistmaterial.add("" + index);
+                //1.8.24 ppo.geolistmaterial.add("" + index);
+                gmMaterial = "" + index;
                 //LoadedMaterial ppm = new LoadedMaterial(gm.mat);
                 //das Material selber hat auch noch keinen Namen. Ohne matlib ist mat aber null
                 //5.10.23: Is there a solution if mat is null? Maybe just don't add it. 'gm.landclass' is not set properly.
+                //1.8.24: Not sure what effect the simplification of PortableModelDefinition has. Duplicate
+                //to parent(!!) still needed?? This might spoil the idea of reusing it in shared models.
                 if (gm.mat == null) {
                     logger.error("No material for land class '" + gm.landclass + "'. Will lead to hole in tile!");
                 } else {
@@ -600,6 +616,7 @@ public class LoaderBTG extends BinaryLoader {
             }
             //27.12.17: textureindex gibt es nicht mehr? TODO: Doch, fuer landclasses schon. Setzen bzw. klären
             index++;
+            ppo.addChild(new PortableModelDefinition(gm.geo,gmMaterial ));
         }
         //PreprocessedLoadedFile ppfile = new PreprocessedLoadedFile(gml);
         return ppfile;
@@ -1020,7 +1037,7 @@ public class LoaderBTG extends BinaryLoader {
 
     public List</*7.2.18 Native*/Vector3> get_wgs84_nodes() {
         //Das sind  wirklich die gelesenen ohne Manipulation
-        return loadedfile.objects.get(0).getVertices();
+        return loadedfile.object.getVertices();
     }
 
     public List<Vector2> get_texcoords() {

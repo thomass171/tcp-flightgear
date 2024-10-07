@@ -79,11 +79,19 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.HangarScene");
 
-        // Greenwich
-        properties.put("initialLocation", "51.47752,0,500");
-        properties.put("initialHeading", "270");
-        properties.put("scene", "de.yard.threed.trafficadvanced.apps.AdvancedSceneryScene");
-
+        boolean blogSample = false;
+        if (blogSample) {
+            // Greenwich
+            //properties.put("initialLocation", "51.47752,0,500");
+            //properties.put("initialHeading", "270");
+            // Hamburg (kein tile?)
+            //properties.put("initialLocation", "53.45,10.08,500");
+            //properties.put("initialHeading", "300");
+            // Edinburgh
+            //properties.put("initialLocation", "55.99,-3.2,1500");
+            //properties.put("initialHeading", "270");
+            properties.put("scene", "de.yard.threed.trafficadvanced.apps.AdvancedSceneryScene");
+        }
         return properties;
     }
 

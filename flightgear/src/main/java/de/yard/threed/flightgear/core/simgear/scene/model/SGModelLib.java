@@ -1,7 +1,10 @@
 package de.yard.threed.flightgear.core.simgear.scene.model;
 
+import de.yard.threed.core.loader.PortableModel;
+import de.yard.threed.core.loader.PreparedModel;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.engine.SceneNode;
+import de.yard.threed.engine.platform.common.PreparedModelCache;
 import de.yard.threed.flightgear.core.osgdb.Options;
 import de.yard.threed.flightgear.core.osgdb.Registry;
 import de.yard.threed.flightgear.core.osgdb.osgDB;
@@ -13,13 +16,21 @@ import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.StringUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Class for loading and managing models with XML wrappers.
+ *
+ * 30.8.24: Its unclear how this class is involved for shared models. Proxies are mentioned here and are somehow related to shared models. But the basic idea
+ * remains strange. Maybe it is an OSG feature.
+ * But we use this class now as a shared model registry.
  */
 public class SGModelLib {
-    static Log logger = Platform.getInstance().getLog(SGModelLib.class);
+
     static SGPropertyNode static_propRoot;
 
+    public static PreparedModelCache preparedModelCache=new PreparedModelCache();
 
     // panel_func static_panelFunc;
 
@@ -66,7 +77,7 @@ public class SGModelLib {
     }
 
     static SceneNode loadFile(String path, SGReaderWriterOptions options) {
-        logger.debug("loadFile: path=" + path);
+        getLogger().debug("loadFile: path=" + path);
 
         if (StringUtils.endsWith(path, ".ac")) {
             //TODO effects
@@ -94,7 +105,7 @@ public class SGModelLib {
 
     public static SceneNode loadModel(String path, SGPropertyNode prop_root, SGModelData data, boolean load2DPanels) {
 
-        logger.debug("loadModel: path=" + path);
+        getLogger().debug("loadModel: path=" + path);
 
         SGReaderWriterOptions opt = null;
             opt = SGReaderWriterOptions.copyOrCreate(Registry.getInstance().getOptions());
@@ -109,10 +120,19 @@ public class SGModelLib {
         if (n != null && StringUtils.empty(n.getName()))
             n.setName("Direct loaded model \"" + path + "\"");
 
-        logger.debug("loadModel completed: name=" + n.getName());
+        getLogger().debug("loadModel completed: name=" + n.getName());
 
         return n;
 
+    }
+
+    private static Log getLogger(){
+        Log logger = Platform.getInstance().getLog(SGModelLib.class);
+        return logger;
+    }
+
+    public static void clear() {
+        preparedModelCache=new PreparedModelCache();
     }
 
 

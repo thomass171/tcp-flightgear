@@ -3,6 +3,9 @@ This directory 'fg-raw-data' contains original FG data files like scenery tiles,
 These files are needed for unit testing and for running the scenes. Some of the files are
 just copied to a bundle, others are converted additionally.
 
+The GLTF files in here use the traditional pre 2024 format with multiple
+primitives per mesh. The files are kept as reference for now.
+
 # Content
 
 ## bluebird

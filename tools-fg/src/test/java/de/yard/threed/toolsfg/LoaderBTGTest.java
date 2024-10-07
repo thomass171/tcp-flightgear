@@ -5,7 +5,7 @@ import de.yard.threed.core.buffer.SimpleByteBuffer;
 import de.yard.threed.core.loader.InvalidDataException;
 import de.yard.threed.core.loader.LoadedObject;
 import de.yard.threed.core.loader.LoaderGLTF;
-import de.yard.threed.core.loader.PortableModelList;
+import de.yard.threed.core.loader.PortableModel;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleData;
 import de.yard.threed.core.resource.BundleRegistry;
@@ -13,6 +13,7 @@ import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.test.testutil.TestUtil;
+import de.yard.threed.flightgear.LoadedBtgFile;
 import de.yard.threed.flightgear.LoaderBTG;
 import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.flightgear.core.FlightGear;
@@ -50,17 +51,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @Slf4j
 public class LoaderBTGTest {
     // 'fullFG' needed for sgmaterial via bundle
-    static Platform platform = FgTestFactory.initPlatformForTest(true, true);
+    static Platform platform = FgTestFactory.initPlatformForTest(true, true, true);
 
     /**
      * also see SGTileGeometryBinTest and Wiki
      */
     @Test
-    public void testBTG() {
+    public void testRefBTG() {
         // try {
         LoaderBTG btg = BtgModelAssertions.loadRefBtg(null);
-        TestUtil.assertEquals("", 1, btg.loadedfile.objects.size());
-        LoadedObject obj = btg.loadedfile.objects.get(0);
+        LoadedObject obj = btg.loadedfile.object;
         TestUtil.assertEquals("vertices", 17740, obj.vertices.size());
         TestUtil.assertEquals("normals", 17353, obj.normals.size());
         TestUtil.assertEquals("texcoords", 19008, btg.texcoords.size());
@@ -74,13 +74,13 @@ public class LoaderBTGTest {
         // Faces werden bei BTG nicht gefuellt
         TestUtil.assertEquals("face lists", 0, obj.getFaceLists().size());
         TestUtil.assertEquals("material list", 0, obj.facelistmaterial.size());
-        TestUtil.assertVector3("gbs_center", FlightGear.refbtgcenter, btg.loadedfile.gbs_center);
+        TestUtil.assertVector3("gbs_center", FlightGear.refbtgcenter, ((LoadedBtgFile)btg.loadedfile).gbs_center);
         //das im Wiki stimmt nicht TestUtil.assertVector3("getFirst vertex",new Vector3(4776809.5f, 1466116.4f, 3950700.5f),obj.vertices.get(0));
         //List<Face> facelist = shutlayer.getFaceLists().get(0);
         //assertEquals("faces", 19408, facelist.size());
-        PortableModelList ppfile = btg.preProcess();
+        PortableModel portableModel = btg.buildPortableModel();
         // die 17 materials sind aber alle null, weil es keine Materiallib gibt. Ob das ideal ist, naja, so ist es jetzt aber.
-        ModelAssertions.assertRefbtg(ppfile, false);
+        ModelAssertions.assertRefbtg(portableModel, false, false);
     }
 
     /**
@@ -102,7 +102,7 @@ public class LoaderBTGTest {
         assertEquals(4070, loaderBTG.tris_n.size());
         assertEquals(4070, loaderBTG.tri_materials.size());
 
-        PortableModelList ppfile = loaderBTG.preProcess();
+        PortableModel ppfile = loaderBTG.buildPortableModel();
         SGTileGeometryBin tileGeometryBin = loaderBTG.tileGeometryBin;
         // 34 just taken as reference
         assertEquals(34, tileGeometryBin.materialTriangleMap.size());
@@ -130,7 +130,7 @@ public class LoaderBTGTest {
             LoaderBTG loaderBTG = new LoaderBTG(b, null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()), btgfile);
             //assertEquals(4070, loaderBTG.tri_materials.size());
 
-            PortableModelList ppfile = loaderBTG.preProcess();
+            PortableModel ppfile = loaderBTG.buildPortableModel();
             SGTileGeometryBin tileGeometryBin = loaderBTG.tileGeometryBin;
             // 16 just taken as reference
             assertEquals(16, tileGeometryBin.materialTriangleMap.size());

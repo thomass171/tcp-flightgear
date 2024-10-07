@@ -35,7 +35,7 @@ public class SGMaterialTest {
 
     @BeforeAll
     static void setup() {
-        FgTestFactory.initPlatformForTest(false, true);
+        FgTestFactory.initPlatformForTest(false, true, true);
     }
 
     /**

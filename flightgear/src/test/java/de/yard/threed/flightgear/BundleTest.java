@@ -7,7 +7,7 @@ import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.ResourcePath;
 import de.yard.threed.engine.testutil.EngineTestFactory;
 import de.yard.threed.engine.testutil.PlatformFactoryHeadless;
-import de.yard.threed.engine.testutil.TestHelper;
+import de.yard.threed.engine.testutil.EngineTestUtils;
 import de.yard.threed.flightgear.testutil.FgTestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

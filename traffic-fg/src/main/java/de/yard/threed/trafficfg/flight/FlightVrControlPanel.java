@@ -54,7 +54,7 @@ public class FlightVrControlPanel {
 
         // keep space for right button by -0.1
         DimensionF spinnerSize = new DimensionF(ControlPanelWidth - 0.1, ControlPanelRowHeight);
-        Material mat = Material.buildBasicMaterial(controlPanelBackground, false);
+        Material mat = Material.buildBasicMaterial(controlPanelBackground, null);
 
         ControlPanel cp = new ControlPanel(new DimensionF(ControlPanelWidth, ControlPanelRows * ControlPanelRowHeight), mat, 0.01);
         PanelGrid panelGrid = new PanelGrid(ControlPanelWidth, ControlPanelRowHeight, ControlPanelRows, ControlPanelColWidth);

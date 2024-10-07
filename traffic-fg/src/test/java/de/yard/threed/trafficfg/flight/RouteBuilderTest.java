@@ -30,7 +30,7 @@ public class RouteBuilderTest {
 
     //static Platform platform = EngineTestFactory.initPlatformForTest( new String[] {"engine","data","data-old","osmscenery"},
       //      new SimpleHeadlessPlatformFactory(JavaBundleResolverFactory.bySimplePath(GranadaPlatform.GRANDA_BUNDLE_PATH)));
-    Platform platform = FgTestFactory.initPlatformForTest(true, false);
+    Platform platform = FgTestFactory.initPlatformForTest(true, false, false);
 
     @Test
     public void testEddkPlatzrunde() throws Exception{

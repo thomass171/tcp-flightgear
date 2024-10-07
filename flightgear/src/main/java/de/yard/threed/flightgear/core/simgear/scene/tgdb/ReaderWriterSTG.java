@@ -51,7 +51,6 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
     String basePath;
     //26.10.18: die shared mal ignorieren, weil das viele sind und das noch nicht wirklich geshared wird
     //String[] blacklist = new String[]{"Models/Power/generic_pylon_50m.ac"};
-    static boolean ignoreshared = true;
     //boolean _foundBase;
     //List<_Object> _objectList = new ArrayList<_Object>();
     //List<_ObjectStatic> _objectStaticList = new ArrayList<_ObjectStatic>();
@@ -179,7 +178,7 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
      *
      * @return
      */
-    public /*BuildResult*/Group build(/*10.6.17 BundleResource bpath*/String fileName, Options options, LoaderOptions boptions) {
+    public /*BuildResult*/Group build(/*10.6.17 BundleResource bpath*/String fileName, Options options, LoaderOptions boptions, boolean ignoreshared) {
         //filename isType a pathless stg filename
         //String fileName = bpath.getName();
         if (terrainloaddebuglog) {
@@ -211,7 +210,7 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
         // In contrast 123.stg uses the search paths to load a set of stg
         // files spread across the scenery directories.
         if (!osgDB.getSimpleFileName(fileName).equals(fileName)) {
-            if (!modelBin.parseSTG(null, fileName, options, boptions, basePath, modelbundle))
+            if (!modelBin.parseSTG(null, fileName, options, boptions, basePath, modelbundle, ignoreshared))
                 return null;//BuildResult.FILE_NOT_FOUND;
         } else {
             // For stg meta files, we need options for the search path.
@@ -228,9 +227,9 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
             // Es gibt (noch?) keinen Searchpath fuer Bundle. Offenbar würde er alle stgs lesen die er findet.
             // Das stg kann es aber in "Objects" und in "Terrain" geben. 
             BundleResource br = new BundleResource(bundle, new ResourcePath("Objects/" + basePath), fileName);
-            modelBin.parseSTG(br, null, options, boptions, basePath, modelbundle);
+            modelBin.parseSTG(br, null, options, boptions, basePath, modelbundle, ignoreshared);
             br = new BundleResource(bundle, new ResourcePath("Terrain/" + basePath), fileName);
-            modelBin.parseSTG(br, null, options, boptions, basePath, modelbundle);
+            modelBin.parseSTG(br, null, options, boptions, basePath, modelbundle, ignoreshared);
 
             // Stop scanning once an object base isType found
             // This isType considered a meta file, so apply the scenery path search
@@ -267,6 +266,7 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
     class _ModelBin {
         public boolean _foundBase;
         List<_Object> _objectList = new ArrayList<_Object>();
+        // 23.8.24: Also contains shared objects
         List<_ObjectStatic> _objectStaticList = new ArrayList<_ObjectStatic>();
         List<_Sign> _signList = new ArrayList<_Sign>();
 
@@ -284,7 +284,7 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
          * @param options
          * @return
          */
-        boolean parseSTG(BundleResource bpath, String absoluteFileName, Options options, LoaderOptions boptions, String innerbasePath, Bundle innermodelbundle) {
+        boolean parseSTG(BundleResource bpath, String absoluteFileName, Options options, LoaderOptions boptions, String innerbasePath, Bundle innermodelbundle, boolean ignoreshared) {
             StringReader stream = null;
             String filePath = null;
             ResourcePath bfilePath = null;
@@ -476,6 +476,7 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
                             obj._name = name;
                             obj._agl = (token.equals("OBJECT_SHARED_AGL"));
                             obj._proxy = false;
+                            obj.shared = true;
                             //in >> obj._lon >> obj._lat >> obj._elev >> obj._hdg >> obj._pitch >> obj._roll;
                             if (parts.length > 2) {
                                 obj._lon = new Degree(Util.parseFloat(parts[2]));
@@ -714,6 +715,8 @@ class _ObjectStatic {
     String _name;
     boolean _agl = false;
     boolean _proxy = false;
+    // As long as we don't understand 'proxies' use new flag for shared.
+    boolean shared = false;
     Degree _lon = null, _lat = null;
     double _elev = 0;
     double _hdg = 0, _pitch = 0, _roll = 0;

@@ -1,9 +1,13 @@
 package de.yard.threed.flightgear;
 
+import de.yard.threed.core.BuildResult;
 import de.yard.threed.core.ModelBuildDelegate;
-import de.yard.threed.core.Util;
-import de.yard.threed.core.platform.Config;
+import de.yard.threed.core.ModelPreparedDelegate;
+import de.yard.threed.core.loader.PreparedModel;
+import de.yard.threed.core.platform.AsyncHttpResponse;
+import de.yard.threed.core.platform.AsyncJobDelegate;
 import de.yard.threed.core.platform.Log;
+import de.yard.threed.core.platform.NativeBundleResourceLoader;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.ResourceLoader;
@@ -11,10 +15,16 @@ import de.yard.threed.core.resource.ResourcePath;
 import de.yard.threed.engine.ModelFactory;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.platform.EngineHelper;
+import de.yard.threed.engine.platform.ResourceLoaderFromDelayedBundle;
 import de.yard.threed.engine.platform.common.ModelLoader;
+import de.yard.threed.flightgear.core.simgear.scene.model.SGModelLib;
 
 import static de.yard.threed.engine.platform.EngineHelper.LOADER_APPLYACPOLICY;
 
+/**
+ * Load ac/gltf. Not for XML.
+ * Extracted from ModelLoader.
+ */
 public class FgModelHelper {
     static Log logger = Platform.getInstance().getLog(FgModelHelper.class);
 
@@ -91,5 +101,40 @@ public class FgModelHelper {
             }
         }
         return resourceLoader;
+    }
+
+    public static void buildFromPreparedModel(PreparedModel preparedModel, ModelBuildDelegate modelBuildDelegate, int options) {
+        BuildResult r = ModelLoader.buildModelFromPreparedModel(preparedModel, options);
+        modelBuildDelegate.modelBuilt(r);
+    }
+
+    /**
+     * Added 8/2024
+     */
+    public static void buildSharedModel(BundleResource pendingbmodelpath, ResourcePath finalbtexturepath, ModelBuildDelegate modelBuildDelegate, int options2) {
+        NativeBundleResourceLoader bundleResourceLoader = Platform.getInstance().buildResourceLoader(pendingbmodelpath.bundle.name, null);
+
+        // Das Filemapping greift nur, wenn das acpp/gltf auch existiert.
+        ResourceLoader resourceLoaderFromDelayedBundle = mapFilename(new ResourceLoaderFromDelayedBundle(pendingbmodelpath, bundleResourceLoader), true, options2);
+        resourceLoaderFromDelayedBundle.loadResource(new AsyncJobDelegate<AsyncHttpResponse>() {
+            @Override
+            public void completed(AsyncHttpResponse response) {
+                // Still too early to check model lib because the first load thread is still queued
+                ModelLoader.prepareModel(resourceLoaderFromDelayedBundle, finalbtexturepath, new ModelPreparedDelegate() {
+                    @Override
+                    public void modelPrepared(PreparedModel preparedModel) {
+                        FgModelHelper.buildFromPreparedModel(preparedModel, modelBuildDelegate, options2);
+                    }
+                }, SGModelLib.preparedModelCache);
+            }
+        });
+    }
+
+    public static void buildSharedModel(BundleResource pendingbmodelpath, ResourcePath finalbtexturepath, ModelBuildDelegate modelBuildDelegate) {
+        int options = EngineHelper.LOADER_USEGLTF;
+        if (pendingbmodelpath.getExtension().equals("ac")) {
+            options |= LOADER_APPLYACPOLICY;
+        }
+        buildSharedModel(pendingbmodelpath, finalbtexturepath, modelBuildDelegate, options);
     }
 }

@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 @Slf4j
 public class ElevationTest {
-    Platform platform = FgTestFactory.initPlatformForTest(false, true);
+    Platform platform = FgTestFactory.initPlatformForTest(false, true, true);
 
     @Test
     public void testEDDKGroundnetElevation() throws Exception {

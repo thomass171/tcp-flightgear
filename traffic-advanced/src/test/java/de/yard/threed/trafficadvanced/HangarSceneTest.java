@@ -16,7 +16,10 @@ import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.trafficadvanced.apps.HangarScene;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -49,22 +52,34 @@ public class HangarSceneTest {
 
         assertEquals(INITIAL_FRAMES, sceneRunner.getFrameCount());
 
-        String[] bundleNames = BundleRegistry.getBundleNames();
-        // 3 might be correct
-        assertEquals(3, bundleNames.length);
-        //??assertNotNull(BundleRegistry.getBundle("fgdatabasic"));
+        List<String> expectedBundles = new ArrayList<>(List.of("engine", "data", "traffic-advanced", "traffic-fg", "fgdatabasic"));
+        if (initialVehicle != null) {
+            expectedBundles.add(initialVehicle);
+        } else {
+            expectedBundles.add("bluebird");
+        }
+        TestUtils.waitUntil(() -> {
+            sceneRunner.runLimitedFrames(5);
+            return TestUtils.listComplete(Arrays.asList(BundleRegistry.getBundleNames()), expectedBundles);
+        }, 60000);
 
-        assertEquals(4, ((HangarScene) sceneRunner.ascene).vehiclelist.size(), "size of vehiclelist");
-
-        sceneRunner.runLimitedFrames(50);
-        assertTrue(((HangarScene) sceneRunner.ascene).modelInited, "modelInited");
+        List<String> expectedVehicles = List.of("bluebird", "c172p", "777");
+        TestUtils.waitUntil(() -> {
+            sceneRunner.runLimitedFrames(5);
+            return TestUtils.listComplete(((HangarScene) sceneRunner.ascene).vehiclelist, expectedVehicles);
+        }, 30000);
 
         TestUtils.waitUntil(() -> {
             sceneRunner.runLimitedFrames(5);
-            return EcsHelper.findEntitiesByName(initialVehicle == null ? "c172p" : initialVehicle).size() > 0;
+            return ((HangarScene) sceneRunner.ascene).modelInited;
+        }, 30000);
+
+        TestUtils.waitUntil(() -> {
+            sceneRunner.runLimitedFrames(5);
+            return EcsHelper.findEntitiesByName(initialVehicle == null ? "bluebird" : initialVehicle).size() > 0;
         }, 60000);
 
-        EcsEntity initial = EcsHelper.findEntitiesByName(initialVehicle == null ? "c172p" : initialVehicle).get(0);
+        EcsEntity initial = EcsHelper.findEntitiesByName(initialVehicle == null ? "bluebird" : initialVehicle).get(0);
         assertNotNull(initial);
 
     }
@@ -78,7 +93,7 @@ public class HangarSceneTest {
         if (initialVehicle != null) {
             properties.put("initialVehicle", initialVehicle);
         }
-        FgTestFactory.initPlatformForTest(properties, false, true);
+        FgTestFactory.initPlatformForTest(properties, false, true, true);
 
         sceneRunner = (SceneRunnerForTesting) SceneRunnerForTesting.getInstance();
         sceneRunner.runLimitedFrames(INITIAL_FRAMES);

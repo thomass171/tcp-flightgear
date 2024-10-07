@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static de.yard.threed.engine.testutil.TestUtils.assertViewPoint;
+import static de.yard.threed.engine.testutil.EngineTestUtils.assertViewPoint;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -35,7 +35,7 @@ public class AirportConfigTest {
 
     @BeforeAll
     static void setup() {
-        Platform platform = FgTestFactory.initPlatformForTest(false, false);
+        Platform platform = FgTestFactory.initPlatformForTest(false, false, false);
         EngineTestFactory.loadBundleAndWait("traffic-fg");
     }
 

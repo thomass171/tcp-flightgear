@@ -3,6 +3,7 @@ package de.yard.threed.flightgear.core.simgear.scene.model;
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.Quaternion;
 import de.yard.threed.core.platform.NativeCollision;
+import de.yard.threed.core.platform.Platform;
 import de.yard.threed.engine.Ray;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.core.Vector3;

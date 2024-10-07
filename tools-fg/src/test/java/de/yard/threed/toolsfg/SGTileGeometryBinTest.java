@@ -1,7 +1,7 @@
 package de.yard.threed.toolsfg;
 
 import de.yard.threed.core.geometry.SimpleGeometry;
-import de.yard.threed.core.loader.PortableModelList;
+import de.yard.threed.core.loader.PortableModel;
 import de.yard.threed.core.platform.Platform;
 
 import de.yard.threed.flightgear.LoaderBTG;
@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 public class SGTileGeometryBinTest {
     // 'fullFG' needed for sgmaterial via bundle
-    static Platform platform = FgTestFactory.initPlatformForTest(true,true);
+    static Platform platform = FgTestFactory.initPlatformForTest(true,true,true);
 
     @Test
     public void testSurfaceGeometryOhneMaterial() {
@@ -117,8 +117,8 @@ public class SGTileGeometryBinTest {
 
 
         //preprocess Test ist auch in LoaderTest. Hier aber mit Materiallib
-        PortableModelList ppfile = refbtg.preProcess();
-        ModelAssertions.assertRefbtg(ppfile, true);
+        PortableModel ppfile = refbtg.buildPortableModel();
+        ModelAssertions.assertRefbtg(ppfile, true, false);
     }
 
 

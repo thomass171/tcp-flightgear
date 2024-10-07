@@ -3,6 +3,7 @@ package de.yard.threed.trafficfg.apps;
 
 import de.yard.threed.core.Color;
 import de.yard.threed.core.Degree;
+import de.yard.threed.core.Dimension;
 import de.yard.threed.core.DimensionF;
 import de.yard.threed.core.Event;
 import de.yard.threed.core.LocalTransform;
@@ -104,7 +105,7 @@ public class SceneryScene extends Scene {
         // 21.7.24: TerraSync-model isn't used anyway currently due to flag 'ignoreshared'. So save the time and memory for loading it.
         // "fgdatabasic" and "traffic-fg" are needed for bluebird
         // 'TerraySync' is loaded at runtime by TerraSyncBundleResolver' that is set up by the platform(using HOSTDIRFG on desktop and "bundles" in webgl)
-        return new String[]{"engine", /*FlightGear.getBucketBundleName("model"),*/ "sgmaterial", "fgdatabasic", "traffic-fg"};
+        return new String[]{"engine", FlightGear.getBucketBundleName("model")+"-delayed", "sgmaterial", "fgdatabasic", "traffic-fg"};
     }
 
     /**
@@ -206,6 +207,11 @@ public class SceneryScene extends Scene {
         settings.aasamples = 4;
         settings.vrready = true;
         settings.minfilter = EngineHelper.TRILINEAR;
+    }
+
+    @Override
+    public Dimension getPreferredDimension() {
+        return new Dimension(1280, 900);
     }
 
     public void addLight() {
@@ -352,7 +358,7 @@ public class SceneryScene extends Scene {
      */
     private ControlPanel buildVrControlPanel() {
         Color backGround = Color.LIGHTBLUE;
-        Material mat = Material.buildBasicMaterial(backGround, false);
+        Material mat = Material.buildBasicMaterial(backGround, null);
 
         double ControlPanelWidth = 0.6;
         double ControlPanelRowHeight = 0.1;

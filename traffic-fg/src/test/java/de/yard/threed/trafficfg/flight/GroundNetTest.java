@@ -84,7 +84,7 @@ public class GroundNetTest {
     public void setup() {
         //EngineTestFactory.initPlatformForTest( new String[] {"engine","data","data-old","railing"},
         //       new SimpleHeadlessPlatformFactory(JavaBundleResolverFactory.bySimplePath(GranadaPlatform.GRANDA_BUNDLE_PATH)));
-        Platform platform = FgTestFactory.initPlatformForTest(true, false);
+        Platform platform = FgTestFactory.initPlatformForTest(true, false, false);
 
         //FgTestFactory.addBundleFromProjectDirectory("extended-config","data/extended-config");
         EngineTestFactory.loadBundleSync("traffic-fg");

@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  */
 @Slf4j
 public class AircraftResourceProviderTest {
-    Platform platform = FgTestFactory.initPlatformForTest(true, false);
+    Platform platform = FgTestFactory.initPlatformForTest(true, false, false);
 
     String resourceInXml = "Aircraft/777/models/777-200.ac";
 

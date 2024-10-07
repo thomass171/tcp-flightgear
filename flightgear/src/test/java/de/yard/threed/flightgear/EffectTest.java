@@ -46,11 +46,13 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Auch fuer SGAnimation. Und damit allgemein auch fuer SGReaderWriterXML.
  * Siehe auch ModelBuildTest.
+ * 19.8.24: parts of "windturbine" tests moved to SGReaderWriterXMLTest because it seems a better location because its no real "effect" in terms of FG. Maybe
+ * all animation tests should move? Hmm, MaterialAnimations might be effects again. And only here materialLib is available!
  * <p>
  * Created by thomass on 27.10.15.
  */
 public class EffectTest {
-    Platform platform = FgTestFactory.initPlatformForTest(true, true);
+    Platform platform = FgTestFactory.initPlatformForTest(true, true, true);
     Log logger = Platform.getInstance().getLog(EffectTest.class);
 
     @Test
@@ -68,65 +70,6 @@ public class EffectTest {
         /*List<Way> finkenweg =*/
     }
 
-    /**
-     * async ein Model laden und pruefen, dass z.B. Animationen drin sind
-     */
-    @Test
-    public void testAnimationsWithAsync() throws Exception {
-        //PlatformHomeBrew op = (PlatformHomeBrew) platform;
-        //evtl. Reste wegraeumen
-        TestHelper.cleanupAsync();
-        //als Gegenprobe sync
-        //PlatformOpenGL.asyncmode=0;
-        List<SGAnimation> animationList = new ArrayList<SGAnimation>();
-        SGLoaderOptions opt = new SGLoaderOptions();
-        opt.setPropertyNode(new SGPropertyNode("" + "-root")/*FGGlobals.getInstance().get_props()*/);
-
-        EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("model"));
-
-        Bundle bundlemodel = BundleRegistry.getBundle("Terrasync-model");
-        assertNotNull(bundlemodel);
-
-        BuildResult result = SGReaderWriterXMLTest.loadModelAndWait(new BundleResource(bundlemodel, "Models/Power/windturbine.xml"),animationList,
-                2, "Models/Power/windturbine.xml");
-        validateWindturbine(new SceneNode(result.getNode()), animationList);
-
-        animationList.clear();
-        result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundlemodel, "Models/Power/windturbine.xml"), null, (bpath, destinationNode, alist) -> {
-            if (alist != null) {
-                animationList.addAll(alist);//  xmlloaddelegate.modelComplete( animationList);
-            }
-        });
-        assertEquals(0, animationList.size(), "animations");
-        TestHelper.processAsync();
-        TestHelper.processAsync();
-        validateWindturbine(new SceneNode(result.getNode()), animationList);
-    }
-
-    @Test
-    @Disabled
-    public void testAnimationsBundleLess() {
-        TestHelper.cleanupAsync();
-        List<SGAnimation> animationList = new ArrayList<SGAnimation>();
-        SGLoaderOptions opt = new SGLoaderOptions();
-        opt.setPropertyNode(new SGPropertyNode("" + "-root")/*FGGlobals.getInstance().get_props()*/);
-
-        EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("model"));
-
-        Bundle bundlemodel = BundleRegistry.getBundle("Terrasync-model");
-        assertNotNull(bundlemodel);
-
-        BuildResult result = SGReaderWriterXMLTest.loadModelBundleLess(new URL("", new ResourcePath("Models/Power"),"windturbine.xml"),animationList);
-        validateWindturbine(new SceneNode(result.getNode()),animationList);
-    }
-
-    private void validateWindturbine(SceneNode node, List<SGAnimation> animationList){
-        assertEquals(2, animationList.size(), "animations");
-        assertNotNull(((SGRotateAnimation) animationList.get(0)).rotategroup, "rotationgroup");
-        assertNotNull(((SGRotateAnimation) animationList.get(1)).rotategroup, "rotationgroup");
-        assertEquals("Models/Power/windturbine.xml->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Power/windturbine.gltf->[Tower,center back translate]", TestHelper.getHierarchy(node, 4));
-
-    }
 
     /**
      *

@@ -65,7 +65,7 @@ public class SphereSystemExtTest {
         /*5.12.23 EngineTestFactory.initPlatformForTest(new String[]{"engine", "data-old", "osmscenery", "traffic"},
                 new SimpleHeadlessPlatformFactory(new SimpleEventBusForTesting(),JavaBundleResolverFactory.bySimplePath(GranadaPlatform.GRANDA_BUNDLE_PATH)), initMethod,
                 ConfigurationByEnv.buildDefaultConfigurationWithEnv(new HashMap<>()));*/
-        Platform platform = FgTestFactory.initPlatformForTest(false, false);
+        Platform platform = FgTestFactory.initPlatformForTest(false, false, false);
 
         EngineTestFactory.loadBundleAndWait("traffic-advanced");
         EngineTestFactory.loadBundleAndWait("traffic-fg");

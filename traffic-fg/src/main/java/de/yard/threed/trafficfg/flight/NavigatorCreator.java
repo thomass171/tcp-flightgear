@@ -1,7 +1,7 @@
 package de.yard.threed.trafficfg.flight;
 
 import de.yard.threed.core.geometry.ProceduralModelCreator;
-import de.yard.threed.core.loader.PortableModelList;
+import de.yard.threed.core.loader.PortableModel;
 import de.yard.threed.engine.apps.ModelSamples;
 
 
@@ -12,8 +12,8 @@ import de.yard.threed.engine.apps.ModelSamples;
  */
 public class NavigatorCreator implements ProceduralModelCreator {
     @Override
-    public PortableModelList createModel() {
-        PortableModelList needle = ModelSamples.buildCompassNeedle(10,1);
+    public PortableModel createModel() {
+        PortableModel needle = ModelSamples.buildCompassNeedle(10,1);
         return needle;
     }
 }

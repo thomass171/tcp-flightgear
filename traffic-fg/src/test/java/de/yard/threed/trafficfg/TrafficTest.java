@@ -53,7 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * Created by thomass on 20.3.18.
  */
 public class TrafficTest {
-    Platform platform = FgTestFactory.initPlatformForTest(true, false);
+    Platform platform = FgTestFactory.initPlatformForTest(true, false, false);
 
     @Test
     public void testEddkPlatzrunde() throws Exception {

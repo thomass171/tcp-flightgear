@@ -77,6 +77,39 @@ Design of migration is:
   * TODO: BTG model loading is part of tools, so only available for converting aso.
 
 TODO: extract a core module without engine dependency to have tools-fg without engine dependency.
+
+#### FG animations
+Animations are a key feature in flightgear for having effects.
+
+For example Models/Power/windturbine.xml has a 'Rotate' animation
+```
+<type>rotate</type>
+  <object-name>Generator</object-name>
+  <object-name>Shaft</object-name>
+  <object-name>Hub</object-name>
+  <object-name>Blade1</object-name>
+  <object-name>Blade2</object-name>
+  <object-name>Blade3</object-name>
+  <property>/environment/wind-from-heading-deg</property>
+...
+```
+that rotates the six listed objects by wind heading and a 'Spin' animation
+```
+<type>spin</type>
+  <object-name>Shaft</object-name>
+  <object-name>Hub</object-name>
+  <object-name>Blade1</object-name>
+  <object-name>Blade2</object-name>
+  <object-name>Blade3</object-name>
+...
+  <property>/environment/wind-speed-kt</property>
+...  
+```
+that lets spin the listed objects (five of these are already used in first animation) according to wind speed.
+In the [scene object tree](#scene-object-tree) special nodes (eg. SGRotateAnimation, which is also used for 'spin'
+animations) are created for each animation. To these nodes
+the changes of values are supplied as needed during runtime. The objects listed
+in the animation definition are attached to the animation nodes accordingly.
 ### tools-fg
 
 ### traffic-fg
@@ -184,3 +217,10 @@ Eg. 'bluebirds' 'YOKE' references 'Aircraft/bluebird/Instruments-3d/yoke/yoke.xm
 could be found in either FG_ROOT/Aircraft or in bluebirds own directory
 with prefix 'Aircraft' removed.
 A 'Aircraft/Instruments-3d/yoke/yoke.ac' path however points to FG_ROOT.
+
+## Scene Object Tree
+
+The scene object tree of FG is retained as far as possible. ...
+
+FG uses proxy nodes for model that are not loaded before the viewer steps onto that
+node (see SGModelLib).

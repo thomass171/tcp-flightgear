@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 @Slf4j
 public class PropsIOTest {
-    Platform platform = FgTestFactory.initPlatformForTest(true, false);
+    Platform platform = FgTestFactory.initPlatformForTest(true, false, false);
 
     @Test
     public void test() {
