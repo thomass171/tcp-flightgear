@@ -224,7 +224,7 @@ public class SGReaderWriterXML {
         de.yard.threed.flightgear.core.osgdb.Options dbOptions = null;
         SGPropertyNode overlay = null;
 
-        logger.debug("sgLoad3DModel_internal" + bpath.getFullQualifiedName());
+        logger.debug("sgLoad3DModel_internal loading " + bpath.getFullQualifiedName());
 
         /*osg::ref_ptr <*/
         // 4.1.18: das mit dem copy is doch Driss

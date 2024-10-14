@@ -187,6 +187,32 @@
                         </div>
                     </div>
                 </div>
+                <!-- Gallery  -->
+                <div class="w3-half">
+                    <div class="w3-card-2">
+                        <div class="w3-container">
+                            <h3>Model Gallery</h3>
+                            <div class="w3-container w3-center">
+                                <img src="Gallery-Preview.png" style="width:100%">
+                            </div>
+                            <p>A gallery of Flightgear models included in tcp-flightgear. Some of the models are animated.
+                                Use w/a/s/d/cursor keys and thumbstick for moving/rolling.</p>
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchSingleScene('FgGalleryScene',null,$('#chk_nearView').prop('checked'),$('#chk_hud').prop('checked'),null,null)">
+                                Launch
+                            </button>
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchSingleScene('FgGalleryScene','VR',false,false,null,null)">
+                                Launch VR
+                            </button>
+                            <button class=" w3-button  w3-round w3-khaki "
+                                    onclick="launchSingleScene('FgGalleryScene','AR',false,false,null,null)">
+                                Launch AR
+                            </button>
+                            <p></p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

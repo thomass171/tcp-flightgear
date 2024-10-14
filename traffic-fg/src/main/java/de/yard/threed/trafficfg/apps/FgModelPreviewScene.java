@@ -1,26 +1,23 @@
 package de.yard.threed.trafficfg.apps;
 
 import de.yard.threed.core.BuildResult;
-import de.yard.threed.core.Color;
+import de.yard.threed.core.GeneralParameterHandler;
+import de.yard.threed.core.ModelBuildDelegate;
 import de.yard.threed.core.Point;
 import de.yard.threed.core.StringUtils;
-import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.NativeCollision;
-import de.yard.threed.core.platform.NativeSceneNode;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
-import de.yard.threed.engine.Geometry;
+import de.yard.threed.engine.Camera;
 import de.yard.threed.engine.Input;
-import de.yard.threed.engine.Material;
-import de.yard.threed.engine.Mesh;
 import de.yard.threed.engine.Ray;
-import de.yard.threed.engine.Scene;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.apps.ModelPreviewScene;
+import de.yard.threed.engine.apps.SmartModelLoader;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.platform.common.Request;
@@ -42,16 +39,13 @@ import java.util.List;
 /**
  * An extension of the generic model viewer for viewing FG XML model.
  * Like super class not using ECS.
- * Derived from Granada:ModelPreviewSceneExt.
  * <p>
- * 23.1.17: Extra, weil hier dann auch die OSG Registry verwendet werden muss.
- * 04.01.2018: Das loeschen beim Wechsel klappt nicht immer,z.B. bei A777. Und C172p war schon mal doppelt da?? 10.1.18: Koennte behoben sein.
  * 22.12.18: Not using trafficConfig. But "AircraftDir" is needed for FG aitcraft. Doesn't know "optionals" and
  * "zoffset" and so on. But that is acceptable.
  * FG Animations are supported manually (outside ECS).
  * Keys are
- * 1: move forward
- * 2: move backward
+ * 1: browse forward
+ * 2: browse backward
  * +: scale up
  * -: scale down
  * <p>
@@ -60,15 +54,15 @@ import java.util.List;
  * - tower radar(0)
  * - beacon
  * <p>
- * Only for XML? Should due to super class.
+ * Not only for XML but also GLTF.
  */
 public class FgModelPreviewScene extends ModelPreviewScene {
     public Log logger = Platform.getInstance().getLog(FgModelPreviewScene.class);
-    // scale 0.016 passend für Tower
-    //Die Animationen des aktuellen Model inkl. aller Submodel.
+    // Animations of current model incl. all submodel.
     List<SGAnimation> animationList;
-    AircraftResourceProvider arp;
+    private AircraftResourceProvider arp;
     FlightGearProperties flightGearProperties = new FlightGearProperties();
+    public static SmartModelLoader terrasyncSmartModelLoader;
 
     /**
      * 9.1.18: Starts with bundle name (before of first ':') or a 'A' als
@@ -83,7 +77,8 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                 "T3072824:Objects/e000n50/e007n50/egkk_tower.xml",
                 //windturbine should have two rotations (currently only one)
                 "H:Models/Power/windturbine.xml",
-                "A:Models/777-200.xml",
+                // optionals are not considered in 'A'!
+                "A:Models/777-200.xml;bundleUrl=https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool/777",
                 "fgdatabasic:Aircraft/Instruments-3d/garmin196/garmin196.xml",
                 "",
                 //5
@@ -137,10 +132,98 @@ public class FgModelPreviewScene extends ModelPreviewScene {
 
     @Override
     public void customInit() {
-        major = 33;
+
+        extendSmartModelLoaderForFG(arp, new GeneralParameterHandler<List<SGAnimation>>() {
+            @Override
+            public void handle(List<SGAnimation> animationsOfLoadedModel) {
+                // like it was always done in the pass. Replace current list.
+                animationList = new ArrayList<SGAnimation>();
+                animationList.addAll(animationsOfLoadedModel);
+            }
+        });
+
+        major = 0;
         arp = initFG();
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
+    }
+
+    public static void extendSmartModelLoaderForFG(AircraftResourceProvider arp, GeneralParameterHandler<List<SGAnimation>> animationHandler) {
+        SmartModelLoader.register("H", new SmartModelLoader() {
+            @Override
+            public void loadModelBySource(String prefix, String modelname, String bundleUrl, ModelBuildDelegate delegate) {
+                //TerraSync Model
+                String bundlename = FlightGear.getBucketBundleName("model");
+                SmartModelLoader.defaultSmartModelLoader.loadModelBySource(bundlename, modelname, bundleUrl, delegate);
+            }
+        });
+
+        // 9.10.24 not sure if 'A' is still needed. Yes, is needed for setting aircraftresourceprovider
+        SmartModelLoader.register("A", new SmartModelLoader() {
+            @Override
+            public void loadModelBySource(String prefix, String modelname, String bundleUrl, ModelBuildDelegate delegate) {
+                // int index = StringUtils.indexOf(modelname, "-");
+                //modelname = StringUtils.substring(modelname, index + 1);
+                //29.12.18: FlightGearAircraft ist doch schon durch XML abgeloest
+                //FlightGearAircraft aircraft = FlightGearAircraft.get(StringUtils.substring(modelname, index + 1));
+                //aircraftdir, bundlename und modelname sind gluecklicherweise herleitbar.
+                String basename = "xx";
+                if (StringUtils.contains(modelname, "777")) {
+                    basename = "777";
+                }
+                if (StringUtils.contains(modelname, "c172p")) {
+                    basename = "c172p";
+                }
+                String bundlename = basename;//aircraft.bundlename;
+                //modelname = aircraft.modelname;
+                arp.setAircraftDir(basename/*aircraft.aircraftdir*/);
+                SmartModelLoader.defaultSmartModelLoader.loadModelBySource(bundlename, modelname, bundleUrl, delegate);
+            }
+        });
+
+        terrasyncSmartModelLoader = new SmartModelLoader() {
+            @Override
+            public void loadModelBySource(String prefix, String modelname, String bundleUrl, ModelBuildDelegate delegate) {
+                // a TerraSync tile/bucket
+                String tname = prefix;//StringUtils.substringBefore(modelname, ":");
+
+                String no = StringUtils.substring(tname, 1);
+                String bundlename = FlightGear.getBucketBundleName(no);
+                //modelname = StringUtils.substringAfter(modelname, ":");
+                Bundle bundle = BundleRegistry.getBundle(bundlename);
+                SmartModelLoader.defaultSmartModelLoader.loadModelBySource(bundlename, modelname, bundleUrl, delegate);
+            }
+        };
+
+        SmartModelLoader.register("T3072824", terrasyncSmartModelLoader);
+        SmartModelLoader.register("T3072816", terrasyncSmartModelLoader);
+
+        // replace existing default loader with a XML ready one including bundle loading
+        SmartModelLoader.defaultSmartModelLoader = new SmartModelLoader() {
+            @Override
+            public void loadModelBySource(String bundlename, String modelname, String bundleUrl, ModelBuildDelegate delegate) {
+                Bundle bundle = BundleRegistry.getBundle(bundlename);
+                BuildResult result;
+                if (bundle == null) {
+                    final SceneNode destination = new SceneNode();
+                    result = new BuildResult(destination.nativescenenode);
+                    AbstractSceneRunner.instance.loadBundle(bundleUrl != null ? bundleUrl : bundlename, (Bundle b_isnull) -> {
+                        Bundle b = BundleRegistry.getBundle(bundlename);
+                         addPossibleXmlModelFromBundle(b, modelname, bundleUrl, animationHandler, delegate);
+                        /*if (res.getNode() != null) {
+                            destination.attach(new SceneNode(res.getNode()));
+                        } else {
+                            /*destination.attach(redCube);
+                            redCube.getTransform().setPosition(new Vector3());* /
+                        }*/
+                    });
+                } else {
+                    addPossibleXmlModelFromBundle(bundle, modelname, bundleUrl, animationHandler, delegate);
+                }
+
+            }
+        };
+
     }
 
     /**
@@ -158,13 +241,14 @@ public class FgModelPreviewScene extends ModelPreviewScene {
         return arp;
     }
 
-    boolean isloadingterrysynmodel = false;
+    //boolean isloadingterrysynmodel = false;
 
-    @Override
-    public BuildResult loadModel(String modelname) {
+    //@Override
+    /*public BuildResult loadModel(String bundlename, String modelname) {
         String dir = null;
-        String bundlename = null;
-        boolean resolved = false;
+        //String bundlename = null;
+        boolean resolved = true;
+        /*boolean resolved = false;
         // Erst die spezifischen versuchen, dann die aus Superklasse
         if (StringUtils.startsWith(modelname, "T")) {
             // a TerraSync tile/bucket
@@ -214,7 +298,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                         }
                         bundlename = basename;//aircraft.bundlename;
                         //modelname = aircraft.modelname;
-                        arp.setAircraftDir(basename/*aircraft.aircraftdir*/);
+                        arp.setAircraftDir(basename/*aircraft.aircraftdir* /);
                         resolved = true;
                     }
                 }
@@ -226,7 +310,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
         if (resolved) {
             final String mname = modelname;
             final String bname = bundlename;
-            if (bundlename != null) {
+            //if (bundlename != null) {
                 Bundle bundle = BundleRegistry.getBundle(bundlename);
                 if (bundle == null) {
                     final SceneNode destination = new SceneNode();
@@ -237,25 +321,25 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                         if (res.getNode() != null) {
                             destination.attach(new SceneNode(res.getNode()));
                         } else {
-                            destination.attach(redCube);
-                            redCube.getTransform().setPosition(new Vector3());
+                            /*destination.attach(redCube);
+                            redCube.getTransform().setPosition(new Vector3());* /
                         }
                     });
                 } else {
                     result = addModelFromBundle(bundle, modelname);
                 }
-            } else {
-                result = new BuildResult(redCube.nativescenenode);
-                redCube.getTransform().setPosition(new Vector3());
-            }
+            /*} else {
+                /*result = new BuildResult(redCube.nativescenenode);
+                redCube.getTransform().setPosition(new Vector3());* /
+            }* /
         } else {
             result = super.loadModel(modelname);
         }
         return result;
-    }
+    }*/
 
-    @Override
-    public BuildResult addModelFromBundle(Bundle bundle, String modelname) {
+    //@Override
+    public static void addPossibleXmlModelFromBundle(Bundle bundle, String modelname, String bundleUrl, GeneralParameterHandler<List<SGAnimation>> animationHandler, ModelBuildDelegate delegate) {
         BundleResource br = BundleResource.buildFromFullString(modelname);
         br.bundle = bundle;
         String extension = br.getExtension();
@@ -265,42 +349,39 @@ public class FgModelPreviewScene extends ModelPreviewScene {
             opt.setPropertyNode(FGGlobals.getInstance().get_props());
 
             // Das mit der animationlist duerfte durch das Ansammeln auch fuer geschachtelte Model gehen.
-            animationList = new ArrayList<SGAnimation>();
+            //animationList = new ArrayList<SGAnimation>();
 
             result = SGReaderWriterXML.buildModelFromBundleXML(br, opt, (bpath, destinationNode, alist) -> {
                 if (alist != null) {
-                    animationList.addAll(alist);
+                    //animationList.addAll(alist);
+                    animationHandler.handle(alist);
                 }
-                logger.debug(Scene.getCurrent().getWorld().dump("  ", 1));
+                //logger.debug(Scene.getCurrent().getWorld().dump("  ", 1));
             });
+            delegate.modelBuilt(result);
         } else {
             //9.1.22 result = new BuildResult(ModelFactory.asyncModelLoad(br, EngineHelper.LOADER_USEGLTF).nativescenenode);
-            result = super.addModelFromBundle(bundle, modelname);
+            //result = super.addModelFromBundle(bundle, modelname);
+            SmartModelLoader.simpleSmartModelLoader.loadModelBySource(bundle.name, modelname, bundleUrl, delegate);
         }
-        /*29.12.18 model = null;
-        // Das model hat evtl. die offsets in seinem transform
-        model = new SceneNode(result.getNode());
-        //scale = 0.5f;
-        // Der dump bringt hier nichts, weil der Load async ist und spaeter eingehangen wird.
-        //logger.info("Building imported model. scale=" + scale+", tree:"+model.dump("",0));
-        logger.info("Building imported model.");
-        model.getTransform().setScale(new Vector3(scale, scale, scale));
-        */
-
-        //29.12.18 addToWorld(model);
-        return result;
     }
 
     @Override
     public void customUpdate() {
+        updateAnimations(flightGearProperties, animationList, getDefaultCamera());
+    }
+
+    public static void updateAnimations(FlightGearProperties flightGearProperties, List<SGAnimation> animationList, Camera camera) {
         Point mouselocation = Input.getMouseDown();
 
+        // Update FG property tree...
         flightGearProperties.update();
 
+        // ... and then the animations. Picking ray is needed for click/pick animations?
         if (animationList != null) {
             List<NativeCollision> intersections = null;
             if (mouselocation != null) {
-                Ray pickingray = getDefaultCamera().buildPickingRay(getDefaultCamera().getCarrier().getTransform(), mouselocation);
+                Ray pickingray = camera.buildPickingRay(camera.getCarrier().getTransform(), mouselocation);
                 // 13.3.24: No longer pass pickingray to any animation and do intersection check again and again. This is very inefficient.
                 // Instead pass the objects hit.
                 if (pickingray != null) {
@@ -315,7 +396,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
 
     }
 
-    class AURequestHandler implements RequestHandler {
+    static class AURequestHandler implements RequestHandler {
         @Override
         public boolean processRequest(Request request) {
             return false;

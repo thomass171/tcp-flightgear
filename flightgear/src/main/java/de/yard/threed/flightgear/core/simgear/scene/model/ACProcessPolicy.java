@@ -31,6 +31,10 @@ public class ACProcessPolicy implements ProcessPolicy {
     }
 
     public SceneNode process(SceneNode node, String filename/*MA31, Options opt*/) {
+        return applyPolicy(node, ac2fg);
+    }
+
+    public static SceneNode applyPolicy(SceneNode node, Matrix4 ac2fg) {
         //logger.debug("process");
         Matrix4 m = new Matrix4(1, 0, 0, 0,
                 0, 0, 1, 0,
