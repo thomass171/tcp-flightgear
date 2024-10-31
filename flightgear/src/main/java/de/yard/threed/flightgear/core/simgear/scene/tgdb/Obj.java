@@ -1,7 +1,6 @@
 package de.yard.threed.flightgear.core.simgear.scene.tgdb;
 
 import de.yard.threed.core.GeneralParameterHandler;
-import de.yard.threed.core.Util;
 import de.yard.threed.core.geometry.SimpleGeometry;
 import de.yard.threed.core.loader.AbstractLoader;
 import de.yard.threed.core.loader.InvalidDataException;
@@ -17,7 +16,7 @@ import de.yard.threed.core.Vector3;
 import de.yard.threed.flightgear.core.osg.Group;
 import de.yard.threed.flightgear.core.osg.Node;
 import de.yard.threed.flightgear.core.simgear.scene.material.EffectGeode;
-import de.yard.threed.flightgear.core.simgear.scene.material.FGEffect;
+import de.yard.threed.flightgear.core.simgear.scene.material.Effect;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterial;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialCache;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialLib;
@@ -267,7 +266,7 @@ public class Obj {
                 //31.12.17: TODO textureindx mal klaeren!
                 //5.10.23: TODO use getEffectMaterialByTextureIndex
                 int textureindex = 0;
-                FGEffect oneEffect = sgmat.get_one_effect(textureindex);
+                Effect oneEffect = sgmat.get_one_effect(textureindex);
                 if (oneEffect == null) {
                     logger.warn("No effect available at " + textureindex + " for " + matname);
                 } else {
@@ -277,9 +276,9 @@ public class Obj {
                 mat = ppfile.findMaterial(matname);
             }
             // FG-DIFF
-            // Zu FG abweichende implementierung. Wenn es kein Material gibt, wireframe setzen. Fuer Testen vielleicht ganz gut. Ob auf Dauer auch?
-            // In FG wird das Material ueber Effect in EffectGeode (teilweise ueber Callback) abgebildet. Effect verbindet direkt zum Shader.
-            // Darueber wird zumindest wohl die Textur definiert. Hier jetzt das Mesh direkt erzeugen.
+            // In FG the material is created via Effect in EffectGeode (partly via Callback). And addDrawable/runGenerators?
+            // We just create a mesh here (wireless if we don't have material; good for testing, but later?)
+            //  Effect connects to the Shader and (might) contains textures in FG.
             eg = new EffectGeode();
             // FG-DIFF immer derselbe Name ist doch bloed. Es ist auch nicht erkennbar, dass FG da Logik dran hat. 12.12.17: Tja, jetzt hab ich aber keinen Namen.
             //eg.setName("EffectGeode");

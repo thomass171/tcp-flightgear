@@ -7,6 +7,7 @@ import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.engine.GenericGeometry;
 import de.yard.threed.engine.Material;
 import de.yard.threed.engine.Mesh;
+import de.yard.threed.engine.loader.DefaultMaterialFactory;
 import de.yard.threed.engine.loader.PortableModelBuilder;
 import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.flightgear.core.osg.Geode;
@@ -17,12 +18,15 @@ import de.yard.threed.core.resource.ResourcePath;
 
 /**
  * Created by thomass on 05.08.16.
- * 14.12.17: Statt mit SGMaterial und Effect kann es jetzt auch mit Material arbeiten. Zumindest in den Bereichen, die nicht auskommentiert sind.
+ * 14.12.17: Statt mit SGMaterial und Effect kann es jetzt auch mit Material arbeiten. Zumindest in den Bereichen,
+ * die nicht auskommentiert sind.
+ * 26.10.24: HmmHmm
  */
 public class EffectGeode extends Geode {
-    /*osg::ref_ptr<*/ FGEffect _effect;
+    /*osg::ref_ptr<*/ Effect _effect;
     SGMaterial _material;
     //Alternative zur Nutzung von SGMaterial und Effect. 28.12.17: Jetzt LoadedMaterial statt Material
+    //26.10.24 does this really belong here? Maybe. It's the effective material used finally.
     public PortableMaterial material;
 
         /*    #if OSG_VERSION_LESS_THAN(3,3,2)
@@ -40,11 +44,11 @@ public class EffectGeode extends Geode {
     META_Node(simgear,EffectGeode);
     */
 
-    FGEffect getEffect() {
+    Effect getEffect() {
         return _effect/*.get()*/;
     }
 
-    public void setEffect(FGEffect effect) {
+    public void setEffect(Effect effect) {
         _effect = effect;
         //if (!_effect)
         //    return;
@@ -117,21 +121,22 @@ public class EffectGeode extends Geode {
     }
 
     /**
-     * Statt wie in FG ueber Callback (oder halb?) hier jetzt das Mesh erzeugen.
+     * Different to FG that creates via OSG Callback(?) (oder halb?) create the mesh here.
      * // FG-DIFF
      * build mesh from geometry and material.
      */
     public void buildMesh(SimpleGeometry geometry) {
         // Aus dem SGMaterial und dem Effect das Platform Material bauen. 14.12.17: Oder aus material, wenns schon vorliegt.
         Material mat;
-        // 19.2.24: decoupled from bundle by using resourceLoader. path and name might be empty. These are set later in PortableModelBuilder
+        // 19.2.24: decoupled from bundle by using resourceLoader. path and name might be empty.
+        // These are set later in PortableModelBuilder
         ResourceLoaderFromBundle resourceLoader = new ResourceLoaderFromBundle(
                 new BundleResource(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),new ResourcePath(""),""));
         if (material != null) {
             // mat = material;
             //14.2.24 mat = PortableModelBuilder.buildMaterial(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),
             //14.2.24         material, (material.texture != null) ? material.texture : null/*obj.texture*/, new ResourcePath(""/*texturebasepath*/),geometry.getNormals()!=null);
-            mat = PortableModelBuilder.buildMaterial(resourceLoader, material, new ResourcePath(""), geometry.getNormals() != null);
+            mat = new DefaultMaterialFactory().buildMaterial(resourceLoader, material, new ResourcePath(""), geometry.getNormals() != null);
         } else {
             if (_effect == null) {
                 // kann wohl vorkommen? TODO was tun? erstmal null und damit wireframe. Auch Absicht fuer Tests.
@@ -140,7 +145,7 @@ public class EffectGeode extends Geode {
                 PortableMaterial lmat = _effect.getMaterialDefinition();
                 //mat = PortableModelBuilder.buildMaterial(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),
                 //        lmat, (lmat.texture != null) ? lmat.texture : null/*obj.texture*/, new ResourcePath(""/*texturebasepath*/),geometry.getNormals()!=null);
-                mat = PortableModelBuilder.buildMaterial(resourceLoader, lmat, new ResourcePath(""), geometry.getNormals() != null);
+                mat = new DefaultMaterialFactory().buildMaterial(resourceLoader, lmat, new ResourcePath(""), geometry.getNormals() != null);
 
             }
         }

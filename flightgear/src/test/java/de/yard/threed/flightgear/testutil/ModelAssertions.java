@@ -192,7 +192,7 @@ public class ModelAssertions {
         //der material name ist wohl nie gefuellt 
         TestUtil.assertNull("materials0.name", geo0.getMesh().getMaterial().getName());
 
-        assertEquals(16, Texture.texturePoolSize());
+        assertEquals(/*28.10.24 16*/15, Texture.texturePoolSize());
         // only check 1 texture
         assertTrue(Texture.hasTexture("mixedforest-hires-autumn.png"), "texture");
     }

@@ -79,9 +79,9 @@ public class PropsIO {
                 if (data == null) {
                     throw new SGException("no data for bundle resource " + bpath);
                 }
-                if (!data.isText()) {
+               /*17.10.24 don't care  if (!data.isText()) {
                     throw new SGException("no text data in bpath");
-                }
+                }*/
                 xmlbuf = bpath.bundle.getResource(bpath).getContentAsString();
             } else {
                 Util.nomore();

@@ -41,6 +41,7 @@ public class FlightGearModuleScenery extends FlightGearModule {
     }
     
     FlightGearModuleScenery(boolean terrainonly) {
+        logger.info("Creating instance");
         ////////////////////////////////////////////////////////////////////
         // Initialize the material manager
         ////////////////////////////////////////////////////////////////////

@@ -21,6 +21,9 @@ import java.util.List;
  * Created by thomass on 14.10.15.
  */
 public class EffectFactory {
+    /**
+     * 17.10.24 what is this?
+     */
     public static List<SceneNode> buildEffect(String osmxml) {
         List<SceneNode> modellist = new ArrayList<SceneNode>();
         try {

@@ -142,7 +142,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
             }
         });
 
-        major = 0;
+        major = 30;
         arp = initFG();
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);

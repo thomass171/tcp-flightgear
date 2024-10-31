@@ -1,5 +1,6 @@
 package de.yard.threed.flightgear;
 
+import de.yard.threed.core.CharsetException;
 import de.yard.threed.core.buffer.SimpleByteBuffer;
 import de.yard.threed.core.platform.NativeJsonValue;
 import de.yard.threed.core.platform.Platform;
@@ -15,6 +16,8 @@ import de.yard.threed.flightgear.core.EffectFactory;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.SGLoaderOptions;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
+import de.yard.threed.flightgear.core.simgear.scene.material.Effect;
+import de.yard.threed.flightgear.core.simgear.scene.material.MakeEffect;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.core.BuildResult;
 import de.yard.threed.core.resource.BundleRegistry;
@@ -26,6 +29,7 @@ import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.NativeSceneNode;
 
 import de.yard.threed.engine.testutil.TestHelper;
+import de.yard.threed.flightgear.core.simgear.scene.util.SGReaderWriterOptions;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.javanative.FileReader;
 import de.yard.threed.tools.GltfBuilderResult;
@@ -57,17 +61,13 @@ public class EffectTest {
 
     @Test
     //29.9.15: DEer Test geht nicht, weil hier keine AssetManager existiert.  16.10.18: Jetzt koennte er wieder.
-    public void testLoad() {
-        try {
-            //InputStream ins = Platform.getInstance().getRessourceManager().loadResourceSync(new BundleResource("src/main/webapp/flusi/model-combined.eff")).inputStream;
-            //byte[] bytebuf = ins.readFully();
-            BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "effects/model-combined.eff");
+    public void testLoad() throws Exception {
+        //InputStream ins = Platform.getInstance().getRessourceManager().loadResourceSync(new BundleResource("src/main/webapp/flusi/model-combined.eff")).inputStream;
+        //byte[] bytebuf = ins.readFully();
+        BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "effects/model-combined.eff");
 
-            EffectFactory.buildEffect(br.bundle.getResource(br).getContentAsString());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        /*List<Way> finkenweg =*/
+        EffectFactory.buildEffect(br.bundle.getResource(br).getContentAsString());
+
     }
 
 
@@ -159,6 +159,16 @@ public class EffectTest {
         //String texkey = op.texturelist.get(op.texturelist.size() - 1);
         //TestUtil.assertTrue("KLM im Pfad", texkey.contains("Textures/KLM"));
 
+    }
+
+    @Test
+    public void testEffectModelTransparent() throws CharsetException {
+        String name = "Effects/model-transparent";
+
+        assertEquals(SceneryTest.INITIAL_EFFECTS, MakeEffect.effectMap.size());
+        Effect effect = MakeEffect.makeEffect(name, true, new SGReaderWriterOptions(),"test");
+        assertNotNull(effect);
+        assertEquals(SceneryTest.INITIAL_EFFECTS + 1, MakeEffect.effectMap.size());
     }
 
     public static List<SGAnimation> getAnimationsOnObject(String objname, List<SGAnimation> animationList) {

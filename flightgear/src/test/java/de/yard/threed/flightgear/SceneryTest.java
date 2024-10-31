@@ -12,6 +12,7 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.Scene;
 import de.yard.threed.engine.Texture;
+import de.yard.threed.engine.TexturePool;
 import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.ModelLoader;
@@ -32,6 +33,9 @@ import de.yard.threed.flightgear.core.flightgear.scenery.TileCache;
 import de.yard.threed.flightgear.core.osg.Group;
 import de.yard.threed.flightgear.core.osg.Node;
 import de.yard.threed.flightgear.core.osgdb.Options;
+import de.yard.threed.flightgear.core.simgear.scene.material.Effect;
+import de.yard.threed.flightgear.core.simgear.scene.material.MakeEffect;
+import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterial;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialCache;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialLib;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
@@ -57,6 +61,7 @@ import de.yard.threed.core.testutil.Assert;
 import de.yard.threed.traffic.WorldGlobal;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -81,8 +86,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 public class SceneryTest {
 
-    @BeforeAll
-    static void setup() {
+    @BeforeEach
+    void setup() {
         FgTestFactory.initPlatformForTest(true, true, true);
     }
 
@@ -149,23 +154,42 @@ public class SceneryTest {
         }, 10000);
     }
 
+    // all effects except "model-transparent"
+    public static int INITIAL_EFFECTS = 16;
+
     /**
-     * wegen Materialmehrfachnutzung auch 3072816.btg testen
+     * wegen Materialmehrfachnutzung auch 3072816.btg testen.
+     * Effect "Effects/cropgrass" (mapped to texture "Textures/Terrain/dry_pasture4.png") is one of the effects used in 3072816.btg.
+     * It is defined in global-summer.xml:
+     * <pre>
+     *     <material>
+     *     <effect>Effects/cropgrass</effect>
+     *     <name>Grassland</name>
+     * 	    <texture-set>
+     *          <texture>Terrain/dry_pasture4.png</texture>
+     * 	        <texture n="12">Terrain/tundra-hawaii-green.png</texture>
+     * 	   </texture-set>
+     *     <xsize>2000</xsize>
+     *     <ysize>2000</ysize>
+     *     <light-coverage>2000000.0</light-coverage>
+     * ...
+     * </pre>
      */
     @Test
     public void testLoadBTG3072816() throws Exception {
-        //TestFactory.loadBundleSync(SGMaterialLib.BUNDLENAME);
-        //FlightGear.init(7, FlightGear.argv);
-        // FlightGearModuleBasic.init(null, null);
-        // FlightGearModuleScenery.init(false);
+
+        assertEquals(INITIAL_EFFECTS, MakeEffect.effectMap.size());
+        assertSGMaterial("Grassland", false);
+
         BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "terrain/3072816.btg");
         BundleData ins = br.bundle.getResource(br);
-        try {
-            PortableModel ppfile = new LoaderBTG(new ByteArrayInputStream(ins.b), null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()), br.getFullName()).buildPortableModel();
-            ModelAssertions.assertBTG3072816(ppfile, true, false);
-        } catch (InvalidDataException e) {
-            throw new RuntimeException(e);
-        }
+        PortableModel ppfile = new LoaderBTG(new ByteArrayInputStream(ins.b), null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()), br.getFullName()).buildPortableModel();
+        ModelAssertions.assertBTG3072816(ppfile, true, false);
+
+        assertEquals(INITIAL_EFFECTS, MakeEffect.effectMap.size());
+        assertSGMaterial("Grassland", true);
+
+        Texture.resetTexturePool();
         final BooleanHolder validated = new BooleanHolder(false);
         SGReaderWriterBTG.loadBTG(br, null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()), new GeneralParameterHandler<SceneNode>() {
             @Override
@@ -179,6 +203,12 @@ public class SceneryTest {
             TestHelper.processAsync();
             return validated.getValue();
         }, 10000);
+
+        assertEquals(INITIAL_EFFECTS, MakeEffect.effectMap.size());
+        assertEquals(16, Texture.texturePoolSize());
+        // Why doesn't the pool contain the full name "Textures/Terrain/dry_pasture4.png"?
+        assertTrue(Texture.hasTexture("dry_pasture4.png"), "texture");
+        assertSGMaterial("Grassland", true);
 
         // only reading the BTG doesn't add it to world.
         log.debug(Scene.getCurrent().getWorld().dump("  ", 0));
@@ -355,7 +385,7 @@ public class SceneryTest {
 
         // only one of the 2 animations is built currently.
         BuildResult result = SGReaderWriterXMLTest.loadModelAndWait(new BundleResource(bundle3072824, "Objects/e000n50/e007n50/egkk_carpark_multi.xml"),
-                animationList, 1, "Objects/e000n50/e007n50/egkk_carpark_multi.xml");
+                animationList, 1, "Objects/e000n50/e007n50/egkk_carpark_multi.xml", null);
         SceneNode resultNode = new SceneNode(result.getNode());
         log.debug(resultNode.dump("  ", 0));
         // XML was loaded sync, gltf and animations were loaded async
@@ -557,5 +587,15 @@ public class SceneryTest {
             return false;
         }
         return true;
+    }
+
+    private void assertSGMaterial(String name, boolean realized) {
+        List<SGMaterial> materials = FlightGearModuleScenery.getInstance().get_matlib().get(name);
+        assertEquals(1, materials.size());
+        SGMaterial material = materials.get(0);
+        assertEquals(name, material.getNames());
+        assertEquals(1, material._status.size());
+        Effect grasslandEffect = material._status.get(0).getEffect();
+        assertEquals(realized, material._status.get(0).effect_realized);
     }
 }

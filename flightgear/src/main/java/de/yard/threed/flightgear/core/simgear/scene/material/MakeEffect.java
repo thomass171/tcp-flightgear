@@ -1,9 +1,9 @@
 package de.yard.threed.flightgear.core.simgear.scene.material;
 
+import de.yard.threed.core.Util;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
-import de.yard.threed.flightgear.FlightGearMain;
 import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.props.PropsIO;
@@ -21,11 +21,15 @@ import java.util.List;
  * Created by thomass on 10.08.16.
  */
 public class MakeEffect {
-    static Log logger = Platform.getInstance().getLog(MakeEffect.class);
+
 
     //typedef vector<const SGPropertyNode*> RawPropVector;
+    // Is the effectMap just a cache of effects? key apparently is an object node name.
+    // But every MakeEffectVisitor has its own effectMap. So it might just be a map object->effect per
+    // XML file effect block? But this here appears a global cache.
+    // But apparently not for SGMaterial/scenery effects.
     //typedef map<const string, ref_ptr<Effect> > EffectMap;
-    /*Cpp*/ static HashMap<String, FGEffect> effectMap = new /*Cpp*/HashMap<String, FGEffect>(/*new Effect()*/);
+    /*Cpp*/ public static HashMap<String, Effect> effectMap = new /*Cpp*/HashMap<String, Effect>(/*new Effect()*/);
     
     /*namespace
     {
@@ -59,18 +63,19 @@ public class MakeEffect {
 
     /**
      * Nachbau fuer obige Logik
+     *
      * @param leftChildren
      * @param node
      * @return
      */
     private static SGPropertyNode findIdentical(RawPropVector leftChildren, SGPropertyNode node) {
-        for (SGPropertyNode n : leftChildren){
-            if (n.getName().equals(node.getName())&&n.getIndex()==node.getIndex())
+        for (SGPropertyNode n : leftChildren) {
+            if (n.getName().equals(node.getName()) && n.getIndex() == node.getIndex())
                 return n;
         }
         return null;
     }
-    
+
     // namespace effect
     // {
     public static void mergePropertyTrees(SGPropertyNode resultNode, SGPropertyNode left, SGPropertyNode right) {
@@ -87,8 +92,8 @@ public class MakeEffect {
             SGPropertyNode node = right.getChild(i);
             //
             //RawPropVector::iterator litr                    = find_if(leftChildren.begin(), leftChildren.end(),                    PropPredicate(node));
-            SGPropertyNode litr = findIdentical(leftChildren,node);
-            SGPropertyNode newChild                    = resultNode.getChild(node.getName(), node.getIndex(), true);
+            SGPropertyNode litr = findIdentical(leftChildren, node);
+            SGPropertyNode newChild = resultNode.getChild(node.getName(), node.getIndex(), true);
             if (litr != null/*leftChildren.end()*/) {
                 mergePropertyTrees(newChild, litr, node);
                 leftChildren.remove/*erase*/(litr);
@@ -105,8 +110,12 @@ public class MakeEffect {
     }
 
 
-
-    static FGEffect makeEffect(String name, boolean realizeTechniques, SGReaderWriterOptions options) {
+    /**
+     * Build or lookup effect (eg. inherited).
+     * 17.10.24 not used at all currently. Now it is used.
+     * Returns null if the effect couldn't be found/built.
+     */
+    public static Effect makeEffect(String name, boolean realizeTechniques, SGReaderWriterOptions options, String label) {
        /* {
             OpenThreads::ScopedLock < OpenThreads::ReentrantMutex > lockEntity(effectMutex);
             EffectMap::iterator itr = effectMap.find(name);
@@ -114,7 +123,7 @@ public class MakeEffect {
                     itr.getSecond.valid())
                 return itr.getSecond.get();
         }*/
-        FGEffect e;
+        Effect e;
         if ((e = effectMap.get(name)) != null) {
             return e;
         }
@@ -122,24 +131,26 @@ public class MakeEffect {
         String effectFileName = name;
         effectFileName += ".eff";
 
-        //tsch_log("makeEffect.cxx:makeEffect: effectFileName=%s\n", effectFileName.c_str());
+        getLog().debug("makeEffect: effectFileName=" + effectFileName);
 
         //28.6.17: Effects kommen aus root bundle
-        /*String*/BundleResource absFileName = BundleResource.buildFromFullStringAndBundlename(FlightGearSettings.FGROOTCOREBUNDLE,effectFileName);//SGModelLib.findDataFile(effectFileName, options);
+        //17.10.24: No longer (or never). Now from "fgdatabasic"
+        /*String*/
+        BundleResource absFileName = new BundleResource(BundleRegistry.getBundle("fgdatabasic"), effectFileName);//SGModelLib.findDataFile(effectFileName, options);
         if (/*StringUtils.empty(*/!absFileName.exists()) {
-            logger.error(/*SG_LOG(SG_INPUT, SG_ALERT, */"can't find \"" + effectFileName + "\"");
+            getLog().error(/*SG_LOG(SG_INPUT, SG_ALERT, */"can't find \"" + effectFileName + "\"");
             return null;
         }
         SGPropertyNode/*_ptr*/ effectProps = new SGPropertyNode();
         try {
             new PropsIO().readProperties(absFileName, effectProps/*.ptr()*/, 0, true);
         } catch (SGException e1) {
-            logger.error(/*SG_LOG(SG_INPUT, SG_ALERT,*/ "error reading \"" + absFileName + "\": " + e1.getMessage());
+            getLog().error(/*SG_LOG(SG_INPUT, SG_ALERT,*/ "error reading \"" + absFileName + "\": " + e1.getMessage());
             return null;
         }
         /*ref_ptr<*/
-        FGEffect result = makeEffect(effectProps/*.ptr()*/, realizeTechniques, options);
-        if (result.valid()) {
+        Effect result = makeEffect(effectProps/*.ptr()*/, realizeTechniques, options, label);
+        if (result != null && result.valid()) {
             /*OpenThreads::ScopedLock < OpenThreads::ReentrantMutex > lockEntity(effectMutex);
             pair<EffectMap::iterator, bool > irslt
                     = effectMap.insert(make_pair(name, result));
@@ -155,55 +166,58 @@ public class MakeEffect {
 
 
     /**
-     * FG-DIFF zusaetlich SGMaterial als Parameter, um nicht ueber die Propnodes gehen zu müssen. Das ist eh reichlich Woodoo.
-     * Geht aber nicht so einfach.
      * 26.1.18: Der baut doch staendig Effects neu. Auch die Parents. Und macht dann den release()??. Alles unklar. Damit erzeugt er bequem 1,4Mio PropertyNodes.
      * Das duerfte auch mit dem mergeNodes zu tun haben.
      * Ich uebergehe mal den Parent. Die Effekte werden ja eh noch nicht so genutzt. Dann ergeben sich nur noch 31000 Nodes.
      * Evtl. muss das ganze umgebaut werden.
      * Wiki.
-     * 
+     * <p>
      * Returns null if effect cannot be created (already logged).
-     * 
+     * 16.10.24: This seems to be THE method for building an effect. Called in FG via MakeEffectVisitor from model.cxx. Don't try
+     * to pass material as parameter.
+     * 17.10.24: Build an effect for the texture defined in the material. Apparently only used from SGMaterialLib
+     * currently, but no idea whether the effect is really used.
+     *
      * @param prop
      * @param realizeTechniques
      * @param options
      * @return
      */
-    public static FGEffect makeEffect(SGPropertyNode prop, boolean realizeTechniques, SGReaderWriterOptions options/*, SGMaterial mat*/) {
+    public static Effect makeEffect(SGPropertyNode prop, boolean realizeTechniques, SGReaderWriterOptions options, String label/*, SGMaterial mat*/) {
         // Give default names to techniques and passes
         List<SGPropertyNode> techniques = prop.getChildren("technique");
         for (int i = 0; i < (int) techniques.size(); ++i) {
             SGPropertyNode tniqProp = techniques.get(i)/*.ptr()*/;
             if (!tniqProp.hasChild("name"))
-                SGPropertyNode.setValue(tniqProp.getChild("name", 0, true), (String)(""+i)   /*boost::lexical_cast < string > (i)*/);
+                SGPropertyNode.setValue(tniqProp.getChild("name", 0, true), (String) ("" + i)   /*boost::lexical_cast < string > (i)*/);
             List<SGPropertyNode> passes = tniqProp.getChildren("pass");
             for (int j = 0; j < (int) passes.size(); ++j) {
                 SGPropertyNode passProp = passes.get(j)/*.ptr()*/;
                 if (!passProp.hasChild("name"))
-                    SGPropertyNode.setValue(passProp.getChild("name", 0, true), (String)(""+j)/* boost::lexical_cast < string > (j)*/);
+                    SGPropertyNode.setValue(passProp.getChild("name", 0, true), (String) ("" + j)/* boost::lexical_cast < string > (j)*/);
                 List<SGPropertyNode> texUnits
                         = passProp.getChildren("texture-unit");
                 for (int k = 0; k < (int) texUnits.size(); ++k) {
                     SGPropertyNode texUnitProp = texUnits.get(k)/*.ptr()*/;
                     if (!texUnitProp.hasChild("name"))
-                        SGPropertyNode.setValue(texUnitProp.getChild("name", 0, true), (String)(""+k)/* boost::lexical_cast < string > (k)*/);
+                        SGPropertyNode.setValue(texUnitProp.getChild("name", 0, true), (String) ("" + k)/* boost::lexical_cast < string > (k)*/);
                 }
             }
         }
         /*ref_ptr<*/
-        FGEffect effect = null;
+        Effect effect = null;
         if (!prop.hasChild("name")) {
             SGPropertyNode.setValue(prop.getChild("name", 0, true), "noname");
         }
         SGPropertyNode nameProp = prop.getChild("name");
         // Merge with the parent effect, if any
         SGPropertyNode inheritProp = prop.getChild("inherits-from");
-        FGEffect parent = null;
+        Effect parent = null;
         //siehe Header
-        if (inheritProp != null && false) {
+        if (inheritProp != null/*28.10.24 && false*/) {
+            getLog().debug("Building/Lookup inherited effect " + inheritProp.getStringValue());
             //auch in FG auskommentiert prop.removeChild("inherits-from");
-            parent = makeEffect(inheritProp.getStringValue(), false, options);
+            parent = makeEffect(inheritProp.getStringValue(), false, options, label);
             if (parent != null) {
                 /*TODO? Effect::Key key;
                 key.unmerged = prop;
@@ -224,11 +238,12 @@ public class MakeEffect {
                 }*/
                 // die Bedeutung des if in FG ist unklar. Es gibt doch noch keinen Effect. Oder wo kommt der her?
                 if (true/*!effect.valid()*/) {
-                    effect = new FGEffect();
-                    effect.setName(nameProp.getStringValue());
+                    effect = new Effect(nameProp.getStringValue(), prop, parent, label);
+                    /*21.10.24 moved to constructor effect.setName(nameProp.getStringValue());
                     effect.root = new SGPropertyNode();
                     mergePropertyTrees(effect.root, prop, parent.root);
-                    effect.parametersProp = effect.root.getChild("parameters");
+                    effect.parametersProp = effect.root.getChild("parameters");*/
+
                     // Generator erstmal weglassen
                     /*OpenThreads::ScopedLock < OpenThreads::ReentrantMutex >
                             lockEntity(effectMutex);
@@ -245,14 +260,15 @@ public class MakeEffect {
                     */
                 }
             } else {
-                logger.error(/*SG_LOG(SG_INPUT, SG_ALERT,*/ "can't find base effect " + inheritProp.getStringValue());
+                getLog().error(/*SG_LOG(SG_INPUT, SG_ALERT,*/ "can't find base effect " + inheritProp.getStringValue());
                 return null;
             }
         } else {
-            effect = new FGEffect();
-            effect.setName(nameProp.getStringValue());
+            getLog().debug("Building effect " + nameProp.getStringValue());
+            effect = new Effect(nameProp.getStringValue(), prop, null, label);
+            /*21.10.24 moved to constructor effect.setName(nameProp.getStringValue());
             effect.root = prop;
-            effect.parametersProp = effect.root.getChild("parameters");
+            effect.parametersProp = effect.root.getChild("parameters");*/
         }
         SGPropertyNode generateProp = prop.getChild("generate");
         if (generateProp != null) {
@@ -274,19 +290,21 @@ public class MakeEffect {
                 //OpenThreads::ScopedLock < OpenThreads::ReentrantMutex >                        lockEntity(effectMutex);
                 effect.realizeTechniques(options);
             } catch (/*Builder*/java.lang.Exception e) {
-                logger.error(/*SG_LOG(SG_INPUT, SG_ALERT,*/ "Error building technique: " + e.getMessage());
+                getLog().error(/*SG_LOG(SG_INPUT, SG_ALERT,*/ "Error building technique: " + e.getMessage());
                 return null;
             }
         }
         return effect/*.release()*/;
     }
 
-   /* void clearEffectCache()
-    {
-        OpenThreads::ScopedLock<OpenThreads::ReentrantMutex> lockEntity(effectMutex);
+    public static void clearEffectCache() {
+        //OpenThreads::ScopedLock<OpenThreads::ReentrantMutex> lockEntity(effectMutex);
         effectMap.clear();
-    }*/
+    }
 
+    private static Log getLog() {
+        return Platform.getInstance().getLog(MakeEffect.class);
+    }
 
 }
 

@@ -224,3 +224,24 @@ The scene object tree of FG is retained as far as possible. ...
 
 FG uses proxy nodes for model that are not loaded before the viewer steps onto that
 node (see SGModelLib).
+
+## Effects
+See also https://wiki.flightgear.org/Effect_framework.
+
+In FG effects (eg. transparency) are defined in XML and applied at runtime 
+via an OSG node visitor (MakeEffectVisitor).
+
+An important step of migration is replacing OSG classes StateSet and Material with
+our classes Texture and Material. Instead of having a (global) current state we need
+to pass the material context to ... for applying it.
+
+The effect property '<inherits-from>' probably just means 'copy property tree from parent'. The
+parent itself is never realized.
+
+We ignore schemes and compositor for now.
+
+Later versions (2024) of Flightgear apparently no longer prefer using '<inherits-from>Effects/model-transparent</inherits-from>' for
+effects? At least beacon.xml no longer uses it. So this is no good use/test case for
+understanding how it works. Maybe it never worked? "model-transparent.eff" appears
+no longer popular at all; only for scenery?
+beacon in fg-raw-data replaced with latest version.

@@ -22,6 +22,8 @@ import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.SGLoaderOptions;
 import de.yard.threed.flightgear.core.flightgear.main.AircraftResourceProvider;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
+import de.yard.threed.flightgear.core.simgear.scene.material.Effect;
+import de.yard.threed.flightgear.core.simgear.scene.material.MakeEffect;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGMaterialAnimation;
@@ -40,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Also for SGAnimation.
+ * 28.10.24: And effects in models
  */
 @Slf4j
 public class SGReaderWriterXMLTest {
@@ -238,7 +241,7 @@ public class SGReaderWriterXMLTest {
         assertNotNull(bundlemodel);
 
         BuildResult result = SGReaderWriterXMLTest.loadModelAndWait(new BundleResource(bundlemodel, "Models/Power/windturbine.xml"), animationList,
-                2, "Models/Power/windturbine.xml");
+                2, "Models/Power/windturbine.xml", null);
         SGReaderWriterXMLTest.validateWindturbineAnimations(new SceneNode(result.getNode()), animationList);
 
         animationList.clear();
@@ -275,9 +278,39 @@ public class SGReaderWriterXMLTest {
     }
 
     /**
-     * Waits until animationlist is complete. This also means, the model is loaded.
+     *
      */
-    public static BuildResult loadModelAndWait(BundleResource bundleResource, List<SGAnimation> animationList, int expectedAnimations, String expectedSource) throws Exception {
+    @Test
+    public void testBeacon() throws Exception {
+
+        // Kruecke zur Entkopplung des Modelload von AC policy.
+        ModelLoader.processPolicy = new ACProcessPolicy(null);
+
+        List<SGAnimation> animationList = new ArrayList<SGAnimation>();
+        SGLoaderOptions opt = new SGLoaderOptions();
+        opt.setPropertyNode(new SGPropertyNode("" + "-root")/*FGGlobals.getInstance().get_props()*/);
+
+        EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("model"));
+
+        Bundle bundlemodel = BundleRegistry.getBundle("Terrasync-model");
+        assertNotNull(bundlemodel);
+
+        // has 23 animations, but only 6 are parsed(?)
+        BuildResult result = SGReaderWriterXMLTest.loadModelAndWait(new BundleResource(bundlemodel, "Models/Airport/beacon.xml"), animationList,
+                6, "Models/Airport/beacon.xml", "Models/Airport/beacon.gltf");
+        //SGReaderWriterXMLTest.validateBeaconAnimations(new SceneNode(result.getNode()), animationList);
+
+        // the effect might have exist before the test, but anyway, it should exist now.
+        Effect modelTransparent = MakeEffect.effectMap.get("Effects/model-transparent");
+        assertNotNull(modelTransparent);
+    }
+
+    /**
+     * Waits until animationlist is complete. This also means, the model (XML part) is loaded.
+     * Optionally also wait until the object is in the scene graph.
+     */
+    public static BuildResult loadModelAndWait(BundleResource bundleResource, List<SGAnimation> animationList, int expectedAnimations,
+                                               String expectedSource, String expectedObject) throws Exception {
         BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(bundleResource, null, (source, destinationNode, alist) -> {
             assertEquals(expectedSource, source.getFullName());
             if (alist != null) {
@@ -289,6 +322,15 @@ public class SGReaderWriterXMLTest {
             log.debug("animationList.size()=" + animationList.size() + ",expected=" + expectedAnimations);
             return animationList.size() == expectedAnimations;
         }, 5000);
+
+        if (expectedObject != null) {
+            TestUtils.waitUntil(() -> {
+                TestHelper.processAsync();
+                log.debug("animationList.size()=" + animationList.size() + ",expected=" + expectedAnimations);
+                return SceneNode.findByName(expectedObject).size() > 0;
+            }, 5000);
+        }
+
         return result;
     }
 

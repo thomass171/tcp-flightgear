@@ -40,6 +40,8 @@ import java.util.List;
  * - multiple names
  * - a texture(name)
  * - a.s.o.
+ * A SGMaterial/mat seems to be just a material (property tree) definition initially. Shader, textures, etc
+ * are created later when needed (by ??()?).
  *
  * <p/>
  * Created by thomass on 23.02.16.
@@ -51,7 +53,7 @@ public class SGMaterial extends BVHMaterial {
     // Internal state.
     ////////////////////////////////////////////////////////////////////
 
-    // texture status
+    // texture status (via Effect?)
     // List increases with every found texture. Thus remains empty if no texture is found.
     /*std::vector<_internal_state>*/ public List<InternalState> _status = new ArrayList<InternalState>();
 
@@ -649,14 +651,19 @@ public class SGMaterial extends BVHMaterial {
         effect = "Effects/terrain-default";
     }
 
-    FGEffect get_effect(int i) {
+    Effect get_effect(int i) {
+        // 28.10.24 avoid NPE
+        if (_status.get(i).getEffect() == null){
+            return null;
+        }
+        // 28.10.24: Somehow strange to have a additional effect_realized flag outside of effect. Effect also has one.
         if (!_status.get(i).effect_realized) {
-            if (!_status.get(i).effect.valid())
+            if (!_status.get(i).getEffect().valid())
                 return null;
-            _status.get(i).effect.realizeTechniques(_status.get(i).options/*.get()*/);
+            _status.get(i).getEffect().realizeTechniques(_status.get(i).options/*.get()*/);
             _status.get(i).effect_realized = true;
         }
-        return _status.get(i).effect/*.get()*/;
+        return _status.get(i).getEffect()/*.get()*/;
     }
 
     /**
@@ -664,7 +671,7 @@ public class SGMaterial extends BVHMaterial {
      * texIndex apparently might result from landclass in BTG file.
      * 23.7.24: Probably means 'get one of the textures listed in XML'.
      */
-    public FGEffect get_one_effect(int texIndex) {
+    public Effect get_one_effect(int texIndex) {
         // SGGuard<SGMutex> g(_lock);
         if (_status.isEmpty()) {
             logger.warn("No effect available. Maybe no texture found at all for effect '" + effect + "'");
@@ -757,8 +764,9 @@ public class SGMaterial extends BVHMaterial {
             SGPropertyNode.makeChild(effectParamProp, "scale").setVector3Value(new Vector3((float) xsize, (float) ysize, 0.0f));
             SGPropertyNode.makeChild(effectParamProp, "light-coverage").setDoubleValue(light_coverage);
 
-            matState.effect = MakeEffect.makeEffect(effectProp, false, options);
-            if (matState.effect != null && matState.effect.valid()) {
+            // 28.10.24: Build an effect for the texture defined in the material
+            matState.setEffect(MakeEffect.makeEffect(effectProp, false, options, "SGMaterial..."));
+            if (matState.getEffect() != null && matState.getEffect().valid()) {
                 //TODO matState.effect.setUserData(user.get());
             }
         }
@@ -800,12 +808,12 @@ public class SGMaterial extends BVHMaterial {
         return it->getSecond;
     }*/
 
-    public PortableMaterial getEffectMaterialByTextureIndex(int textureindex) {
-        FGEffect oneEffect = get_one_effect(textureindex);
+    /*28.10.24public PortableMaterial getEffectMaterialByTextureIndex(int textureindex) {
+        Effect oneEffect = get_one_effect(textureindex);
         if (oneEffect == null) {
             return null;
         } else {
             return oneEffect.getMaterialDefinition();
         }
-    }
+    }*/
 }

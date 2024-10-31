@@ -10,22 +10,23 @@ import java.util.List;
 
 /**
  * inner class from SGMaterial mat.[hc]xx
- * 
+ * <p>
  * Created by thomass on 01.09.16.
  */
 public class InternalState {
-    /*osg::ref_ptr<simgear::*/ FGEffect effect;
+    // 28.10.24 effect is null initially and set later.
+    /*osg::ref_ptr<simgear::*/ private Effect effect;
     public List<Pair</* std::vector<std::pair<std::s*/BundleResource, Integer>> texture_paths = new ArrayList<Pair<BundleResource, Integer>>();
     public boolean effect_realized;
     /*osg::ref_ptr<const simgear::*/ SGReaderWriterOptions options;
 
-    InternalState(FGEffect e, boolean l, SGReaderWriterOptions o) {
+    InternalState(Effect e, boolean l, SGReaderWriterOptions o) {
         this.effect = e;
         effect_realized = l;
         options = o;
     }
 
-    InternalState(FGEffect e, BundleResource texturepath, boolean l, SGReaderWriterOptions o) {
+    InternalState(Effect e, BundleResource texturepath, boolean l, SGReaderWriterOptions o) {
         this.effect = e;
         effect_realized = l;
         options = o;
@@ -36,5 +37,15 @@ public class InternalState {
         texture_paths.add(FlightGear.make_pair(texturepath, i));
     }
 
+    public void setEffect(Effect effect) {
+        this.effect = effect;
+        if (effect == null) {
+            int h = 9;
+        }
+    }
+
+    public Effect getEffect() {
+        return effect;
+    }
 }
 

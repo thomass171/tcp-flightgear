@@ -12,6 +12,7 @@ import de.yard.threed.flightgear.core.CppHashMap;
 import de.yard.threed.flightgear.core.osg.Group;
 import de.yard.threed.flightgear.core.osg.Node;
 import de.yard.threed.flightgear.core.SGTexturedTriangleBinFactory;
+import de.yard.threed.flightgear.core.simgear.scene.material.Effect;
 import de.yard.threed.flightgear.core.simgear.scene.material.EffectGeode;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterial;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialCache;
@@ -344,7 +345,14 @@ public class SGTileGeometryBin extends SGTriangleBin {
                     // darf sowas vorkommen?
                     logger.warn("no material found in matcache for " + ii + ". matcache.size=" + matcache.cache.size());
                 } else {
-                    PortableMaterial pmat = mat.getEffectMaterialByTextureIndex(textureindex);
+                    // 21.10.24: material decoupled from effect. Hmm
+                    //PortableMaterial pmat = mat.getMaterialByTextureIndex(textureindex);
+                    PortableMaterial pmat = null;
+                    //pmat.getEffectMaterialByTextureIndex(textureindex);
+                    Effect oneEffect = mat.get_one_effect(textureindex);
+                    if (oneEffect != null) {
+                        pmat = oneEffect.getMaterialDefinition();
+                    }
                     //geos.add(new GeoMat(geometry, (mat != null) ? (mat.get_one_effect(textureindex).getMaterialDefinition()) : null));
                     if (pmat == null) {
                         logger.warn("No material effect available for '" + ii + "' with index " + textureindex);

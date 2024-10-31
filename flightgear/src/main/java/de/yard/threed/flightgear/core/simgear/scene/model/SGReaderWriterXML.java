@@ -16,6 +16,7 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.ResourceLoader;
+import de.yard.threed.engine.loader.MaterialFactory;
 import de.yard.threed.engine.loader.PortableModelBuilder;
 import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.engine.platform.ResourceLoaderFromDelayedBundle;
@@ -51,6 +52,7 @@ import de.yard.threed.core.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static de.yard.threed.engine.platform.EngineHelper.LOADER_APPLYACPOLICY;
 import static de.yard.threed.flightgear.FgModelHelper.mapFilename;
@@ -619,7 +621,7 @@ public class SGReaderWriterXML {
                     group.attach(new SceneNode(result.getNode()));
                     //die group aendert sich wohl, also brauch ich auch keine returngroup
                     // Group returngroup = group;
-                    buildAnimations(group, props, previewMode, final_prop_root, options, null/*12.2.24 path*/, bpath, animationList);
+                    buildAnimations(group, props, previewMode, final_prop_root, options, null/*12.2.24 path*/, bpath, animationList, bpath.getName());
                     if (modeldelegate != null) {
                         // 8.3.24: Passed source should be the XML, not the 'ac'.
                         modeldelegate.modelComplete(finalbpath, new SceneNode(result.getNode()), animationList);
@@ -648,7 +650,8 @@ public class SGReaderWriterXML {
             group.attach(model);
             //die group aendert sich wohl, also brauch ich auch keine returngroup
             // Group returngroup = group;
-            buildAnimations(group, props, previewMode, prop_root, options, null/*12.2.24  path*/, bpath, animationList);
+            buildAnimations(group, props, previewMode, prop_root, options, null/*12.2.24  path*/, bpath, animationList,
+                    bpath.getName());
         }
         
         
@@ -676,9 +679,9 @@ public class SGReaderWriterXML {
 
     /**
      * Erstellen der Animationen und Effects, was auch async passieren kann.
-     * Die Animations kommen in  das schon vorbereitete BuildResult.
+     * Only known/implemented animations are built and stored in the passed "animationList".
      */
-    void buildAnimations(Group group, SGPropertyNode props, boolean previewMode, SGPropertyNode prop_root, SGReaderWriterOptions options, SGPath path, BundleResource bpath, List<SGAnimation> animationList) {
+    void buildAnimations(Group group, SGPropertyNode props, boolean previewMode, SGPropertyNode prop_root, SGReaderWriterOptions options, SGPath path, BundleResource bpath, List<SGAnimation> animationList, String label) {
         PropertyList effect_nodes = props.getChildren("effect");
         PropertyList animation_nodes = props.getChildren("animation");
 
@@ -692,10 +695,10 @@ public class SGReaderWriterXML {
         makeEffectAnimations(animation_nodes, effect_nodes);
 
         /*ref_ptr<*/
-        //die group aendert sich durch den Aufruf eigentlich nicht.
-        Node modelWithEffects = Model.instantiateEffects(group/*.get()*/, effect_nodes, options/*.get()*/);
-        group = /*static_cast < Group * > (*/(Group) modelWithEffects/*.get()*/;
-
+        // 29.10.24: We don't replace the node via visitor like FG but create ModelFactories instead
+        // FG Node modelWithEffects = Model.instantiateEffects(group/*.get()*/, effect_nodes, options/*.get()*/);
+        // FG group = /*static_cast < Group * > (*/(Group) modelWithEffects/*.get()*/;
+        Model.instantiateEffects(group/*.get()*/, effect_nodes, options/*.get()*/, label);
 
         logger.debug("Building animations for " + bpath.name + ". nodecount=" + animation_nodes.size());
 

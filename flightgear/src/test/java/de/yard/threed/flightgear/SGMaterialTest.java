@@ -1,13 +1,12 @@
 package de.yard.threed.flightgear;
 
-import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.core.Pair;
 import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
 import de.yard.threed.flightgear.core.flightgear.main.FGProperties;
-import de.yard.threed.flightgear.core.simgear.scene.material.FGEffect;
+import de.yard.threed.flightgear.core.simgear.scene.material.Effect;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterial;
@@ -27,7 +26,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 
 /**
- * For SGMaterial, SGMaterialLib, SGMaterialCache, Effect and other material related.
+ * For SGMaterial, SGMaterialLib, SGMaterialCache, Effect(terrain) and other material related.
+ * 21.10.24: These tests are not really useful because much code is just skipped due to missing
+ * textures(? SGMaterial only contains definitions?).
+ * Tests in SceneryTest are more useful.
  * <p>
  * Created by thomass on 08.08.16.
  */
@@ -85,7 +87,7 @@ public class SGMaterialTest {
         SGGeod refcenter = SGGeod.fromCart(FlightGear.refbtgcenter);
         SGMaterial mixedForest = matlib.find("MixedForest", new Vector2((float) refcenter.getLongitudeDeg().getDegree(), (float) refcenter.getLatitudeDeg().getDegree()));
         int textureindex = 0;
-        FGEffect eff = mixedForest.get_one_effect(textureindex);
+        Effect eff = mixedForest.get_one_effect(textureindex);
     }
 
     /**

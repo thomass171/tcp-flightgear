@@ -93,7 +93,7 @@ public class SGMaterialLib {
             // Read name node purely for logging purposes
             SGPropertyNode nameNode = node.getChild("name");
             if (nameNode != null) {
-                logger.info(/*SG_LOG( SG_TERRAIN, SG_INFO,*/ "Loading region(PropertyList) '" + nameNode.getStringValue() + "' from " +mpath);
+                logger.info(/*SG_LOG( SG_TERRAIN, SG_INFO,*/ "Loading region(PropertyList) '" + nameNode.getStringValue() + "' from " + mpath);
             }
 
             // Read list of areas
@@ -182,6 +182,13 @@ public class SGMaterialLib {
         }
         logger.warn("no material " + material + " for center " + center);
         return null;
+    }
+
+    /**
+     * Helpful for testing
+     */
+    public List<SGMaterial> get(String material) {
+        return matlib.get(material);
     }
 
     SGMaterial find(String material, SGGeod center) {
