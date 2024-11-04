@@ -21,14 +21,19 @@ import java.util.List;
 
 
 /**
+ * Process FG animations.
+ * 4.11.24: Renamed from just AnimationUpdateSystem to FgAnimationUpdateSystem to make clear it's for FG animations.
+ * <p>
  * Created by thomass on 28.12.16.
  */
-public class AnimationUpdateSystem extends DefaultEcsSystem {
-    public AnimationUpdateSystem() {
-        super(new String[]{"AnimationComponent"});
+public class FgAnimationUpdateSystem extends DefaultEcsSystem {
+
+    public FgAnimationUpdateSystem() {
+        super(new String[]{"FgAnimationComponent"});
     }
-    Log logger = Platform.getInstance().getLog(AnimationUpdateSystem.class);
-    public static String TAG = "AnimationUpdateSystem";
+
+    Log logger = Platform.getInstance().getLog(FgAnimationUpdateSystem.class);
+    public static String TAG = "FgAnimationUpdateSystem";
     // intersections are cached per frame
     private List<NativeCollision> intersections = null;
 

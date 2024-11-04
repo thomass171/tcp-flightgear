@@ -3,7 +3,6 @@ package de.yard.threed.trafficadvanced.apps;
 import de.yard.threed.core.Color;
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.Dimension;
-import de.yard.threed.core.DimensionF;
 import de.yard.threed.core.Event;
 import de.yard.threed.core.IntHolder;
 import de.yard.threed.core.LatLon;
@@ -42,16 +41,12 @@ import de.yard.threed.engine.ecs.VelocityComponent;
 import de.yard.threed.engine.geometry.ShapeGeometry;
 import de.yard.threed.engine.gui.ControlMenuBuilder;
 import de.yard.threed.engine.gui.ControlPanel;
-import de.yard.threed.engine.gui.ControlPanelArea;
 import de.yard.threed.engine.gui.GuiGrid;
 import de.yard.threed.engine.gui.Icon;
 import de.yard.threed.engine.gui.MenuItem;
-import de.yard.threed.engine.gui.PanelGrid;
 import de.yard.threed.engine.gui.Text;
-import de.yard.threed.engine.gui.TextTexture;
 import de.yard.threed.engine.platform.EngineHelper;
 import de.yard.threed.engine.platform.ProcessPolicy;
-import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.engine.vr.VrInstance;
@@ -60,7 +55,7 @@ import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGearModuleBasic;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
-import de.yard.threed.flightgear.ecs.AnimationUpdateSystem;
+import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
 import de.yard.threed.flightgear.ecs.PropertyComponent;
 import de.yard.threed.graph.GraphEventRegistry;
 import de.yard.threed.graph.GraphMovingComponent;
@@ -68,13 +63,10 @@ import de.yard.threed.graph.GraphNode;
 import de.yard.threed.graph.GraphPath;
 import de.yard.threed.graph.GraphProjection;
 import de.yard.threed.graph.GraphVisualizer;
-import de.yard.threed.graph.ProjectedGraph;
-import de.yard.threed.graph.SimpleGraphVisualizer;
 import de.yard.threed.traffic.AbstractSceneryBuilder;
 import de.yard.threed.traffic.Destination;
 import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.EllipsoidConversionsProvider;
-import de.yard.threed.traffic.GraphVisualizationSystem;
 import de.yard.threed.traffic.PositionHeading;
 import de.yard.threed.traffic.RequestRegistry;
 import de.yard.threed.traffic.SphereProjections;
@@ -287,7 +279,7 @@ public class FlatAirportScene extends FlightTravelScene {
         //27.10.21 addLight();
         //SystemManager.addSystem(new TrafficSystem(/*visualizer*/), 0);
         //10.12.21 SystemManager.addSystem(graphTerrainsystem, 0);
-        SystemManager.addSystem(new AnimationUpdateSystem());
+        SystemManager.addSystem(new FgAnimationUpdateSystem());
         SystemManager.addSystem(new FlightSystem());
 
         //addSceneUpdater(this);
@@ -773,7 +765,7 @@ public class FlatAirportScene extends FlightTravelScene {
                     }
 
                     @Override
-                    public String getValue() {
+                    public String getDisplayValue() {
                         return "Default Trip";
                     }
 
@@ -791,7 +783,7 @@ public class FlatAirportScene extends FlightTravelScene {
                     }
 
                     @Override
-                    public String getValue() {
+                    public String getDisplayValue() {
                         // empty string fails due to length 0
                         return markedaircraft == null ? " " : markedaircraft.getName();
                     }

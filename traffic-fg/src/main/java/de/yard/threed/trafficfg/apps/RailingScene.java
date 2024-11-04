@@ -25,8 +25,6 @@ import de.yard.threed.engine.ObserverSystem;
 import de.yard.threed.engine.Scene;
 import de.yard.threed.engine.SceneMode;
 import de.yard.threed.engine.SceneNode;
-import de.yard.threed.engine.Transform;
-import de.yard.threed.engine.XmlDocument;
 import de.yard.threed.engine.avatar.AvatarSystem;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsHelper;
@@ -43,10 +41,7 @@ import de.yard.threed.engine.gui.GuiGrid;
 import de.yard.threed.engine.gui.GuiGridMenu;
 import de.yard.threed.engine.gui.Icon;
 import de.yard.threed.engine.gui.Label;
-import de.yard.threed.engine.gui.MenuCycler;
 import de.yard.threed.engine.gui.MenuItem;
-import de.yard.threed.engine.gui.MenuProvider;
-import de.yard.threed.engine.gui.Text;
 import de.yard.threed.engine.platform.EngineHelper;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.platform.common.Request;
@@ -55,22 +50,17 @@ import de.yard.threed.engine.util.NearView;
 import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
-import de.yard.threed.flightgear.ecs.AnimationUpdateSystem;
+import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
 import de.yard.threed.flightgear.ecs.PropertyComponent;
 import de.yard.threed.graph.Graph;
 import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphMovingSystem;
 import de.yard.threed.graph.RailingFactory;
-import de.yard.threed.traffic.AbstractTrafficGraphFactory;
-import de.yard.threed.traffic.FlatTerrainSystem;
 import de.yard.threed.traffic.GraphTerrainSystem;
-import de.yard.threed.traffic.RailingVisualizer;
 import de.yard.threed.traffic.SphereSystem;
 import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficSystem;
-import de.yard.threed.traffic.config.ConfigHelper;
-import de.yard.threed.traffic.config.VehicleConfigDataProvider;
 import de.yard.threed.traffic.config.XmlVehicleDefinition;
 
 import java.util.ArrayList;
@@ -164,8 +154,8 @@ public class RailingScene extends Scene {
 
         SystemManager.addSystem(new GraphMovingSystem(), 0);
 
-        // Ob das System Setup hier gut ist, muss sich noch zeigen
-        SystemManager.addSystem(new AnimationUpdateSystem());
+        // We use 'ASI' from FG, so need the system for updating animations
+        SystemManager.addSystem(new FgAnimationUpdateSystem());
 
         //23.10.19: plane below rails
         Material goundmat = Material.buildLambertMaterial(Color.GREEN);

@@ -17,7 +17,6 @@ import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
-import de.yard.threed.core.resource.HttpBundleResolver;
 import de.yard.threed.core.testutil.RuntimeTestUtil;
 import de.yard.threed.engine.Camera;
 import de.yard.threed.engine.FirstPersonController;
@@ -45,26 +44,22 @@ import de.yard.threed.engine.gui.Text;
 import de.yard.threed.engine.gui.TextTexture;
 import de.yard.threed.engine.platform.EngineHelper;
 import de.yard.threed.engine.platform.ProcessPolicy;
-import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.engine.util.NearView;
 import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.flightgear.FgBundleHelper;
-import de.yard.threed.traffic.AbstractSceneryBuilder;
 import de.yard.threed.trafficadvanced.AdvancedConfiguration;
-import de.yard.threed.trafficfg.fgadapter.FgTerrainBuilder;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearMain;
 import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.SimpleBundleResourceProvider;
-import de.yard.threed.flightgear.TerraSyncBundleResolver;
 import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.OpenGlProcessPolicy;
-import de.yard.threed.flightgear.ecs.AnimationUpdateSystem;
+import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
 import de.yard.threed.graph.Graph;
 import de.yard.threed.graph.GraphEdge;
 import de.yard.threed.graph.GraphEventRegistry;
@@ -72,7 +67,6 @@ import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphMovingSystem;
 import de.yard.threed.graph.GraphPosition;
 import de.yard.threed.graph.SimpleGraphVisualizer;
-import de.yard.threed.traffic.AbstractSceneryBuilder;
 import de.yard.threed.traffic.Destination;
 import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.GraphBackProjectionProvider;
@@ -80,7 +74,6 @@ import de.yard.threed.traffic.GraphTerrainSystem;
 import de.yard.threed.traffic.GraphVisualizationSystem;
 import de.yard.threed.traffic.LightDefinition;
 import de.yard.threed.traffic.RequestRegistry;
-import de.yard.threed.traffic.ScenerySystem;
 import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficHelper;
@@ -106,7 +99,6 @@ import de.yard.threed.trafficfg.SGGeodAltitudeProvider;
 import de.yard.threed.trafficfg.StgCycler;
 import de.yard.threed.trafficfg.TravelHelper;
 import de.yard.threed.trafficfg.VehicleEntityBuilder;
-import de.yard.threed.trafficfg.apps.TravelSceneBluebird;
 import de.yard.threed.trafficfg.config.ConfigHelper;
 import de.yard.threed.trafficfg.flight.FlightSystem;
 import de.yard.threed.trafficfg.flight.FlightVrControlPanel;
@@ -271,7 +263,7 @@ public class TravelScene extends FlightTravelScene {
         TravelSceneHelper.getSphereWorld().attach(helpline);
 
         SystemManager.addSystem(new FlightSystem());
-        SystemManager.addSystem(new AnimationUpdateSystem());
+        SystemManager.addSystem(new FgAnimationUpdateSystem());
 
         //16.6.20 request geht hier noch nicht wegen "not inited". Darum weiter vereinfacht initialposition. Das ist nur erstmal so ungefähr für Terrain
         //7.10.21 moved to Sphere initialPosition = WorldGlobal.eddkoverviewfar.location.coordinates;//SGGeod.fromLatLon(gsw.getAirport("EDDK").getCenter());
@@ -503,7 +495,7 @@ public class TravelScene extends FlightTravelScene {
                     }
 
                     @Override
-                    public String getValue() {
+                    public String getDisplayValue() {
                         return trips[tripindex];
                     }
 
@@ -524,7 +516,7 @@ public class TravelScene extends FlightTravelScene {
                     }
 
                     @Override
-                    public String getValue() {
+                    public String getDisplayValue() {
                         // empty string fails due to length 0
                         return markedaircraft == null ? " " : markedaircraft.getName();
                     }

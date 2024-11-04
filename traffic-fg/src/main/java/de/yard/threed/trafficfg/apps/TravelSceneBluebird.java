@@ -7,7 +7,6 @@ import de.yard.threed.core.Dimension;
 import de.yard.threed.core.Event;
 import de.yard.threed.core.IntHolder;
 import de.yard.threed.core.LocalTransform;
-import de.yard.threed.core.ObjectBuilder;
 import de.yard.threed.core.Payload;
 import de.yard.threed.core.Quaternion;
 import de.yard.threed.core.SpinnerHandler;
@@ -36,16 +35,12 @@ import de.yard.threed.engine.gui.MenuItem;
 import de.yard.threed.engine.gui.Text;
 import de.yard.threed.engine.platform.EngineHelper;
 import de.yard.threed.engine.platform.ProcessPolicy;
-import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.engine.util.NearView;
 import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.flightgear.FgBundleHelper;
-import de.yard.threed.traffic.BuilderRegistry;
-import de.yard.threed.traffic.SphereSystem;
 import de.yard.threed.trafficfg.TrafficRuntimeTestUtil;
-import de.yard.threed.trafficfg.fgadapter.FgTerrainBuilder;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearMain;
 import de.yard.threed.flightgear.SimpleBundleResourceProvider;
@@ -54,7 +49,7 @@ import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.OpenGlProcessPolicy;
-import de.yard.threed.flightgear.ecs.AnimationUpdateSystem;
+import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
 import de.yard.threed.graph.Graph;
 import de.yard.threed.graph.GraphEdge;
 import de.yard.threed.graph.GraphEventRegistry;
@@ -62,7 +57,6 @@ import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphMovingSystem;
 import de.yard.threed.graph.GraphPosition;
 import de.yard.threed.graph.SimpleGraphVisualizer;
-import de.yard.threed.traffic.AbstractSceneryBuilder;
 import de.yard.threed.traffic.Destination;
 import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.GeoRoute;
@@ -70,7 +64,6 @@ import de.yard.threed.traffic.GraphBackProjectionProvider;
 import de.yard.threed.traffic.GraphTerrainSystem;
 import de.yard.threed.traffic.GraphVisualizationSystem;
 import de.yard.threed.traffic.LightDefinition;
-import de.yard.threed.traffic.ScenerySystem;
 import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.TrafficSystem;
@@ -205,7 +198,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
         EllipsoidCalculations rbcp = TrafficHelper.getEllipsoidConversionsProviderByDataprovider();
 
         SystemManager.addSystem(new FlightSystem());
-        SystemManager.addSystem(new AnimationUpdateSystem());
+        SystemManager.addSystem(new FgAnimationUpdateSystem());
         SystemManager.addSystem(new FlightGearSystem());
 
         ((GraphTerrainSystem) SystemManager.findSystem(GraphTerrainSystem.TAG)).disable();
@@ -375,7 +368,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
                     }
 
                     @Override
-                    public String getValue() {
+                    public String getDisplayValue() {
                         return trips[tripindex];
                     }
 

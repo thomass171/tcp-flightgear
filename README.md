@@ -110,6 +110,15 @@ In the [scene object tree](#scene-object-tree) special nodes (eg. SGRotateAnimat
 animations) are created for each animation. To these nodes
 the changes of values are supplied as needed during runtime. The objects listed
 in the animation definition are attached to the animation nodes accordingly.
+
+Currently the following animations are migrated:
+  * PickAnimation
+  * RotateAnimation, eg. windturbine, needle in ASI
+
+For animated scenery objects ECS entities containing a FgAnimationComponent will be
+created while for vehicle animations in sub models all FgAnimationComponents
+are collected in the vehicle entity.
+
 ### tools-fg
 
 ### traffic-fg

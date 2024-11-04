@@ -301,8 +301,10 @@ public class SGReaderWriterXMLTest {
         //SGReaderWriterXMLTest.validateBeaconAnimations(new SceneNode(result.getNode()), animationList);
 
         // the effect might have exist before the test, but anyway, it should exist now.
-        Effect modelTransparent = MakeEffect.effectMap.get("Effects/model-transparent");
-        assertNotNull(modelTransparent);
+        // 4.11.24 The 2024 version of beacon no longer uses the effect "Effects/model-transparent". In general it no longer seems to
+        // be the preferred way to make transparency in FG. So we removed the existing hard-coding of this effect.
+        /*4.11.24 Effect modelTransparent = MakeEffect.effectMap.get("Effects/model-transparent");
+        assertNotNull(modelTransparent);*/
     }
 
     /**

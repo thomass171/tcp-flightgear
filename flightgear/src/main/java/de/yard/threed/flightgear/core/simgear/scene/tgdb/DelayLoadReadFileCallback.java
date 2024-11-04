@@ -127,7 +127,7 @@ public class DelayLoadReadFileCallback /*extends OptionsReadFileCallback*/ {
                     } else {
                         // shared non XML
                         logger.warn("shared simple model not yet");
-                        node=new SceneNode();
+                        node = new SceneNode();
                     }
                 } else {
                     if (extension.equals("xml")) {
@@ -199,6 +199,11 @@ public class DelayLoadReadFileCallback /*extends OptionsReadFileCallback*/ {
         return new ReadResult(group)/*.release()*/;
     }
 
+    /**
+     * Load an XML model.
+     * Also creates an entity for animated models.
+     * Used also for scenery objects, but not used for vehicle entities.
+     */
     private SceneNode loadXmlModel(BundleResource resource) {
         BuildResult result;
 
@@ -211,6 +216,7 @@ public class DelayLoadReadFileCallback /*extends OptionsReadFileCallback*/ {
                 // Build entity for animated objects
                 if (animationList.size() > 0) {
                     EcsEntity entity = new EcsEntity(new FgAnimationComponent(destinationNode, animationList));
+                    logger.debug("Building entity with animations " + source.getFullName());
                     entity.setName(source.getFullName());
                 }
             }

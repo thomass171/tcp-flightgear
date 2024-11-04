@@ -42,6 +42,8 @@ import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.engine.vr.VrOffsetWrapper;
+import de.yard.threed.flightgear.FgVehicleLoaderResult;
+import de.yard.threed.flightgear.ecs.FgAnimationComponent;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.trafficfg.fgadapter.FgTerrainBuilder;
 import de.yard.threed.flightgear.FgVehicleLoader;
@@ -50,7 +52,7 @@ import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.OpenGlProcessPolicy;
-import de.yard.threed.flightgear.ecs.AnimationUpdateSystem;
+import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
 import de.yard.threed.traffic.AbstractSceneryBuilder;
 import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.EllipsoidConversionsProvider;
@@ -168,7 +170,7 @@ public class SceneryScene extends Scene {
         SystemManager.addSystem(firstPersonMovingSystem);
 
         SystemManager.addSystem(new ObserverSystem());
-        SystemManager.addSystem(new AnimationUpdateSystem());
+        SystemManager.addSystem(new FgAnimationUpdateSystem());
         SystemManager.addSystem(new FlightGearSystem());
 
         if (vrInstance != null) {
@@ -323,8 +325,9 @@ public class SceneryScene extends Scene {
     private void loadInitialVehicle(VehicleDefinition vehicleDefinition) {
         logger.info("Loading initial vehicle " + vehicleDefinition.getName());
 
-        new FgVehicleLoader().loadVehicle(new Vehicle(vehicleDefinition.getName()), vehicleDefinition, (SceneNode container, VehicleLoaderResult loaderResult/*List<SGAnimation> animationList, SGPropertyNode propertyNode,*/, SceneNode lowresNode) -> {
+        new FgVehicleLoader().loadVehicle(new Vehicle(vehicleDefinition.getName()), vehicleDefinition, (SceneNode container, VehicleLoaderResult loaderResult, SceneNode lowresNode) -> {
 
+            FgVehicleLoaderResult fgVehicleLoaderResult = (FgVehicleLoaderResult) loaderResult;
             vehicleModelnode = VehicleLauncher.getModelNodeFromVehicleNode(container);
             SceneNode currentaircraft = container;
 
@@ -343,7 +346,9 @@ public class SceneryScene extends Scene {
 
             // Make it an entity to be ready for FirstPersonMoving
             vehicleEntity = new EcsEntity(currentaircraft);
+            vehicleEntity.setName(vehicleDefinition.getName());
             vehicleEntity.addComponent(new FirstPersonMovingComponent(currentaircraft.getTransform()));
+            vehicleEntity.addComponent(new FgAnimationComponent(currentaircraft, fgVehicleLoaderResult.animationList));
 
             waitsForInitialVehicle = false;
         });

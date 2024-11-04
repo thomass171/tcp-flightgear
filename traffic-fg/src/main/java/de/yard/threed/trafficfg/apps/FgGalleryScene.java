@@ -1,11 +1,33 @@
 package de.yard.threed.trafficfg.apps;
 
+import de.yard.threed.core.Color;
+import de.yard.threed.core.DimensionF;
 import de.yard.threed.core.GeneralParameterHandler;
+import de.yard.threed.core.IntHolder;
+import de.yard.threed.core.Vector2;
+import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
+import de.yard.threed.engine.Camera;
+import de.yard.threed.engine.KeyCode;
+import de.yard.threed.engine.Material;
 import de.yard.threed.engine.apps.GalleryScene;
 import de.yard.threed.engine.ecs.FirstPersonMovingComponent;
+import de.yard.threed.engine.ecs.InputToRequestSystem;
+import de.yard.threed.engine.ecs.SystemManager;
+import de.yard.threed.engine.gui.ButtonDelegate;
+import de.yard.threed.engine.gui.ControlPanel;
+import de.yard.threed.engine.gui.ControlPanelHelper;
+import de.yard.threed.engine.gui.ControlPanelMenu;
+import de.yard.threed.engine.gui.DefaultMenuProvider;
+import de.yard.threed.engine.gui.Icon;
+import de.yard.threed.engine.gui.LabeledSpinnerControlPanel;
+import de.yard.threed.engine.gui.NumericSpinnerHandler;
+import de.yard.threed.engine.gui.SelectSpinnerHandler;
+import de.yard.threed.engine.gui.SpinnerControlPanel;
+import de.yard.threed.engine.gui.TimeDisplayFormatter;
 import de.yard.threed.engine.platform.common.ModelLoader;
+import de.yard.threed.engine.vr.VrOffsetWrapper;
 import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.SimpleBundleResourceProvider;
 import de.yard.threed.flightgear.core.FlightGear;
@@ -16,6 +38,7 @@ import de.yard.threed.trafficfg.fgadapter.FlightGearProperties;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * An extension of the generic gallery for viewing FG XML model.
@@ -87,6 +110,28 @@ public class FgGalleryScene extends GalleryScene {
         // Use a policy for XML as it is the most used here.
         //ModelLoader.processPolicy = new ACProcessPolicy(null);
         ModelLoader.processPolicy = new OpenGlProcessPolicy(true);
+
+
+        // super class probably does VR standards??
+        InputToRequestSystem inputToRequestSystem = (InputToRequestSystem) SystemManager.findSystem(InputToRequestSystem.TAG);
+        if (vrInstance != null) {
+
+            ControlPanel leftControllerPanel = buildVrControlPanel(/*buttonDelegates*/);
+            // position and rotation of VR controlpanel is controlled by property ...
+            inputToRequestSystem.addControlPanel(leftControllerPanel);
+            vrInstance.attachControlPanelToController(vrInstance.getController(0), leftControllerPanel);
+
+        } else {
+            inputToRequestSystem.addKeyMapping(KeyCode.M, InputToRequestSystem.USER_REQUEST_MENU);
+            inputToRequestSystem.setMenuProvider(new DefaultMenuProvider(getDefaultCamera(), (Camera camera) -> {
+                //ControlPanel m = ControlPanelHelper.buildSingleColumnFromMenuitems(new DimensionF(1.3, 0.7), -3, 0.01, menuitems, Color.LIGHTBLUE);
+                ControlPanel m = buildVrControlPanel();
+                m.getTransform().setPosition(new Vector3(-0, 0, -1.5));
+
+                ControlPanelMenu menu = new ControlPanelMenu(m);
+                return menu;
+            }));
+        }
     }
 
     /**
@@ -120,4 +165,38 @@ public class FgGalleryScene extends GalleryScene {
 
     }
 
+    /**
+     * A control panel permanently attached to the left controller. Consists of
+     * <p>
+     * <p>
+     * top line: vr y offset spinner
+     * medium: spinner for teleport toggle
+     */
+    private ControlPanel buildVrControlPanel(/*Map<String, ButtonDelegate> buttonDelegates*/) {
+        Color backGround = Color.RED;//controlPanelBackground;
+        Material mat = Material.buildBasicMaterial(backGround, null);
+
+        double ControlPanelWidth = 0.6;
+        double ControlPanelRowHeight = 0.1;
+        double ControlPanelMargin = 0.005;
+
+        int rows = 1;
+        DimensionF rowsize = new DimensionF(ControlPanelWidth, ControlPanelRowHeight);
+
+        ControlPanel cp = new ControlPanel(new DimensionF(ControlPanelWidth, rows * ControlPanelRowHeight), mat, 0.01);
+
+        // time value spinner (minutes from midnight) , starting at 08:00
+        IntHolder timeSpinnedValue = new IntHolder(8 * 60);
+        cp.add(new Vector2(0,
+                        ControlPanelHelper.calcYoffsetForRow(0, rows, ControlPanelRowHeight)),
+                new LabeledSpinnerControlPanel("time", rowsize, 0, mat,
+                        new NumericSpinnerHandler(15, value -> {
+                            if (value != null) {
+                                timeSpinnedValue.setValue(value.intValue());
+                            }
+                            return Double.valueOf(timeSpinnedValue.getValue());
+                        }, 24 * 60, new TimeDisplayFormatter()), Color.RED));
+
+        return cp;
+    }
 }

@@ -8,6 +8,7 @@ import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsTestHelper;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.testutil.SceneRunnerForTesting;
+import de.yard.threed.flightgear.ecs.FgAnimationComponent;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -52,6 +53,11 @@ public class RailingSceneTest {
         // should start in vehicle. TODO: Check why 0,0,0 is correct position
         EcsTestHelper.assertTeleportComponent(userEntity, 1 + 3, 3, new Vector3());
 
+        // No entity is created for 'ASI'. The animations are contained in the vehicle entity
+        FgAnimationComponent fgAnimationComponent=FgAnimationComponent.getFgAnimationComponent(locEntity);
+        assertNotNull(fgAnimationComponent);
+        // one Material and one RotateAnimation (ASI needle)
+        assertEquals(2, fgAnimationComponent.animationList.size());
     }
 
 }

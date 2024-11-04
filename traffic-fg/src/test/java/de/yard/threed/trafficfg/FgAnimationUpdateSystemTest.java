@@ -4,8 +4,6 @@ import de.yard.threed.core.Quaternion;
 import de.yard.threed.core.configuration.Properties;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.platform.PlatformInternals;
-import de.yard.threed.core.resource.Bundle;
-import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.testutil.SimpleEventBusForTesting;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.ecs.EcsEntity;
@@ -14,11 +12,9 @@ import de.yard.threed.engine.ecs.EcsHelper;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.testutil.AdvancedHeadlessPlatform;
-import de.yard.threed.engine.testutil.AdvancedHeadlessPlatformFactory;
 import de.yard.threed.engine.testutil.EngineTestFactory;
 import de.yard.threed.flightgear.SceneryTest;
 import de.yard.threed.flightgear.TerraSyncBundleResolver;
-import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.FlightGearModuleBasic;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
@@ -26,7 +22,7 @@ import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialLib;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGRotateAnimation;
 import de.yard.threed.flightgear.ecs.FgAnimationComponent;
-import de.yard.threed.flightgear.ecs.AnimationUpdateSystem;
+import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
 import de.yard.threed.javacommon.ConfigurationByEnv;
 import de.yard.threed.javacommon.DefaultResourceReader;
 import de.yard.threed.outofbrowser.SimpleBundleResolver;
@@ -44,9 +40,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * <p>
  */
 @Slf4j
-public class AnimationSystemTest {
+public class FgAnimationUpdateSystemTest {
 
-    AnimationUpdateSystem animationUpdateSystem;
+    FgAnimationUpdateSystem animationUpdateSystem;
 
     /**
      *
@@ -61,7 +57,7 @@ public class AnimationSystemTest {
             Platform.getInstance().addBundleResolver(new SimpleBundleResolver(configuration1.getString("HOSTDIRFG") + "/bundles", new DefaultResourceReader()));
             return platformInternals;
         }, () -> {
-            animationUpdateSystem = new AnimationUpdateSystem();
+            animationUpdateSystem = new FgAnimationUpdateSystem();
             SystemManager.addSystem(animationUpdateSystem);
         }, ConfigurationByEnv.buildDefaultConfigurationWithEnv(new Properties().add("xx", "yy")));
 
@@ -88,7 +84,7 @@ public class AnimationSystemTest {
         // egkk_tower has many animations. Cuurently only 2 are loaded(?) probably due to missing textures and submodel.
         EcsEntity egkkTower = EcsHelper.findEntitiesByName("Objects/e000n50/e007n50/egkk_tower.xml").get(0);
         String expectedSgPropertyName = "/sim/time/elapsed-sec";
-        FgAnimationComponent animationComponent = FgAnimationComponent.getAnimationComponent(egkkTower);
+        FgAnimationComponent animationComponent = FgAnimationComponent.getFgAnimationComponent(egkkTower);
         assertNotNull(animationComponent);
         assertEquals(2, animationComponent.animationList.size(), "animations");
         SGRotateAnimation rotateAnimation = (SGRotateAnimation) animationComponent.animationList.get(0);

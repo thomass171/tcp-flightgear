@@ -24,6 +24,7 @@ import de.yard.threed.engine.ecs.EntityFilter;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.testutil.SceneRunnerForTesting;
 import de.yard.threed.engine.testutil.TestHelper;
+import de.yard.threed.flightgear.ecs.FgAnimationComponent;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphMovingSystem;
@@ -188,6 +189,12 @@ public class TravelSceneBluebirdTest {
             log.debug("posbluebird=" + posbluebird);
             GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(bluebird);
             assertNotNull(gmc);
+
+            // No entity is created for vehicle sub models. The animations are contained in the vehicle entity
+            FgAnimationComponent fgAnimationComponent = FgAnimationComponent.getFgAnimationComponent(bluebird);
+            assertNotNull(fgAnimationComponent);
+            // currently 587 animations(!)
+            assertTrue(fgAnimationComponent.animationList.size() > 100, "" + fgAnimationComponent.animationList.size());
 
             if (initialRoute != null) {
                 // TODO no name yet assertEquals("??.EDDK", gmc.getGraph().getName());

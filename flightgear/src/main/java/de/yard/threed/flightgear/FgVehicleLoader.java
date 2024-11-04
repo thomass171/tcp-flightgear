@@ -119,7 +119,7 @@ public class FgVehicleLoader implements VehicleLoader {
                 // und wird gekapselt.
                 SceneNode nn = SimpleVehicleLoader.buildVehicleNode(currentaircraft, config.getZoffset());
 
-                // Eigentlich ist es zu frueh, das Model ist vielleicht noch nicht komplett geladen
+                // Probably too early to inform delegates, because some asyncs still run
                 // 4.4.18. Darum jetzt oben fuer jedes submodel
 
                 loaddelegate.vehicleLoaded(nn, new FgVehicleLoaderResult(animationList, opt.getPropertyNode()), lowresNode);

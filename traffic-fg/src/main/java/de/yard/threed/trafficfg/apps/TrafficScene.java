@@ -33,7 +33,7 @@ import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
-import de.yard.threed.flightgear.ecs.AnimationUpdateSystem;
+import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
 import de.yard.threed.traffic.AbstractSceneryBuilder;
 import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.GraphBackProjectionProvider;
@@ -134,7 +134,7 @@ public class TrafficScene extends BasicTravelScene {
         world.attach(helpline);
 
         //20.11.23 "NOT-YET"SystemManager.addSystem(new FlightSystem());
-        SystemManager.addSystem(new AnimationUpdateSystem());
+        SystemManager.addSystem(new FgAnimationUpdateSystem());
 
         //16.6.20 request geht hier noch nicht wegen "not inited". Darum weiter vereinfacht initialposition. Das ist nur erstmal so ungefähr für Terrain
         //7.10.21 moved to Sphere initialPosition = WorldGlobal.eddkoverviewfar.location.coordinates;//SGGeod.fromLatLon(gsw.getAirport("EDDK").getCenter());

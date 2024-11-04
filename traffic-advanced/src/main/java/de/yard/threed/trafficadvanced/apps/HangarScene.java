@@ -71,7 +71,7 @@ import de.yard.threed.flightgear.SimpleBundleResourceProvider;
 import de.yard.threed.flightgear.core.SGLoaderOptions;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.ecs.FgAnimationComponent;
-import de.yard.threed.flightgear.ecs.AnimationUpdateSystem;
+import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
 import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.VehicleLauncher;
 import de.yard.threed.traffic.VehicleLoaderResult;
@@ -173,7 +173,7 @@ public class HangarScene extends Scene {
         SystemManager.addSystem(viewingsystem, 0);
 
         //z.B. for click in CDU menu
-        AnimationUpdateSystem animationUpdateSystem = new AnimationUpdateSystem();
+        FgAnimationUpdateSystem animationUpdateSystem = new FgAnimationUpdateSystem();
         SystemManager.addSystem(animationUpdateSystem, 0);
 
         //addToWorld(ModelSamples.buildAxisHelper(200, 1));
@@ -534,7 +534,7 @@ class CockpitCduMenu implements Menu {
             //lieber cdu2, dann kann das ganze Display eine einzige Textur (Canvas?) sein, statt einzelne Buchstaben.
             entity = de.yard.threed.flightgear.traffic.ModelFactory.buildModelFromBundleXmlAsEntity(new BundleResource(bundle, "Aircraft/Instruments-3d/cdu2/boeing.xml"), null);
             entity.setName("CDU-Menu");
-            FgAnimationComponent.getAnimationComponent(entity).setCameraProvider(() -> {
+            FgAnimationComponent.getFgAnimationComponent(entity).setCameraProvider(() -> {
                 return camera;
             });
             //BuildResult buildresult = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundle, "Aircraft/Instruments-3d/cdu/boeing.xml"), opt, (bpath, alist) -> {                 });
