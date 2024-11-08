@@ -107,6 +107,9 @@ public class FgTestFactory {
 
         if (!forScene) {
             //platform.addBundleResolver(new SimpleBundleResolver(configuration.getString("HOSTDIRFG") + "/bundles", new DefaultResourceReader()));
+
+            // 7.11.24 moved out from "if" because also needed without materiallib because it sets up the property tree
+            FlightGearModuleBasic.init(null, null);
             if (addMaterialLib) {
                 // material is needed in following setup
                 EngineTestFactory.loadBundleSync(SGMaterialLib.BUNDLENAME);
@@ -118,7 +121,7 @@ public class FgTestFactory {
                 //30.9.19: Aber irgendeine Art init brauchts doch (z.B. wegen TileMgr, proptree). Und die beiden Modules sind ja nun mal da.
                 //wird teilweise in einzelnen Tests gemacht. Das ist aber inkonsistent.
 
-                FlightGearModuleBasic.init(null, null);
+                //moved up FlightGearModuleBasic.init(null, null);
                 FlightGearModuleScenery.init(false);
 
                 // Kruecke zur Entkopplung des Modelload von AC policy.

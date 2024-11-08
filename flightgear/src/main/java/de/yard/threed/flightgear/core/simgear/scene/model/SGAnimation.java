@@ -4,6 +4,7 @@ import de.yard.threed.core.platform.NativeCollision;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.engine.*;
 import de.yard.threed.core.Vector3;
+import de.yard.threed.flightgear.FlightGearProperties;
 import de.yard.threed.flightgear.core.osg.Group;
 import de.yard.threed.flightgear.core.osg.Node;
 import de.yard.threed.flightgear.core.osgdb.Options;
@@ -45,12 +46,15 @@ public abstract class SGAnimation {
 
     List<Node> _installedAnimations;
     boolean _enableHOT;
+    // a label is helpful for logging/debugging
+    public String label;
 
-    public SGAnimation(SGPropertyNode configNode, SGPropertyNode modelRoot) {
+    public SGAnimation(SGPropertyNode configNode, SGPropertyNode modelRoot, String label) {
         // osg::NodeVisitor(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN),
         _found = false;
         _configNode = configNode;
         _modelRoot = modelRoot;
+        this.label = label;
 
         _name = configNode.getStringValue("name", "");
         _enableHOT = configNode.getBoolValue("enable-hot", true);
@@ -71,7 +75,7 @@ public abstract class SGAnimation {
     static SGAnimation/*boolean*/ animate(Node xmlNodeOfCurrentModel, SGPropertyNode configNode,
                                           SGPropertyNode modelRoot,
                                           Options options,
-                                          String path, int i) {
+                                          String path, int i, String label) {
         String type = configNode.getStringValue("type", "none");
         SGAnimation animation = null;
         long startTime = Platform.getInstance().currentTimeMillis();
@@ -95,7 +99,7 @@ public abstract class SGAnimation {
             //animInst.apply(node);
         } else if (type.equals("material")) {
             //SGMaterialAnimation animInst(configNode, modelRoot, options, path);
-            SGMaterialAnimation animInst = new SGMaterialAnimation(configNode, modelRoot);
+            SGMaterialAnimation animInst = new SGMaterialAnimation(configNode, modelRoot, label);
             animInst.apply(xmlNodeOfCurrentModel);
             animation = animInst;
         } else if (type.equals("noshadow")) {
@@ -103,7 +107,7 @@ public abstract class SGAnimation {
             // animInst.apply(node);
         } else if (type.equals("pick")) {
 
-             SGPickAnimation animInst = new SGPickAnimation(configNode, modelRoot);
+             SGPickAnimation animInst = new SGPickAnimation(configNode, modelRoot, label);
             animInst.apply(xmlNodeOfCurrentModel);
             animation = animInst;
         } else if (type.equals("knob")) {
@@ -116,7 +120,7 @@ public abstract class SGAnimation {
             // SGRangeAnimation animInst(configNode, modelRoot);
             // animInst.apply(node);
         } else if (type.equals("rotate") || type.equals("spin")) {
-            SGRotateAnimation animInst = new SGRotateAnimation(configNode, modelRoot);
+            SGRotateAnimation animInst = new SGRotateAnimation(configNode, modelRoot, label);
             animInst.apply(xmlNodeOfCurrentModel);
             animation = animInst;
         } else if (type.equals("scale")) {
@@ -445,8 +449,14 @@ public abstract class SGAnimation {
             value = new SGConstExpression(new PrimitiveValue(initPos));
         } else {
             SGPropertyNode inputProperty;
-            inputProperty = modelRoot.getNode(inputPropertyName, true);
+            // 5.11.24 Since we don't have one single property tree like FG, we need a kind of lookup.
+            // But that is too much effort. See FlightGearProperties.
+            // 7.11.24 modelroot points to a new node probably, so anything like "/environment" cannot be found.
+            // So even with a single tree we need a kind of lookup
+            //inputProperty = modelRoot.getNode(inputPropertyName, true);
+            inputProperty = FlightGearProperties.resolve(inputPropertyName, modelRoot);
             value = new SGPropertyExpression/*<double>*/(inputProperty);
+            logger.debug("read_value: value for '"+inputPropertyName+"'="+value.getValue(null).toString());
         }
 
         SGInterpTable interpTable = read_interpolation_table(configNode);

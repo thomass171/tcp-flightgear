@@ -38,8 +38,8 @@ public Group group;
     int  AMBIENT_DIFFUSE = AMBIENT | DIFFUSE;
     //const int allMaterialColors = (DIFFUSE | AMBIENT | SPECULAR | EMISSION        | SHININESS);
     
-    public SGMaterialAnimation(SGPropertyNode configNode, SGPropertyNode modelRoot) {
-        super(configNode, modelRoot);
+    public SGMaterialAnimation(SGPropertyNode configNode, SGPropertyNode modelRoot, String label) {
+        super(configNode, modelRoot, label);
 
         //SGAnimation(configNode, modelRoot),                texturePathList(options.getDatabasePathList())
         /*{

@@ -62,7 +62,10 @@ public class SGMaterialLib {
     public SGMaterialLib() {
     }
 
-    // Load a library of material properties
+    /**
+     * Load a library of material properties.
+     * "mpath" eg. points to "Materials/regions/materials.xml".
+     */
     public boolean load(/*String fg_root*/ String mpath, SGPropertyNode prop_root) {
         SGPropertyNode materialblocks = new SGPropertyNode();
         if (materiallibdebuglog) {
@@ -121,6 +124,7 @@ public class SGMaterialLib {
             SGPropertyNode conditionNode = node.getChild("condition");
             SGCondition condition = null;
             if (conditionNode != null) {
+                // copies conditions from 'conditionNode' into prop_root? Or uses prop_root for check eg. "season"?
                 condition = SGCondition.sgReadCondition(prop_root, conditionNode);
             }
 
@@ -132,6 +136,7 @@ public class SGMaterialLib {
             //   SGPropertyNode *node = materials_iter.get();
 
             for (SGPropertyNode node1 : materials) {
+                // 7.11.24: prop_root probably is not used in constructor
                 SGMaterial m = new SGMaterial(options/*.get()*/, node1, prop_root, arealist, condition);
 
                 List<SGPropertyNode> names = node1.getChildren("name");

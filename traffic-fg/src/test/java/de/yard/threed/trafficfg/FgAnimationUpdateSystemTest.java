@@ -18,6 +18,7 @@ import de.yard.threed.flightgear.TerraSyncBundleResolver;
 import de.yard.threed.flightgear.core.FlightGearModuleBasic;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
+import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialLib;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGRotateAnimation;
@@ -84,21 +85,22 @@ public class FgAnimationUpdateSystemTest {
         // egkk_tower has many animations. Cuurently only 2 are loaded(?) probably due to missing textures and submodel.
         EcsEntity egkkTower = EcsHelper.findEntitiesByName("Objects/e000n50/e007n50/egkk_tower.xml").get(0);
         String expectedSgPropertyName = "/sim/time/elapsed-sec";
+        SGPropertyNode elapsedSec = FGGlobals.getInstance().get_props().getNode("/sim/time/elapsed-sec", false);
         FgAnimationComponent animationComponent = FgAnimationComponent.getFgAnimationComponent(egkkTower);
         assertNotNull(animationComponent);
         assertEquals(2, animationComponent.animationList.size(), "animations");
         SGRotateAnimation rotateAnimation = (SGRotateAnimation) animationComponent.animationList.get(0);
-        // rotation should still have default value
+        // rotation should still have default value 0
         assertQuaternion(new Quaternion(), rotateAnimation.rotategroup.getTransform().getRotation());
-        assertNull(rotateAnimation.lastUsedAngle);
+        assertEquals(0.0, rotateAnimation.lastAngle.getDegree(),0.001);
 
         double elapsedsec = 0.5;
-        FGGlobals.getInstance().get_props().getNode("/sim/time/elapsed-sec", true).setDoubleValue(elapsedsec);
+        elapsedSec.setDoubleValue(elapsedsec);
         EcsGroup group = new EcsGroup(new ArrayList<>(),egkkTower);
         group.add(animationComponent);
         // tpf is not considered by animations
         animationUpdateSystem.update(egkkTower, group, 0.4);
         // There is a "scale" of -90 degrees somewhere in RotateAnimation. So considering the elapsedtime the angle -45 appears correct.
-        assertEquals(-45.0, rotateAnimation.lastUsedAngle.getDegree());
+        assertEquals(-45.0, rotateAnimation.lastAngle.getDegree());
     }
 }

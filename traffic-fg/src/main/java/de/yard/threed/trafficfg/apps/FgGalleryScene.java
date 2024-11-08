@@ -15,30 +15,28 @@ import de.yard.threed.engine.apps.GalleryScene;
 import de.yard.threed.engine.ecs.FirstPersonMovingComponent;
 import de.yard.threed.engine.ecs.InputToRequestSystem;
 import de.yard.threed.engine.ecs.SystemManager;
-import de.yard.threed.engine.gui.ButtonDelegate;
 import de.yard.threed.engine.gui.ControlPanel;
 import de.yard.threed.engine.gui.ControlPanelHelper;
 import de.yard.threed.engine.gui.ControlPanelMenu;
 import de.yard.threed.engine.gui.DefaultMenuProvider;
-import de.yard.threed.engine.gui.Icon;
 import de.yard.threed.engine.gui.LabeledSpinnerControlPanel;
+import de.yard.threed.engine.gui.NumericDisplayFormatter;
 import de.yard.threed.engine.gui.NumericSpinnerHandler;
-import de.yard.threed.engine.gui.SelectSpinnerHandler;
-import de.yard.threed.engine.gui.SpinnerControlPanel;
 import de.yard.threed.engine.gui.TimeDisplayFormatter;
 import de.yard.threed.engine.platform.common.ModelLoader;
-import de.yard.threed.engine.vr.VrOffsetWrapper;
 import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.SimpleBundleResourceProvider;
 import de.yard.threed.flightgear.core.FlightGear;
+import de.yard.threed.flightgear.core.FlightGearModuleBasic;
 import de.yard.threed.flightgear.core.flightgear.main.AircraftResourceProvider;
+import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
+import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.scene.model.OpenGlProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
-import de.yard.threed.trafficfg.fgadapter.FlightGearProperties;
+import de.yard.threed.flightgear.FlightGearProperties;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * An extension of the generic gallery for viewing FG XML model.
@@ -46,7 +44,8 @@ import java.util.Map;
  * <p>
  * Not using trafficConfig. But "AircraftDir" is needed for FG aircraft. Doesn't know "optionals" and
  * "zoffset" and so on. But that is acceptable.
- * FG Animations are supported.
+ * FG Animations are supported, but not via FgAnimationUpdateSystem, because the entities are built for
+ * the models (by super class GalleryScene) without knowing about animations.
  * Keys are
  * <p>
  * Model with visual aimations:
@@ -54,7 +53,7 @@ import java.util.Map;
  * - Windturbine
  * - beacon
  * <p>
- * Not only for XML but also GLTF.
+ * Not only for XML but also pure GLTF.
  */
 public class FgGalleryScene extends GalleryScene {
     public Log logger = Platform.getInstance().getLog(FgGalleryScene.class);
@@ -70,7 +69,7 @@ public class FgGalleryScene extends GalleryScene {
     @Override
     public String[] getModelList() {
         return new String[]{
-                //Antenna on top rotates.
+                //Antenna on top rotates by "/sim/time/elapsed-sec".
                 "T3072824:Objects/e000n50/e007n50/egkk_tower.xml;scale=0.002",
                 //windturbine should have two rotations (currently only one)
                 "H:Models/Power/windturbine.xml;scale=0.002",
@@ -132,20 +131,25 @@ public class FgGalleryScene extends GalleryScene {
                 return menu;
             }));
         }
+        // 5.11.24: FlightGearSystem provides property trees
+        //Yes, but we have our own properties update in this scene (see header)
+        // SystemManager.addSystem(new FlightGearSystem());
     }
 
     /**
      * Die FG Komponenten initen bzw. einhaengen, die fuer Model laden gebraucht werden. Mehr aber nicht.
-     * Nachbildung des FlightGear.init(7);
-     * Die Reihenfolge orientiert sich an FG fgIdleFunction()
-     * System swerden hier nocht nicht angelegt.
-     * 21.10.17: jetzt ohne initFG.
+     * 21.10.17: now without initFG.
+     * 8.11.24: But with init for property tree init
      */
     private static AircraftResourceProvider initFG() {
-        // In fgdatabasic sind manche Aircraftteile, z.B. Instruments3D für CDU
+        // In fgdatabasic are some aircraft parts like Instruments3D for CDU
         FgBundleHelper.addProvider(new SimpleBundleResourceProvider("fgdatabasic"));
         AircraftResourceProvider arp = new AircraftResourceProvider();
         FgBundleHelper.addProvider(arp);
+
+        // 8.11.24 also needed because it sets up the property tree
+        FlightGearModuleBasic.init(null, null);
+
         return arp;
     }
 
@@ -160,7 +164,7 @@ public class FgGalleryScene extends GalleryScene {
             }
         }
 
-        // TODO update animations via ECS
+        // Cannot update animations via ECS because models are no entities in this scene (see header)
         FgModelPreviewScene.updateAnimations(flightGearProperties, animationList, getDefaultCamera());
 
     }
@@ -180,22 +184,33 @@ public class FgGalleryScene extends GalleryScene {
         double ControlPanelRowHeight = 0.1;
         double ControlPanelMargin = 0.005;
 
-        int rows = 1;
+        int rows = 2;
         DimensionF rowsize = new DimensionF(ControlPanelWidth, ControlPanelRowHeight);
+        Color textColor = Color.RED;
 
         ControlPanel cp = new ControlPanel(new DimensionF(ControlPanelWidth, rows * ControlPanelRowHeight), mat, 0.01);
 
-        // time value spinner (minutes from midnight) , starting at 08:00
-        IntHolder timeSpinnedValue = new IntHolder(8 * 60);
+        SGPropertyNode windFromHeadingDeg = FGGlobals.getInstance().get_props().getNode("/environment/wind-from-heading-deg", false);
         cp.add(new Vector2(0,
-                        ControlPanelHelper.calcYoffsetForRow(0, rows, ControlPanelRowHeight)),
-                new LabeledSpinnerControlPanel("time", rowsize, 0, mat,
+                        ControlPanelHelper.calcYoffsetForRow(1, rows, ControlPanelRowHeight)),
+                new LabeledSpinnerControlPanel("wnd hdg", rowsize, 0, mat,
                         new NumericSpinnerHandler(15, value -> {
                             if (value != null) {
-                                timeSpinnedValue.setValue(value.intValue());
+                                windFromHeadingDeg.setDoubleValue(value);
                             }
-                            return Double.valueOf(timeSpinnedValue.getValue());
-                        }, 24 * 60, new TimeDisplayFormatter()), Color.RED));
+                            return windFromHeadingDeg.getDoubleValue();
+                        }, 360, new NumericDisplayFormatter(0)), textColor));
+
+        SGPropertyNode windSpeedKt = FGGlobals.getInstance().get_props().getNode("/environment/wind-speed-kt", false);
+        cp.add(new Vector2(0,
+                        ControlPanelHelper.calcYoffsetForRow(0, rows, ControlPanelRowHeight)),
+                new LabeledSpinnerControlPanel("wnd spd", rowsize, 0, mat,
+                        new NumericSpinnerHandler(5, value -> {
+                            if (value != null) {
+                                windSpeedKt.setDoubleValue(value);
+                            }
+                            return windSpeedKt.getDoubleValue();
+                        }, null, new NumericDisplayFormatter(0)), textColor));
 
         return cp;
     }

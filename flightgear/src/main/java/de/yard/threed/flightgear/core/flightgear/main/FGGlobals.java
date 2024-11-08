@@ -33,6 +33,8 @@ public class FGGlobals {
     static Log logger = Platform.getInstance().getLog(FGGlobals.class);
 
     // properties, destroy last
+    // the root of the global property tree.
+    // 5.11.24 Intended to move to FlightGearSystem/FlightGearProperties, but too much effort. See FlightGearProperties.
     SGPropertyNode props;
 
     // localization
@@ -753,6 +755,9 @@ public class FGGlobals {
 
 // end of globals.cxx
 
+    /**
+     * Returns the global property tree.
+     */
     public SGPropertyNode get_props() {
         return props;
     }

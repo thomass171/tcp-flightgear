@@ -21,6 +21,7 @@ import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.SGLoaderOptions;
 import de.yard.threed.flightgear.core.flightgear.main.AircraftResourceProvider;
+import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.scene.material.Effect;
 import de.yard.threed.flightgear.core.simgear.scene.material.MakeEffect;
@@ -41,7 +42,7 @@ import static de.yard.threed.core.testutil.TestUtils.loadFileFromTestResources;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Also for SGAnimation.
+ * Also for some SGAnimation(s).
  * 28.10.24: And effects in models
  */
 @Slf4j
@@ -222,11 +223,10 @@ public class SGReaderWriterXMLTest {
     }
 
     /**
-     * async ein Model laden und pruefen, dass z.B. Animationen drin sind
+     * Async load of model and check animations
      */
     @Test
-    public void testWindturbineAnimationsWithAsync() throws Exception {
-        //Test setup should cleanup TestHelper.cleanupAsync();
+    public void testWindturbineAnimations() throws Exception {
 
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
@@ -244,7 +244,7 @@ public class SGReaderWriterXMLTest {
                 2, "Models/Power/windturbine.xml", null);
         SGReaderWriterXMLTest.validateWindturbineAnimations(new SceneNode(result.getNode()), animationList);
 
-        animationList.clear();
+        /*4.11.24this block seem redundant animationList.clear();
         result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundlemodel, "Models/Power/windturbine.xml"), null, (bpath, destinationNode, alist) -> {
             if (alist != null) {
                 animationList.addAll(alist);//  xmlloaddelegate.modelComplete( animationList);
@@ -252,7 +252,7 @@ public class SGReaderWriterXMLTest {
         });
         assertEquals(0, animationList.size(), "animations");
         TestHelper.processAsync();
-        TestHelper.processAsync();
+        TestHelper.processAsync();*/
         SGReaderWriterXMLTest.validateWindturbineAnimations(new SceneNode(result.getNode()), animationList);
     }
 
@@ -275,6 +275,20 @@ public class SGReaderWriterXMLTest {
 
         assertEquals("Models/Power/windturbine.xml->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/Power/windturbine.gltf->gltfroot->ac-world->[Tower,center back translate]", EngineTestUtils.getHierarchy(node, 6));
 
+        // be sure the property tree still contains our defaults
+        assertEquals(FlightGearProperties.DEFAULT_WIND_FROM_HEADING_DEG,FGGlobals.getInstance().get_props().getNode("/environment/wind-from-heading-deg", true).getDoubleValue());
+        assertEquals(FlightGearProperties.DEFAULT_WIND_SPEED_KT, FGGlobals.getInstance().get_props().getNode("/environment/wind-speed-kt", true).getDoubleValue());
+
+        SGRotateAnimation windHeadingRotateAnimation = (SGRotateAnimation) animationList.get(0);
+        // not sure calc is correct. offset-deg(bias) is -90, value 290, factor -1
+        assertEquals((FlightGearProperties.DEFAULT_WIND_FROM_HEADING_DEG/*?*/-(-90))*-1, windHeadingRotateAnimation.getAnimationValue().doubleVal);
+        assertFalse(windHeadingRotateAnimation.isSpin());
+
+        SGRotateAnimation windSpeedSpinAnimation = (SGRotateAnimation) animationList.get(1);
+        // animation has a random between 0.4 and 0.6, so the effective value might vary
+        double value = windSpeedSpinAnimation.getAnimationValue().doubleVal;
+        assertTrue(value >= 0.4 * FlightGearProperties.DEFAULT_WIND_SPEED_KT && value <= 0.6 * FlightGearProperties.DEFAULT_WIND_SPEED_KT, "" + value);
+        assertTrue(windSpeedSpinAnimation.isSpin());
     }
 
     /**

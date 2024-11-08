@@ -19,7 +19,7 @@ public class SGPropertyExpression extends SGExpression {
 
     public SGPropertyExpression(SGPropertyNode prop) {
         _prop = prop;
-        // ob das mit dem double das wahe´e ist?
+        // is double really a good idea?
         result_type = new ExpressionType(ExpressionType.DOUBLE);
     }
 

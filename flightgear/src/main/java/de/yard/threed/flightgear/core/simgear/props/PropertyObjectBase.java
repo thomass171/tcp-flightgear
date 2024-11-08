@@ -8,6 +8,7 @@ import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
  * Created by thomass on 30.05.16.
  */
 public class PropertyObjectBase {
+    // 5.11.24: Which root is this. FGGlobals also has one.
     static SGPropertyNode static_defaultRoot = null;
 
     public static void setDefaultRoot(SGPropertyNode aRoot)

@@ -4,6 +4,7 @@ import de.yard.threed.core.Util;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.flightgear.FlightGearMain;
+import de.yard.threed.flightgear.FlightGearProperties;
 import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.StringList;
@@ -172,6 +173,9 @@ public class Options {
         FGProperties.fgSetInt("/sim/multiplay/txport", 0);
 
         SGPropertyNode v = FGGlobals.globals.get_props().getNode("/sim/version", true);
+
+        FlightGearProperties.setOurDefaults();
+
        /* v.setValueReadOnly("flightgear", FLIGHTGEAR_VERSION);
         v.setValueReadOnly("simgear", SG_STRINGIZE(SIMGEAR_VERSION));
         v.setValueReadOnly("openscenegraph", osgGetVersion());

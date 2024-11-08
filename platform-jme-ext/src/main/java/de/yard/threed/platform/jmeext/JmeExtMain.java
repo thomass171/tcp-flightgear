@@ -46,7 +46,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         // 'initialVehicle' might cause NPE if not found
         //properties.put("initialVehicle", "c172p");
         //properties.put("initialVehicle", "777");
-        //properties.put("initialVehicle", "bluebird");
+        properties.put("initialVehicle", "bluebird");
         //properties.put("initialRoute", "wp:50.768,7.1672000->takeoff:50.7692,7.1617000->wp:50.7704,7.1557->wp:50.8176,7.0999->wp:50.8519,7.0921->touchdown:50.8625,7.1317000->wp:50.8662999,7.1443999");
 
 
@@ -66,8 +66,8 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         //properties.put("scene", "de.yard.threed.trafficfg.apps.RailingScene");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryViewerScene");
-        properties.put("scene", "de.yard.threed.trafficfg.apps.FgModelPreviewScene");
-        properties.put("scene", "de.yard.threed.trafficfg.apps.FgGalleryScene");
+        //properties.put("scene", "de.yard.threed.trafficfg.apps.FgModelPreviewScene");
+        //properties.put("scene", "de.yard.threed.trafficfg.apps.FgGalleryScene");
         boolean demo = false;
         if (demo) {
             // t.b.c.

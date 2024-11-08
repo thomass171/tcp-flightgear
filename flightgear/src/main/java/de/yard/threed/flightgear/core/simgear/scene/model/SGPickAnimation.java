@@ -294,10 +294,10 @@ public class SGPickAnimation extends SGAnimation {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-    SGPickAnimation(SGPropertyNode configNode, SGPropertyNode modelRoot/*simgear::SGTransientModelData &modelData) :*/) {
+    SGPickAnimation(SGPropertyNode configNode, SGPropertyNode modelRoot/*simgear::SGTransientModelData &modelData) :*/, String label) {
         //SGAnimation(modelData)
 
-        super(configNode, modelRoot);
+        super(configNode, modelRoot, label);
 
 
         _condition = getCondition();

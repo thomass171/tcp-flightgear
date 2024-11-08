@@ -167,7 +167,7 @@ abstract public class SGCondition {
     }
 
 
-    // The top-level isType always an implicit 'and' group
+    // The top-level is always an implicit 'and' group
     public static SGCondition sgReadCondition(SGPropertyNode prop_root, SGPropertyNode node) {
         return readAndConditions(prop_root, node);
     }

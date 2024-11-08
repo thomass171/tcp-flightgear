@@ -31,7 +31,7 @@ import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
-import de.yard.threed.trafficfg.fgadapter.FlightGearProperties;
+import de.yard.threed.flightgear.FlightGearProperties;
 
 import java.util.ArrayList;
 import java.util.List;

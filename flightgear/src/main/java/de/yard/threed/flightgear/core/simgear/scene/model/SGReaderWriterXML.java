@@ -727,7 +727,8 @@ public class SGReaderWriterXML {
                 }*/
             }
             if (bpath != null) {
-                SGAnimation anim = SGAnimation.animate(group, animation_nodes.get(i), prop_root, options, null, i);
+                SGAnimation anim = SGAnimation.animate(group, animation_nodes.get(i), prop_root, options,
+                        null, i, bpath.getName()+"."+i);
                 if (anim != null) {
                     animationList.add(anim);
                 }
