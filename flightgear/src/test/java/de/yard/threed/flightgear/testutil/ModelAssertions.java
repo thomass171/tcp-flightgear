@@ -44,17 +44,17 @@ public class ModelAssertions {
         //TestUtil.assertNotNull("root node", ppfile.root);
         TestUtil.assertEquals("number of objects", 6, ppfile.getRoot().getChild(0).kids.size());
         //TestUtil.assertEquals("number of kids", 6, ppfile.root.kids.size());
-        TestUtil.assertEquals("number of materials", /*8*/5, ppfile.materials.size());
+        TestUtil.assertEquals("number of materials", /*8*/5, ppfile.getMaterialCount());
         PortableModelDefinition hazard = ppfile.findObject("hazard");
         TestUtil.assertEquals("materialname", "unshaded0DefaultWhite-egkk_tower", hazard.material);
 
 
        /*TODO don't assert material by index. List content might change
-            TestUtil.assertEquals("materialname", "unshaded2hazard2Xmat-egkk_tower", ppfile.materials.get(2).getName());
+            TestUtil.assertEquals("materialname", "unshaded2hazard2Xmat-egkk_tower", ppfile.getMaterialByIndex(2).getName());
        */
         TestUtil.assertEquals("texturebasepath", "flusi", ppfile.defaulttexturebasepath.getPath());
         //texture ist z.Z. nur bei den auch verwendeten gesetzt.
-        //TODO don't assert material by index. List content might change TestUtil.assertEquals("texturename", "egkk_tower.png", ppfile.materials.get(3).getTexture());
+        //TODO don't assert material by index. List content might change TestUtil.assertEquals("texturename", "egkk_tower.png", ppfile.getMaterialByIndex(3).getTexture());
         PortableModelDefinition obj0 = ppfile.getRoot().getChild(0).kids.get(0);
         TestUtil.assertEquals("obj0name", "hazard", obj0.name);
         SimpleGeometry obj0geo = obj0.geo;//list.get(0);
@@ -85,15 +85,15 @@ public class ModelAssertions {
             ppobj = ppobj.getChild(0);
         }
         TestUtil.assertEquals("number of objects", 7, ppobj.kids.size());
-        TestUtil.assertEquals("number of materials", expectedmaterials, ppfile.materials.size());
-        TestUtil.assertEquals("materialname", (expectedmaterials == 2) ? "shaded0DefaultWhite" : "DefaultWhite", ppfile.materials.get(0).getName());
+        TestUtil.assertEquals("number of materials", expectedmaterials, ppfile.getMaterialCount());
+        TestUtil.assertEquals("materialname", (expectedmaterials == 2) ? "shaded0DefaultWhite" : "DefaultWhite", ppfile.getMaterialByIndex(0).getName());
     }
 
     public static void assertFollowMe(PortableModel ppfile, int expectedmaterials) {
         TestUtil.assertEquals("number of objects", 31, ppfile.getRoot().getChild(0).kids.size());
-        TestUtil.assertEquals("number of materials", expectedmaterials, ppfile.materials.size());
+        TestUtil.assertEquals("number of materials", expectedmaterials, ppfile.getMaterialCount());
         // "DefaultWhite" isn't used at all
-        TestUtil.assertEquals("materialname", "shaded1followmeoutside-followmeoutside", ppfile.materials.get(0).getName());
+        TestUtil.assertEquals("materialname", "shaded1followmeoutside-followmeoutside", ppfile.getMaterialByIndex(0).getName());
         PortableModelDefinition car = ppfile.getRoot().getChild(0).kids.get(0);
         TestUtil.assertEquals("number of car.objects", 13, car.kids.size());
         PortableModelDefinition mesh76 = car.kids.get(0);
@@ -118,7 +118,7 @@ public class ModelAssertions {
         // next node should be btg-root. 3056410 is refBTG
         assertBtgRootNode(ppobj, 3056410, 17);
 
-        // preprocess liefert ein Object mit 17 children.
+        // BTG conversion returned an object with 17 children.
 
         TestUtil.assertNotNull("translation", ppobj.translation);
         TestUtil.assertVector3("gbs_center", FlightGear.refbtgcenter, ppobj.translation);
@@ -134,27 +134,23 @@ public class ModelAssertions {
         TestUtil.assertVector3("", new Vector3(-646.4524f, 2071.1538f, 1039.9973f), ppobj.getChild(3).geo.getVertices().getElement(4));
         //ppobj = ppfile.objects.get(1);
         //TestUtil.assertEquals("indices", 0, ppobj.getChild(0).getIndices().length);
-        // die 17 materials sind aber alle null, wenn es keine Materiallib gibt. Ob das ideal ist, naja, so ist es jetzt aber.
         if (hadmatlib) {
-            TestUtil.assertEquals("geolistmaterial0", "0", ppobj.getChild(0).material);//geolistmaterial.get(0));
-            TestUtil.assertEquals("materials", 17, portableModel.materials.size());
-            for (int i = 0; i < 17; i++) {
-                TestUtil.assertEquals("materials0.name", "" + i, portableModel.materials.get(i).getName());
-            }
+            // should contain 17 simple texture materials. 13.11.24: And material names are no longer just indices but land class names.
+            TestUtil.assertEquals("geolistmaterial0", "Grassland", ppobj.getChild(0).material);//geolistmaterial.get(0));
+            TestUtil.assertEquals("materials", 17, portableModel.getMaterialCount());
+            TestUtil.assertEquals("materials0.name", "Grassland", portableModel.getMaterialByIndex(0).getName());
+            TestUtil.assertEquals("materials4.name", "OpenMining", portableModel.getMaterialByIndex(4).getName());
+            TestUtil.assertEquals("materials9.name", "Scrub", portableModel.getMaterialByIndex(9).getName());
+            TestUtil.assertEquals("materials14.name", "CropGrass", portableModel.getMaterialByIndex(14).getName());
+            TestUtil.assertEquals("materials16.name", "MixedForest", portableModel.getMaterialByIndex(16).getName());
             //die wraps muessen immer true sein.
-            TestUtil.assertTrue("geolistmaterial0.wraps", portableModel.materials.get(0).getWraps());
-            TestUtil.assertTrue("geolistmaterial0.wrapt", portableModel.materials.get(5).getWrapt());
+            TestUtil.assertTrue("geolistmaterial0.wraps", portableModel.getMaterialByIndex(0).getWraps());
+            TestUtil.assertTrue("geolistmaterial0.wrapt", portableModel.getMaterialByIndex(5).getWrapt());
 
         } else {
-            // Without matlib the models do not contain any material. But the material names still exist as a kind
-            // of attribute.
-            TestUtil.assertEquals("materials", 0, portableModel.materials.size());
-            // landclasses are material names
-            TestUtil.assertEquals("materials0.name", "Grassland", ppobj.getChild(0).material);
-            TestUtil.assertEquals("materials4.name", "OpenMining", ppobj.getChild(4).material);
-            TestUtil.assertEquals("materials9.name", "Scrub", ppobj.getChild(9).material);
-            TestUtil.assertEquals("materials14.name", "CropGrass", ppobj.getChild(14).material);
-            TestUtil.assertEquals("materials16.name", "MixedForest", ppobj.getChild(16).material);
+            // Without matlib the models do not contain any material. 13.11.24: We no longer use material names (land classes) as a kind
+            // of attribute. This results in invalid GLTFs.
+            TestUtil.assertEquals("materials", 0, portableModel.getMaterialCount());
         }
     }
 
@@ -165,16 +161,17 @@ public class ModelAssertions {
         TestUtil.assertEquals("geolists", 24, ppobj.kids.size());
 
         if (hadmatlib) {
-            TestUtil.assertEquals("materials", 24, ppfile.materials.size());
-            for (int i = 0; i < 24; i++) {
-                TestUtil.assertEquals("materials0.name", "" + i, ppfile.materials.get(i).getName());
-            }
+            // should contain simple texture materials. 13.11.24 material names are land classes now
+            TestUtil.assertEquals("materials", 24, ppfile.getMaterialCount());
+            //for (int i = 0; i < 24; i++) {
+                TestUtil.assertEquals("materials0.name", "Grassland", ppfile.getMaterialByIndex(0).getName());
+            //}
             //die wraps muessen immer true sein.
-            TestUtil.assertTrue("geolistmaterial0.wraps", ppfile.materials.get(0).getWraps());
-            TestUtil.assertTrue("geolistmaterial0.wrapt", ppfile.materials.get(5).getWrapt());
+            TestUtil.assertTrue("geolistmaterial0.wraps", ppfile.getMaterialByIndex(0).getWraps());
+            TestUtil.assertTrue("geolistmaterial0.wrapt", ppfile.getMaterialByIndex(5).getWrapt());
 
         } else {
-            TestUtil.assertEquals("materials", 0, ppfile.materials.size());
+            TestUtil.assertEquals("materials", 0, ppfile.getMaterialCount());
         }
     }
 
@@ -208,7 +205,7 @@ public class ModelAssertions {
         TestUtil.assertEquals("name", "Bright_UprDisp.knob", ppknob.name);
         TestUtil.assertVector3("loc", new Vector3(0.016473f, 0.004128f, -0.046148f), ppknob.translation);
         //material wurde dupliziert
-        TestUtil.assertEquals("materials", /*14*/9, ppfile.materials.size());
+        TestUtil.assertEquals("materials", /*14*/9, ppfile.getMaterialCount());
         PortableMaterial unshaded0Defaultwhite = ppfile.findMaterial("unshaded0DefaultWhite-APpanel_1");
         assertNotNull(unshaded0Defaultwhite);
         TestUtil.assertEquals("material.name", /*(fromgltf)?"0":*/"unshaded0DefaultWhite-APpanel_1", unshaded0Defaultwhite.getName());
@@ -216,10 +213,10 @@ public class ModelAssertions {
         assertNull(unshaded0Defaultwhite.getColor());
         TestUtil.assertEquals("shininess", 0.64f, unshaded0Defaultwhite.getShininess().value);
         TestUtil.assertFalse("shaded", unshaded0Defaultwhite.isShaded());
-        /*TODO 5.10.24 don't assert material by index. List content might change PortableMaterial unshadeddefaultwhite = ppfile.materials.get(1);
+        /*TODO 5.10.24 don't assert material by index. List content might change PortableMaterial unshadeddefaultwhite = ppfile.getMaterialByIndex(1);
         TestUtil.assertEquals("material.name", /*(fromgltf)?"0":* /"unshadedDefaultWhite", unshadeddefaultwhite.getName());
 
-        PortableMaterial shadedinstr_lights = ppfile.materials.get(4);
+        PortableMaterial shadedinstr_lights = ppfile.getMaterialByIndex(4);
         TestUtil.assertEquals("material.name", /*(fromgltf)?"4":* /"shadedinstr-lights", shadedinstr_lights.getName());
         TestUtil.assertColor("color", new Color(0.8f, 0.8f, 0.8f, 1f), shadedinstr_lights.getColor());
         TestUtil.assertColor("color", new Color(0.5f, 0.5f, 0.5f, 1f), shadedinstr_lights.getEmis());
@@ -263,8 +260,8 @@ public class ModelAssertions {
 
     public static void assertTestData(PortableModel ppfile, int expectedmaterials) {
         TestUtil.assertEquals("number of objects", 5, ppfile.getRoot().kids.size());
-        TestUtil.assertEquals("number of materials", expectedmaterials, ppfile.materials.size());
-        TestUtil.assertEquals("materialname", "ROOF_DEFAULT", ppfile.materials.get(3).getName());
+        TestUtil.assertEquals("number of materials", expectedmaterials, ppfile.getMaterialCount());
+        TestUtil.assertEquals("materialname", "ROOF_DEFAULT", ppfile.getMaterialByIndex(3).getName());
     }
 
     /**

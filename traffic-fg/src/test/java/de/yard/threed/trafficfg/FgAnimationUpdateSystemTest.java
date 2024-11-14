@@ -64,7 +64,7 @@ public class FgAnimationUpdateSystemTest {
 
         EngineTestFactory.loadBundleAndWait(SGMaterialLib.BUNDLENAME);
         FlightGearModuleBasic.init(null, null);
-        FlightGearModuleScenery.init(false);
+        FlightGearModuleScenery.init(false, false);
     }
 
     /**

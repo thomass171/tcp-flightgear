@@ -64,7 +64,7 @@ public class FgTerrainBuilder implements AbstractSceneryBuilder {
 
 
         if (/*FlightGear.inited FlightGearModuleScenery.inited &&*/ fgenabled) {
-            FlightGearModuleScenery.init(terrainonly);
+            FlightGearModuleScenery.init(terrainonly, false);
             tilemgr = FlightGearModuleScenery.getInstance().get_tile_mgr();
             tilemgr.init();
         }

@@ -48,28 +48,32 @@ public class FgTestFactory {
 
     @Deprecated
     public static Platform initPlatformForTestWithFgResolver() {
-        return initPlatformForTest(new HashMap<>(), true, true, true);
+        return initPlatformForTest(new HashMap<>(), true, true, true, false);
     }
 
     @Deprecated
     public static Platform initPlatformForTest() {
-        return initPlatformForTest(new HashMap<>(), true, false, false);
+        return initPlatformForTest(new HashMap<>(), true, false, false, false);
     }
 
     @Deprecated
     public static Platform initPlatformForTest(HashMap<String, String> properties) {
-        return initPlatformForTest(properties, false, true, true);
+        return initPlatformForTest(properties, false, true, true, false);
 
     }
 
     public static Platform initPlatformForTest(boolean addTestResourcesBundle, boolean addTerraSyncResolver, boolean addMaterialLib) {
-        return initPlatformForTest(new HashMap<>(), addTestResourcesBundle, addTerraSyncResolver, addMaterialLib);
+        return initPlatformForTest(new HashMap<>(), addTestResourcesBundle, addTerraSyncResolver, addMaterialLib, false);
+    }
+
+    public static Platform initPlatformForTest(boolean addTestResourcesBundle, boolean addTerraSyncResolver, boolean addMaterialLib, boolean forBtgConversion) {
+        return initPlatformForTest(new HashMap<>(), addTestResourcesBundle, addTerraSyncResolver, addMaterialLib, forBtgConversion);
     }
 
     /**
      * FG Resolver are probably not needed or trigger false positive results in tools.
      */
-    public static Platform initPlatformForTest(HashMap<String, String> properties, boolean addTestResourcesBundle, boolean addTerraSyncResolver, boolean addMaterialLib) {
+    public static Platform initPlatformForTest(HashMap<String, String> properties, boolean addTestResourcesBundle, boolean addTerraSyncResolver, boolean addMaterialLib, boolean forBtgConversion) {
 
         FgBundleHelper.clear();
         ReaderWriterSTG.btgLoaded.clear();
@@ -122,7 +126,7 @@ public class FgTestFactory {
                 //wird teilweise in einzelnen Tests gemacht. Das ist aber inkonsistent.
 
                 //moved up FlightGearModuleBasic.init(null, null);
-                FlightGearModuleScenery.init(false);
+                FlightGearModuleScenery.init(false, forBtgConversion);
 
                 // Kruecke zur Entkopplung des Modelload von AC policy.
                 ModelLoader.processPolicy = new ACProcessPolicy(null);

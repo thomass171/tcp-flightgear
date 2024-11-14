@@ -63,7 +63,7 @@ public class FlightGearTest {
         EngineTestFactory.loadBundleSync("sgmaterial");
 
         FlightGearModuleBasic.init(null, null);
-        FlightGearModuleScenery.init(false);
+        FlightGearModuleScenery.init(false, false);
         // 1.10.23 was 288 from Granada bundle, 283 now from project might be correct
         TestUtil.assertEquals("matlib.size", /*FG 3.4 284*/283, FlightGearModuleScenery.getInstance().get_matlib().matlib.size());
     }
@@ -84,7 +84,7 @@ public class FlightGearTest {
         //27.3.18 FlightGear.init(5, FlightGear.argv);
         //25.9.23 EngineTestFactory.loadBundleSync("sgmaterial");
         FlightGearModuleBasic.init(null, null);
-        FlightGearModuleScenery.init(false);
+        FlightGearModuleScenery.init(false, false);
 
         //model bundle is needed for scenery objects.
         EngineTestFactory.loadBundleSync(FlightGear.getBucketBundleName("model"));

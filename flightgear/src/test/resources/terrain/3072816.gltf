@@ -577,20 +577,24 @@
       "count": 5850
     }
   ],
+  "asset": {
+    "version": "2.0",
+    "generator": "GltfBuilder.java"
+  },
   "bufferViews": [
     {
       "buffer": 0,
-      "byteLength": 500,
+      "byteLength": 1500,
       "byteOffset": 0
     },
     {
       "buffer": 0,
-      "byteLength": 500,
+      "byteLength": 1500,
       "byteOffset": 1500
     },
     {
       "buffer": 0,
-      "byteLength": 500,
+      "byteLength": 1000,
       "byteOffset": 3000
     },
     {
@@ -600,17 +604,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 37704,
+      "byteLength": 113112,
       "byteOffset": 5536
     },
     {
       "buffer": 0,
-      "byteLength": 37704,
+      "byteLength": 113112,
       "byteOffset": 118648
     },
     {
       "buffer": 0,
-      "byteLength": 37704,
+      "byteLength": 75408,
       "byteOffset": 231760
     },
     {
@@ -620,17 +624,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 572,
+      "byteLength": 1716,
       "byteOffset": 411160
     },
     {
       "buffer": 0,
-      "byteLength": 572,
+      "byteLength": 1716,
       "byteOffset": 412876
     },
     {
       "buffer": 0,
-      "byteLength": 572,
+      "byteLength": 1144,
       "byteOffset": 414592
     },
     {
@@ -640,17 +644,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 53940,
+      "byteLength": 161820,
       "byteOffset": 417332
     },
     {
       "buffer": 0,
-      "byteLength": 53940,
+      "byteLength": 161820,
       "byteOffset": 579152
     },
     {
       "buffer": 0,
-      "byteLength": 53940,
+      "byteLength": 107880,
       "byteOffset": 740972
     },
     {
@@ -660,17 +664,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 13784,
+      "byteLength": 41352,
       "byteOffset": 1070624
     },
     {
       "buffer": 0,
-      "byteLength": 13784,
+      "byteLength": 41352,
       "byteOffset": 1111976
     },
     {
       "buffer": 0,
-      "byteLength": 13784,
+      "byteLength": 27568,
       "byteOffset": 1153328
     },
     {
@@ -680,17 +684,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 2824,
+      "byteLength": 8472,
       "byteOffset": 1219092
     },
     {
       "buffer": 0,
-      "byteLength": 2824,
+      "byteLength": 8472,
       "byteOffset": 1227564
     },
     {
       "buffer": 0,
-      "byteLength": 2824,
+      "byteLength": 5648,
       "byteOffset": 1236036
     },
     {
@@ -700,17 +704,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 46932,
+      "byteLength": 140796,
       "byteOffset": 1249532
     },
     {
       "buffer": 0,
-      "byteLength": 46932,
+      "byteLength": 140796,
       "byteOffset": 1390328
     },
     {
       "buffer": 0,
-      "byteLength": 46932,
+      "byteLength": 93864,
       "byteOffset": 1531124
     },
     {
@@ -720,17 +724,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 1116,
+      "byteLength": 3348,
       "byteOffset": 1781600
     },
     {
       "buffer": 0,
-      "byteLength": 1116,
+      "byteLength": 3348,
       "byteOffset": 1784948
     },
     {
       "buffer": 0,
-      "byteLength": 1116,
+      "byteLength": 2232,
       "byteOffset": 1788296
     },
     {
@@ -740,17 +744,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 100,
+      "byteLength": 300,
       "byteOffset": 1793828
     },
     {
       "buffer": 0,
-      "byteLength": 100,
+      "byteLength": 300,
       "byteOffset": 1794128
     },
     {
       "buffer": 0,
-      "byteLength": 100,
+      "byteLength": 200,
       "byteOffset": 1794428
     },
     {
@@ -760,17 +764,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 7664,
+      "byteLength": 22992,
       "byteOffset": 1794928
     },
     {
       "buffer": 0,
-      "byteLength": 7664,
+      "byteLength": 22992,
       "byteOffset": 1817920
     },
     {
       "buffer": 0,
-      "byteLength": 7664,
+      "byteLength": 15328,
       "byteOffset": 1840912
     },
     {
@@ -780,17 +784,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 2852,
+      "byteLength": 8556,
       "byteOffset": 1878308
     },
     {
       "buffer": 0,
-      "byteLength": 2852,
+      "byteLength": 8556,
       "byteOffset": 1886864
     },
     {
       "buffer": 0,
-      "byteLength": 2852,
+      "byteLength": 5704,
       "byteOffset": 1895420
     },
     {
@@ -800,17 +804,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 5532,
+      "byteLength": 16596,
       "byteOffset": 1909512
     },
     {
       "buffer": 0,
-      "byteLength": 5532,
+      "byteLength": 16596,
       "byteOffset": 1926108
     },
     {
       "buffer": 0,
-      "byteLength": 5532,
+      "byteLength": 11064,
       "byteOffset": 1942704
     },
     {
@@ -820,17 +824,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 156,
+      "byteLength": 468,
       "byteOffset": 1969248
     },
     {
       "buffer": 0,
-      "byteLength": 156,
+      "byteLength": 468,
       "byteOffset": 1969716
     },
     {
       "buffer": 0,
-      "byteLength": 156,
+      "byteLength": 312,
       "byteOffset": 1970184
     },
     {
@@ -840,17 +844,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 556,
+      "byteLength": 1668,
       "byteOffset": 1971048
     },
     {
       "buffer": 0,
-      "byteLength": 556,
+      "byteLength": 1668,
       "byteOffset": 1972716
     },
     {
       "buffer": 0,
-      "byteLength": 556,
+      "byteLength": 1112,
       "byteOffset": 1974384
     },
     {
@@ -860,17 +864,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 1700,
+      "byteLength": 5100,
       "byteOffset": 1977152
     },
     {
       "buffer": 0,
-      "byteLength": 1700,
+      "byteLength": 5100,
       "byteOffset": 1982252
     },
     {
       "buffer": 0,
-      "byteLength": 1700,
+      "byteLength": 3400,
       "byteOffset": 1987352
     },
     {
@@ -880,17 +884,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 56136,
+      "byteLength": 168408,
       "byteOffset": 1994964
     },
     {
       "buffer": 0,
-      "byteLength": 56136,
+      "byteLength": 168408,
       "byteOffset": 2163372
     },
     {
       "buffer": 0,
-      "byteLength": 56136,
+      "byteLength": 112272,
       "byteOffset": 2331780
     },
     {
@@ -900,17 +904,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 5120,
+      "byteLength": 15360,
       "byteOffset": 2600004
     },
     {
       "buffer": 0,
-      "byteLength": 5120,
+      "byteLength": 15360,
       "byteOffset": 2615364
     },
     {
       "buffer": 0,
-      "byteLength": 5120,
+      "byteLength": 10240,
       "byteOffset": 2630724
     },
     {
@@ -920,17 +924,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 2892,
+      "byteLength": 8676,
       "byteOffset": 2655136
     },
     {
       "buffer": 0,
-      "byteLength": 2892,
+      "byteLength": 8676,
       "byteOffset": 2663812
     },
     {
       "buffer": 0,
-      "byteLength": 2892,
+      "byteLength": 5784,
       "byteOffset": 2672488
     },
     {
@@ -940,17 +944,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 43140,
+      "byteLength": 129420,
       "byteOffset": 2688436
     },
     {
       "buffer": 0,
-      "byteLength": 43140,
+      "byteLength": 129420,
       "byteOffset": 2817856
     },
     {
       "buffer": 0,
-      "byteLength": 43140,
+      "byteLength": 86280,
       "byteOffset": 2947276
     },
     {
@@ -960,17 +964,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 13708,
+      "byteLength": 41124,
       "byteOffset": 3197104
     },
     {
       "buffer": 0,
-      "byteLength": 13708,
+      "byteLength": 41124,
       "byteOffset": 3238228
     },
     {
       "buffer": 0,
-      "byteLength": 13708,
+      "byteLength": 27416,
       "byteOffset": 3279352
     },
     {
@@ -980,17 +984,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 7852,
+      "byteLength": 23556,
       "byteOffset": 3344964
     },
     {
       "buffer": 0,
-      "byteLength": 7852,
+      "byteLength": 23556,
       "byteOffset": 3368520
     },
     {
       "buffer": 0,
-      "byteLength": 7852,
+      "byteLength": 15704,
       "byteOffset": 3392076
     },
     {
@@ -1000,17 +1004,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 2352,
+      "byteLength": 7056,
       "byteOffset": 3430916
     },
     {
       "buffer": 0,
-      "byteLength": 2352,
+      "byteLength": 7056,
       "byteOffset": 3437972
     },
     {
       "buffer": 0,
-      "byteLength": 2352,
+      "byteLength": 4704,
       "byteOffset": 3445028
     },
     {
@@ -1020,17 +1024,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 960,
+      "byteLength": 2880,
       "byteOffset": 3456572
     },
     {
       "buffer": 0,
-      "byteLength": 960,
+      "byteLength": 2880,
       "byteOffset": 3459452
     },
     {
       "buffer": 0,
-      "byteLength": 960,
+      "byteLength": 1920,
       "byteOffset": 3462332
     },
     {
@@ -1040,17 +1044,17 @@
     },
     {
       "buffer": 0,
-      "byteLength": 7704,
+      "byteLength": 23112,
       "byteOffset": 3466988
     },
     {
       "buffer": 0,
-      "byteLength": 7704,
+      "byteLength": 23112,
       "byteOffset": 3490100
     },
     {
       "buffer": 0,
-      "byteLength": 7704,
+      "byteLength": 15408,
       "byteOffset": 3513212
     },
     {
@@ -1069,7 +1073,7 @@
             "TEXCOORD_0": 2
           },
           "indices": 3,
-          "material": "Grassland"
+          "material": 0
         }
       ]
     },
@@ -1082,7 +1086,7 @@
             "TEXCOORD_0": 6
           },
           "indices": 7,
-          "material": "DryCrop"
+          "material": 1
         }
       ]
     },
@@ -1095,7 +1099,7 @@
             "TEXCOORD_0": 10
           },
           "indices": 11,
-          "material": "Greenspace"
+          "material": 2
         }
       ]
     },
@@ -1108,7 +1112,7 @@
             "TEXCOORD_0": 14
           },
           "indices": 15,
-          "material": "Railroad"
+          "material": 3
         }
       ]
     },
@@ -1121,7 +1125,7 @@
             "TEXCOORD_0": 18
           },
           "indices": 19,
-          "material": "Industrial"
+          "material": 4
         }
       ]
     },
@@ -1134,7 +1138,7 @@
             "TEXCOORD_0": 22
           },
           "indices": 23,
-          "material": "OpenMining"
+          "material": 5
         }
       ]
     },
@@ -1147,7 +1151,7 @@
             "TEXCOORD_0": 26
           },
           "indices": 27,
-          "material": "Road"
+          "material": 6
         }
       ]
     },
@@ -1160,7 +1164,7 @@
             "TEXCOORD_0": 30
           },
           "indices": 31,
-          "material": "Canal"
+          "material": 7
         }
       ]
     },
@@ -1173,7 +1177,7 @@
             "TEXCOORD_0": 34
           },
           "indices": 35,
-          "material": "Lake"
+          "material": 8
         }
       ]
     },
@@ -1186,7 +1190,7 @@
             "TEXCOORD_0": 38
           },
           "indices": 39,
-          "material": "DeciduousForest"
+          "material": 9
         }
       ]
     },
@@ -1199,7 +1203,7 @@
             "TEXCOORD_0": 42
           },
           "indices": 43,
-          "material": "EvergreenForest"
+          "material": 10
         }
       ]
     },
@@ -1212,7 +1216,7 @@
             "TEXCOORD_0": 46
           },
           "indices": 47,
-          "material": "ComplexCrop"
+          "material": 11
         }
       ]
     },
@@ -1225,7 +1229,7 @@
             "TEXCOORD_0": 50
           },
           "indices": 51,
-          "material": "Scrub"
+          "material": 12
         }
       ]
     },
@@ -1238,7 +1242,7 @@
             "TEXCOORD_0": 54
           },
           "indices": 55,
-          "material": "GolfCourse"
+          "material": 13
         }
       ]
     },
@@ -1251,7 +1255,7 @@
             "TEXCOORD_0": 58
           },
           "indices": 59,
-          "material": "Dump"
+          "material": 14
         }
       ]
     },
@@ -1264,7 +1268,7 @@
             "TEXCOORD_0": 62
           },
           "indices": 63,
-          "material": "Town"
+          "material": 15
         }
       ]
     },
@@ -1277,7 +1281,7 @@
             "TEXCOORD_0": 66
           },
           "indices": 67,
-          "material": "NaturalCrop"
+          "material": 16
         }
       ]
     },
@@ -1290,7 +1294,7 @@
             "TEXCOORD_0": 70
           },
           "indices": 71,
-          "material": "Airport"
+          "material": 17
         }
       ]
     },
@@ -1303,7 +1307,7 @@
             "TEXCOORD_0": 74
           },
           "indices": 75,
-          "material": "Freeway"
+          "material": 18
         }
       ]
     },
@@ -1316,7 +1320,7 @@
             "TEXCOORD_0": 78
           },
           "indices": 79,
-          "material": "CropGrass"
+          "material": 19
         }
       ]
     },
@@ -1329,7 +1333,7 @@
             "TEXCOORD_0": 82
           },
           "indices": 83,
-          "material": "Stream"
+          "material": 20
         }
       ]
     },
@@ -1342,7 +1346,7 @@
             "TEXCOORD_0": 86
           },
           "indices": 87,
-          "material": "Watercourse"
+          "material": 21
         }
       ]
     },
@@ -1355,7 +1359,7 @@
             "TEXCOORD_0": 90
           },
           "indices": 91,
-          "material": "Heath"
+          "material": 22
         }
       ]
     },
@@ -1368,7 +1372,7 @@
             "TEXCOORD_0": 94
           },
           "indices": 95,
-          "material": "MixedForest"
+          "material": 23
         }
       ]
     }
@@ -1481,40 +1485,506 @@
       "mesh": 23
     }
   ],
-  "materials": [],
+  "materials": [
+    {
+      "name": "Grassland",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "DryCrop",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 1,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "Greenspace",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 2,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "Railroad",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 3,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "Industrial",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 4,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "OpenMining",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 5,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "Road",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 6,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "Canal",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 7,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "Lake",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 8,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "DeciduousForest",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 9,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "EvergreenForest",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 10,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "ComplexCrop",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 11,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "Scrub",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 12,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "GolfCourse",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 13,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "Dump",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 14,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "Town",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 15,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "NaturalCrop",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 16,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "Airport",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 17,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "Freeway",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 18,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "CropGrass",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 19,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "Stream",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 20,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "Watercourse",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 21,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "Heath",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 22,
+          "texCoord": 0
+        }
+      }
+    },
+    {
+      "name": "MixedForest",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 23,
+          "texCoord": 0
+        }
+      }
+    }
+  ],
   "scenes": [
     {
       "name": "Scene",
       "nodes": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        18,
-        19,
-        20,
-        21,
-        22,
-        23,
-        24
+        0
       ]
     }
   ],
-  "textures": [],
-  "images": [],
-  "samplers": []
+  "textures": [
+    {
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "source": 1,
+      "sampler": 1
+    },
+    {
+      "source": 2,
+      "sampler": 2
+    },
+    {
+      "source": 3,
+      "sampler": 3
+    },
+    {
+      "source": 4,
+      "sampler": 4
+    },
+    {
+      "source": 5,
+      "sampler": 5
+    },
+    {
+      "source": 6,
+      "sampler": 6
+    },
+    {
+      "source": 7,
+      "sampler": 7
+    },
+    {
+      "source": 8,
+      "sampler": 8
+    },
+    {
+      "source": 9,
+      "sampler": 9
+    },
+    {
+      "source": 10,
+      "sampler": 10
+    },
+    {
+      "source": 11,
+      "sampler": 11
+    },
+    {
+      "source": 12,
+      "sampler": 12
+    },
+    {
+      "source": 13,
+      "sampler": 13
+    },
+    {
+      "source": 14,
+      "sampler": 14
+    },
+    {
+      "source": 15,
+      "sampler": 15
+    },
+    {
+      "source": 16,
+      "sampler": 16
+    },
+    {
+      "source": 17,
+      "sampler": 17
+    },
+    {
+      "source": 18,
+      "sampler": 18
+    },
+    {
+      "source": 19,
+      "sampler": 19
+    },
+    {
+      "source": 20,
+      "sampler": 20
+    },
+    {
+      "source": 21,
+      "sampler": 21
+    },
+    {
+      "source": 22,
+      "sampler": 22
+    },
+    {
+      "source": 23,
+      "sampler": 23
+    }
+  ],
+  "images": [
+    {
+      "uri": "Textures/Terrain/dry_pasture4.png"
+    },
+    {
+      "uri": "Textures/Terrain/drycrop1-autumn.png"
+    },
+    {
+      "uri": "Textures/Terrain/drycrop1-autumn.png"
+    },
+    {
+      "uri": "Textures/Terrain/dark_gravel.png"
+    },
+    {
+      "uri": "Textures/Terrain/industrial.png"
+    },
+    {
+      "uri": "Textures/Terrain/rock.png"
+    },
+    {
+      "uri": "Textures/Terrain/asphalt.png"
+    },
+    {
+      "uri": "Textures/Terrain/water-lake.png"
+    },
+    {
+      "uri": "Textures/Terrain/water-lake.png"
+    },
+    {
+      "uri": "Textures/Terrain/deciduous-hires-autumn.png"
+    },
+    {
+      "uri": "Textures/Terrain/forest1a.png"
+    },
+    {
+      "uri": "Textures/Terrain/irrcrop-europe-autumn.png"
+    },
+    {
+      "uri": "Textures/Terrain/unknown.png"
+    },
+    {
+      "uri": "Textures/Terrain/golfcourse1-autumn.png"
+    },
+    {
+      "uri": "Textures/Terrain/rock.png"
+    },
+    {
+      "uri": "Textures/Terrain/town-europe-autumn.png"
+    },
+    {
+      "uri": "Textures/Terrain/naturalcrop1-autumn.png"
+    },
+    {
+      "uri": "Textures/Terrain/airport-grass-autumn.png"
+    },
+    {
+      "uri": "Textures/Terrain/asphalt.png"
+    },
+    {
+      "uri": "Textures/Terrain/cropgrass-hires-autumn.png"
+    },
+    {
+      "uri": "Textures/Terrain/water-lake.png"
+    },
+    {
+      "uri": "Textures/Terrain/water-lake.png"
+    },
+    {
+      "uri": "Textures/Terrain/deciduous-hires-autumn.png"
+    },
+    {
+      "uri": "Textures/Terrain/mixedforest-hires-autumn.png"
+    }
+  ],
+  "samplers": [
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 3552020,
+      "uri": "3072816.bin"
+    }
+  ]
 }

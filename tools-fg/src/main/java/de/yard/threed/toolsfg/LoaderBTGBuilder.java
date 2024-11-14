@@ -30,7 +30,8 @@ public class LoaderBTGBuilder implements AbstractLoaderBuilder {
         LoaderOptions loaderoptions = new LoaderOptions(SGMaterialLibWrapper.getInstance().getSGMaterialLib());
 
         LoaderBTG btg = new LoaderBTG(new ByteArrayInputStream(new SimpleByteBuffer(data)), null, loaderoptions, filenameForInfo);
-
+        // 12.11.24 abort when no material is found. Otherwise we might have tons of useless terrain GLTFs.
+        btg.shouldFailOnError = true;
         return btg;
     }
 }

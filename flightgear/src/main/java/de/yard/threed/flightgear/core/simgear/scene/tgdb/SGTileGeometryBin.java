@@ -315,8 +315,9 @@ public class SGTileGeometryBin extends SGTriangleBin {
     }
 
     /**
-     * Aus der allen Trianglemaps ein Mesh erstellen.
-     * 12.12.17: Aufgeteilt um das erstellen der Geo im preprocess verwenden zu koennen.
+     * Prepare a mesh from Trianglemaps. Only needed for BTG to GLTF conversion. So no real need for creating/using effects here. But
+     * we use the effect for building a simple texture material.
+     * 12.12.17: Second part (node creation) extracted to Obj.getSurfaceGeometryPart2 um das erstellen der Geo im preprocess verwenden zu koennen.
      */
     public /*Node*/List<GeoMat> getSurfaceGeometryPart1(SGMaterialCache matcache, boolean useVBOs) {
         if (materialTriangleMap.isEmpty())
@@ -346,16 +347,17 @@ public class SGTileGeometryBin extends SGTriangleBin {
                     logger.warn("no material found in matcache for " + ii + ". matcache.size=" + matcache.cache.size());
                 } else {
                     // 21.10.24: material decoupled from effect. Hmm
+                    // 11.11.24: This is for BTG conversion only. So no real need for effects (see method header).
                     //PortableMaterial pmat = mat.getMaterialByTextureIndex(textureindex);
                     PortableMaterial pmat = null;
                     //pmat.getEffectMaterialByTextureIndex(textureindex);
                     Effect oneEffect = mat.get_one_effect(textureindex);
                     if (oneEffect != null) {
-                        pmat = oneEffect.getMaterialDefinition();
+                        pmat = oneEffect.getMaterialDefinitionForBtgConversion();
                     }
                     //geos.add(new GeoMat(geometry, (mat != null) ? (mat.get_one_effect(textureindex).getMaterialDefinition()) : null));
                     if (pmat == null) {
-                        logger.warn("No material effect available for '" + ii + "' with index " + textureindex);
+                        logger.warn("No material effect available for land class '" + ii + "' with index " + textureindex);
                         if (!materialNotFound.contains(ii)) {
                             materialNotFound.add(ii);
                         }
@@ -375,7 +377,7 @@ public class SGTileGeometryBin extends SGTriangleBin {
             // Zu FG abweichende implementierung. Wenn es kein Material gibt, wireframe setzen. Fuer Testen vielleicht ganz gut. Ob auf Dauer auch?
             // In FG wird das Material ueber Effect in EffectGeode (teilweise ueber Callback) abgebildet. Effect verbindet direkt zum Shader.
             // Darueber wird zumindest wohl die Textur definiert. Hier jetzt das Mesh direkt erzeugen.
-            /*12.12.17: jetzt in Part2 
+            /*12.12.17: now in Part2
             eg = new EffectGeode();            
             // FG-DIFF immer derselbe Name ist doch bloed. Es ist auch nicht erkennbar, dass FG da Logik dran hat. 
             //eg.setName("EffectGeode");

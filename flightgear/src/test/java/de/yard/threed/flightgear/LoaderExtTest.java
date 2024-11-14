@@ -106,7 +106,7 @@ public class LoaderExtTest {
         //}
         //System.out.println(loadedfile.dumpMaterial("\n"));
         TestUtil.assertEquals("", 113, ppobj.kids.size());
-        TestUtil.assertEquals("materials", 23/*37*//*seit gltf24*/, loadedfile.materials.size());
+        TestUtil.assertEquals("materials", 23/*37*//*seit gltf24*/, loadedfile.getMaterialCount());
         //PreprocessedLoadedObject world = loadedfile.objects.get(0);
         //System.out.println(loadedfile.dumpObject("", world, "\n"));
         //TestUtil.assertEquals("world kids", 113, world.kids.size());

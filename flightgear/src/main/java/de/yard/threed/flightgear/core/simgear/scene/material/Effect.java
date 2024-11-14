@@ -3,6 +3,14 @@ package de.yard.threed.flightgear.core.simgear.scene.material;
 import de.yard.threed.core.Color;
 import de.yard.threed.core.loader.PortableMaterial;
 import de.yard.threed.core.platform.Platform;
+import de.yard.threed.core.resource.BundleRegistry;
+import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.core.resource.ResourcePath;
+import de.yard.threed.engine.Material;
+import de.yard.threed.engine.Texture;
+import de.yard.threed.engine.loader.DefaultMaterialFactory;
+import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
+import de.yard.threed.flightgear.EffectMaterialWrapper;
 import de.yard.threed.flightgear.core.PropertyList;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.scene.util.SGReaderWriterOptions;
@@ -23,15 +31,15 @@ import static de.yard.threed.flightgear.core.simgear.scene.material.MakeEffect.m
  * 9.3.21: MA31 Was once joined with Effect in engine.
  * 17.10.24: Now decoupled from Effect in tcp-22. Might be a component some time. Renamed back from FGEffect to Effect.
  * An Effect seems to be just an effect (property tree) definition initially. Shader, textures, etc
- * are created later when needed (by realizeTechniques()?).
+ * are created later when needed (by realizeTechniques()?). See README.md#Effects.
  * <p>
  * Created by thomass on 30.10.15.
  */
 public class Effect /*extends Effect osg::Object */ {
     Log logger = Platform.getInstance().getLog(Effect.class);
-    // 27.12.17: Jetzt eine Abnstraktionsstufe hoeher wegen preProcess 
-    private PortableMaterial materialdefinition = null;
-    //Material material = null;
+    // BTG conversion uses PortableMaterial while a 'real' effect uses core Material to be ready for modifying
+    private PortableMaterial materialdefinitionForTerrainOnly = null;
+    public Material material = null;
 
     // made private with constructor.
     private String name;
@@ -47,13 +55,15 @@ public class Effect /*extends Effect osg::Object */ {
 
     //std::vector<osg::ref_ptr<Technique> > techniques;
     List<Technique> techniques = new ArrayList<>();
+    private boolean forBtgConversion;
 
     /**
      * 21.10.24: root and parametersProp made private with constructor. "parent" is optional.
      */
-    public Effect(String name, SGPropertyNode prop, Effect parent, String label) {
+    public Effect(String name, SGPropertyNode prop, Effect parent, String label, boolean forBtgConversion) {
         this.name = name;
         this.label = label;
+        this.forBtgConversion = forBtgConversion;
         if (parent == null) {
             root = prop;
             parametersProp = root.getChild("parameters");
@@ -75,17 +85,18 @@ public class Effect /*extends Effect osg::Object */ {
     }
 
     void buildPass(Effect effect, Technique tniq, SGPropertyNode prop,
-                   SGReaderWriterOptions options) {
-        Pass pass = new Pass();
+                   SGReaderWriterOptions options, EffectMaterialWrapper wrapper) {
+        Pass pass = new Pass(wrapper);
         tniq.passes.add(pass);
         // Loop through "lighting", "depth", "material", "blend", a.s.o.
         for (int i = 0; i < prop.nChildren(); ++i) {
             SGPropertyNode attrProp = prop.getChild(i);
             EffectBuilder.PassAttributeBuilder builder = EffectBuilder.PassAttributeBuilder.find(attrProp.getNameString());
-            if (builder != null)
+            if (builder != null) {
                 builder.buildAttribute(effect, pass, attrProp, options);
-            else
-                logger.warn("skipping unknown pass attribute " + attrProp.getName());
+            } else {
+                // too often logger.warn("skipping unknown pass attribute " + attrProp.getName());
+            }
         }
     }
 
@@ -344,7 +355,7 @@ public class Effect /*extends Effect osg::Object */ {
 
     /**
      * Until we have full blend functions we consider this to be the main use case for blending, semi transparency.
-     *
+     * <p>
      * See https://www.khronos.org/opengl/wiki/blending for blending.
      */
     class BlendBuilder extends EffectBuilder.PassAttributeBuilder {
@@ -1114,7 +1125,7 @@ public class Effect /*extends Effect osg::Object */ {
 
     // InstallAttributeBuilder<DepthBuilder> installDepth("depth");
 
-    void buildTechnique(Effect effect, SGPropertyNode prop, SGReaderWriterOptions options) {
+    void buildTechnique(Effect effect, SGPropertyNode prop, SGReaderWriterOptions options, EffectMaterialWrapper wrapper) {
         Technique tniq = new Technique();
         effect.techniques.add(tniq);
         // we ignore schemes for now
@@ -1148,7 +1159,7 @@ public class Effect /*extends Effect osg::Object */ {
         itr != e;
         ++itr) {*/
         for (SGPropertyNode/*_ptr*/ passProp : passProps) {
-            buildPass(effect, tniq, passProp, options);
+            buildPass(effect, tniq, passProp, options, wrapper);
         }
     }
 
@@ -1289,12 +1300,12 @@ public class Effect /*extends Effect osg::Object */ {
      * FG-DIFF Implementierung
      * Hier wird mal das Material gebaut. SGMaterial.buildEffectProperties() hat die Materialwerte vorher in die PropertyNode geschrieben.
      * Das ist aber auch reichlich Woodoo. Nicht erkennbar, welche Textur wofuer genutzt wird.
-     * Um nicht über die PropNode gehen zu muessen, hier direkt das SGMaterial reingeben. Geht aber nicht so einfgach.
-     * 5.10.17: Wird
+     * <p>
+     * 11.11.24: This connects the effect to a specific material, to which the effect should apply (See README.md#Effects)
      *
      * @param options
      */
-    public boolean realizeTechniques(SGReaderWriterOptions options/*, SGMaterial mat*/) {
+    public boolean realizeTechniques(SGReaderWriterOptions options) {
         //material
         if (SGMaterialLib.materiallibdebuglog) {
             logger.debug("Effect:realizeTechniques " + getName());
@@ -1302,15 +1313,28 @@ public class Effect /*extends Effect osg::Object */ {
         //mergeSchemesFallbacks(this, options);
         if (_isRealized)
             return true;
-        PropertyList tniqList = root.getChildren("technique");
-        //for (PropertyList::iterator itr = tniqList.begin(), e = tniqList.end();        itr != e;        ++itr)
-        for (SGPropertyNode/*_ptr*/ tniq : tniqList) {
-            buildTechnique(this, tniq, options);
+
+        // Build material before building techniques. Techniques might modify the material.
+        // Not needed for BTG conversion.
+        buildMaterial();
+        if (!forBtgConversion) {
+            PropertyList tniqList = root.getChildren("technique");
+            //for (PropertyList::iterator itr = tniqList.begin(), e = tniqList.end();        itr != e;        ++itr)
+            for (SGPropertyNode/*_ptr*/ tniq : tniqList) {
+                buildTechnique(this, tniq, options, new EffectMaterialWrapper(material));
+            }
         }
         _isRealized = true;
+        return true;
+    }
 
-        // 21.10.24
-        // der genaue Aufbau ist unklar, auch warum es auf einmal mehrere Texturen gibt. Evtl. normal maps und co
+    /**
+     * Build initial material. Might be modified by techniques later.
+     */
+    private void buildMaterial() {
+        // 21.10.24 Build a texture material.
+        // Use first texture in "parameters/texture".
+        // The terrain material definition is converted to "parameters/texture" in SGMaterial.buildEffectProperties().
         //logger.debug("effect.root=" + root.dump("\n"));
         PropertyList parameters = root.getChildren("parameters");
         PropertyList texturel = parameters.get(0).getChildren("texture");
@@ -1321,31 +1345,51 @@ public class Effect /*extends Effect osg::Object */ {
         //TODO wrap aus tree, bundlename
         //image enthaelt den kompletten absoluten Path. 12.6.17: jetzt nur noch den Pafd relativ im Bundle
         logger.debug("realizeTechniques with texture " + image);
-       // if (StringUtils.startsWith(image,F))
+        // if (StringUtils.startsWith(image,F))
         //27.12.17: Nicht mehr Textur laden und Material anlegen, sondern ein LoadedMaterial anlegen.
         //Texture texture = Texture.buildBundleTexture(SGMaterialLib.BUNDLENAME,image, true, true);
-       
+        // 12.11.24:back to core Material
+        if (!forBtgConversion) {
+            material = buildMaterialWithResourceLoader(new PortableMaterial(null, image, true, true));
+
         /*if (StringUtils.endsWith(image, "drycrop4.png") ||
                 StringUtils.endsWith(image, "naturalcrop1.png")) {
             material = Material.buildBasicMaterial(Color.YELLOW);
         } else {*/
-        materialdefinition = new PortableMaterial(null, image, true, true);//Material.buildLambertMaterial(texture);
+
+        } else {
+            materialdefinitionForTerrainOnly = new PortableMaterial(null, image, true, true);//Material.buildLambertMaterial(texture);
+        }
         //material.setName("SGMaterial id= "+uniqueid);
 
         //}
-
-        return true;
     }
 
+    /**
+     * Only for terrain currently.
+     */
+    public static Material buildMaterialWithResourceLoader(PortableMaterial portableMaterial) {
+        if (portableMaterial == null) {
+            int h = 9;
+        }
+        // 12.11.24: resourceLoader copied from EffectGeode
+        ResourceLoaderFromBundle resourceLoader = new ResourceLoaderFromBundle(
+                new BundleResource(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME), new ResourcePath(""), ""));
+        //TODO why do we need normals for material
+        boolean hasNormals = false;
+        return new DefaultMaterialFactory().buildMaterial(resourceLoader, portableMaterial
+                , new ResourcePath(""), hasNormals);
 
+    }
     /*public Material getMaterialD() {
 
         return material;
     }*/
 
-    public PortableMaterial getMaterialDefinition() {
+    /*11.11.24 Needed for BTG conversion */
+    public PortableMaterial getMaterialDefinitionForBtgConversion() {
 
-        return materialdefinition;
+        return materialdefinitionForTerrainOnly;
     }
 
     public void setName(String name) {

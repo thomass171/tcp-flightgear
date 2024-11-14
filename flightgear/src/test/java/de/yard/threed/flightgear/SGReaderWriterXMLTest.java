@@ -34,6 +34,8 @@ import de.yard.threed.flightgear.testutil.FgTestFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -294,8 +296,12 @@ public class SGReaderWriterXMLTest {
     /**
      *
      */
-    @Test
-    public void testBeacon() throws Exception {
+    @ParameterizedTest
+    @CsvSource(value = {
+            "Models/Airport/beacon.xml"
+            //"Models/Airport/beaconPre2024.xml"
+    })
+    public void testBeacon(String modelfile) throws Exception {
 
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
@@ -310,7 +316,7 @@ public class SGReaderWriterXMLTest {
         assertNotNull(bundlemodel);
 
         // has 23 animations, but only 6 are parsed(?)
-        BuildResult result = SGReaderWriterXMLTest.loadModelAndWait(new BundleResource(bundlemodel, "Models/Airport/beacon.xml"), animationList,
+        BuildResult result = SGReaderWriterXMLTest.loadModelAndWait(new BundleResource(bundlemodel, modelfile), animationList,
                 6, "Models/Airport/beacon.xml", "Models/Airport/beacon.gltf");
         //SGReaderWriterXMLTest.validateBeaconAnimations(new SceneNode(result.getNode()), animationList);
 

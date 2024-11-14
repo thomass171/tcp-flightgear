@@ -33,6 +33,7 @@ sh bin/deployBundles.sh
 sh bin/mkTerraSyncBundle.sh    
 
 mvn install
+sh bin/deploy.sh
 ```
 
 for building.
@@ -43,7 +44,7 @@ Bundles 'engine' and 'data' need to be deployed (copied) manually currently to a
 ## Browser
 Enter the URL
 ```
-http://localhost/<youruserdir>/???
+http://localhost/<youruserdir>/tcp-flightgear/tcp-flightgear.html?host=http://localhost/<youruserdir>/tcp-flightgear
 ```
 in your browser.
 
@@ -187,7 +188,16 @@ Since we convert the btg files to gltf in an external process (mkTerraSyncBundle
 could consider region, but currently don't do so. We
 just use Europe/Summer.
 
-There are some materials like
+By default, the BTG to GLTF conversion uses SGMaterialLib and picks just one
+Europe/Summer texture for adding a simple texture material to the GLTF material
+list. This results in a valid GLTF file that can be viewed with any GLTF viewer.
+As of 11/2024 land classes are retained as material name. So during terrain building,
+the FG region/season mapping can still be used.
+
+As of 11/2024 BTG to GLTF conversion will always run with SGMaterialLib so there will
+be no longer GLTF containing no material list. 
+
+There are some materials (land classes) like
 
   * pc_helipad
   * SoneSort
@@ -238,19 +248,39 @@ node (see SGModelLib).
 See also https://wiki.flightgear.org/Effect_framework.
 
 In FG effects (eg. transparency) are defined in XML and applied at runtime 
-via an OSG node visitor (MakeEffectVisitor).
+via an OSG node visitor (MakeEffectVisitor). When the visitor is reached the current OSG
+and/or OpenGL state is available via the super class osg::StateSet of class Pass and 
+provides the resources (eg. textures, buffer, uvs, shader) where effects should apply. Maybe
+this is done immediately before the draw command. It's unclear whether and how
+resources like textures and shader are shared.
 
 An important step of migration is replacing OSG classes StateSet and Material with
-our classes Texture and Material. Instead of having a (global) current state we need
-to pass the material context to ... for applying it.
+our classes Texture and Material. Instead of having a (global) current state we provide
+the material where effects should apply via material wrapper as super class of class Pass.
+So an effect will be connected to a specific material after realizeTechniques(). For texture
+sharing will still have the simple cache from tcp22.
 
 The effect property '<inherits-from>' probably just means 'copy property tree from parent'. The
 parent itself is never realized.
 
 We ignore schemes and compositor for now.
 
-Later versions (2024) of Flightgear apparently no longer prefer using '<inherits-from>Effects/model-transparent</inherits-from>' for
+Later versions (2024) of Flightgear apparently no longer prefer using
+'<inherits-from>Effects/model-transparent</inherits-from>' for
 effects? At least beacon.xml no longer uses it. So this is no good use/test case for
-understanding how it works. Maybe it never worked? "model-transparent.eff" appears
-no longer popular at all; only for scenery?
-beacon in fg-raw-data replaced with latest version.
+understanding how it works. Maybe it never worked as intended in beacon? "model-transparent.eff" appears
+no longer popular at all. But c172p propeller and scenery models still use it.
+beacon.xml in fg-raw-data replaced with latest version, but we keep the pre2024 version for testing.
+
+The property tree layout for effects looks like
+
+```
+...
+-parameters
+ +-texture
+   +-image
+...
+```
+
+For terrain effects the material definitions are converted to the above layout
+in SGMaterial.buildEffectProperties(). Eg. global-summer.xml defines "<texture>Terrain/dry_pasture4.png</texture>" in a material.

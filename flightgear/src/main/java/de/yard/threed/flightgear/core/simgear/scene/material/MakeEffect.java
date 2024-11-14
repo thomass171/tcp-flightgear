@@ -4,6 +4,7 @@ import de.yard.threed.core.Util;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.flightgear.EffectMaterialWrapper;
 import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.props.PropsIO;
@@ -115,7 +116,7 @@ public class MakeEffect {
      * 17.10.24 not used at all currently. Now it is used.
      * Returns null if the effect couldn't be found/built.
      */
-    public static Effect makeEffect(String name, boolean realizeTechniques, SGReaderWriterOptions options, String label) {
+    public static Effect makeEffect(String name, boolean realizeTechniques, SGReaderWriterOptions options, String label,boolean forBtgConversion) {
        /* {
             OpenThreads::ScopedLock < OpenThreads::ReentrantMutex > lockEntity(effectMutex);
             EffectMap::iterator itr = effectMap.find(name);
@@ -149,7 +150,7 @@ public class MakeEffect {
             return null;
         }
         /*ref_ptr<*/
-        Effect result = makeEffect(effectProps/*.ptr()*/, realizeTechniques, options, label);
+        Effect result = makeEffect(effectProps/*.ptr()*/, realizeTechniques, options, label, forBtgConversion);
         if (result != null && result.valid()) {
             /*OpenThreads::ScopedLock < OpenThreads::ReentrantMutex > lockEntity(effectMutex);
             pair<EffectMap::iterator, bool > irslt
@@ -183,7 +184,7 @@ public class MakeEffect {
      * @param options
      * @return
      */
-    public static Effect makeEffect(SGPropertyNode prop, boolean realizeTechniques, SGReaderWriterOptions options, String label/*, SGMaterial mat*/) {
+    public static Effect makeEffect(SGPropertyNode prop, boolean realizeTechniques, SGReaderWriterOptions options, String label/*, SGMaterial mat*/,boolean forBtgConversion) {
         // Give default names to techniques and passes
         List<SGPropertyNode> techniques = prop.getChildren("technique");
         for (int i = 0; i < (int) techniques.size(); ++i) {
@@ -217,7 +218,7 @@ public class MakeEffect {
         if (inheritProp != null/*28.10.24 && false*/) {
             getLog().debug("Building/Lookup inherited effect " + inheritProp.getStringValue());
             //auch in FG auskommentiert prop.removeChild("inherits-from");
-            parent = makeEffect(inheritProp.getStringValue(), false, options, label);
+            parent = makeEffect(inheritProp.getStringValue(), false, options, label, forBtgConversion);
             if (parent != null) {
                 /*TODO? Effect::Key key;
                 key.unmerged = prop;
@@ -238,7 +239,7 @@ public class MakeEffect {
                 }*/
                 // die Bedeutung des if in FG ist unklar. Es gibt doch noch keinen Effect. Oder wo kommt der her?
                 if (true/*!effect.valid()*/) {
-                    effect = new Effect(nameProp.getStringValue(), prop, parent, label);
+                    effect = new Effect(nameProp.getStringValue(), prop, parent, label, forBtgConversion);
                     /*21.10.24 moved to constructor effect.setName(nameProp.getStringValue());
                     effect.root = new SGPropertyNode();
                     mergePropertyTrees(effect.root, prop, parent.root);
@@ -265,7 +266,7 @@ public class MakeEffect {
             }
         } else {
             getLog().debug("Building effect " + nameProp.getStringValue());
-            effect = new Effect(nameProp.getStringValue(), prop, null, label);
+            effect = new Effect(nameProp.getStringValue(), prop, null, label, forBtgConversion);
             /*21.10.24 moved to constructor effect.setName(nameProp.getStringValue());
             effect.root = prop;
             effect.parametersProp = effect.root.getChild("parameters");*/

@@ -102,7 +102,7 @@ public class ScenerySceneTest {
         properties.put("scene", scene);
         properties.putAll(additionalProperties);
         // buildDefaultConfigurationWithEnv is needed for HOSTDIR
-        FgTestFactory.initPlatformForTest(properties, false, true, true);
+        FgTestFactory.initPlatformForTest(properties, false, true, true, false);
         // not sufficient SceneRunnerForTesting sceneRunner = SceneRunnerForTesting.setupForScene(initial_frames, ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties), new String[]{"engine", SGMaterialLib.BUNDLENAME});
         SceneRunnerForTesting sceneRunner = (SceneRunnerForTesting) SceneRunnerForTesting.getInstance();
         sceneRunner.runLimitedFrames(initial_frames);

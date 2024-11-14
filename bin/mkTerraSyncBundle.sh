@@ -83,13 +83,13 @@ processTerraSyncFile() {
 			"btg.gz")
 				if [ ! -r $DESTDIR/$BASENAME.gltf -o $FORCE = "1" ]
 				then
-					TMPFILE=$DESTDIR/$BASENAME-tmp.btg
+				  # 13.11.24 Using a modified file name for conversion leads to wrong 'bin' uri in the GLTF. So better
+				  # keep filename but use /tmp
+					TMPFILE=/tmp/$BASENAME.btg
 					cat $filename | gunzip > $TMPFILE
 					sh $PROJECT_HOME/bin/convertModel.sh $TMPFILE $DESTDIR
 					checkrc $PROJECT_HOME/bin/convertModel.sh
 					rm -f $TMPFILE
-					mv $DESTDIR/$BASENAME-tmp.gltf $DESTDIR/$BASENAME.gltf
-					mv $DESTDIR/$BASENAME-tmp.bin $DESTDIR/$BASENAME.bin
 					relax
 				fi
 				;;

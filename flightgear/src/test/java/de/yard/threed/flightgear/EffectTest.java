@@ -166,7 +166,7 @@ public class EffectTest {
         String name = "Effects/model-transparent";
 
         assertEquals(SceneryTest.INITIAL_EFFECTS, MakeEffect.effectMap.size());
-        Effect effect = MakeEffect.makeEffect(name, true, new SGReaderWriterOptions(),"test");
+        Effect effect = MakeEffect.makeEffect(name, true, new SGReaderWriterOptions(),"test", false);
         assertNotNull(effect);
         assertEquals(SceneryTest.INITIAL_EFFECTS + 1, MakeEffect.effectMap.size());
     }

@@ -246,7 +246,7 @@ public class FlatAirportSceneTest {
             properties.put("argv.basename", tileName);
         }
         //9.12.23 sceneRunner = TrafficTestUtils.setupForScene(INITIAL_FRAMES, ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties));
-        FgTestFactory.initPlatformForTest(properties, false, true, true);
+        FgTestFactory.initPlatformForTest(properties, false, true, true, false);
 
         sceneRunner = (SceneRunnerForTesting) SceneRunnerForTesting.getInstance();
         sceneRunner.runLimitedFrames(INITIAL_FRAMES);

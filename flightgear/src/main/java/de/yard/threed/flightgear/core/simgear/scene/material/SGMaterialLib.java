@@ -66,7 +66,7 @@ public class SGMaterialLib {
      * Load a library of material properties.
      * "mpath" eg. points to "Materials/regions/materials.xml".
      */
-    public boolean load(/*String fg_root*/ String mpath, SGPropertyNode prop_root) {
+    public boolean load(/*String fg_root*/ String mpath, SGPropertyNode prop_root, boolean forBtgConversion) {
         SGPropertyNode materialblocks = new SGPropertyNode();
         if (materiallibdebuglog) {
             logger.debug("load:Reading materials from " + mpath);
@@ -137,7 +137,7 @@ public class SGMaterialLib {
 
             for (SGPropertyNode node1 : materials) {
                 // 7.11.24: prop_root probably is not used in constructor
-                SGMaterial m = new SGMaterial(options/*.get()*/, node1, prop_root, arealist, condition);
+                SGMaterial m = new SGMaterial(options/*.get()*/, node1, prop_root, arealist, condition, forBtgConversion);
 
                 List<SGPropertyNode> names = node1.getChildren("name");
                 for (int j = 0; j < names.size(); j++) {

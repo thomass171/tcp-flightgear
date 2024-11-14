@@ -309,8 +309,6 @@ public class FlightGear {
         //return status;
         return 0;
     }*/
-
-
     public static void fgSplashProgress(String s) {
 
     }
@@ -343,7 +341,7 @@ public class FlightGear {
 
     /**
      * ohen Suffix ".stg". Geht auch mit "model".
-     * 
+     *
      * @param bucket
      * @return
      */
@@ -360,32 +358,32 @@ public class FlightGear {
      * Der ganze FG Kram soll ja eh in ECS enden, und dann relativiert sich das alles wieder.
      * 28.12.17
      */
-    public static SGMaterialLib loadMatlib(){
+    public static SGMaterialLib loadMatlib(boolean forBtgConversion) {
         // brauch auch einen Init wegen PropertyTree
         //FlightGear.init(0, FlightGear.argv);
-        FlightGearModuleBasic.init(null,null);
+        FlightGearModuleBasic.init(null, null);
         // Material einlesen
         //SGPath mpath = new SGPath(FGGlobals.globals.get_fg_root());
         //mpath.append(FGProperties.fgGetString("/sim/rendering/materials-file"));
         String mpath;// = FGProperties.fgGetString("/sim/rendering/materials-file");
         //28.6.17: preferences.xml wird nicht mehr gelesen
-        mpath ="Materials/regions/materials.xml";
+        mpath = "Materials/regions/materials.xml";
         //28.12.17: season wird eigentlich gar nicht ausgewertet. Doch, ueber eine Condition.
-        FGProperties.fgSetString("/sim/startup/season","summer");
+        FGProperties.fgSetString("/sim/startup/season", "summer");
         //muss Aufrufer machen TestFactory.loadBundleSync(SGMaterialLib.BUNDLENAME);
         SGMaterialLib matlib = new SGMaterialLib();
         //"Materials/regions/materials.xml"
-        if (!matlib.load( mpath, FGGlobals.globals.get_props())) {
+        if (!matlib.load(mpath, FGGlobals.globals.get_props(), forBtgConversion)) {
             logger.error("matlib.load failed");
             return null;
         }
-        
+
         return matlib;
     }
 
     /**
      * Model laden ohne neu zu orientieren, Offsets aus XML beachten, zoffset dazu und kapseln.
-     * 
+     * <p>
      * Aus GroundServicesScene.
      * Fuer Nutzung im graph wird - wohl historisch gewachsen - anders rotiert. Sonst wird hier nicht rotiert.
      * Dann laufen die Modelle FG üblich entlang x mit z nach oben.
@@ -398,11 +396,11 @@ public class FlightGear {
      * und attachen bleibt uebersichtlich.
      * Also, zoffset wird hier in die bestehenden Offsets eingebaut, dann wird die node gekapselt und
      * geliefert, ohne zu rotieren.
-     *
+     * <p>
      * 2.3.18: Ist jetzt redundant zu TrafficSystem.loadVehicle().
+     *
      * @param br
      * @param zoffset
-
      * @return
      */
     public static SceneNode loadFgModel(BundleResource br, float zoffset/*, boolean forgraphuse,Quaternion orientierung */) {

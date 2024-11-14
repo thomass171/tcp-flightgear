@@ -27,7 +27,7 @@ public class EffectGeode extends Geode {
     SGMaterial _material;
     //Alternative zur Nutzung von SGMaterial und Effect. 28.12.17: Jetzt LoadedMaterial statt Material
     //26.10.24 does this really belong here? Maybe. It's the effective material used finally.
-    public PortableMaterial material;
+    public /*Portable*/Material material;
 
         /*    #if OSG_VERSION_LESS_THAN(3,3,2)
     typedef DrawableList::iterator DrawablesIterator;
@@ -132,17 +132,21 @@ public class EffectGeode extends Geode {
         // These are set later in PortableModelBuilder
         ResourceLoaderFromBundle resourceLoader = new ResourceLoaderFromBundle(
                 new BundleResource(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),new ResourcePath(""),""));
+        // material should come from Effect.
         if (material != null) {
             // mat = material;
             //14.2.24 mat = PortableModelBuilder.buildMaterial(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),
             //14.2.24         material, (material.texture != null) ? material.texture : null/*obj.texture*/, new ResourcePath(""/*texturebasepath*/),geometry.getNormals()!=null);
-            mat = new DefaultMaterialFactory().buildMaterial(resourceLoader, material, new ResourcePath(""), geometry.getNormals() != null);
+            //12.11.24 now again in Effect mat = new DefaultMaterialFactory().buildMaterial(resourceLoader, material, new ResourcePath(""), geometry.getNormals() != null);
+            mat = material;
         } else {
             if (_effect == null) {
                 // kann wohl vorkommen? TODO was tun? erstmal null und damit wireframe. Auch Absicht fuer Tests.
                 mat = null;//Material.buildBasicMaterial(Color.YELLOW);
             } else {
-                PortableMaterial lmat = _effect.getMaterialDefinition();
+                //11.11.24 never reached?
+                if (true) throw new RuntimeException("unexpected reached");
+                PortableMaterial lmat = null;//_effect.getMaterialDefinitionForTerrainOnly();
                 //mat = PortableModelBuilder.buildMaterial(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),
                 //        lmat, (lmat.texture != null) ? lmat.texture : null/*obj.texture*/, new ResourcePath(""/*texturebasepath*/),geometry.getNormals()!=null);
                 mat = new DefaultMaterialFactory().buildMaterial(resourceLoader, lmat, new ResourcePath(""), geometry.getNormals() != null);

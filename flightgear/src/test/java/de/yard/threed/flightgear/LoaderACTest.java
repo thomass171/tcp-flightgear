@@ -66,7 +66,7 @@ public class LoaderACTest {
             //ist null TestUtil.assertEquals("source", "ss", ppfile.source.name);
             PortableModelDefinition ppgroup = ppworld.kids.get(0);
             //dein Material hat keine Textur
-            Assertions.assertEquals( "FuelOilAmps.png", ppfile.materials.get(0).getTexture(),"texture");
+            Assertions.assertEquals( "FuelOilAmps.png", ppfile.getMaterialByIndex(0).getTexture(),"texture");
 
 
         } catch (Exception e) {

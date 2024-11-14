@@ -154,7 +154,7 @@ public class SceneryViewerScene extends Scene {
         String fghome = Platform.getInstance().getConfiguration().getString("FG_HOME");
         if (materialmode == 2) {
             FlightGearMain.initFG(null, null);
-            FlightGearModuleScenery.init(false);
+            FlightGearModuleScenery.init(false, false);
             // das ist natuerlich irgendwie nicht sehr elegant, einfach ein Event dafuer zu nutzen. Aber naja.
             // 26.2.24: Try without notification Platform.getInstance().getEventBus().publish(new Event(FlightGearModuleScenery.EVENT_MATLIBCREATED, null));
         } else {

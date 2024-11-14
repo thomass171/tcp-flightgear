@@ -55,7 +55,7 @@ public class ModelAssertions {
 
         PortableModelTest.assertLevel(root, "ac-world", new String[]{"Yoke"});
         // 14.8.24 materials now only contains really used material
-        assertEquals(3, portableModel.materials.size());
+        assertEquals(3, portableModel.getMaterialCount());
 
         PortableModelDefinition yoke = portableModel.findObject("Yoke");
         assertNotNull(yoke);

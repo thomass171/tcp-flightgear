@@ -113,7 +113,7 @@ public class SGRotateAnimation extends SGAnimation {
                     double rot = modf(rotation, & intPart);
                     double angle = rot * 2.0 * osg::PI;*/
                     Degree angle = Degree.buildFromRadians(value * t * rps);
-                    logger.debug(label + ":Spinning by diff angle " + angle + ",value=" + value + ",t=" + t);
+                    //logger.debug(label + ":Spinning by diff angle " + angle + ",value=" + value + ",t=" + t);
                     // FG seems to apply the diff of rotation somehow. Also add the angle to existing rotation.
                     rotation = rotategroup.getTransform().getRotation().multiply(Quaternion.buildQuaternionFromAngleAxis(angle, _axis));
        /* const SGVec3d& sgcenter = transform->getCenter();

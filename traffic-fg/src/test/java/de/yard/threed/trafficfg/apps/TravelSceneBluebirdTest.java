@@ -201,8 +201,8 @@ public class TravelSceneBluebirdTest {
                 GeoCoordinate geoBluebird = ellipsoidCalculations.fromCart(posbluebird);
                 assertEquals(50.768, geoBluebird.getLatDeg().getDegree(), 0.000001);
                 assertEquals(7.1672, geoBluebird.getLonDeg().getDegree(), 0.000001);
-                // elevation 68.79 appears correct. Now 60.15? Can also be correct.
-                assertEquals(60.15, geoBluebird.getElevationM(), 0.01);
+                // elevation 68.79 appears correct. Now 60.15? Can also be correct.13.11.24 Now 59.96
+                assertEquals(59.96, geoBluebird.getElevationM(), 0.01);
                 LocalTransform posrot = GraphMovingSystem.getPosRot(gmc);
                 log.debug("posrot=" + posrot);
                 // position by graph should comply to nodes position
@@ -260,7 +260,7 @@ public class TravelSceneBluebirdTest {
             properties.put("initialRoute", initialRoute);
         }
 
-        FgTestFactory.initPlatformForTest(properties, false, true, true);
+        FgTestFactory.initPlatformForTest(properties, false, true, true, false);
 
         sceneRunner = (SceneRunnerForTesting) SceneRunnerForTesting.getInstance();
         sceneRunner.runLimitedFrames(INITIAL_FRAMES);

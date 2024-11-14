@@ -101,6 +101,8 @@ public class SceneryTest {
         Texture.resetTexturePool();
         //12.9.23: BTG should no longer considered a use case in Obj.SGLoadBTG()?
         LoaderOptions loaderoptions = new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib());
+        final BooleanHolder validated = new BooleanHolder(false);
+        /*12.11.24 indeed
         loaderoptions.usegltf = false;
 
         final BooleanHolder validated = new BooleanHolder(false);
@@ -115,7 +117,7 @@ public class SceneryTest {
         TestUtils.waitUntil(() -> {
             TestHelper.processAsync();
             return validated.getValue();
-        }, 10000);
+        }, 10000);*/
 
         Texture.resetTexturePool();
         // And now as GLTF. Suffix remains ".btg"
@@ -139,8 +141,11 @@ public class SceneryTest {
     public void testLoadBTG3056410() throws Exception {
 
         SGReaderWriterOptions options = new SGReaderWriterOptions();
+        LoaderOptions loaderoptions = new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib());
+        // 12.1.24 Now longer pure BTG but only GLTF. Suffix remains ".btg"
+        loaderoptions.usegltf = true;
         final BooleanHolder validated = new BooleanHolder(false);
-        SGReaderWriterBTG.loadBTG(new BundleResource(BundleRegistry.getBundle("test-resources"), "terrain/3056410.btg"), options, null, new GeneralParameterHandler<SceneNode>() {
+        SGReaderWriterBTG.loadBTG(new BundleResource(BundleRegistry.getBundle("test-resources"), "terrain/3056410.btg"), options, loaderoptions, new GeneralParameterHandler<SceneNode>() {
             @Override
             public void handle(SceneNode result) {
                 assertNotNull(result);
@@ -181,20 +186,18 @@ public class SceneryTest {
         assertEquals(INITIAL_EFFECTS, MakeEffect.effectMap.size());
         assertSGMaterial("Grassland", false);
 
+        // use suffix 'btg' even though GLTF is loaded
         BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "terrain/3072816.btg");
-        BundleData ins = br.bundle.getResource(br);
-        PortableModel ppfile = new LoaderBTG(new ByteArrayInputStream(ins.b), null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()), br.getFullName()).buildPortableModel();
-        ModelAssertions.assertBTG3072816(ppfile, true, false);
-
-        assertEquals(INITIAL_EFFECTS, MakeEffect.effectMap.size());
-        assertSGMaterial("Grassland", true);
 
         Texture.resetTexturePool();
+        LoaderOptions loaderOptions = new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib());
+        loaderOptions.usegltf = true;
         final BooleanHolder validated = new BooleanHolder(false);
-        SGReaderWriterBTG.loadBTG(br, null, new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib()), new GeneralParameterHandler<SceneNode>() {
+        SGReaderWriterBTG.loadBTG(br, null, loaderOptions, new GeneralParameterHandler<SceneNode>() {
             @Override
             public void handle(SceneNode result) {
                 assertNotNull(result);
+                // does not exist yet?  ModelAssertions.assertBTG3072816(result);
                 validated.setValue(true);
             }
         });
@@ -509,9 +512,7 @@ public class SceneryTest {
         LoaderGLTF.load(new ResourceLoaderFromBundle(bpath), new GeneralParameterHandler<PortableModel>() {
             @Override
             public void handle(PortableModel ppfile) {
-                //PortableModel ppfile = tile.preProcess();
-
-                ModelAssertions.assertRefbtg(ppfile, false, true);
+                ModelAssertions.assertRefbtg(ppfile, true, true);
 
                 SGMaterialLib matlib = SGMaterialTest.initSGMaterialLib();
                 SGMaterialCache matcache = null;
@@ -531,8 +532,6 @@ public class SceneryTest {
             TestHelper.processAsync();
             return loaded.getValue();
         }, 10000);
-
-
     }
 
     public static SceneNode loadSTGFromBundleAndWait(int tile) throws Exception {

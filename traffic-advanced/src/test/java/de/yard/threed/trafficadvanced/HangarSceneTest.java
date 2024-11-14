@@ -93,7 +93,7 @@ public class HangarSceneTest {
         if (initialVehicle != null) {
             properties.put("initialVehicle", initialVehicle);
         }
-        FgTestFactory.initPlatformForTest(properties, false, true, true);
+        FgTestFactory.initPlatformForTest(properties, false, true, true, false);
 
         sceneRunner = (SceneRunnerForTesting) SceneRunnerForTesting.getInstance();
         sceneRunner.runLimitedFrames(INITIAL_FRAMES);

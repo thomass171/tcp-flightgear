@@ -119,7 +119,7 @@ public class SGMaterialTest {
         SGMaterialLib matlib = new SGMaterialLib();
         EngineTestFactory.loadBundleSync(SGMaterialLib.BUNDLENAME);
         //"Materials/regions/materials.xml"
-        if (!matlib.load(mpath, FGGlobals.globals.get_props())) {
+        if (!matlib.load(mpath, FGGlobals.globals.get_props(),false)) {
             fail("matlib.load failed");
         }
         return matlib;

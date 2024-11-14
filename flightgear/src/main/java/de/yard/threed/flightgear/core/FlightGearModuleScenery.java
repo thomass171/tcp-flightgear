@@ -36,11 +36,11 @@ public class FlightGearModuleScenery extends FlightGearModule {
         return instance;
     }
 
-    public static void init(boolean terrainonly) {
-        instance= new FlightGearModuleScenery(terrainonly);
+    public static void init(boolean terrainonly, boolean forBtgConversion) {
+        instance= new FlightGearModuleScenery(terrainonly, forBtgConversion);
     }
     
-    FlightGearModuleScenery(boolean terrainonly) {
+    FlightGearModuleScenery(boolean terrainonly, boolean forBtgConversion) {
         logger.info("Creating instance");
         ////////////////////////////////////////////////////////////////////
         // Initialize the material manager
@@ -73,7 +73,7 @@ public class FlightGearModuleScenery extends FlightGearModule {
 
         mpath = "Materials/regions/materials.xml";
         FGProperties.fgSetString("/sim/startup/season", "summer");
-        if (!/*FGGlobals.globals.*/get_matlib().load(/*FGGlobals.globals.get_fg_root(),*/ mpath, FGGlobals.globals.get_props())) {
+        if (!/*FGGlobals.globals.*/get_matlib().load(/*FGGlobals.globals.get_fg_root(),*/ mpath, FGGlobals.globals.get_props(), forBtgConversion)) {
             throw new /*SGIO*/RuntimeException("Error loading materials file" + mpath);
         }
         logger.info("Creating subsystems took:");// + st.elapsedMSec());

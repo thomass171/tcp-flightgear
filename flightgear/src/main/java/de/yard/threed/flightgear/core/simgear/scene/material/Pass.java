@@ -1,13 +1,23 @@
 package de.yard.threed.flightgear.core.simgear.scene.material;
 
+import de.yard.threed.flightgear.EffectMaterialWrapper;
+
 /**
  * From Pass.[ch]xx
- *
- * Used to extend https://github.com/openscenegraph/OpenSceneGraph/blob/master/include/osg/StateSet
- * Seems it was just a kind of wrapper.
+ * <p>
+ * Used to extend https://github.com/openscenegraph/OpenSceneGraph/blob/master/include/osg/StateSet.
+ * For providing the OSG/OpenGL state where effects should apply? See README.md#Effects.
+ * <p>
+ * We use a meterial wrapper instead of osg::StateSet as super class.
  */
-public class Pass { //: osg::StateSet
+public class Pass extends EffectMaterialWrapper { //: osg::StateSet
 
+    EffectMaterialWrapper wrapper;
+
+    public Pass(EffectMaterialWrapper wrapper) {
+        super(null);
+        //super(s.wrapper = wrapper;
+    }
        /* public:
         typedef std::list<std::pair<int,std::string> > BufferUnitList;
         typedef std::map<std::string,osg::Vec4> PositionedUniformMap;
@@ -31,9 +41,8 @@ public class Pass { //: osg::StateSet
     /**
      * Replaces
      * pass.setMode(GL_BLEND, (realProp -> getBoolValue() ? StateAttribute::ON : StateAttribute::OFF));
-     *
      */
-    public void setBlending(boolean enabled){
-       //TODO needs to know material/texture
+    public void setBlending(boolean enabled) {
+        //TODO needs to know material/texture
     }
 }

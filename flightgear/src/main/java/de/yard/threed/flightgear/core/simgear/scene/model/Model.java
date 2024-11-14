@@ -423,7 +423,7 @@ public class Model {
         SGPropertyNode effectRoot = new SGPropertyNode();
         // No idea if using configNode instead of _currentEffectParent is good here
         MakeEffect.mergePropertyTrees(effectRoot, ssRoot,configNode/* _currentEffectParent*/);
-        Effect effect = MakeEffect.makeEffect(effectRoot, true, options,label);
+        Effect effect = MakeEffect.makeEffect(effectRoot, true, options,label, false);
 
     }
 }

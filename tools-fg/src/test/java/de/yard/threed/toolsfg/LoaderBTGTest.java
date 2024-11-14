@@ -39,8 +39,7 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -51,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @Slf4j
 public class LoaderBTGTest {
     // 'fullFG' needed for sgmaterial via bundle
-    static Platform platform = FgTestFactory.initPlatformForTest(true, true, true);
+    static Platform platform = FgTestFactory.initPlatformForTest(true, true, true, true);
 
     /**
      * also see SGTileGeometryBinTest and Wiki
@@ -107,7 +106,7 @@ public class LoaderBTGTest {
         // 34 just taken as reference
         assertEquals(34, tileGeometryBin.materialTriangleMap.size());
         // 4 materials are no longer missing: pc_taxiway, pa_stopway, pa_centerline, pc_stopway
-        assertEquals(34, ppfile.materials.size());
+        assertEquals(34, ppfile.getMaterialCount());
         assertEquals(0, tileGeometryBin.materialNotFound.size());
 
     }
@@ -140,5 +139,38 @@ public class LoaderBTGTest {
         } else {
             log.debug("External BTG file not found. Test skipped");
         }
+    }
+
+    /**
+     * wegen Materialmehrfachnutzung auch 3072816.btg testen.
+     * Effect "Effects/cropgrass" (mapped to texture "Textures/Terrain/dry_pasture4.png") is one of the effects used in 3072816.btg.
+     * It is defined in global-summer.xml:
+     * <pre>
+     *     <material>
+     *     <effect>Effects/cropgrass</effect>
+     *     <name>Grassland</name>
+     * 	    <texture-set>
+     *          <texture>Terrain/dry_pasture4.png</texture>
+     * 	        <texture n="12">Terrain/tundra-hawaii-green.png</texture>
+     * 	   </texture-set>
+     *     <xsize>2000</xsize>
+     *     <ysize>2000</ysize>
+     *     <light-coverage>2000000.0</light-coverage>
+     * ...
+     * </pre>
+     *
+     * 12.11.24: Test copied from module flightgear. Maybe something different/more needs to be tested here.
+     */
+    @Test
+    public void testLoadBTG3072816() throws Exception {
+
+        BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "terrain/3072816.btg");
+        BundleData ins = br.bundle.getResource(br);
+        LoaderOptions loaderoptions = new LoaderOptions(FlightGearModuleScenery.getInstance().get_matlib());
+        loaderoptions.usegltf = false;
+        PortableModel ppfile = new LoaderBTG(new ByteArrayInputStream(ins.b), null, loaderoptions, br.getFullName()).buildPortableModel();
+        ModelAssertions.assertBTG3072816(ppfile, true, false);
+
+        // 12.11.24: Node building from core BTG is no longer a valid use case
     }
 }

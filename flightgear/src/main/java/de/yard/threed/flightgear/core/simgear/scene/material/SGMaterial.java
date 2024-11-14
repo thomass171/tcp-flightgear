@@ -34,7 +34,7 @@ import java.util.List;
 
 /**
  * In Anlehnung an mat.[hc]xx
- *
+ * <p>
  * Corresponds to a material element in one of the sgmaterial XML files. Properties are
  * - an effect(name?). Is this the identifier? Probably not because not unique like 'Effects/urban'.
  * - multiple names
@@ -42,7 +42,7 @@ import java.util.List;
  * - a.s.o.
  * A SGMaterial/mat seems to be just a material (property tree) definition initially. Shader, textures, etc
  * are created later when needed (by ??()?).
- *
+ * <p>
  * <p/>
  * Created by thomass on 23.02.16.
  */
@@ -192,15 +192,15 @@ public class SGMaterial extends BVHMaterial {
      *              state information for the material.  This node isType usually
      *              loaded from the $FG_ROOT/materials.xml file.
      */
-    SGMaterial(SGReaderWriterOptions options, SGPropertyNode props, SGPropertyNode prop_root, AreaList a, SGCondition c) {
+    SGMaterial(SGReaderWriterOptions options, SGPropertyNode props, SGPropertyNode prop_root, AreaList a, SGCondition c, boolean forBtgConversion) {
         init();
         areas = a;
         condition = c;
         read_properties(options, props, prop_root);
-        buildEffectProperties(options);
+        buildEffectProperties(options, forBtgConversion);
     }
 
-    SGMaterial(Options options, SGPropertyNode props, SGPropertyNode prop_root, AreaList a, SGCondition c) {
+    SGMaterial(Options options, SGPropertyNode props, SGPropertyNode prop_root, AreaList a, SGCondition c, boolean forBtgConversion) {
         if (SGMaterialLib.materiallibdebuglog) {
             logger.debug("Building SGMaterial with condition " + c);
         }
@@ -210,7 +210,7 @@ public class SGMaterial extends BVHMaterial {
         condition = c;
         init();
         read_properties(opt/*.get()*/, props, prop_root);
-        buildEffectProperties(opt/*.get()*/);
+        buildEffectProperties(opt/*.get()*/, forBtgConversion);
     }
 
     /**
@@ -651,9 +651,13 @@ public class SGMaterial extends BVHMaterial {
         effect = "Effects/terrain-default";
     }
 
+    /**
+     * Applies an effect to a texture via Geode node visitor in FG? No, it is done
+     * duringterrain building, so before draw.
+     */
     Effect get_effect(int i) {
         // 28.10.24 avoid NPE
-        if (_status.get(i).getEffect() == null){
+        if (_status.get(i).getEffect() == null) {
             return null;
         }
         // 28.10.24: Somehow strange to have a additional effect_realized flag outside of effect. Effect also has one.
@@ -718,7 +722,7 @@ public class SGMaterial extends BVHMaterial {
         }
     }*/
 
-    void buildEffectProperties(SGReaderWriterOptions options) {
+    void buildEffectProperties(SGReaderWriterOptions options, boolean forBtgConversion) {
         if (SGMaterialLib.materiallibdebuglog) {
             logger.debug("buildEffectProperties ");
         }
@@ -765,7 +769,7 @@ public class SGMaterial extends BVHMaterial {
             SGPropertyNode.makeChild(effectParamProp, "light-coverage").setDoubleValue(light_coverage);
 
             // 28.10.24: Build an effect for the texture defined in the material
-            matState.setEffect(MakeEffect.makeEffect(effectProp, false, options, "SGMaterial..."));
+            matState.setEffect(MakeEffect.makeEffect(effectProp, false, options, "SGMaterial...", forBtgConversion));
             if (matState.getEffect() != null && matState.getEffect().valid()) {
                 //TODO matState.effect.setUserData(user.get());
             }
@@ -808,12 +812,14 @@ public class SGMaterial extends BVHMaterial {
         return it->getSecond;
     }*/
 
-    /*28.10.24public PortableMaterial getEffectMaterialByTextureIndex(int textureindex) {
-        Effect oneEffect = get_one_effect(textureindex);
-        if (oneEffect == null) {
+    /**
+     * Only used for BTG conversion, so no need for effects.
+     * From Effect.
+     */
+    /*public PortableMaterial getMaterialByTextureIndex(int textureindex) {
+        if (_status.isEmpty()) {
+            logger.warn("No texture available. Maybe no texture found at all for effect '" + effect + "'");
             return null;
-        } else {
-            return oneEffect.getMaterialDefinition();
         }
     }*/
 }

@@ -168,6 +168,9 @@ public class LoaderBTG extends BinaryLoader {
 
     public static String BTG_ROOT = "btgroot";
 
+    // 12.11.24: This option might help to avoid BTG converted GLTFs that contain no material and thus reveal
+    // configuration problems with SGMaterialLib during conversion.
+    public boolean shouldFailOnError = false;
     /**
      * Anscheinend ist das ganze ein einziges Object.
      */
@@ -591,6 +594,7 @@ public class LoaderBTG extends BinaryLoader {
         PortableModel ppfile = new PortableModel(ppo, null, (List<GeoMat>) null/*gml*/);
         ppfile.setName(source);
 
+        int errorCnt = 0;
         int index = 0;
         for (GeoMat gm : gml) {
             //ppo.geolist.add(gm.geo);
@@ -602,16 +606,18 @@ public class LoaderBTG extends BinaryLoader {
             } else {
                 // Einfach den Index als Material name. Vorsicht: Materials werden teilweise mehrfach verwendet! Darum duplizieren.
                 //1.8.24 ppo.geolistmaterial.add("" + index);
-                gmMaterial = "" + index;
+                gmMaterial = gm.landclass;//"" + index;
                 //LoadedMaterial ppm = new LoadedMaterial(gm.mat);
                 //das Material selber hat auch noch keinen Namen. Ohne matlib ist mat aber null
                 //5.10.23: Is there a solution if mat is null? Maybe just don't add it. 'gm.landclass' is not set properly.
                 //1.8.24: Not sure what effect the simplification of PortableModelDefinition has. Duplicate
                 //to parent(!!) still needed?? This might spoil the idea of reusing it in shared models.
+                //13.11.24: Now use land class name as material name instead just the index. We assume/hope these will be unique
                 if (gm.mat == null) {
                     logger.error("No material for land class '" + gm.landclass + "'. Will lead to hole in tile!");
+                    errorCnt++;
                 } else {
-                    ppfile.materials.add(gm.mat.duplicate("" + index));
+                    ppfile.addMaterial(gm.mat.duplicate(gm.landclass/*"" + index*/));
                 }
             }
             //27.12.17: textureindex gibt es nicht mehr? TODO: Doch, fuer landclasses schon. Setzen bzw. klären
@@ -619,6 +625,9 @@ public class LoaderBTG extends BinaryLoader {
             ppo.addChild(new PortableModelDefinition(gm.geo,gmMaterial ));
         }
         //PreprocessedLoadedFile ppfile = new PreprocessedLoadedFile(gml);
+        if (errorCnt > 0 && shouldFailOnError){
+            throw new RuntimeException("" + errorCnt + " error found (check log output). Aborting");
+        }
         return ppfile;
     }
 

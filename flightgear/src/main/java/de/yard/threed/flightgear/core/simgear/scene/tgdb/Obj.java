@@ -1,6 +1,7 @@
 package de.yard.threed.flightgear.core.simgear.scene.tgdb;
 
 import de.yard.threed.core.GeneralParameterHandler;
+import de.yard.threed.core.Util;
 import de.yard.threed.core.geometry.SimpleGeometry;
 import de.yard.threed.core.loader.AbstractLoader;
 import de.yard.threed.core.loader.InvalidDataException;
@@ -10,6 +11,7 @@ import de.yard.threed.core.loader.PortableModelDefinition;
 import de.yard.threed.core.loader.PortableModel;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.engine.Material;
 import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.core.Vector3;
@@ -108,6 +110,8 @@ public class Obj {
             } else {
                 // 22.7.24: This branch is still in use. So we cannot move LoaderBTG to tools yet.
                 //load from BTG
+                //12.11.24:Finally no valid use case not even for BTG conversion.
+                Util.nomore();
 
                 BundleData ins = null;
                 // special handling of btg.gz files. Irgendwie Driss
@@ -229,8 +233,9 @@ public class Obj {
      * 12.12.17: Aufgeteilt um das erstellen der Geo im preprocess verwenden zu koennen.
      * 18.04.2019: ppfile contains no material. matcache is "optional". If null, wireframe will be created.
      * 30.9.23: Moved here from SGTileGeometryBin.
+     * 13.11.2024: Meanwhile BTG converted GLTSs always contain a material list and land classes as material name.
      */
-    public Node getSurfaceGeometryPart2(/*List<GeoMat> geos*/PortableModel ppfile, boolean useVBOs, SGMaterialCache matcache) {
+    public Node getSurfaceGeometryPart2(PortableModel ppfile, boolean useVBOs, SGMaterialCache matcache) {
         PortableModelDefinition btgroot = getBtgDefinitionFromPortableModel(ppfile);
 
         if (btgroot == null)
@@ -258,22 +263,22 @@ public class Obj {
             if (matcache != null) {
                 mat = matcache.find(ii/*->getFirst* /);
             }*/
-            PortableMaterial mat = null;
+            //11.11.24 back from PortableMaterial to core material
+            Material mat = null;
             String matname = po.material;//geolistmaterial.get(index);
+            // 11.11.24: BTG GLTF files contain a simple texture material when materiallib was used during conversion,
+            // and as material name the landclass name.
             // matcache should be available, otherwise there will no material later very likely. (wireframe)
-            if (ppfile.materials.size() == 0 && matcache != null) {
-                SGMaterial sgmat = matcache.find(matname);
-                //31.12.17: TODO textureindx mal klaeren!
-                //5.10.23: TODO use getEffectMaterialByTextureIndex
-                int textureindex = 0;
-                Effect oneEffect = sgmat.get_one_effect(textureindex);
-                if (oneEffect == null) {
-                    logger.warn("No effect available at " + textureindex + " for " + matname);
+            mat = buildMaterialFromLandClass(matcache, matname);
+            if (mat == null) {
+                // no material found by land class
+                logger.warn("material not found by land class '" + matname + "'. Falling back to simple GLTF material");
+                PortableMaterial pm = ppfile.findMaterial(matname);
+                if (pm != null) {
+                    mat = Effect.buildMaterialWithResourceLoader(pm);
                 } else {
-                    mat = (sgmat != null) ? (oneEffect.getMaterialDefinition()) : null;
+                    logger.warn("Material not found in btg/gltf:" + matname);
                 }
-            } else {
-                mat = ppfile.findMaterial(matname);
             }
             // FG-DIFF
             // In FG the material is created via Effect in EffectGeode (partly via Callback). And addDrawable/runGenerators?
@@ -313,6 +318,36 @@ public class Obj {
         } else {
             return eg;
         }
+    }
+
+    /**
+     * Up to 11/24 the material entry was the land class instead of an index to material.
+     *
+     * @param landclass
+     * @return
+     */
+    private Material buildMaterialFromLandClass(SGMaterialCache matcache, String landclass) {
+        Material mat = null;
+        if (matcache == null) {
+            logger.warn("no mat cache");
+            return null;
+        }
+        SGMaterial sgmat = matcache.find(landclass);
+        //31.12.17: TODO textureindx mal klaeren!
+        //5.10.23: TODO use getEffectMaterialByTextureIndex
+        if (sgmat == null) {
+            logger.warn("No material for land class (material) '" + landclass + "'");
+        } else {
+            int textureindex = 0;
+            //EffectMaterialWrapper wrapper = new EffectMaterialWrapper(null);
+            Effect oneEffect = sgmat.get_one_effect(textureindex);
+            if (oneEffect == null) {
+                logger.warn("No effect available at " + textureindex + " for " + landclass);
+            } else {
+                mat = (sgmat != null) ? (oneEffect.material) : null;
+            }
+        }
+        return mat;
     }
 
     /**

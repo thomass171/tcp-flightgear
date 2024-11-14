@@ -89,24 +89,17 @@ public class GltfBuildingTest {
 
     //11.9.21 needs BTG-Loader plugin in GltfProcessor
     @Test
-    public void testCreateGltfForRefBtgWithmat() {
+    public void testCreateGltfForRefBtgWithmat() throws Exception {
         // Prepare matlib?
 
-        try {
-            String btgfile = "tools-fg/src/test/resources/" + FlightGear.refbtg;
-            GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(btgfile), Optional.of("de.yard.threed.toolsfg.LoaderBTGBuilder"));
-            BundleResource gltfbr = new BundleResource(new InMemoryBundle("3056410", lf.gltfstring, lf.bin), "3056410.gltf");
-            try {
-                // Den texturebasepath einfach mal so setzen
-                LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, new ResourcePath("flusi/terrain/3056410-gltf"));
-                // Das GLTF wurde mit matlib erstellt
-                ModelAssertions.assertRefbtg(lf1.doload(), true, true);
-            } catch (InvalidDataException e) {
-                Assert.fail(e.getMessage());
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error opening or reading btg file", e);
-        }
+        String btgfile = "tools-fg/src/test/resources/" + FlightGear.refbtg;
+        GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(btgfile), Optional.of("de.yard.threed.toolsfg.LoaderBTGBuilder"));
+        BundleResource gltfbr = new BundleResource(new InMemoryBundle("3056410", lf.gltfstring, lf.bin), "3056410.gltf");
+
+        // Den texturebasepath einfach mal so setzen
+        LoaderGLTF lf1 = LoaderGLTF.buildLoader(gltfbr, new ResourcePath("flusi/terrain/3056410-gltf"));
+        // Das GLTF wurde mit matlib erstellt
+        ModelAssertions.assertRefbtg(lf1.doload(), true, true);
     }
 
     /**
