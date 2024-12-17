@@ -78,8 +78,8 @@ public class FgVehicleLoaderTest {
         //log.debug(bluebirdNode.dump("  ",0));
 
         assertEquals(0, SGReaderWriterXML.errorCnt, "errorCnt ");
-        //Wow, 609 animations counted. But only 393 effective. Hmm. now 587 due to garmin?
-        assertEquals(587, loadedResults.get(0).animationList.size());
+        //Wow, 609 animations counted. But only 393 effective. Hmm. now 587 due to garmin?. 20.11.24 now 762->838.
+        assertEquals(838, loadedResults.get(0).animationList.size());
 
         // should load bluebird, yoke, pedals,display-screens, 6 spheres, 3 of garmin(?)
         assertEquals(1 + 1 + 1 + 1 + 6 + 3, SGReaderWriterXML.loadedList.size(), "loadedList ");
@@ -120,8 +120,8 @@ public class FgVehicleLoaderTest {
 
         log.debug(bluebirdNode.dump("  ", 0));
         // full hierarchy is too large, so only check some
-        String hierarchy = EngineTestUtils.getHierarchy(bluebirdNode, 10);
-        assertTrue(hierarchy.contains("ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/bluebird.gltf->gltfroot->ac-world->[Layer_Last->[center back translate"), hierarchy);
+        String hierarchy = EngineTestUtils.getHierarchy(bluebirdNode, 10, true);
+        assertTrue(hierarchy.contains("ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/bluebird.gltf->gltfroot->ac-world->[Layer_Last->[centerBackTranslate"), hierarchy);
     }
 
     /**

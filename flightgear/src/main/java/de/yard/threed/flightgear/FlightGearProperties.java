@@ -23,9 +23,12 @@ public class FlightGearProperties /*7.11.24 implements SGPropertyTreeResolver*/ 
 
     public double elapsedsec = 0;
     //SGPropertyNode root;
+    // FG standard is 3 kt.
     public static double DEFAULT_WIND_SPEED_KT = 26.0;
     // wind from north west as default
     public static double DEFAULT_WIND_FROM_HEADING_DEG = 290.0;
+    // noon as default
+    public static double DEFAULT_SUN_ANGLE_RAD = 0.0;
 
     public static void setOurDefaults() {
         //root = new SGPropertyNode(rootName);
@@ -40,6 +43,14 @@ public class FlightGearProperties /*7.11.24 implements SGPropertyTreeResolver*/ 
         */
         FGGlobals.getInstance().get_props().getNode("/environment/wind-from-heading-deg", true).setDoubleValue(DEFAULT_WIND_FROM_HEADING_DEG);
         FGGlobals.getInstance().get_props().getNode("/environment/wind-speed-kt", true).setDoubleValue(DEFAULT_WIND_SPEED_KT);
+        // special node for windsock? strange. what is this all about?
+        FGGlobals.getInstance().get_props().getNode("/environment/windsock/wind-speed-kt", true).setDoubleValue(DEFAULT_WIND_SPEED_KT);
+        // property /sim/time/sun-angle-rad  for now is just a static value
+        // From http://www.geocities.ws/robitabu/animation/sun-angle-rad.html:
+        // At noon, when the sun is up, perfectly perpendicular to the ground: sun-angle-rad = 0 rad.
+        // Then the sun goes down, untill at dawn, when the sun is at the horizon: sun-angle-rad = (Pi/2) rad.
+        // During the night, the sun is down under the horizon and has values ranging from Pi/2 to Pi.
+        FGGlobals.getInstance().get_props().getNode("/sim/time/sun-angle-rad", true).setDoubleValue(DEFAULT_SUN_ANGLE_RAD);
         SGPropertyNode node = FGGlobals.getInstance().get_props();
     }
 
@@ -68,7 +79,7 @@ public class FlightGearProperties /*7.11.24 implements SGPropertyTreeResolver*/ 
         n.setDoubleValue(value);
     }
 
-   /*7.11.24 split is too much effort @Override.
+   /*7.11.24 split of global property tree is too much effort. But the vehicles have their own. @Override.
    But we need a kind of lookup anyway.
    */
     public static SGPropertyNode resolve(String inputPropertyName, SGPropertyNode defaultRoot) {
@@ -81,7 +92,7 @@ public class FlightGearProperties /*7.11.24 implements SGPropertyTreeResolver*/ 
             return FGGlobals.getInstance().get_props().getNode(inputPropertyName, true);
             //return simProperties.getNode(inputPropertyName, true);
         }
-
+        // This is the default FG. Create property in current tree if it doesn't exist
         return defaultRoot.getNode(inputPropertyName, true);
     }
 }

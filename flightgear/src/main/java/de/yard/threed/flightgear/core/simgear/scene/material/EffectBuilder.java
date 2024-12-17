@@ -309,7 +309,7 @@ public class EffectBuilder { //  : public SGReferenced
                                      SGPropertyNode prop,
                                      SGReaderWriterOptions options);//    = 0;
 
-         public static PassAttributeBuilder find(String str) {
+        public static PassAttributeBuilder find(String str) {
            /* PassAttrMap::iterator itr
                     = PassAttrMapSingleton::instance () . passAttrMap.find(str);
             if (itr == PassAttrMapSingleton::instance () . passAttrMap.end())
@@ -660,11 +660,11 @@ public class EffectBuilder { //  : public SGReferenced
     static SGPropertyNode getEffectPropertyNode(Effect effect, SGPropertyNode prop) {
         if (prop == null)
             return null;
-        if (prop . nChildren() > 0) {
-         SGPropertyNode useProp = prop . getChild("use");
-            if (useProp==null || effect . parametersProp!=null)
+        if (prop.nChildren() > 0) {
+            SGPropertyNode useProp = prop.getChild("use");
+            if (useProp == null || effect.parametersProp != null)
                 return prop;
-            return effect . parametersProp . getNode(useProp . getStringValue());
+            return effect.parametersProp.getNode(useProp.getStringValue());
         }
         return prop;
     }
@@ -692,7 +692,7 @@ public class EffectBuilder { //  : public SGReferenced
         SGPropertyNode propRoot;
         if (StringUtils.startsWith(propName, "/")) {
             return propName;
-        } else if ((propRoot = options.getPropertyNode())!=null) {
+        } else if ((propRoot = options.getPropertyNode()) != null) {
             String result = propRoot.getPath();
             result += ("/");
             result += (propName);

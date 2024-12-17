@@ -3,7 +3,6 @@ package de.yard.threed.trafficfg.apps;
 import de.yard.threed.core.Color;
 import de.yard.threed.core.DimensionF;
 import de.yard.threed.core.GeneralParameterHandler;
-import de.yard.threed.core.IntHolder;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
@@ -22,7 +21,6 @@ import de.yard.threed.engine.gui.DefaultMenuProvider;
 import de.yard.threed.engine.gui.LabeledSpinnerControlPanel;
 import de.yard.threed.engine.gui.NumericDisplayFormatter;
 import de.yard.threed.engine.gui.NumericSpinnerHandler;
-import de.yard.threed.engine.gui.TimeDisplayFormatter;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.SimpleBundleResourceProvider;
@@ -84,6 +82,7 @@ public class FgGalleryScene extends GalleryScene {
                 "H:Models/Airport/Jetway/jetway-movable.xml;scale=0.02",
                 "fgdatabasic:Aircraft/Instruments-3d/garmin196/garmin196.xml;scale=1.0",
                 "fgdatabasic:Aircraft/Instruments-3d/yoke/yoke.xml;scale=0.5",
+                "H:Models/Airport/beaconPre2024.xml;scale=0.02",
 
         };
     }
@@ -184,7 +183,7 @@ public class FgGalleryScene extends GalleryScene {
         double ControlPanelRowHeight = 0.1;
         double ControlPanelMargin = 0.005;
 
-        int rows = 2;
+        int rows = 3;
         DimensionF rowsize = new DimensionF(ControlPanelWidth, ControlPanelRowHeight);
         Color textColor = Color.RED;
 
@@ -192,7 +191,7 @@ public class FgGalleryScene extends GalleryScene {
 
         SGPropertyNode windFromHeadingDeg = FGGlobals.getInstance().get_props().getNode("/environment/wind-from-heading-deg", false);
         cp.add(new Vector2(0,
-                        ControlPanelHelper.calcYoffsetForRow(1, rows, ControlPanelRowHeight)),
+                        ControlPanelHelper.calcYoffsetForRow(2, rows, ControlPanelRowHeight)),
                 new LabeledSpinnerControlPanel("wnd hdg", rowsize, 0, mat,
                         new NumericSpinnerHandler(15, value -> {
                             if (value != null) {
@@ -201,17 +200,22 @@ public class FgGalleryScene extends GalleryScene {
                             return windFromHeadingDeg.getDoubleValue();
                         }, 360, new NumericDisplayFormatter(0)), textColor));
 
-        SGPropertyNode windSpeedKt = FGGlobals.getInstance().get_props().getNode("/environment/wind-speed-kt", false);
-        cp.add(new Vector2(0,
-                        ControlPanelHelper.calcYoffsetForRow(0, rows, ControlPanelRowHeight)),
-                new LabeledSpinnerControlPanel("wnd spd", rowsize, 0, mat,
-                        new NumericSpinnerHandler(5, value -> {
-                            if (value != null) {
-                                windSpeedKt.setDoubleValue(value);
-                            }
-                            return windSpeedKt.getDoubleValue();
-                        }, null, new NumericDisplayFormatter(0)), textColor));
-
+        addDoublePropertyRow(cp, 1, "/environment/wind-speed-kt", "wnd spd", rows, ControlPanelRowHeight, rowsize, mat, textColor, 5.0, 0);
+        addDoublePropertyRow(cp, 0, "/sim/time/sun-angle-rad", "sun angle", rows, ControlPanelRowHeight, rowsize, mat, textColor, 0.7, 0);
         return cp;
+    }
+
+    private static void addDoublePropertyRow(ControlPanel cp, int row, String inputProperty, String label, int rows, double controlPanelRowHeight, DimensionF rowsize,
+                                             Material mat, Color textColor, double step, int precision) {
+        SGPropertyNode propertyNode = FGGlobals.getInstance().get_props().getNode(inputProperty, false);
+        cp.add(new Vector2(0,
+                        ControlPanelHelper.calcYoffsetForRow(row, rows, controlPanelRowHeight)),
+                new LabeledSpinnerControlPanel(label, rowsize, 0, mat,
+                        new NumericSpinnerHandler(step, value -> {
+                            if (value != null) {
+                                propertyNode.setDoubleValue(value);
+                            }
+                            return propertyNode.getDoubleValue();
+                        }, null, new NumericDisplayFormatter(precision)), textColor));
     }
 }

@@ -40,6 +40,7 @@ public class Effect /*extends Effect osg::Object */ {
     // BTG conversion uses PortableMaterial while a 'real' effect uses core Material to be ready for modifying
     private PortableMaterial materialdefinitionForTerrainOnly = null;
     public Material material = null;
+    EffectMaterialWrapper wrapper;
 
     // made private with constructor.
     private String name;
@@ -56,22 +57,32 @@ public class Effect /*extends Effect osg::Object */ {
     //std::vector<osg::ref_ptr<Technique> > techniques;
     List<Technique> techniques = new ArrayList<>();
     private boolean forBtgConversion;
+    public static List<Effect> effectListForTesting = null;
 
     /**
      * 21.10.24: root and parametersProp made private with constructor. "parent" is optional.
+     * 15.11.24: We need a pendant to OSG::StateSet, a destination where the effect can apply to. For now thats the wrapper.
+     * *
      */
-    public Effect(String name, SGPropertyNode prop, Effect parent, String label, boolean forBtgConversion) {
+    public Effect(String name, SGPropertyNode prop, Effect parent, String label, boolean forBtgConversion, EffectMaterialWrapper wrapper) {
         this.name = name;
         this.label = label;
+        this.wrapper = wrapper;
         this.forBtgConversion = forBtgConversion;
         if (parent == null) {
             root = prop;
             parametersProp = root.getChild("parameters");
         } else {
-
+            // prop might point to a model effect while parent points to an inherited "model-transparent" effect.
             root = new SGPropertyNode();
             mergePropertyTrees(root, prop, parent.root);
+            // root might contain now a crazy a mix of properties from model and from effect, eg
+            // name, objectname, parameters, technique, inherits-from,
             parametersProp = root.getChild("parameters");
+            // parametersProp contains properties like "texture/type", "vertex-program-two-side", "material", a.s.o.
+        }
+        if (effectListForTesting != null) {
+            effectListForTesting.add(this);
         }
     }
 
@@ -1307,21 +1318,26 @@ public class Effect /*extends Effect osg::Object */ {
      */
     public boolean realizeTechniques(SGReaderWriterOptions options) {
         //material
-        if (SGMaterialLib.materiallibdebuglog) {
-            logger.debug("Effect:realizeTechniques " + getName());
-        }
+        logger.debug("Effect:realizeTechniques " + getName());
+
         //mergeSchemesFallbacks(this, options);
         if (_isRealized)
             return true;
 
         // Build material before building techniques. Techniques might modify the material.
         // Not needed for BTG conversion.
-        buildMaterial();
+        // Seems to fit for terrain, but model materials already exist at his point. In FG the visitor probably provides the correct
+        // context to set up the material. We use a wrapper for that.
+        // 15.11.24 Meanwhile this doesn't appear a good location for building material at all.
+        if (wrapper == null) {
+            // for SGMaterial only currently
+            buildMaterial();
+        }
         if (!forBtgConversion) {
             PropertyList tniqList = root.getChildren("technique");
             //for (PropertyList::iterator itr = tniqList.begin(), e = tniqList.end();        itr != e;        ++itr)
             for (SGPropertyNode/*_ptr*/ tniq : tniqList) {
-                buildTechnique(this, tniq, options, new EffectMaterialWrapper(material));
+                buildTechnique(this, tniq, options, wrapper == null ? new EffectMaterialWrapper(material) : wrapper);
             }
         }
         _isRealized = true;
@@ -1330,7 +1346,10 @@ public class Effect /*extends Effect osg::Object */ {
 
     /**
      * Build initial material. Might be modified by techniques later.
+     * For now we assume it's always a texture.
+     * 20.11.24 deprecated because it doesn't appear a good location
      */
+    @Deprecated
     private void buildMaterial() {
         // 21.10.24 Build a texture material.
         // Use first texture in "parameters/texture".

@@ -77,6 +77,9 @@ public class MakeEffect {
         return null;
     }
 
+    /**
+     * Merge left and right into result.
+     */
     // namespace effect
     // {
     public static void mergePropertyTrees(SGPropertyNode resultNode, SGPropertyNode left, SGPropertyNode right) {
@@ -116,7 +119,8 @@ public class MakeEffect {
      * 17.10.24 not used at all currently. Now it is used.
      * Returns null if the effect couldn't be found/built.
      */
-    public static Effect makeEffect(String name, boolean realizeTechniques, SGReaderWriterOptions options, String label,boolean forBtgConversion) {
+    public static Effect makeEffect(String name, boolean realizeTechniques, SGReaderWriterOptions options, String label,boolean forBtgConversion,
+                                    EffectMaterialWrapper wrapper) {
        /* {
             OpenThreads::ScopedLock < OpenThreads::ReentrantMutex > lockEntity(effectMutex);
             EffectMap::iterator itr = effectMap.find(name);
@@ -150,7 +154,7 @@ public class MakeEffect {
             return null;
         }
         /*ref_ptr<*/
-        Effect result = makeEffect(effectProps/*.ptr()*/, realizeTechniques, options, label, forBtgConversion);
+        Effect result = makeEffect(effectProps/*.ptr()*/, realizeTechniques, options, label, forBtgConversion, wrapper);
         if (result != null && result.valid()) {
             /*OpenThreads::ScopedLock < OpenThreads::ReentrantMutex > lockEntity(effectMutex);
             pair<EffectMap::iterator, bool > irslt
@@ -178,13 +182,19 @@ public class MakeEffect {
      * to pass material as parameter.
      * 17.10.24: Build an effect for the texture defined in the material. Apparently only used from SGMaterialLib
      * currently, but no idea whether the effect is really used.
+     * 15.11.24: Don't remember why we once didn't want to pass material. We need a pendant to OSG::StateSet, a destination where the effect can
+     * apply to. For now thats the wrapper.
      *
-     * @param prop
+     *
+     * @param prop Either points to the root of the effect definition (from a ".eff" file) or the
+     *             effect definition of model.xml??? But should have properties that
+     *             might be resolved via "use", like "<use>blend/active</use>".
      * @param realizeTechniques
      * @param options
      * @return
      */
-    public static Effect makeEffect(SGPropertyNode prop, boolean realizeTechniques, SGReaderWriterOptions options, String label/*, SGMaterial mat*/,boolean forBtgConversion) {
+    public static Effect makeEffect(SGPropertyNode prop, boolean realizeTechniques, SGReaderWriterOptions options, String label/*, SGMaterial mat*/,boolean forBtgConversion,
+                                    EffectMaterialWrapper wrapper) {
         // Give default names to techniques and passes
         List<SGPropertyNode> techniques = prop.getChildren("technique");
         for (int i = 0; i < (int) techniques.size(); ++i) {
@@ -212,14 +222,16 @@ public class MakeEffect {
         }
         SGPropertyNode nameProp = prop.getChild("name");
         // Merge with the parent effect, if any
+        // Effects might inherit from other effects or we are in a model effect definition. Who knows.
         SGPropertyNode inheritProp = prop.getChild("inherits-from");
         Effect parent = null;
         //siehe Header
         if (inheritProp != null/*28.10.24 && false*/) {
             getLog().debug("Building/Lookup inherited effect " + inheritProp.getStringValue());
-            //auch in FG auskommentiert prop.removeChild("inherits-from");
-            parent = makeEffect(inheritProp.getStringValue(), false, options, label, forBtgConversion);
+            //also commented in FG prop.removeChild("inherits-from"); Maybe was intended to avoid a "inherits-from" property in the merged root tree of the effect.
+            parent = makeEffect(inheritProp.getStringValue(), false, options, label, forBtgConversion, wrapper);
             if (parent != null) {
+                // parent is the inherited effect now, eg "model-transparent"
                 /*TODO? Effect::Key key;
                 key.unmerged = prop;
                 if (options) {
@@ -239,7 +251,8 @@ public class MakeEffect {
                 }*/
                 // die Bedeutung des if in FG ist unklar. Es gibt doch noch keinen Effect. Oder wo kommt der her?
                 if (true/*!effect.valid()*/) {
-                    effect = new Effect(nameProp.getStringValue(), prop, parent, label, forBtgConversion);
+                    // might create a model effect with "model-transparent" as parent.
+                    effect = new Effect(nameProp.getStringValue(), prop, parent, label, forBtgConversion, wrapper);
                     /*21.10.24 moved to constructor effect.setName(nameProp.getStringValue());
                     effect.root = new SGPropertyNode();
                     mergePropertyTrees(effect.root, prop, parent.root);
@@ -265,8 +278,8 @@ public class MakeEffect {
                 return null;
             }
         } else {
-            getLog().debug("Building effect " + nameProp.getStringValue());
-            effect = new Effect(nameProp.getStringValue(), prop, null, label, forBtgConversion);
+            getLog().debug("Building non inheriting effect " + nameProp.getStringValue());
+            effect = new Effect(nameProp.getStringValue(), prop, null, label, forBtgConversion, wrapper);
             /*21.10.24 moved to constructor effect.setName(nameProp.getStringValue());
             effect.root = prop;
             effect.parametersProp = effect.root.getChild("parameters");*/

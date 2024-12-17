@@ -5,6 +5,7 @@ import de.yard.threed.engine.Material;
 import de.yard.threed.engine.Mesh;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.loader.MaterialFactory;
+import de.yard.threed.flightgear.EffectMaterialWrapper;
 import de.yard.threed.flightgear.core.PropertyList;
 import de.yard.threed.flightgear.core.osg.Node;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
@@ -384,6 +385,7 @@ public class Model {
                         Mesh mesh = n.getMesh();
                         if (mesh != null) {
                             Material mat = mesh.getMaterial();
+                            // configNode points to one effect definition in the model.xml
                             applyEffectToObject(configNode, mat, options, label+".effect."+index);
                             //mat.setTransparency(true);
                             //effect.apply();
@@ -395,12 +397,11 @@ public class Model {
                     }
                 }
                 // End FG-DIFF
-
+                index++;
             }
             // two lines not commented in FG
             //configNode.removeChild("default");
             //configNode.removeChildren("object-name");
-            index++;
         }
         if (!(defaultEffectPropRoot != null)) {
             //defaultEffectPropRoot = new DefaultEffect::instance () -> getEffect();
@@ -423,7 +424,7 @@ public class Model {
         SGPropertyNode effectRoot = new SGPropertyNode();
         // No idea if using configNode instead of _currentEffectParent is good here
         MakeEffect.mergePropertyTrees(effectRoot, ssRoot,configNode/* _currentEffectParent*/);
-        Effect effect = MakeEffect.makeEffect(effectRoot, true, options,label, false);
+        Effect effect = MakeEffect.makeEffect(effectRoot, true, options,label, false, new EffectMaterialWrapper(material));
 
     }
 }

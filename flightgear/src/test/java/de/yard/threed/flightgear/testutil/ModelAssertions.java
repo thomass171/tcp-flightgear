@@ -34,6 +34,8 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Assertions for model files (PortableModel).
+ * 20.11.24: For runtime we have NodeAssertions.
  * better in tools-fg? Only parts.
  */
 public class ModelAssertions {
@@ -264,45 +266,7 @@ public class ModelAssertions {
         TestUtil.assertEquals("materialname", "ROOF_DEFAULT", ppfile.getMaterialByIndex(3).getName());
     }
 
-    /**
-     * STG3072816 (in objects) contains
-     * - 37 regular objects (OBJECT_STATIC)
-     * - 75 signs (OBJECT_SIGN)
-     * - 608 shared objects (OBJECT_SHARED), 3 of which are windturbines, 2 windsock
-     * (in Terrain) contains
-     * - 0 regular objects (OBJECT_STATIC)
-     * - 0 signs (OBJECT_SIGN)
-     * - 9 shared objects (OBJECT_SHARED), 2 of which are beacons, 1 windsock
-     */
-    public static void assertSTG3072816(SceneNode destinationNode) {
-        SceneNode stg3072816 = FgTestUtils.findAndAssertStgNode(3072816);
-        SceneNode stgGroupA = stg3072816.getTransform().getChild(1).getSceneNode();
-        assertEquals(37 + 608 + 9, stgGroupA.getTransform().getChildCount());
 
-        List<SceneNode> beacons = stgGroupA.findNodeByName("Models/Airport/beacon.xml");
-        assertEquals(2, beacons.size());
-    }
-
-    /**
-     * STG3072824 (in objects) contains
-     * - 12 regular objects (OBJECT_STATIC)
-     * - 18 signs (OBJECT_SIGN)
-     * - 303 shared objects (OBJECT_SHARED)
-     */
-    public static void assertSTG3072824(SceneNode destinationNode) {
-        assertEquals(1, SceneNode.findByName("Objects/e000n50/e007n50/egkk_tower.xml").size());
-        assertEquals(1, SceneNode.findByName("Objects/e000n50/e007n50/windturbine.xml").size());
-        List<EcsEntity> entities = EcsHelper.findAllEntities();
-        String[] objectsIn3072824 = objectsPerTile.get(3072824);
-        assertEquals(objectsIn3072824.length, entities.size());
-        for (int i = 0; i < objectsIn3072824.length; i++) {
-            assertEquals(objectsIn3072824[i], entities.get(i).getName());
-        }
-
-        SceneNode stg3072824 = FgTestUtils.findAndAssertStgNode(3072824);
-        SceneNode stgGroupA = stg3072824.getTransform().getChild(1).getSceneNode();
-        assertEquals(12, stgGroupA.getTransform().getChildCount());
-    }
 
     /**
      * btgroot should be beyond of a possible gltf root.
@@ -356,7 +320,7 @@ public class ModelAssertions {
         PreparedModel preparedModel = SGModelLib.preparedModelCache.get("Models/Airport/windsock.gltf");
         assertNotNull(preparedModel);
 
-        List<TreeNode<PreparedObject>> wf4s = preparedModel.getRoot().findNode(n -> "wf4".equals(n.getElement().getName()));
+        List<TreeNode<PreparedObject>> wf4s = preparedModel.getRoot().findNode(n -> "15kt"/*"wf4"*/.equals(n.getElement().getName()));
         assertEquals(1, wf4s.size());
         PreparedObject wf4 = wf4s.get(0).getElement();
 

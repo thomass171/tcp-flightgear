@@ -107,10 +107,86 @@ that rotates the six listed objects by wind heading and a 'Spin' animation
 ...  
 ```
 that lets spin the listed objects (five of these are already used in first animation) according to wind speed.
+
+After applying all animations the node graph in FG looks like (wind 270° at 3 kt)
+
+```
+-windturbine.ac
+ +-rotate animation (angle=-360.002, axis=[ 0, 0, 1 ])
+   +-spin rotate animation
+     +-Blade1
+   
+```
+
+The typical scene node tree layout of a XML loaded model before applying animations is
+
+```
+-xmlResource
+ +-ACPolicy(2)
+   +-GLTF(2)
+     +-ac-world
+       +-Generator
+       +-Shaft
+...
+```
+
+After applying animations it is (30.11.24 really? no rotate missing?)
+
+```
+-xmlResource
+ +-ACPolicy(2)
+   +-GLTF(2)
+     +-ac-world
+       +-Generator
+       +-Shaft
+...
+```
+
+
+
+
+Like for effects it's really hard to comprehend how FG implements animations. Only the base idea
+(from https://wiki.flightgear.org/Howto:Animate_models) appears  
+clear.
+One important issue in rotate animations is the 3D way to always rotate an object around its center. FG however
+provides an option to define a center for rotation. For doing this a sequence of three 3D operations is needed:
+"move center","rotate","move center back" (we call it the MCRMCB pattern). FG can apply these operations
+in one step to the model matrix in class SGRotateTransform, but we have no access to the final matrix. So
+we embed one single FG "rotate group" into a "move center" and a "move center back" node. 
+
+The windsock model uses cascade rotations. According to logging the final node tree for windsock_lit in FG is
+
+```
+-windsock_lit.ac
+ +-rotate animation()
+   +-windsock
+     +-scale animation
+       +-translate animation
+         +-rotate animation142(angle=30, axis=[ -1, 0, 0 ])
+           +-5kt
+           +-rotate animation()
+             +-rotate animation
+               +-rotate animation
+                 +-15kt
+                   +-??
+                 
+```
+Apparently each time an object is mentioned in an "animation" tag (in this cae '15kt'), a new 
+animation node is inserted between the object and the current parent,
+resulting in the above order (scale, translate, 4xrotate). But where did the 5th go? Maybe a FG logging problem.
+An additional issue with the windsock model are windsock specific properties like '/environment/windsock/wind-speed-12.5kt'. It
+appears the windsock model is a kind of hack.
+
+So we try to implement the idea hopefully meeting what FG meets.
+
 In the [scene object tree](#scene-object-tree) special nodes (eg. SGRotateAnimation, which is also used for 'spin'
 animations) are created for each animation. To these nodes
 the changes of values are supplied as needed during runtime. The objects listed
 in the animation definition are attached to the animation nodes accordingly.
+
+
+For updating the animations FG uses OSG NodeCallbacks (eg. UpdateCallback) that hook into OSG and are executed while rendering the
+scene graph.
 
 Currently the following animations are migrated:
   * PickAnimation

@@ -27,6 +27,10 @@ public class SGPropertyExpression extends SGExpression {
         _prop = prop;
     }
 
+    public SGPropertyNode getPropertyNode() {
+        return _prop;
+    }
+
     @Override
     public PrimitiveValue eval(/*T& Wert value,*/   Binding binding) {
         return doEval(/*value*/);

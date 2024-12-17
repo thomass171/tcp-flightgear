@@ -39,6 +39,7 @@ import de.yard.threed.flightgear.core.osgdb.osgDB;
 import de.yard.threed.flightgear.core.simgear.misc.SGPath;
 import de.yard.threed.flightgear.core.simgear.props.PropsIO;
 import de.yard.threed.flightgear.core.simgear.scene.util.SGReaderWriterOptions;
+import de.yard.threed.flightgear.core.simgear.scene.util.SGTransientModelData;
 import de.yard.threed.flightgear.core.simgear.structure.SGException;
 
 import de.yard.threed.core.platform.Log;
@@ -702,6 +703,7 @@ public class SGReaderWriterXML {
 
         logger.debug("Building animations for " + bpath.name + ". nodecount=" + animation_nodes.size());
 
+        SGTransientModelData modelData = new SGTransientModelData(group, prop_root, options, bpath.name/*local8BitStr()*/);
         for (int i = 0; i < animation_nodes.size(); ++i) {
             if (previewMode && animation_nodes.get(i).hasChild("nopreview")) {
                 /*TODOPropertyList names (animation_nodes.get(i).getChildren("object-name"));
@@ -727,8 +729,13 @@ public class SGReaderWriterXML {
                 }*/
             }
             if (bpath != null) {
-                SGAnimation anim = SGAnimation.animate(group, animation_nodes.get(i), prop_root, options,
-                        null, i, bpath.getName()+"."+i);
+                /*
+                 * Setup the model data for the node currently being animated.
+                 */
+                modelData.LoadAnimationValuesForElement(animation_nodes.get(i), i);
+
+                SGAnimation anim = SGAnimation.animate(modelData
+                        /*group, animation_nodes.get(i), prop_root, options, null, i*/, bpath.getName()+"."+i);
                 if (anim != null) {
                     animationList.add(anim);
                 }

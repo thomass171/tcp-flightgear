@@ -3,8 +3,10 @@ package de.yard.threed.flightgear.core.simgear.structure;
 import de.yard.threed.core.Util;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
+import de.yard.threed.flightgear.core.simgear.math.SGInterpTable;
 import de.yard.threed.flightgear.core.simgear.props.Props;
 import de.yard.threed.core.platform.Log;
+import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 
 import java.util.HashMap;
 import java.util.List;
@@ -56,9 +58,10 @@ abstract public class SGExpression/*<T>*/ extends Expression {
 
     /**
      * FG-DIFF? Defaultimplementierung
+     *
      * @return
      */
-    public SGExpression simplify(){
+    public SGExpression simplify() {
         return this;
     }
 
@@ -91,6 +94,9 @@ abstract public class SGExpression/*<T>*/ extends Expression {
         return type.getValueFromProperty(node);
     }
 
+    /**
+     * FG-DIFF additional parameter type instead of generic, typically "new ExpressionType(ExpressionType.DOUBLE)"
+     */
     //template<typename T>
     static SGExpression SGReadExpression(ExpressionType type, SGPropertyNode inputRoot, SGPropertyNode expression) {
         if (expression == null)
@@ -117,12 +123,16 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT,*/ "Cannot read \"" + name + "\" expression.");
                 return null;
             }
-            SGPropertyNode inputNode;
-            inputNode = inputRoot.getNode(expression.getStringValue(), true);
-            return new SGPropertyExpression/*<T>*/(type, inputNode);
+            //SGPropertyNode inputNode;
+            //inputNode = inputRoot.getNode(expression.getStringValue(), true);
+            //return new SGPropertyExpression/*<T>*/(type, inputNode);
+            return SGAnimation.resolvePropertyValueExpression(expression.getStringValue(), inputRoot);
+
         }
 
-        /*if (name.equals("abs" || name.equals("fabs") {
+        if (name.equals("abs") || name.equals("fabs")) {
+            Util.notyet();
+            /*
             if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
@@ -133,11 +143,12 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGAbsExpression<T>(inputExpression);
+            return new SGAbsExpression<T>(inputExpression);*/
         }
 
-        if (name.equals("sqr") {
-            if (expression->nChildren() != 1) {
+        if (name.equals("sqr")) {
+            Util.notyet();
+            /* if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -147,11 +158,12 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGSqrExpression<T>(inputExpression);
+            return new SGSqrExpression<T>(inputExpression);*/
         }
 
-        if (name.equals("clip") {
-            if (expression->nChildren() != 3) {
+        if (name.equals("clip")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 3) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -172,26 +184,27 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGClipExpression<T>(inputExpression, clipMin, clipMax);
+            return new SGClipExpression<T>(inputExpression, clipMin, clipMax);*/
         }
 
-        if (name.equals("div") {
-            if (expression->nChildren() != 2) {
-                logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
-                return 0;
+        if (name.equals("div")) {
+            if (expression.nChildren() != 2) {
+                logger.error( "Cannot read \"" + name + "\" expression.");
+                return null;
             }
-            SGSharedPtr<SGExpression<T> > inputExpressions[2] = {
-                SGReadExpression<T>(inputRoot, expression->getChild(0)),
-                SGReadExpression<T>(inputRoot, expression->getChild(1))
+            /*SGSharedPtr<SGExpression<T> >*/SGExpression inputExpressions[] = new SGExpression[]{
+                SGReadExpression(new ExpressionType(ExpressionType.DOUBLE), inputRoot, expression.getChild(0)),
+                SGReadExpression(new ExpressionType(ExpressionType.DOUBLE), inputRoot, expression.getChild(1))
             };
-            if (!inputExpressions[0] || !inputExpressions[1]) {
-                logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
-                return 0;
+            if (inputExpressions[0] ==null || inputExpressions[1]==null) {
+                logger.error( "Cannot read \"" + name + "\" expression.");
+                return null;
             }
-            return new SGDivExpression<T>(inputExpressions[0], inputExpressions[1]);
+            return new SGDivExpression(inputExpressions[0], inputExpressions[1]);
         }
-        if (name.equals("mod") {
-            if (expression->nChildren() != 2) {
+        if (name.equals("mod")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 2) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -203,24 +216,24 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGModExpression<T>(inputExpressions[0], inputExpressions[1]);
-        }*/
+            return new SGModExpression<T>(inputExpressions[0], inputExpressions[1]);*/
+        }
 
         if (name.equals("sum")) {
             if (expression.nChildren() < 1) {
-                logger.error(/*SG_IO, SG_ALERT,*/ "Cannot read \"" + name + "\" expression.");
+                logger.error("Cannot read \"" + name + "\" expression.");
                 return null;
             }
             SGSumExpression output = new SGSumExpression/*<T>*/();
             if (!SGReadNaryOperands(output, inputRoot, expression)) {
                 //delete output;
-                logger.error(/*SG_IO, SG_ALERT,*/ "Cannot read \"" + name + "\" expression.");
+                logger.error( "Cannot read \"" + name + "\" expression.");
                 return null;
             }
             return output;
         }
 
-        if (name.equals("difference") || name.equals("dif" )) {
+        if (name.equals("difference") || name.equals("dif")) {
             if (expression.nChildren() < 1) {
                 logger.error(/*SG_IO, SG_ALERT,*/ "Cannot read \"" + name + "\" expression.");
                 return null;
@@ -247,8 +260,9 @@ abstract public class SGExpression/*<T>*/ extends Expression {
             }
             return output;
         }
-        /*if (name.equals("min") {
-            if (expression->nChildren() < 1) {
+        if (name.equals("min")) {
+            Util.notyet();
+            /*if (expression->nChildren() < 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -258,10 +272,11 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return output;
+            return output;*/
         }
-        if (name.equals("max") {
-            if (expression->nChildren() < 1) {
+        if (name.equals("max")) {
+            Util.notyet();
+            /*if (expression->nChildren() < 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -271,47 +286,46 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return output;
-        }*/
+            return output;*/
+        }
 
         if (name.equals("table")) {
-            return null;//TODO
-            /*SGInterpTable * tab = new SGInterpTable(expression);
-            if (!tab) {
-                logger.error(/*SG_IO, SG_ALERT,* / "Cannot read \"" << name << "\" expression: malformed table");
-                return 0;
+            SGInterpTable tab = new SGInterpTable(expression);
+            if (tab == null) {
+                logger.error( "Cannot read \"" + name + "\" expression: malformed table");
+                return null;
             }
 
             // find input expression - i.e a child not named 'entry'
-        const SGPropertyNode * inputNode = NULL;
-            for (int i = 0; (i<expression -> nChildren()) &&!inputNode;
-            ++i){
-                if (strcmp(expression -> getChild(i)->getName(), "entry") ==0){
+            SGPropertyNode inputNode = null;
+            for (int i = 0; (i < expression.nChildren()) && inputNode == null; ++i) {
+                if (/*strcmp*/(expression . getChild(i).getName().equals( "entry")/* == 0*/)) {
                     continue;
                 }
 
-                inputNode = expression -> getChild(i);
+                inputNode = expression.getChild(i);
             }
 
-            if (!inputNode) {
-                logger.error(/*SG_IO, SG_ALERT,* / "Cannot read \"" << name << "\" expression: no input found");
-                return 0;
+            if (inputNode == null) {
+                logger.error( "Cannot read \"" + name + "\" expression: no input found");
+                return null;
             }
 
-            SGSharedPtr<SGExpression<T>> inputExpression;
-            inputExpression = SGReadExpression < T > (inputRoot, inputNode);
-            if (!inputExpression) {
-                logger.error(/*SG_IO, SG_ALERT,* / "Cannot read \"" << name << "\" expression.");
-                return 0;
+            /*SGSharedPtr<*/
+            SGExpression/*<T>*/ inputExpression;
+            inputExpression =  SGReadExpression /*< T >*/(new ExpressionType(ExpressionType.DOUBLE), inputRoot, inputNode);
+            if (inputExpression == null) {
+                logger.error(/*SG_IO, SG_ALERT,*/ "Cannot read \"" + name + "\" expression.");
+                return null;
             }
 
-            return new SGInterpTableExpression<T>(inputExpression, tab);
-            */
+            return new SGInterpTableExpression/*<T>*/(inputExpression, tab);
+
         }
 
-        /*
-        if (name.equals("acos") {
-            if (expression->nChildren() != 1) {
+        if (name.equals("acos")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -321,11 +335,12 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGACosExpression<T>(inputExpression);
+            return new SGACosExpression<T>(inputExpression);*/
         }
 
-        if (name.equals("asin") {
-            if (expression->nChildren() != 1) {
+        if (name.equals("asin")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -335,8 +350,8 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGASinExpression<T>(inputExpression);
-        }*/
+            return new SGASinExpression<T>(inputExpression);*/
+        }
 
         if (name.equals("atan")) {
             if (expression.nChildren() != 1) {
@@ -344,16 +359,17 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 return null;
             }
             SGExpression inputExpression;
-            inputExpression = SGReadExpression(new ExpressionType(ExpressionType.DOUBLE),inputRoot, expression.getChild(0));
-            if (inputExpression==null) {
+            inputExpression = SGReadExpression(new ExpressionType(ExpressionType.DOUBLE), inputRoot, expression.getChild(0));
+            if (inputExpression == null) {
                 logger.error(/*SG_IO, SG_ALERT,*/ "Cannot read \"" + name + "\" expression.");
                 return null;
             }
             return new SGATanExpression(inputExpression);
         }
-/*
-        if (name.equals("ceil") {
-            if (expression->nChildren() != 1) {
+
+        if (name.equals("ceil")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -363,11 +379,12 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGCeilExpression<T>(inputExpression);
+            return new SGCeilExpression<T>(inputExpression);*/
         }
 
-        if (name.equals("cos") {
-            if (expression->nChildren() != 1) {
+        if (name.equals("cos")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -377,11 +394,12 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGCosExpression<T>(inputExpression);
+            return new SGCosExpression<T>(inputExpression);*/
         }
 
-        if (name.equals("cosh") {
-            if (expression->nChildren() != 1) {
+        if (name.equals("cosh")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -391,11 +409,12 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGCoshExpression<T>(inputExpression);
+            return new SGCoshExpression<T>(inputExpression);*/
         }
 
-        if (name.equals("deg2rad") {
-            if (expression->nChildren() != 1) {
+        if (name.equals("deg2rad")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -405,11 +424,12 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGScaleExpression<T>(inputExpression, SGMisc<T>::pi()/180);
+            return new SGScaleExpression<T>(inputExpression, SGMisc<T>::pi()/180);*/
         }
 
-        if (name.equals("exp") {
-            if (expression->nChildren() != 1) {
+        if (name.equals("exp")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -419,11 +439,12 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGExpExpression<T>(inputExpression);
+            return new SGExpExpression<T>(inputExpression);*/
         }
 
-        if (name.equals("floor") {
-            if (expression->nChildren() != 1) {
+        if (name.equals("floor")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -433,11 +454,12 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGFloorExpression<T>(inputExpression);
+            return new SGFloorExpression<T>(inputExpression);*/
         }
 
-        if (name.equals("log") {
-            if (expression->nChildren() != 1) {
+        if (name.equals("log")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -447,11 +469,12 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGLogExpression<T>(inputExpression);
+            return new SGLogExpression<T>(inputExpression);*/
         }
 
-        if (name.equals("log10") {
-            if (expression->nChildren() != 1) {
+        if (name.equals("log10")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -461,8 +484,8 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGLog10Expression<T>(inputExpression);
-        }*/
+            return new SGLog10Expression<T>(inputExpression);*/
+        }
 
         if (name.equals("rad2deg")) {
             if (expression.nChildren() != 1) {
@@ -470,16 +493,17 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 return null;
             }
             SGExpression inputExpression;
-            inputExpression = SGReadExpression(new ExpressionType(ExpressionType.DOUBLE),inputRoot, expression.getChild(0));
-            if (inputExpression==null) {
+            inputExpression = SGReadExpression(new ExpressionType(ExpressionType.DOUBLE), inputRoot, expression.getChild(0));
+            if (inputExpression == null) {
                 logger.error(/*SG_IO, SG_ALERT,*/ "Cannot read \"" + name + "\" expression.");
                 return null;
             }
-            return new SGScaleExpression(inputExpression, 180/Math.PI/*  SGMisc.<T>::pi()*/);
+            return new SGScaleExpression(inputExpression, 180 / Math.PI/*  SGMisc.<T>::pi()*/);
         }
 
-        /*if (name.equals("sin") {
-            if (expression->nChildren() != 1) {
+        if (name.equals("sin")) {
+            Util.notyet();
+            /*    if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -489,11 +513,12 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGSinExpression<T>(inputExpression);
+            return new SGSinExpression<T>(inputExpression);*/
         }
 
-        if (name.equals("sinh") {
-            if (expression->nChildren() != 1) {
+        if (name.equals("sinh")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -503,11 +528,12 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGSinhExpression<T>(inputExpression);
+            return new SGSinhExpression<T>(inputExpression);*/
         }
 
-        if (name.equals("sqrt") {
-            if (expression->nChildren() != 1) {
+        if (name.equals("sqrt")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -517,11 +543,12 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGSqrtExpression<T>(inputExpression);
+            return new SGSqrtExpression<T>(inputExpression);*/
         }
 
-        if (name.equals("tan") {
-            if (expression->nChildren() != 1) {
+        if (name.equals("tan")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -531,11 +558,12 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGTanExpression<T>(inputExpression);
+            return new SGTanExpression<T>(inputExpression);*/
         }
 
-        if (name.equals("tanh") {
-            if (expression->nChildren() != 1) {
+        if (name.equals("tanh")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 1) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -545,7 +573,7 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGTanhExpression<T>(inputExpression);
+            return new SGTanhExpression<T>(inputExpression);*/
         }
 
 // if (name.equals("step") {
@@ -553,8 +581,9 @@ abstract public class SGExpression/*<T>*/ extends Expression {
 // if (name.equals("condition") {
 // }
 
-        if (name.equals("atan2") {
-            if (expression->nChildren() != 2) {
+        if (name.equals("atan2")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 2) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -566,25 +595,26 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGAtan2Expression<T>(inputExpressions[0], inputExpressions[1]);
-        }*/
+            return new SGAtan2Expression<T>(inputExpressions[0], inputExpressions[1]);*/
+        }
         if (name.equals("div")) {
             if (expression.nChildren() != 2) {
                 logger.error(/*SG_IO, SG_ALERT,*/ "Cannot read \"" + name + "\" expression.");
                 return null;
             }
             SGExpression[] inputExpressions = new SGExpression[]{
-                SGReadExpression(new ExpressionType(ExpressionType.DOUBLE),inputRoot, expression.getChild(0)),
-                SGReadExpression(new ExpressionType(ExpressionType.DOUBLE),inputRoot, expression.getChild(1))
+                    SGReadExpression(new ExpressionType(ExpressionType.DOUBLE), inputRoot, expression.getChild(0)),
+                    SGReadExpression(new ExpressionType(ExpressionType.DOUBLE), inputRoot, expression.getChild(1))
             };
-            if (inputExpressions[0] ==null|| inputExpressions[1]==null) {
+            if (inputExpressions[0] == null || inputExpressions[1] == null) {
                 logger.error(/*SG_IO, SG_ALERT,*/ "Cannot read \"" + name + "\" expression.");
                 return null;
             }
             return new SGDivExpression(inputExpressions[0], inputExpressions[1]);
         }
-        /*if (name.equals("mod") {
-            if (expression->nChildren() != 2) {
+        if (name.equals("mod")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 2) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -596,10 +626,11 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGModExpression<T>(inputExpressions[0], inputExpressions[1]);
+            return new SGModExpression<T>(inputExpressions[0], inputExpressions[1]);*/
         }
-        if (name.equals("pow") {
-            if (expression->nChildren() != 2) {
+        if (name.equals("pow")) {
+            Util.notyet();
+            /*if (expression->nChildren() != 2) {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
@@ -611,25 +642,25 @@ abstract public class SGExpression/*<T>*/ extends Expression {
                 logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
                 return 0;
             }
-            return new SGPowExpression<T>(inputExpressions[0], inputExpressions[1]);
-        }*/
-        logger.error("notyet:"+name);
+            return new SGPowExpression<T>(inputExpressions[0], inputExpressions[1]);*/
+        }
+        logger.error("notyet:" + name);
         Util.notyet();
         return null;
     }
 
     //template<typename T>
-    static boolean    SGReadNaryOperands(SGNaryExpression nary,                       SGPropertyNode inputRoot,  SGPropertyNode expression)    {
+    static boolean SGReadNaryOperands(SGNaryExpression nary, SGPropertyNode inputRoot, SGPropertyNode expression) {
         for (int i = 0; i < expression.nChildren(); ++i) {
             SGExpression inputExpression;
-            inputExpression = SGReadExpression(new ExpressionType(ExpressionType.DOUBLE),inputRoot, expression.getChild(i));
-            if (inputExpression==null)
+            inputExpression = SGReadExpression(new ExpressionType(ExpressionType.DOUBLE), inputRoot, expression.getChild(i));
+            if (inputExpression == null)
                 return false;
             nary.addOperand(inputExpression);
         }
         return true;
     }
-    
+
     //template<typename T>
     /*static Wert/*boolean * /   SGReadValueFromString(String str/*, T& value* /)    {
         if (str==null) {
@@ -664,10 +695,11 @@ abstract public class SGExpression/*<T>*/ extends Expression {
 
     /**
      * 3.4.18:Ist hier nur als Indicator implementiert, dass die Subclasses das machen mussen.
+     *
      * @return
      */
     @Override
-    public String toString(){
+    public String toString() {
         return "Expression";
     }
 }
@@ -1061,7 +1093,7 @@ abstract class SGBinaryExpression extends SGExpression {
  * using SGBinaryExpression<T>::getOperand;
  * };
  * <p>
- * 
+ *
  * <p>
  
  * template<typename T>

@@ -72,6 +72,12 @@ import java.util.List;
  * Intentionally not extending BasicTravelScene to be config independent and demonstrate several options.
  * No scale down to 'H0', just trackwidth 1.
  * <p>
+ * Keys are:
+ * 'a' start move (via GraphMovingSystem)
+ * '+' inc speed (via GraphMovingSystem)
+ * '-' reduce speed (via GraphMovingSystem)
+ * </p>
+ * <p>
  * 29.10.2017: Statt Viewpointsystem Teleport mit Avatar verwenden (z.B. fuer VR)
  * 11.05.2021: Gibt jetzt Observer. Avatar wird hier nicht mehr gebraucht. Stoert aber auch nicht.
  * <p>

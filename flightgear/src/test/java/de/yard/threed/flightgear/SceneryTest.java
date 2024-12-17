@@ -58,6 +58,7 @@ import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleData;
 import de.yard.threed.core.buffer.ByteArrayInputStream;
 import de.yard.threed.core.testutil.Assert;
+import de.yard.threed.flightgear.testutil.NodeAssertions;
 import de.yard.threed.traffic.WorldGlobal;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
@@ -317,13 +318,14 @@ public class SceneryTest {
         // only reading the STG doesn't add it to world. XMLs are loaded sync and available immediately, but for GLTFs we had to wait.
         log.debug(rr.dump("  ", 0));
 
-        ModelAssertions.assertSTG3072816(rr);
+        NodeAssertions.assertSTG3072816(rr);
 
         // used/needed parts of delayed bundle should now be loaded. Check only one
         assertNotNull(bundlemodel.getResource(beaconGLTF));
 
         // Cache should be used for windturbine, windsock, beacon. 25.9.24 and 'Models/Airport/light-pole-gray-38m.gltf'
-        assertEquals(4, SGModelLib.preparedModelCache.cache.size());
+        // 25.11.24: Now also "windsock_lit".
+        assertEquals(5, SGModelLib.preparedModelCache.cache.size());
         PreparedModel preparedModelBeacon = SGModelLib.preparedModelCache.get("Models/Airport/beacon.gltf");
         assertNotNull(preparedModelBeacon);
         assertEquals(2, preparedModelBeacon.useCounter);
@@ -369,7 +371,7 @@ public class SceneryTest {
             return Platform.getInstance().currentTimeMillis() - startTime > 10000;
         }, 31000);
 
-        ModelAssertions.assertSTG3072824(rr);
+        NodeAssertions.assertSTG3072824(rr);
     }
 
     @Test
@@ -490,7 +492,7 @@ public class SceneryTest {
         // result will be in destinationNode
         log.debug(destinationNode.dump("  ", 0));
 
-        ModelAssertions.assertSTG3072816(destinationNode);
+        NodeAssertions.assertSTG3072816(destinationNode);
         assertEquals(1, destinationNode.findNodeByName("Terrain/e000n50/e007n50/EDDK.gltf").size());
         assertEquals(1, SceneNode.findNode(n -> StringUtils.endsWith(n.getName() == null ? "" : n.getName(), "EDDK.gltf"), destinationNode).size());
     }

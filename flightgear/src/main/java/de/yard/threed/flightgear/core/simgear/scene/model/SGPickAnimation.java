@@ -9,6 +9,7 @@ import de.yard.threed.core.platform.NativeSceneNode;
 import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.platform.common.RequestHandler;
 import de.yard.threed.engine.platform.common.RequestType;
+import de.yard.threed.flightgear.core.simgear.scene.util.SGTransientModelData;
 
 import java.util.List;
 
@@ -294,10 +295,10 @@ public class SGPickAnimation extends SGAnimation {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-    SGPickAnimation(SGPropertyNode configNode, SGPropertyNode modelRoot/*simgear::SGTransientModelData &modelData) :*/, String label) {
+    SGPickAnimation(SGTransientModelData modelData, String label) {
         //SGAnimation(modelData)
 
-        super(configNode, modelRoot, label);
+        super(modelData, label);
 
 
         _condition = getCondition();

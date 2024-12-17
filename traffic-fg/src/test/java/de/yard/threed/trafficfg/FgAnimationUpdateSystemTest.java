@@ -24,6 +24,7 @@ import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGRotateAnimation;
 import de.yard.threed.flightgear.ecs.FgAnimationComponent;
 import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
+import de.yard.threed.flightgear.testutil.AnimationAssertions;
 import de.yard.threed.javacommon.ConfigurationByEnv;
 import de.yard.threed.javacommon.DefaultResourceReader;
 import de.yard.threed.outofbrowser.SimpleBundleResolver;
@@ -82,21 +83,21 @@ public class FgAnimationUpdateSystemTest {
         SceneNode destinationNode = SceneryTest.loadSTGFromBundleAndWait(3072824);
         assertNotNull(destinationNode);
 
-        // egkk_tower has many animations. Cuurently only 2 are loaded(?) probably due to missing textures and submodel.
+        // egkk_tower has many animations. Cuurently only 4 are loaded(?) probably due to missing textures and submodel.
         EcsEntity egkkTower = EcsHelper.findEntitiesByName("Objects/e000n50/e007n50/egkk_tower.xml").get(0);
         String expectedSgPropertyName = "/sim/time/elapsed-sec";
         SGPropertyNode elapsedSec = FGGlobals.getInstance().get_props().getNode("/sim/time/elapsed-sec", false);
         FgAnimationComponent animationComponent = FgAnimationComponent.getFgAnimationComponent(egkkTower);
         assertNotNull(animationComponent);
-        assertEquals(2, animationComponent.animationList.size(), "animations");
+        AnimationAssertions.assertEgkkTowerAnimations(egkkTower.getSceneNode(), animationComponent.animationList);
         SGRotateAnimation rotateAnimation = (SGRotateAnimation) animationComponent.animationList.get(0);
         // rotation should still have default value 0
         assertQuaternion(new Quaternion(), rotateAnimation.rotategroup.getTransform().getRotation());
-        assertEquals(0.0, rotateAnimation.lastAngle.getDegree(),0.001);
+        assertEquals(0.0, rotateAnimation.lastAngle.getDegree(), 0.001);
 
         double elapsedsec = 0.5;
         elapsedSec.setDoubleValue(elapsedsec);
-        EcsGroup group = new EcsGroup(new ArrayList<>(),egkkTower);
+        EcsGroup group = new EcsGroup(new ArrayList<>(), egkkTower);
         group.add(animationComponent);
         // tpf is not considered by animations
         animationUpdateSystem.update(egkkTower, group, 0.4);

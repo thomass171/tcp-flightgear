@@ -7,7 +7,8 @@ import de.yard.threed.flightgear.core.simgear.math.SGInterpTable;
  */
 //template<typename T>
 public class SGInterpTableExpression extends SGUnaryExpression/*<T>*/ {
-    SGInterpTable _interpTable;
+    // public for testing
+    public SGInterpTable _interpTable;
 
     public SGInterpTableExpression(SGExpression/*<T>*/ expr, SGInterpTable interpTable) {
         super(expr);

@@ -7,3 +7,5 @@ The rule behind that is unclear. Also whether the instances are identical.
 21.9.24: Added Models/Airport/Jetway/jetway-movable* from FG-DATA 3.4
 31.10.24: Models/Airport/beacon* replaced with latest from 2024 not using '<inherits-from>Effects/model-transparent</inherits-from>'
 10.11.24: Previous version of beacon.xml using transparency added again for testing (beaconPre2024.xml)
+22.11.24: windsock replaced with latest FG version
+23.11.24: windsock_lit added

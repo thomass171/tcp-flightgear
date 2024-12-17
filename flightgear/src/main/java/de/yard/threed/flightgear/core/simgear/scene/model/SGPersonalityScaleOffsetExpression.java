@@ -15,10 +15,14 @@ public class SGPersonalityScaleOffsetExpression extends SGUnaryExpression {
     /*mutable*/ SGPersonalityParameter/*<double>*/ _scale;
     /*mutable*/ SGPersonalityParameter/*<double>*/ _offset;
 
-    SGPersonalityScaleOffsetExpression(SGExpression/*<double>*/ expr, SGPropertyNode config, String scalename, String offsetname/*, double defScale/*= 1/*                                       double defOffset= 0*/) {
+    SGPersonalityScaleOffsetExpression(SGExpression/*<double>*/ expr, SGPropertyNode config, String scalename, String offsetname, double scale, double offset) {
         super(/*<double>(*/expr);
-        _scale = new SGPersonalityParameter(config, scalename/*.c_str()*/, 1/*defScale*/);
-        _offset = new SGPersonalityParameter(config, offsetname/*.c_str()*/, 0/*defOffset*/);
+        _scale = new SGPersonalityParameter(config, scalename/*.c_str()*/, scale/*defScale*/);
+        _offset = new SGPersonalityParameter(config, offsetname/*.c_str()*/, offset/*defOffset*/);
+    }
+
+    SGPersonalityScaleOffsetExpression(SGExpression/*<double>*/ expr, SGPropertyNode config, String scalename, String offsetname/*, double defScale/*= 1/* double defOffset= 0*/) {
+        this(expr, config, scalename, offsetname, 1.0,0.0);
     }
 
   /*??  void setScale(double scale) {

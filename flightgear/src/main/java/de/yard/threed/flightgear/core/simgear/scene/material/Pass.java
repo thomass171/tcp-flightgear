@@ -9,14 +9,16 @@ import de.yard.threed.flightgear.EffectMaterialWrapper;
  * For providing the OSG/OpenGL state where effects should apply? See README.md#Effects.
  * <p>
  * We use a meterial wrapper instead of osg::StateSet as super class.
+ * Cannot be a super class because it is created long before Pass. So it's component.
  */
-public class Pass extends EffectMaterialWrapper { //: osg::StateSet
+public class Pass /*extends EffectMaterialWrapper*/ { //: osg::StateSet
 
     EffectMaterialWrapper wrapper;
 
     public Pass(EffectMaterialWrapper wrapper) {
-        super(null);
-        //super(s.wrapper = wrapper;
+        //super(null);
+        //super(
+        this.wrapper = wrapper;
     }
        /* public:
         typedef std::list<std::pair<int,std::string> > BufferUnitList;
@@ -43,6 +45,8 @@ public class Pass extends EffectMaterialWrapper { //: osg::StateSet
      * pass.setMode(GL_BLEND, (realProp -> getBoolValue() ? StateAttribute::ON : StateAttribute::OFF));
      */
     public void setBlending(boolean enabled) {
-        //TODO needs to know material/texture
+        if (wrapper != null) {
+            wrapper.setBlending(enabled);
+        }
     }
 }

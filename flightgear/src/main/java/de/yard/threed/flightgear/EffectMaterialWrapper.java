@@ -15,4 +15,16 @@ public class EffectMaterialWrapper {
     public EffectMaterialWrapper(Material material){
 
     }
+
+    /**
+     * Corresponding to OpenGL glEnable(GL_BLEND)
+     */
+    public void setBlending(boolean enabled) {
+        // quick hack as workaround
+        if (material == null){
+            //log.warn();
+            return;
+        }
+        material.setTransparency(enabled);
+    }
 }

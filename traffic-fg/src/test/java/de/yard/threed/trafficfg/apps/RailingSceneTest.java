@@ -7,8 +7,14 @@ import de.yard.threed.engine.ObserverComponent;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsTestHelper;
 import de.yard.threed.engine.ecs.SystemManager;
+import de.yard.threed.engine.ecs.VelocityComponent;
 import de.yard.threed.engine.testutil.SceneRunnerForTesting;
+import de.yard.threed.flightgear.core.simgear.scene.model.SGMaterialAnimation;
+import de.yard.threed.flightgear.core.simgear.scene.model.SGRotateAnimation;
 import de.yard.threed.flightgear.ecs.FgAnimationComponent;
+import de.yard.threed.flightgear.testutil.AnimationAssertions;
+import de.yard.threed.graph.GraphMovingComponent;
+import de.yard.threed.graph.GraphMovingSystem;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -23,6 +29,9 @@ public class RailingSceneTest {
     SceneRunnerForTesting sceneRunner;
     // 50 frames re currently wasted for terrain waiting
     static final int INITIAL_FRAMES = 100;
+
+    // set in FgVehicleLoader by: config.getName() + "-root"
+    String vehiclePropertyRootNodeName = "locomotive-root";
 
     /**
      *
@@ -52,12 +61,23 @@ public class RailingSceneTest {
         // TODO check autostart mode
         // should start in vehicle. TODO: Check why 0,0,0 is correct position
         EcsTestHelper.assertTeleportComponent(userEntity, 1 + 3, 3, new Vector3());
-
+        GraphMovingSystem graphMovingSystem = (GraphMovingSystem) SystemManager.findSystem(GraphMovingSystem.TAG);
+        GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(locEntity);
+        assertNotNull(gmc);
+        VelocityComponent vc = VelocityComponent.getVelocityComponent(locEntity);
+        assertNotNull(vc);
         // No entity is created for 'ASI'. The animations are contained in the vehicle entity
-        FgAnimationComponent fgAnimationComponent=FgAnimationComponent.getFgAnimationComponent(locEntity);
+        FgAnimationComponent fgAnimationComponent = FgAnimationComponent.getFgAnimationComponent(locEntity);
         assertNotNull(fgAnimationComponent);
-        // one Material and one RotateAnimation (ASI needle)
-        assertEquals(2, fgAnimationComponent.animationList.size());
+        AnimationAssertions.assertAsiAnimations(locEntity.getSceneNode(), fgAnimationComponent.animationList, vehiclePropertyRootNodeName, 0.0);
+
+        // start moving
+        gmc.setAutomove(true);
+        vc.setMovementSpeed(15.0);
+        sceneRunner.runLimitedFrames(5);
+
+        AnimationAssertions.assertAsiAnimations(locEntity.getSceneNode(), fgAnimationComponent.animationList, vehiclePropertyRootNodeName, 15.0);
+
     }
 
 }

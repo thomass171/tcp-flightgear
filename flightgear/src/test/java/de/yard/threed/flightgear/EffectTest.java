@@ -48,7 +48,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Auch fuer SGAnimation. Und damit allgemein auch fuer SGReaderWriterXML.
+ * Also for SGAnimation. Und damit allgemein auch fuer SGReaderWriterXML.
  * Siehe auch ModelBuildTest.
  * 19.8.24: parts of "windturbine" tests moved to SGReaderWriterXMLTest because it seems a better location because its no real "effect" in terms of FG. Maybe
  * all animation tests should move? Hmm, MaterialAnimations might be effects again. And only here materialLib is available!
@@ -166,9 +166,22 @@ public class EffectTest {
         String name = "Effects/model-transparent";
 
         assertEquals(SceneryTest.INITIAL_EFFECTS, MakeEffect.effectMap.size());
-        Effect effect = MakeEffect.makeEffect(name, true, new SGReaderWriterOptions(),"test", false);
+        Effect effect = MakeEffect.makeEffect(name, true, new SGReaderWriterOptions(), "test", false, null);
         assertNotNull(effect);
         assertEquals(SceneryTest.INITIAL_EFFECTS + 1, MakeEffect.effectMap.size());
+    }
+
+    @Test
+    public void testRotateAnimationSpinAngle() {
+        // Not sure how correct the ref values are. TODO pick realistic from FG by checking windturbine.
+        SGRotateAnimation.ReferenceValues refval = new SGRotateAnimation.ReferenceValues(0, 0);
+        assertEquals(0.0, refval.angle.getDegree(), 0.0001);
+        refval = SGRotateAnimation.calcSpinAngle(refval, 20.0, 0.1);
+        assertEquals(1.9099, refval.angle.getDegree(), 0.001);
+        refval = SGRotateAnimation.calcSpinAngle(refval, 20.0, 0.1);
+        assertEquals(2*1.9099, refval.angle.getDegree(), 0.001);
+        refval = SGRotateAnimation.calcSpinAngle(refval, 20.0, 0.1);
+        assertEquals(3*1.9099, refval.angle.getDegree(), 0.001);
     }
 
     public static List<SGAnimation> getAnimationsOnObject(String objname, List<SGAnimation> animationList) {

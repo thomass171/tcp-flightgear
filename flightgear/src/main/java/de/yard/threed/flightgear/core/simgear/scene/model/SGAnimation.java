@@ -1,5 +1,7 @@
 package de.yard.threed.flightgear.core.simgear.scene.model;
 
+import de.yard.threed.core.Pair;
+import de.yard.threed.core.Util;
 import de.yard.threed.core.platform.NativeCollision;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.engine.*;
@@ -12,6 +14,7 @@ import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.math.SGInterpTable;
 import de.yard.threed.flightgear.core.simgear.math.SGLimitsd;
 import de.yard.threed.flightgear.core.simgear.props.SGCondition;
+import de.yard.threed.flightgear.core.simgear.scene.util.SGTransientModelData;
 import de.yard.threed.flightgear.core.simgear.structure.PrimitiveValue;
 import de.yard.threed.flightgear.core.simgear.structure.SGBiasExpression;
 import de.yard.threed.flightgear.core.simgear.structure.SGClipExpression;
@@ -33,6 +36,8 @@ import java.util.List;
  * animation.[ch]xx
  * <p>
  * Created by thomass on 28.12.16.
+ * <p>
+ * TODO implement "</enable-hot>" for optimization.
  */
 public abstract class SGAnimation {
     static Log logger = Platform.getInstance().getLog(SGAnimation.class);
@@ -49,16 +54,18 @@ public abstract class SGAnimation {
     // a label is helpful for logging/debugging
     public String label;
 
-    public SGAnimation(SGPropertyNode configNode, SGPropertyNode modelRoot, String label) {
+    public SGAnimation(SGTransientModelData modelData, String label) {
         // osg::NodeVisitor(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN),
         _found = false;
-        _configNode = configNode;
-        _modelRoot = modelRoot;
+        _configNode = modelData.getConfigNode();
+        _modelRoot = modelData.getModelRoot();
         this.label = label;
 
-        _name = configNode.getStringValue("name", "");
-        _enableHOT = configNode.getBoolValue("enable-hot", true);
-        List<SGPropertyNode> objectNames = configNode.getChildren("object-name");
+        logger.debug("Building animation from " + _configNode.getPath());
+
+        _name = _configNode.getStringValue("name", "");
+        _enableHOT = _configNode.getBoolValue("enable-hot", true);
+        List<SGPropertyNode> objectNames = _configNode.getChildren("object-name");
         for (int i = 0; i < objectNames.size(); ++i) {
             String oname = objectNames.get(i).getStringValue();
             /*if (oname.equals("Needle")){
@@ -69,87 +76,97 @@ public abstract class SGAnimation {
     }
     //virtual ~SGAnimation();
 
+    public SGPropertyNode getConfigNode() {
+        return _configNode;
+    }
+
     /**
      * Build animation from XML content?
+     * FG meanwhile passes {@link SGTransientModelData}"&modelData" here, which contains most of the single parameter
      */
-    static SGAnimation/*boolean*/ animate(Node xmlNodeOfCurrentModel, SGPropertyNode configNode,
+    static SGAnimation/*boolean*/ animate(SGTransientModelData modelData/*Node xmlNodeOfCurrentModel, SGPropertyNode configNode,
                                           SGPropertyNode modelRoot,
                                           Options options,
-                                          String path, int i, String label) {
-        String type = configNode.getStringValue("type", "none");
+                                          String path, int i*/, String label) {
+        String type = modelData.getConfigNode().getStringValue("type", "none");
         SGAnimation animation = null;
         long startTime = Platform.getInstance().currentTimeMillis();
         if (type.equals("alpha-test")) {
-            // SGAlphaTestAnimation animInst(configNode, modelRoot);
+            // SGAlphaTestAnimation animInst(modelData);
             // animInst.apply(node);
         } else if (type.equals("billboard")) {
-            // SGBillboardAnimation animInst(configNode, modelRoot);
+            // SGBillboardAnimation animInst(modelData);
             // animInst.apply(node);
         } else if (type.equals("blend")) {
-            //SGBlendAnimation animInst(configNode, modelRoot);
+            //SGBlendAnimation animInst(modelData);
             //animInst.apply(node);
         } else if (type.equals("dist-scale")) {
-            //SGDistScaleAnimation animInst(configNode, modelRoot);
+            //SGDistScaleAnimation animInst(modelData);
             //animInst.apply(node);
         } else if (type.equals("flash")) {
-            // SGFlashAnimation animInst(configNode, modelRoot);
+            // SGFlashAnimation animInst(modelData);
             // animInst.apply(node);
         } else if (type.equals("interaction")) {
-            //SGInteractionAnimation animInst(configNode, modelRoot);
+            //SGInteractionAnimation animInst(modelData);
             //animInst.apply(node);
         } else if (type.equals("material")) {
-            //SGMaterialAnimation animInst(configNode, modelRoot, options, path);
-            SGMaterialAnimation animInst = new SGMaterialAnimation(configNode, modelRoot, label);
-            animInst.apply(xmlNodeOfCurrentModel);
+            //SGMaterialAnimation animInst(modelData, options, path);
+            SGMaterialAnimation animInst = new SGMaterialAnimation(modelData, label);
+            animInst.apply(modelData.getXmlNode());
             animation = animInst;
         } else if (type.equals("noshadow")) {
-            //SGShadowAnimation animInst(configNode, modelRoot);
+            //SGShadowAnimation animInst(modelData);
             // animInst.apply(node);
         } else if (type.equals("pick")) {
 
-             SGPickAnimation animInst = new SGPickAnimation(configNode, modelRoot, label);
-            animInst.apply(xmlNodeOfCurrentModel);
+            SGPickAnimation animInst = new SGPickAnimation(modelData, label);
+            animInst.apply(modelData.getXmlNode());
             animation = animInst;
         } else if (type.equals("knob")) {
-            // SGKnobAnimation animInst(configNode, modelRoot);
+            // SGKnobAnimation animInst(modelData);
             //  animInst.apply(node);
         } else if (type.equals("slider")) {
-            //SGSliderAnimation animInst(configNode, modelRoot);
+            //SGSliderAnimation animInst(modelData);
             // animInst.apply(node);
         } else if (type.equals("range")) {
-            // SGRangeAnimation animInst(configNode, modelRoot);
+            // SGRangeAnimation animInst(modelData);
             // animInst.apply(node);
         } else if (type.equals("rotate") || type.equals("spin")) {
-            SGRotateAnimation animInst = new SGRotateAnimation(configNode, modelRoot, label);
-            animInst.apply(xmlNodeOfCurrentModel);
+            SGRotateAnimation animInst = new SGRotateAnimation(modelData, label);
+            animInst.apply(modelData.getXmlNode());
             animation = animInst;
         } else if (type.equals("scale")) {
-            //SGScaleAnimation animInst(configNode, modelRoot);
-            // animInst.apply(node);
+            //SGScaleAnimation animInst(modelData);
+            SGScaleAnimation animInst = new SGScaleAnimation(modelData, label);
+            animInst.apply(modelData.getXmlNode());
+            animation = animInst;
         } else if (type.equals("select")) {
-            // SGSelectAnimation animInst(configNode, modelRoot);
-            // animInst.apply(node);
+            SGSelectAnimation animInst = new SGSelectAnimation(modelData, label);
+            animInst.apply(modelData.getXmlNode());
+            animation = animInst;
         } else if (type.equals("shader")) {
-            //  SGShaderAnimation animInst(configNode, modelRoot, options);
+            //  SGShaderAnimation animInst(modelData, options);
             //  animInst.apply(node);
         } else if (type.equals("textranslate") || type.equals("texrotate") ||
                 type.equals("textrapezoid") || type.equals("texmultiple")) {
-            //  SGTexTransformAnimation animInst(configNode, modelRoot);
+            //  SGTexTransformAnimation animInst(modelData);
             //  animInst.apply(node);
         } else if (type.equals("timed")) {
-            //SGTimedAnimation animInst(configNode, modelRoot);
+            //SGTimedAnimation animInst(modelData);
             //animInst.apply(node);
         } else if (type.equals("locked-track")) {
-            //SGTrackToAnimation animInst(node, configNode, modelRoot);
+            //SGTrackToAnimation animInst(node, modelData);
             //animInst.apply(node);
         } else if (type.equals("translate")) {
-            //SGTranslateAnimation animInst(configNode, modelRoot);
-            //animInst.apply(node);
+            //SGTranslateAnimation animInst(modelData);
+            SGTranslateAnimation animInst = new SGTranslateAnimation(modelData, label);
+            animInst.apply(modelData.getXmlNode());
+            animation = animInst;
         } else if (type.equals("light")) {
-            //SGLightAnimation animInst(configNode, modelRoot, options, path, i);
+            //SGLightAnimation animInst(modelData, options, path, i);
             //animInst.apply(node);
         } else if (type.equals("null") || type.equals("none") || StringUtils.empty(type)) {
-            //SGGroupAnimation animInst(configNode, modelRoot);
+            //SGGroupAnimation animInst(modelData);
             //animInst.apply(node);
         } else {
             logger.warn("Animation not created: " + type);
@@ -159,7 +176,7 @@ public abstract class SGAnimation {
             long took = Platform.getInstance().currentTimeMillis() - startTime;
             if (took > 5) {
                 // 5ms seems to be a good threshold currently
-                logger.warn("Building " + animation.getClass().getName() + " took " + took +" ms");
+                logger.warn("Building " + animation.getClass().getName() + " took " + took + " ms");
             }
         }
         return animation;
@@ -167,8 +184,10 @@ public abstract class SGAnimation {
 
     /**
      * Statt SGTranslateTransform.
+     * Replaces OSG NodeCallbacks that are used by FG(?) (see README.md).
      * 4.10.19: Das ist aber nicht sehr generisch. Darum pack ich erstmal noch Parameter ein, wie es gebraucht wird. Alles zur für PickAnimation
      * 13.3.24: No longer pass pickingray but the objects hit for better efficiency.
+     * 18.11.24:
      * <p>
      * FG DIFF
      */
@@ -178,6 +197,7 @@ public abstract class SGAnimation {
      * Ob es die pro Animation geben muesste und hier abstract ist unklar. Eigentlich ist apply der Callback des NodeVisitors.
      * FG-DIFF Nicht wie bei OSG in den Scenegraph mit Visitor. Hmmm, auf jeden Fall wohl ueberschreibbar durch z.B. BlendAnimation
      * 4.10.19: Das ist doch sehr spezifisch für Animationen, die neue Nodes (AnimationGroup) brauchen.
+     *
      * @param
      */
     protected void apply(Node xmlNodeOfCurrentModel) {
@@ -227,18 +247,22 @@ public abstract class SGAnimation {
      * // Implementation of null animation
      * ////////////////////////////////////////////////////////////////////////
      * <p>
-     * // Ok, that isType to build a subgraph from different other
+     * // Ok, that is to build a subgraph from different other
      * // graph nodes. I guess that this stems from the time where modellers
      * // could not build hierarchical trees ...
      * <p>
-     * Diese Methode wird von der ableitenden Klasse ueberschrieben.
+     * Create a new node level needed for animations, eg. a node where rotations apply.
+     * Implemented by extending classes. In FG it typically builds the groups and hooks an update callback into OSG(?)
      * 25.1.17: SceneNode statt Group, weil traverse fehlt
-     * 04.10.19: Nicht jede Animation braucht das. darum doch nicht abstract, sondern Defaultimplementierung
-     * @param parent
+     * 04.10.19: Not needed by all animations, so not abstract but default implementation
+     * 18.11.24: Back to group from SceneNode for more intuitive migrated code? Not possible, because we have no group.
+     * However we still have no traverse.
+     *
+     * @param parent The scene node to which the animation applies. Cannot be type Group because we have no such type.
      * @return
      */
-    public AnimationGroup createAnimationGroup(SceneNode parent){
-        return  null;
+    public AnimationGroup createAnimationGroup(SceneNode parent) {
+        return null;
     }
    /*27.1.17 public SceneNode createAnimationGroup(SceneNode parent) {
         SceneNode group = new SceneNode();
@@ -286,32 +310,44 @@ public abstract class SGAnimation {
      *
      * @return
      */
-    Vector3[]/*void*/ readRotationCenterAndAxis(/* SGVec3d center,                              Vector3 axis     */) {
-        Vector3[] centerandaxis = new Vector3[2];// = new SGVec3d();//::zeros();
-        centerandaxis[0] = new Vector3();
+    void readRotationCenterAndAxis(Node _rootNode, Pair<Vector3, Vector3> centerAndAxis /* SGVec3d center, Vector3 axis*/, SGTransientModelData modelData) {
+        //center = SGVec3d::zeros();
+        centerAndAxis.setFirst(new Vector3());
+
+        //if (setCenterAndAxisFromObject(_rootNode, center, axis, modelData))
+        if (setCenterAndAxisFromObject(_rootNode, centerAndAxis, modelData)) {
+            if (8 * SGLimitsd.min < /*norm(axis)*/centerAndAxis.getSecond().norm()) {
+                //axis = normalize(axis);
+                centerAndAxis.setSecond(centerAndAxis.getSecond().normalize());
+            }
+            return;
+        }
 
         if (_configNode.hasValue("axis/x1-m")) {
             Vector3 v1 = readVec3("axis", "1-m", new Vector3()), // axis/[xyz]1-m
                     v2 = readVec3("axis", "2-m", new Vector3()); // axis/[xyz]2-m
             //center = 0.5*(v1+v2);
-            centerandaxis[0] = v1.add(v2).multiply(0.5f);
-            centerandaxis[1] = v2.subtract(v1);
+            //axis = v2 - v1;
+            centerAndAxis.setFirst(v1.add(v2).multiply(0.5f));
+            centerAndAxis.setSecond(v2.subtract(v1));
         } else {
-            centerandaxis[1] = readVec3("axis", "", new Vector3());
+            centerAndAxis.setSecond(readVec3("axis", "", new Vector3()));
         }
-        //Keine Ahnnug. erstmal immer normalisieren if( 8 * SGLimitsd.min < norm(axis) ){
-        centerandaxis[1] = centerandaxis[1].normalize();
-        //}
+        if (8 * SGLimitsd.min < /*norm(axis)*/centerAndAxis.getSecond().norm()) {
+            //axis = normalize(axis);
+            centerAndAxis.setSecond(centerAndAxis.getSecond().normalize());
+        }
 
-        centerandaxis[0] = readVec3("center", "-m", centerandaxis[0]);
-
+        centerAndAxis.setFirst(readVec3("center", "-m", centerAndAxis.getFirst()));
         //FG-DIFF Unklar, wie der AC Transform erhalten bleibt bzw. wieso die Animation mit FG Achsen beschrieben werden koennen.
         // Bei mir geht es nur mit vertauschten yz-Axen .
-        centerandaxis[1] = new Vector3(centerandaxis[1].getX(), centerandaxis[1].getZ(), centerandaxis[1].getY());
+        Vector3 axis = centerAndAxis.getSecond();
+        axis = new Vector3(axis.getX(), axis.getZ(), axis.getY());
         //center auch? fuer windturbine ja
-        centerandaxis[0] = new Vector3(centerandaxis[0].getX(), centerandaxis[0].getZ(), centerandaxis[0].getY());
-
-        return centerandaxis;
+        Vector3 center = centerAndAxis.getFirst();
+        center = new Vector3(center.getX(), center.getZ(), center.getY());
+        centerAndAxis.setFirst(center);
+        centerAndAxis.setSecond(axis);
     }
 
     /*
@@ -342,9 +378,13 @@ public abstract class SGAnimation {
     }
 
     /**
+     * The purpose/idea/intention of this method is unclear. Apparently:
+     * <p>
      * Move an animated object from the current location in the object tree to an AnimationGroup.
+     * This might be required to apply subsequent animations like in windsock.
+     * FG moves objects to the top XML group(?), but we cannot do this because we'll loose ACPolicy.
      * The AnimationGroup is created if it not yet exists.
-     *
+     * <p>
      * Das mit der AnimationGroup koennte fuer mehrere Animations auf EINER Node sein. Dann kann
      * man das evtl. in einer abbilden. Scheint aber zu frickelig.
      * Ist dafuer auch _installedAnimations?
@@ -365,8 +405,8 @@ public abstract class SGAnimation {
         long startTime = Platform.getInstance().currentTimeMillis();
         SceneNode child = null;
         //List<SceneNode> nlist = xmlNodeOfCurrentModel.findNodeByName(name);//getChild(i);
-        List<NativeSceneNode> nlist = Platform.getInstance().findNodeByName(name,xmlNodeOfCurrentModel.nativescenenode);//getChild(i);
-        if (nlist.size()>0){
+        List<NativeSceneNode> nlist = Platform.getInstance().findNodeByName(name, xmlNodeOfCurrentModel.nativescenenode);//getChild(i);
+        if (nlist.size() > 0) {
             child = new SceneNode(nlist.get(0));
         }
         if (child == null) {
@@ -396,12 +436,13 @@ public abstract class SGAnimation {
             // Die AnimationGroup kommt an den Parent des ersten Child. Damit bekommt man auch Cascades.
             // create a group node on demand
             //TODO ? if (!animationGroup.valid()) {
-        /*Group*/
+            /*Group*/
             if (animationGroup == null) {
                 Transform parent = child.getTransform().getParent();
                 if (parent == null) {
                     logger.error("no parent for " + child.getName());
                 } else {
+                    // we cannot attach to xmlNode like FG(?) because this bypasses ACPolicy. Also FG doesn't.
                     animationGroup = createAnimationGroup(/*group*/ parent.getSceneNode());
 
                 }
@@ -415,7 +456,12 @@ public abstract class SGAnimation {
             //}
             //if (animationGroup.valid()) {
             if (animationGroup != null) {
-                animationGroup.childtarget.attach/*addChild*/(child);
+                //animationGroup->addChild(child);
+                if (animationGroup.childtarget == null) {
+                    logger.warn("Ignoring child due to missing childtarget");
+                } else {
+                    animationGroup.childtarget.attach/*addChild*/(child);
+                }
             }
             //removed by above add/setParent group.removeChild(i);
 
@@ -448,15 +494,8 @@ public abstract class SGAnimation {
             double initPos = configNode.getDoubleValue(spos, 0);
             value = new SGConstExpression(new PrimitiveValue(initPos));
         } else {
-            SGPropertyNode inputProperty;
-            // 5.11.24 Since we don't have one single property tree like FG, we need a kind of lookup.
-            // But that is too much effort. See FlightGearProperties.
-            // 7.11.24 modelroot points to a new node probably, so anything like "/environment" cannot be found.
-            // So even with a single tree we need a kind of lookup
-            //inputProperty = modelRoot.getNode(inputPropertyName, true);
-            inputProperty = FlightGearProperties.resolve(inputPropertyName, modelRoot);
-            value = new SGPropertyExpression/*<double>*/(inputProperty);
-            logger.debug("read_value: value for '"+inputPropertyName+"'="+value.getValue(null).toString());
+            // 2.12.24 Extracted logic to static method
+            value = resolvePropertyValueExpression(inputPropertyName, modelRoot);
         }
 
         SGInterpTable interpTable = read_interpolation_table(configNode);
@@ -484,6 +523,23 @@ public abstract class SGAnimation {
 
     }
 
+    /**
+     * Lookup a property node.
+     * 5.11.24 Since we don't have one single property tree like FG, we need a kind of lookup.
+     * But that is too much effort. See FlightGearProperties.
+     * 7.11.24 modelroot points to a new node probably, so anything like "/environment" cannot be found.
+     * So even with a single tree we need a kind of lookup
+     * 2.12.24 Logic extracted to method for easier reuse.
+     */
+    public static SGExpression resolvePropertyValueExpression(String inputPropertyName, SGPropertyNode modelRoot) {
+        SGPropertyNode inputProperty;
+        //inputProperty = modelRoot.getNode(inputPropertyName, true);
+        inputProperty = FlightGearProperties.resolve(inputPropertyName, modelRoot);
+        SGPropertyExpression value = new SGPropertyExpression/*<double>*/(inputProperty);
+        logger.debug("read_value: value for '" + inputPropertyName + "'=" + value.getValue(null).toString());
+        return value;
+    }
+
     static String unit_string(String value, String unit) {
         return value + unit;
     }
@@ -508,6 +564,113 @@ public abstract class SGAnimation {
         return expr;
     }
 
+    /**
+     * If an object is specified in the axis tag it is assumed to be a single line segment with two vertices.
+     * This function will take action when axis has an object-name tag and the corresponding object
+     * can be found within the hierarchy.
+     * <p>
+     * FG-DIFF Instead of filling center/axis a pair is used and filled. Not static because it uses configNode.
+     */
+    public boolean setCenterAndAxisFromObject(Node rootNode, Pair<Vector3, Vector3> centerAndAxis /*,SGVec3d& center, SGVec3d &axis, simgear::*/, SGTransientModelData modelData) {
+        String axis_object_name = "";//std::string();
+        boolean can_warn = true;
+
+        if (_configNode.hasValue("axis/object-name")) {
+            axis_object_name = _configNode.getStringValue("axis/object-name");
+        } else if (_configNode.getNode("axis") == null) {
+            axis_object_name = _configNode.getStringValue("object-name") + /*std::string*/("-axis");
+            // for compatibility we will not warn if no axis object can be found when there was nothing
+            // specified - as the axis could just be the default at the origin
+            // so if there is a [objectname]-axis use it, otherwise fallback to the previous behaviour
+            can_warn = false;
+        }
+
+        if (!StringUtils.empty(axis_object_name)) {
+            /*
+             * First search the currently loaded cache map to see if this axis object has already been located.
+             * If we find it, we use it.
+             */
+            Util.notyet();
+                /*
+        const SGLineSegment<double> *axisSegment = modelData.getAxisDefinition(axis_object_name);
+                if (!axisSegment)
+                {
+                    /*
+                     * Find the object by name
+                     * /
+                    FindGroupVisitor axis_object_name_finder(axis_object_name);
+                    rootNode->accept(axis_object_name_finder);
+                    osg::Group *object_group = axis_object_name_finder.getGroup();
+
+                    if (object_group)
+                    {
+                        /*
+                         * we have found the object group (for the axis). This should be two vertices
+                         * Now process this (with the line collector) to get the vertices.
+                         * Once we have that we can then calculate the center and the affected axes.
+                         * /
+                        object_group->setNodeMask(0xffffffff);
+                        LineCollector lineCollector;
+                        object_group->accept(lineCollector);
+                        std::vector<SGLineSegmentf> segs = lineCollector.getLineSegments();
+
+                        if (!segs.empty())
+                        {
+                            /*
+                             * Store the axis definition in the map; as once hidden it will not be possible
+                             * to locate it again (and in any case it will be quicker to do it this way)
+                             * This makes the axis/center static; there could be a use case for making this
+                             * dynamic (and rebuilding the transforms), in which case this would need to
+                             * do something different with the object; possibly storing a reference to the node
+                             * so it can be extracted for dynamic processing.
+                             * /
+                            SGLineSegmentd segd(*(segs.begin()));
+                            axisSegment = modelData.addAxisDefinition(axis_object_name, segd);
+                            /*
+                             * Hide the axis object. This also helps the modeller to know which axis animations are unassigned.
+                             * /
+                            object_group->setNodeMask(0);
+                        }
+                        else
+                            SG_LOG(SG_INPUT, SG_ALERT, "Could not find a valid line segment for animation:  " << axis_object_name);
+                    }
+                    else if (can_warn)
+                        SG_LOG(SG_INPUT, SG_ALERT, "Could not find at least one of the following objects for axis animation: " << axis_object_name);
+                }
+                if (axisSegment)
+                {
+                    center = 0.5*(axisSegment->getStart() + axisSegment->getEnd());
+                    axis = axisSegment->getEnd() - axisSegment->getStart();
+                    return true;
+                }*/
+        }
+        return false;
+    }
+
+    Vector3/*SGVec3d*/ readTranslateAxis(SGPropertyNode configNode) {
+        Vector3 axis;
+
+        if (configNode.hasValue("axis/x1-m")) {
+            Vector3 v1, v2;
+            v1 = new Vector3(configNode.getDoubleValue("axis/x1-m", 0),
+                    configNode.getDoubleValue("axis/y1-m", 0),
+                    configNode.getDoubleValue("axis/z1-m", 0));
+            v2 = new Vector3(configNode.getDoubleValue("axis/x2-m", 0),
+                    configNode.getDoubleValue("axis/y2-m", 0),
+                    configNode.getDoubleValue("axis/z2-m", 0));
+            axis = v2.subtract(v1);//v2 - v1;
+        } else {
+            axis = new Vector3(configNode.getDoubleValue("axis/x", 0),
+                    configNode.getDoubleValue("axis/y", 0),
+                    configNode.getDoubleValue("axis/z", 0));
+        }
+        if (8 * SGLimitsd.min < axis.norm()) {
+            axis = axis.normalize();//normalize(axis);
+        }
+        // FG animations think in FG coordinates.
+        return ACProcessPolicy.switchYZ(axis);
+    }
+
     SGPropertyNode getConfig() {
         return _configNode;
     }
@@ -519,7 +682,7 @@ public abstract class SGAnimation {
     /**
      * helper zum testen
      */
-    public boolean isOnObject(String objname){
+    public boolean isOnObject(String objname) {
         return _objectNames.contains(objname);
     }
 }

@@ -5,6 +5,7 @@ import de.yard.threed.engine.*;
 import de.yard.threed.flightgear.core.osg.Group;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.props.SGCondition;
+import de.yard.threed.flightgear.core.simgear.scene.util.SGTransientModelData;
 import de.yard.threed.flightgear.core.simgear.structure.SGExpression;
 import de.yard.threed.engine.platform.common.RequestHandler;
 
@@ -38,8 +39,8 @@ public Group group;
     int  AMBIENT_DIFFUSE = AMBIENT | DIFFUSE;
     //const int allMaterialColors = (DIFFUSE | AMBIENT | SPECULAR | EMISSION        | SHININESS);
     
-    public SGMaterialAnimation(SGPropertyNode configNode, SGPropertyNode modelRoot, String label) {
-        super(configNode, modelRoot, label);
+    public SGMaterialAnimation(SGTransientModelData modelData, String label) {
+        super(modelData, label);
 
         //SGAnimation(configNode, modelRoot),                texturePathList(options.getDatabasePathList())
         /*{

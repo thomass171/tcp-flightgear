@@ -769,7 +769,7 @@ public class SGMaterial extends BVHMaterial {
             SGPropertyNode.makeChild(effectParamProp, "light-coverage").setDoubleValue(light_coverage);
 
             // 28.10.24: Build an effect for the texture defined in the material
-            matState.setEffect(MakeEffect.makeEffect(effectProp, false, options, "SGMaterial...", forBtgConversion));
+            matState.setEffect(MakeEffect.makeEffect(effectProp, false, options, "SGMaterial...", forBtgConversion, null));
             if (matState.getEffect() != null && matState.getEffect().valid()) {
                 //TODO matState.effect.setUserData(user.get());
             }

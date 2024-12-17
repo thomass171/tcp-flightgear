@@ -25,6 +25,7 @@ import de.yard.threed.engine.platform.common.RequestHandler;
 import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.SimpleBundleResourceProvider;
 import de.yard.threed.flightgear.core.FlightGear;
+import de.yard.threed.flightgear.core.FlightGearModuleBasic;
 import de.yard.threed.flightgear.core.SGLoaderOptions;
 import de.yard.threed.flightgear.core.flightgear.main.AircraftResourceProvider;
 import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
@@ -142,7 +143,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
             }
         });
 
-        major = 30;
+        major = 29;
         arp = initFG();
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
@@ -238,6 +239,8 @@ public class FgModelPreviewScene extends ModelPreviewScene {
         FgBundleHelper.addProvider(new SimpleBundleResourceProvider("fgdatabasic"));
         AircraftResourceProvider arp = new AircraftResourceProvider();
         FgBundleHelper.addProvider(arp);
+        // 24.11.24 also needed because it sets up the property tree
+        FlightGearModuleBasic.init(null, null);
         return arp;
     }
 

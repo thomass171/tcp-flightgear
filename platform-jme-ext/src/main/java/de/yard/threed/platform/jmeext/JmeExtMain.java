@@ -63,7 +63,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
 
         // traffic-fg
         properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryScene");
-        //properties.put("scene", "de.yard.threed.trafficfg.apps.RailingScene");
+        properties.put("scene", "de.yard.threed.trafficfg.apps.RailingScene");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryViewerScene");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.FgModelPreviewScene");
@@ -77,7 +77,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
 
         // traffic-advanced
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.FlatAirportScene");
-        properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
+        //properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.HangarScene");
 
         boolean blogSample = false;

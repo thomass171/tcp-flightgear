@@ -221,7 +221,7 @@ public class SGPropertyNode {
         if (_index != 0 || !simplify) {
             //stringstream sstr;
             //sstr << '[' << _index << ']';
-            display_name += '[' + _index + ']';
+            display_name += "[" + _index + "]";
         }
         return display_name;
     }

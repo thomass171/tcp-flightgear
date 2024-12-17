@@ -215,7 +215,8 @@ public class DelayLoadReadFileCallback /*extends OptionsReadFileCallback*/ {
             public void modelComplete(BundleResource source, SceneNode destinationNode, List<SGAnimation> animationList) {
                 // Build entity for animated objects
                 if (animationList.size() > 0) {
-                    EcsEntity entity = new EcsEntity(new FgAnimationComponent(destinationNode, animationList));
+                    // 21.11.24: Also add scene node to entity
+                    EcsEntity entity = new EcsEntity(destinationNode, new FgAnimationComponent(destinationNode, animationList));
                     logger.debug("Building entity with animations " + source.getFullName());
                     entity.setName(source.getFullName());
                 }

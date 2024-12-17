@@ -1,7 +1,9 @@
 package de.yard.threed.flightgear.core.simgear.props;
 
 import de.yard.threed.core.platform.Platform;
+import de.yard.threed.flightgear.FlightGearProperties;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
+import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.flightgear.core.simgear.structure.SGExpression;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.StringUtils;
@@ -402,7 +404,9 @@ class SGOrCondition extends SGCondition {
 
 
     void setLeftProperty(SGPropertyNode prop_root, String propname) {
-        _left_property = prop_root.getNode(propname, true);
+        // prop_root might be a vehicle tree. So like in SGExpression we need a property lookup
+        //FG-DIFF _left_property = prop_root.getNode(propname, true);
+        _left_property = FlightGearProperties.resolve(propname, prop_root);
     }
 
     void setRightProperty(SGPropertyNode prop_root, String propname) {

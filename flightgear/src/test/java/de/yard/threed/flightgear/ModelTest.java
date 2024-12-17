@@ -33,6 +33,7 @@ import de.yard.threed.flightgear.core.osgdb.ReadResult;
 import de.yard.threed.flightgear.core.simgear.scene.tgdb.DelayLoadReadFileCallback;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.flightgear.testutil.ModelAssertions;
+import de.yard.threed.flightgear.testutil.NodeAssertions;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -148,10 +149,7 @@ public class ModelTest {
         SceneNode egkkTowerNode = destinationNodes.get(0).findNodeByName("Objects/e000n50/e007n50/egkk_tower.gltf").get(0);
         assertNotNull(egkkTowerNode);
 
-        TestUtil.assertEquals("number of kids gltfroot", 1, egkkTowerNode.getTransform().getChildren().size());
-        TestUtil.assertEquals("number of kids ac-root", 1, egkkTowerNode.getTransform().getChild(0).getChildren().size());
-        TestUtil.assertEquals("number of kids", 6, egkkTowerNode.getTransform().getChild(0).getChild(0).getChildren().size());
-        TestUtil.assertNotNull("kid(0) mesh", egkkTowerNode.getTransform().getChild(0).getChild(0).getChild(0).getSceneNode().getMesh());
+        NodeAssertions.assertEgkkTower(egkkTowerNode);
 
     }
 
@@ -222,7 +220,7 @@ public class ModelTest {
         }, 10000);
         log.debug(Scene.getCurrent().getWorld().dump("  ", 1));
 
-        assertEquals(1, SceneNode.findByName("Poll").size());
+        assertEquals(1, SceneNode.findByName("base_pole").size());
         ModelAssertions.assertWindsock();
     }
 

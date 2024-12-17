@@ -26,8 +26,10 @@ public abstract class SGUnaryExpression extends SGExpression {
     }*/
 
     void setOperand(SGExpression expression) {
-        if (expression == null)
-            expression = new SGConstExpression(expression.getType().buildDefaultValue());
+        if (expression == null) {
+            //expression = new SGConstExpression<T>(T());
+            expression = new SGConstExpression(new PrimitiveValue(0.0));
+        }
         _expression = expression;
     }
 
