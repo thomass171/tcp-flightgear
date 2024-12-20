@@ -9,11 +9,14 @@ import de.yard.threed.engine.Material;
  */
 public class EffectMaterialWrapper {
 
+    // for testing
+    public static int counter=0;
+
     Material material;
     public PortableMaterial materialdefinition = null;
 
-    public EffectMaterialWrapper(Material material){
-
+    public EffectMaterialWrapper(Material material) {
+        this.material = material;
     }
 
     /**
@@ -21,10 +24,11 @@ public class EffectMaterialWrapper {
      */
     public void setBlending(boolean enabled) {
         // quick hack as workaround
-        if (material == null){
+        if (material == null) {
             //log.warn();
             return;
         }
+        counter++;
         material.setTransparency(enabled);
     }
 }

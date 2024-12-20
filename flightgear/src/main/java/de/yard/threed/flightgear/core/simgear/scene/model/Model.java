@@ -337,7 +337,7 @@ public class Model {
         /*MakeEffectVisitor visitor(options);
         MakeEffectVisitor::EffectMap& emap = visitor.getEffectMap();*/
         //for (PropertyList::iterator itr = effectProps.begin(), end = effectProps.end(); itr != end; ++itr)
-        int index=0;
+        int index = 0;
         for (SGPropertyNode/*_ptr*/ configNode : effectProps) {
             logger.debug("instantiateEffects: effect (" + configNode.getStringValue() + ") with " + configNode.nChildren() + " children");
             //logger.debug("instantiateEffects: configNode=" + configNode.dump("\n"));
@@ -372,6 +372,9 @@ public class Model {
                 if (inherits_from != null && inherits_from.getStringValue().equals("Effects/model-transparent")) {*/
                 if (true) {
                     String objname = objNameNode.getStringValue();
+                    if (objname.equals("Propeller.Fast")) {
+                        int h = 9;
+                    }
                     // 5.10.17: Nicht global suchen, denn durch async ist die Node noch nicht in den tree eingehangen.
                     // je nach Loader (zB. gltf kann es Nodesduibeltten geben. Darum alle druchgehen und die mit Mesh suchen.
                     List<SceneNode> nlist = modelGroup.findNodeByName(objname);
@@ -385,8 +388,8 @@ public class Model {
                         Mesh mesh = n.getMesh();
                         if (mesh != null) {
                             Material mat = mesh.getMaterial();
-                            // configNode points to one effect definition in the model.xml
-                            applyEffectToObject(configNode, mat, options, label+".effect."+index);
+                            // configNode points to one effect definition in the model.xml. 'objname' in label is more helpful than index.
+                            applyEffectToObject(configNode, mat, options, label + ".effect." + objname);
                             //mat.setTransparency(true);
                             //effect.apply();
                             meshfound = true;
@@ -417,14 +420,14 @@ public class Model {
     /**
      * Try to build effect here like MakeEffectVisitor does.
      */
-    static private void applyEffectToObject(SGPropertyNode configNode, Material material,SGReaderWriterOptions options, String label){
+    static private void applyEffectToObject(SGPropertyNode configNode, Material material, SGReaderWriterOptions options, String label) {
         //
         SGPropertyNode ssRoot = new SGPropertyNode();
         Effect.makeParametersFromStateSet(ssRoot/*StateSet is from OSG, ss*/);
         SGPropertyNode effectRoot = new SGPropertyNode();
         // No idea if using configNode instead of _currentEffectParent is good here
-        MakeEffect.mergePropertyTrees(effectRoot, ssRoot,configNode/* _currentEffectParent*/);
-        Effect effect = MakeEffect.makeEffect(effectRoot, true, options,label, false, new EffectMaterialWrapper(material));
+        MakeEffect.mergePropertyTrees(effectRoot, ssRoot, configNode/* _currentEffectParent*/);
+        Effect effect = MakeEffect.makeEffect(effectRoot, true, options, label, false, new EffectMaterialWrapper(material));
 
     }
 }

@@ -268,11 +268,11 @@ public class SGReaderWriterXMLTest {
      */
     @ParameterizedTest
     @CsvSource(value = {
-            "Models/Airport/beacon.xml,0",
+            "Models/Airport/beacon.xml,0,0",
             // The first effect is model-transparent.eff, the other the applies
-            "Models/Airport/beaconPre2024.xml,7"
+            "Models/Airport/beaconPre2024.xml,7,6"
     })
-    public void testBeacon(String modelfile, int expectedEffects) throws Exception {
+    public void testBeacon(String modelfile, int expectedEffects, int expectedMaterialTransparencies) throws Exception {
 
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
@@ -286,6 +286,7 @@ public class SGReaderWriterXMLTest {
         Bundle bundlemodel = BundleRegistry.getBundle("Terrasync-model");
         assertNotNull(bundlemodel);
 
+        int oldCounter=EffectMaterialWrapper.counter;
         // has 23 animations, but only 6 are parsed(?). 19.11.24 now also SelectAnimation
         BuildResult result = SGReaderWriterXMLTest.loadModelAndWait(new BundleResource(bundlemodel, modelfile), animationList,
                 6+1, modelfile, modelfile);
@@ -298,6 +299,8 @@ public class SGReaderWriterXMLTest {
         for (int i = 0; i < expectedEffects; i++) {
             assertEquals("Effects/model-transparent", Effect.effectListForTesting.get(0).getName());
         }
+        assertEquals(expectedMaterialTransparencies, EffectMaterialWrapper.counter-oldCounter);
+
         // the effect might have exist before the test, but anyway, it should exist now.
         // 4.11.24 The 2024 version of beacon no longer uses the effect "Effects/model-transparent". In general it no longer seems to
         // be the preferred way to make transparency in FG. So we removed the existing hard-coding of this effect.

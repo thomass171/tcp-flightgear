@@ -1,6 +1,7 @@
 package de.yard.threed.flightgear;
 
 import de.yard.threed.core.CharsetException;
+import de.yard.threed.core.Color;
 import de.yard.threed.core.buffer.SimpleByteBuffer;
 import de.yard.threed.core.platform.NativeJsonValue;
 import de.yard.threed.core.platform.Platform;
@@ -10,6 +11,7 @@ import de.yard.threed.core.resource.ResourcePath;
 import de.yard.threed.core.resource.URL;
 import de.yard.threed.core.testutil.InMemoryBundle;
 import de.yard.threed.core.testutil.TestUtils;
+import de.yard.threed.engine.Material;
 import de.yard.threed.engine.Scene;
 import de.yard.threed.engine.testutil.EngineTestFactory;
 import de.yard.threed.flightgear.core.EffectFactory;
@@ -166,9 +168,15 @@ public class EffectTest {
         String name = "Effects/model-transparent";
 
         assertEquals(SceneryTest.INITIAL_EFFECTS, MakeEffect.effectMap.size());
-        Effect effect = MakeEffect.makeEffect(name, true, new SGReaderWriterOptions(), "test", false, null);
+
+        // 18.12.24 test effect with existing material
+        Material material = Material.buildBasicMaterial(Color.BLUE);
+        EffectMaterialWrapper wrapper = new EffectMaterialWrapper(material);
+        int oldCounter=EffectMaterialWrapper.counter;
+        Effect effect = MakeEffect.makeEffect(name, true, new SGReaderWriterOptions(), "test", false,wrapper );
         assertNotNull(effect);
         assertEquals(SceneryTest.INITIAL_EFFECTS + 1, MakeEffect.effectMap.size());
+        assertEquals(1, EffectMaterialWrapper.counter-oldCounter);
     }
 
     @Test

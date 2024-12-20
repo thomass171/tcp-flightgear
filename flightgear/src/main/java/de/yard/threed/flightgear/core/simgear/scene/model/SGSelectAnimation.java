@@ -55,7 +55,7 @@ public class SGSelectAnimation extends SGAnimation {
     @Override
     public void process(List<NativeCollision> pickingrayintersections, RequestHandler requestHandler) {
         if (conditionNode == null) {
-            logger.warn("No conditionNode in " + getConfigNode().getPath());
+            //logger.warn("No conditionNode in " + getConfigNode().getPath());
             return;
         }
         if (_condition == null) {

@@ -662,7 +662,8 @@ public class EffectBuilder { //  : public SGReferenced
             return null;
         if (prop.nChildren() > 0) {
             SGPropertyNode useProp = prop.getChild("use");
-            if (useProp == null || effect.parametersProp != null)
+            //if (!useProp || !effect.parametersProp)
+            if (useProp == null || effect.parametersProp == null)
                 return prop;
             return effect.parametersProp.getNode(useProp.getStringValue());
         }

@@ -85,7 +85,7 @@ public class SGRotateAnimation extends SGAnimation {
 
         if (rotategroup == null) {
             // TODO fix this (bluebird)
-            logger.warn("No rotategroup in " + getConfigNode().getPath());
+            //logger.warn("No rotategroup in " + getConfigNode().getPath());
             return;
         }
         //23.11.24 if (rotategroup != null) {

@@ -379,8 +379,10 @@ public class Effect /*extends Effect osg::Object */ {
             // XXX Compatibility with early <blend> syntax; should go away
             // before a release
             SGPropertyNode realProp = EffectBuilder.getEffectPropertyNode(effect, prop);
-            if (realProp == null)
+            //if (!realProp)
+            if (realProp == null) {
                 return;
+            }
             if (realProp.nChildren() == 0) {
                 // enable/disable blending
                 // pass.setMode(GL_BLEND, (realProp -> getBoolValue() ? StateAttribute::ON : StateAttribute::OFF));
@@ -391,11 +393,15 @@ public class Effect /*extends Effect osg::Object */ {
             SGPropertyNode pmode = EffectBuilder.getEffectPropertyChild(effect, prop, "mode");
             // XXX When dynamic parameters are supported, this code should
             // create the blend function even if the mode is off.
+            //if (pmode && !pmode.getBoolValue()) {
             if (pmode != null && !pmode.getBoolValue()) {
                 // pass.setMode(GL_BLEND, StateAttribute::OFF);
                 pass.setBlending(false);
                 return;
             }
+
+            // 18.12.24 FG-DIFF: as long as we do not have full blending, assume it's always transparency.
+            pass.setBlending(true);
 
             parseBlendFunc.parseBlendFunc(
                     pass,
