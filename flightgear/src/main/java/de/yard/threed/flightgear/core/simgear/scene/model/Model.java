@@ -4,7 +4,7 @@ import de.yard.threed.core.platform.*;
 import de.yard.threed.engine.Material;
 import de.yard.threed.engine.Mesh;
 import de.yard.threed.engine.SceneNode;
-import de.yard.threed.engine.loader.MaterialFactory;
+import de.yard.threed.engine.AbstractMaterialFactory;
 import de.yard.threed.flightgear.EffectMaterialWrapper;
 import de.yard.threed.flightgear.core.PropertyList;
 import de.yard.threed.flightgear.core.osg.Node;
@@ -324,6 +324,7 @@ public class Model {
      * FG uses a node visitor for building the effect, which replaces the node? Magic.
      * Anyway, this method is called *after* model building!
      * 28.10.2024: We create MaterialFactories not yet(maybe not needed).
+     * 06.02.2025: XML model loading have their own hard coded factory.
      *
      * @param modelGroup
      * @param effectProps
@@ -331,9 +332,9 @@ public class Model {
      * @return
      */
     /*ref_ptr<*/
-    public static /*Node*/ Map<String, MaterialFactory> instantiateEffects(/*osg::*/Node modelGroup, PropertyList effectProps, SGReaderWriterOptions options, String label) {
+    public static /*Node*/ Map<String, AbstractMaterialFactory> instantiateEffects(/*osg::*/Node modelGroup, PropertyList effectProps, SGReaderWriterOptions options, String label) {
         SGPropertyNode/*_ptr*/ defaultEffectPropRoot = null;
-        Map<String, MaterialFactory> factories = new HashMap<>();
+        Map<String, AbstractMaterialFactory> factories = new HashMap<>();
         /*MakeEffectVisitor visitor(options);
         MakeEffectVisitor::EffectMap& emap = visitor.getEffectMap();*/
         //for (PropertyList::iterator itr = effectProps.begin(), end = effectProps.end(); itr != end; ++itr)

@@ -89,7 +89,7 @@ public class FgAnimationUpdateSystemTest {
         SGPropertyNode elapsedSec = FGGlobals.getInstance().get_props().getNode("/sim/time/elapsed-sec", false);
         FgAnimationComponent animationComponent = FgAnimationComponent.getFgAnimationComponent(egkkTower);
         assertNotNull(animationComponent);
-        AnimationAssertions.assertEgkkTowerAnimations(egkkTower.getSceneNode(), animationComponent.animationList);
+        AnimationAssertions.assertEgkkTowerAnimations(egkkTower.getSceneNode(), animationComponent.animationList, false);
         SGRotateAnimation rotateAnimation = (SGRotateAnimation) animationComponent.animationList.get(0);
         // rotation should still have default value 0
         assertQuaternion(new Quaternion(), rotateAnimation.rotategroup.getTransform().getRotation());

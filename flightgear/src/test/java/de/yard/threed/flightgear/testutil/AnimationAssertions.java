@@ -1,5 +1,7 @@
 package de.yard.threed.flightgear.testutil;
 
+import de.yard.threed.core.Matrix3;
+import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
@@ -13,6 +15,7 @@ import de.yard.threed.flightgear.core.simgear.scene.model.SGMaterialAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGRotateAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGScaleAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGSelectAnimation;
+import de.yard.threed.flightgear.core.simgear.scene.model.SGTexTransformAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGTranslateAnimation;
 import de.yard.threed.flightgear.core.simgear.structure.SGInterpTableExpression;
 import de.yard.threed.flightgear.core.simgear.structure.SGPropertyExpression;
@@ -20,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+import static de.yard.threed.core.testutil.TestUtils.assertMatrix3;
 import static de.yard.threed.core.testutil.TestUtils.assertVector3;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -93,10 +97,10 @@ public class AnimationAssertions {
     /**
      * egkk_tower has many animations. Cuurently only 2 are loaded(?) probably due to missing textures and submodel.
      */
-    public static void assertEgkkTowerAnimations(SceneNode xmlNnode, List<SGAnimation> animationList) {
+    public static void assertEgkkTowerAnimations(SceneNode xmlNnode, List<SGAnimation> animationList, boolean atNight) {
         log.debug(xmlNnode.dump("  ", 1));
-        // material+rotate+select(2)+translate(2).
-        assertEquals(6, animationList.size(), "animations");
+        // rotate+textransform+material+rotate+select+translate(2).
+        assertEquals(7, animationList.size(), "animations");
 
         SGRotateAnimation elapsedSecRotateAnimation = (SGRotateAnimation) animationList.get(0);
         assertFalse(elapsedSecRotateAnimation.isSpin());
@@ -105,6 +109,14 @@ public class AnimationAssertions {
         validateAnimationGroupForRotation(elapsedSecRotateAnimation.rotategroup, "rotateAnimation",
                 new String[]{"radar"}, ACProcessPolicy.switchYZ(new Vector3(0, 0, 38.5)));
 
+        SGTexTransformAnimation texTransformAnimation = (SGTexTransformAnimation) animationList.get(1);
+        Matrix3 expectedTexMatrix = new Matrix3();
+        if (atNight) {
+            //-0.5 appears correct. But why negative? Just for causing confusion? Leads for 'u' 0.11 to -0.39 wrapping to 0.61?
+            expectedTexMatrix.setTranslation(new Vector2(-0.5, 0.0));
+        }
+        // no transform at all during day time
+        assertMatrix3("", expectedTexMatrix, texTransformAnimation.getTransformMatrix());
     }
 
     public static void assertAsiAnimations(SceneNode xmlNnode, List<SGAnimation> animationList, String propertyRootNodeName, double currentSpeed) {
@@ -191,9 +203,9 @@ public class AnimationAssertions {
         SGInterpTableExpression interpTableExpression = (SGInterpTableExpression) translateAnimation.getAnimationValueExpression();
         // first some general tests for SGInterpTable
         assertEquals(0.762, interpTableExpression._interpTable.interpolate(0));
-        assertEquals(0.762 - 0.0001, interpTableExpression._interpTable.interpolate(1.00001),0.0001);
+        assertEquals(0.762 - 0.0001, interpTableExpression._interpTable.interpolate(1.00001), 0.0001);
         // 1.1 is 40% inside interval
-        assertEquals(0.762 - (0.762 - 0.39) * 0.4, interpTableExpression._interpTable.interpolate(1.1),0.0001);
+        assertEquals(0.762 - (0.762 - 0.39) * 0.4, interpTableExpression._interpTable.interpolate(1.1), 0.0001);
 
         // 26.0  > 15 ==> 0.0
         assertEquals(0.0, interpTableExpression.getValue(null).doubleVal);

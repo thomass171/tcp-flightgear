@@ -14,6 +14,8 @@ import de.yard.threed.core.resource.ResourceLoader;
 import de.yard.threed.core.resource.ResourcePath;
 import de.yard.threed.engine.ModelFactory;
 import de.yard.threed.engine.SceneNode;
+import de.yard.threed.engine.ShaderPool;
+import de.yard.threed.engine.loader.CustomShaderMaterialFactory;
 import de.yard.threed.engine.platform.EngineHelper;
 import de.yard.threed.engine.platform.ResourceLoaderFromDelayedBundle;
 import de.yard.threed.engine.platform.common.ModelLoader;
@@ -40,7 +42,11 @@ public class FgModelHelper {
             options |= LOADER_APPLYACPOLICY;
         }
         // Das Filemapping greift nur, wenn das acpp/gltf auch existiert.
-        Platform.getInstance().buildNativeModelPlain(mapFilename(resourceLoader, true, options), opttexturepath, modeldelegate, options);
+        // 6.2.25 Bypass platform GLTF loading for having the option to set a custom material factory that is needed for animations
+        // like "textranslate". "textranslate" also requires a custom shader. Hopefully programs/shader are shared across model.
+        //Platform.getInstance().buildNativeModelPlain(mapFilename(resourceLoader, true, options), opttexturepath, modeldelegate, options);
+        ModelLoader.buildModel(mapFilename(resourceLoader, true, options), opttexturepath,options, modeldelegate,
+                new CustomShaderMaterialFactory(ShaderPool.buildUniversalEffect()));
     }
 
     /**

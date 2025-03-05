@@ -2,6 +2,7 @@ package de.yard.threed.trafficfg.apps;
 
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
+import de.yard.threed.core.platform.NativeLight;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.testutil.TestUtils;
@@ -71,6 +72,12 @@ public class ScenerySceneTest {
 
         EcsEntity radartower2Entity = SystemManager.findEntities(e -> "Objects/e000n50/e007n50/EDDH_Radartower2.xml".equals(e.getName())).get(0);
         assertNotNull(radartower2Entity, "radartower2Entity");
+
+        // validate lights
+        List<NativeLight> lights = Platform.getInstance().getLights();
+        /*TODO varyiing assertEquals(2, lights.size(), "lights");
+        TestUtil.assertVector3(new Vector3(0, 30000000, 20000000).normalize(), lights.get(0).getDirectionalDirection());
+        TestUtil.assertColor("ambient", new Color(0.3f, 0.3f, 0.3f, 1.0f), lights.get(1).getAmbientColor());*/
 
         if (initialVehicle != null) {
             // wait for 'bluebird'

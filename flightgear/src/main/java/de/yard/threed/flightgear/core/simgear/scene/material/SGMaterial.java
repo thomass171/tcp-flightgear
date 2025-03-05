@@ -243,7 +243,9 @@ public class SGMaterial extends BVHMaterial {
 
             for (SGPropertyNode texturenode : texturelist) {
                 Texture tex = loadTexture(texturenode.getStringValue(), wrapu, wrapv);
-                material = Material.buildCustomShaderMaterial(tex);
+                // 28.2.25 no idea why we had custom shader before. But for now use unlighted for less complexitiy.
+                // material = Material.buildCustomShaderMaterial(tex);
+                material = new Material(Platform.getInstance().buildMaterial(null, null, Material.buildTextureMap(tex), null));
             }
             if (material != null) {
 

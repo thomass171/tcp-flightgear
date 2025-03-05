@@ -5,6 +5,7 @@ import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.platform.PlatformFactory;
 import de.yard.threed.core.platform.PlatformInternals;
+import de.yard.threed.core.resource.BundleResolver;
 import de.yard.threed.engine.Scene;
 import de.yard.threed.flightgear.TerraSyncBundleResolver;
 import de.yard.threed.platform.webgl.PlatformWebGl;
@@ -53,7 +54,14 @@ public class WebglExtMain extends de.yard.threed.platform.webgl.Main {
                 // And no leading "/". That is added later.
                 // This resolver is only a basic default only returning a subset. For full TerrySync bundle a custom
                 // TerraSyncBundleResolver needs to be added by the platform.
+                BundleResolver defaultBundleResolver = Platform.getInstance().bundleResolver.get(0);
+                if (defaultBundleResolver==null){
+                    throw new RuntimeException("no defaultBundleResolver");
+                }
                 Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver("bundles"), true);
+                defaultBundleResolver.addBundlePath("engine", "../../tcp-22/bundles");
+                // "data" needed for wood textures in railing
+                defaultBundleResolver.addBundlePath("data", "../../tcp-22/bundles");
                 return platformInternals;
             }
         };

@@ -4,6 +4,7 @@ import de.yard.threed.core.configuration.Configuration;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.platform.PlatformFactory;
 import de.yard.threed.core.platform.PlatformInternals;
+import de.yard.threed.core.resource.BundleResolver;
 import de.yard.threed.flightgear.TerraSyncBundleResolver;
 import de.yard.threed.javacommon.DefaultResourceReader;
 import de.yard.threed.outofbrowser.SimpleBundleResolver;
@@ -64,6 +65,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         // traffic-fg
         properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryScene");
         properties.put("scene", "de.yard.threed.trafficfg.apps.RailingScene");
+        // TravelSceneBluebird needs initialVehicle
         //properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryViewerScene");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.FgModelPreviewScene");
@@ -103,6 +105,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
             public PlatformInternals createPlatform(Configuration configuration) {
                 PlatformInternals platformInternals = PlatformJme.init(configuration);
                 Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver(configuration.getString("HOSTDIRFG") + "/bundles"));
+                // PlatformJme has built in SimpleBundleResolver for "tcp-22/bundles", so need here for adding any further
                 Platform.getInstance().addBundleResolver(new SimpleBundleResolver(configuration.getString("HOSTDIRFG") + "/bundles", new DefaultResourceReader()));
                 return platformInternals;
             }

@@ -145,7 +145,7 @@ public class SGScaleAnimation extends SGAnimation {
                     _animationValue[2].getValue(null).doubleVal
             );
 
-            logger.debug("process: " + _animationValue + "=" + value);
+            //logger.debug("process: " + _animationValue + "=" + value);
 
             //TODO center
             scaleGroup.getTransform().setScale(value);

@@ -18,6 +18,7 @@ import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.HttpBundleResolver;
+import de.yard.threed.engine.AmbientLight;
 import de.yard.threed.engine.Camera;
 import de.yard.threed.engine.DirectionalLight;
 import de.yard.threed.engine.FirstPersonController;
@@ -280,8 +281,10 @@ public class HangarScene extends Scene {
         // Licht aus Höhe 60. 2.5.19: Auf einmal ist alles so dunkel. Komisch. Obwohl irgendwie plausibel. Darum noch eins von hinten.
         Light light = new DirectionalLight(Color.WHITE, new Vector3(0, 60, 0));
         addLightToWorld(light);
-        light = new DirectionalLight(Color.WHITE, new Vector3(1, 0, 0));
-        addLightToWorld(light);
+        // 4.3.25 ambient light instead of second directional
+        //light = new DirectionalLight(Color.WHITE, new Vector3(1, 0, 0));
+        //addLightToWorld(light);
+        addLightToWorld(new AmbientLight(new Color(0.3f, 0.3f, 0.3f, 1.0f)));
     }
 
     @Override

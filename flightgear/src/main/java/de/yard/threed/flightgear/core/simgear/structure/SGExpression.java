@@ -965,49 +965,7 @@ abstract class SGBinaryExpression extends SGExpression {
  
  
 
- * <p>
- * template<typename T>
- * class SGStepExpression extends SGUnaryExpression<T> {
- * public:
- * SGStepExpression(SGExpression<T>* expr = 0,
- * T& step = T(1),   T& scroll = T(0))
- * : SGUnaryExpression<T>(expr), _step(step), _scroll(scroll)
- * { }
- * <p>
- * void setStep(  T& step)
- * { _step = step; }
- * T& getStep()
- * { return _step; }
- * <p>
- * void setScroll(  T& scroll)
- * { _scroll = scroll; }
- * T& getScroll()
- * { return _scroll; }
- * <p>
- * void eval(T& value,   simgear::expression::Binding* b)
- * { value = apply_mods(getOperand() .getValue(b)); }
- * <p>
- * using SGUnaryExpression<T>::getOperand;
- * <p>
- * private:
- * T apply_mods(T property)
- * {
- * if( _step <= SGLimits<T>::min() ) return property;
- * <p>
- * // apply stepping of input value
- * T modprop = floor(property/_step)*_step;
- * <p>
- * // calculate scroll amount (for odometer like movement)
- * T remainder = property <= SGLimits<T>::min() ? -fmod(property,_step) : (_step - fmod(property,_step));
- * if( remainder > SGLimits<T>::min() && remainder < _scroll )
- * modprop += (_scroll - remainder) / _scroll * _step;
- * <p>
- * return modprop;
- * }
- * <p>
- * T _step;
- * T _scroll;
- * };
+
  * <p>
  * template<typename T>
  * class SGEnableExpression extends SGUnaryExpression<T> {

@@ -390,13 +390,13 @@ public class SceneryTest {
 
         // only one of the 2 animations is built currently.
         BuildResult result = SGReaderWriterXMLTest.loadModelAndWait(new BundleResource(bundle3072824, "Objects/e000n50/e007n50/egkk_carpark_multi.xml"),
-                animationList, 1, "Objects/e000n50/e007n50/egkk_carpark_multi.xml", null);
+                animationList, 2, "Objects/e000n50/e007n50/egkk_carpark_multi.xml", null);
         SceneNode resultNode = new SceneNode(result.getNode());
         log.debug(resultNode.dump("  ", 0));
         // XML was loaded sync, gltf and animations were loaded async
         assertEquals("Objects/e000n50/e007n50/egkk_carpark_multi.xml", resultNode.getName());
         assertEquals(1, resultNode.getTransform().getChildCount());
-        assertEquals(1, animationList.size(), "animations");
+        assertEquals(2, animationList.size(), "animations");
     }
 
     @Test

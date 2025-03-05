@@ -14,6 +14,7 @@ import de.yard.threed.core.platform.PlatformHelper;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.testutil.RuntimeTestUtil;
+import de.yard.threed.engine.AmbientLight;
 import de.yard.threed.engine.Camera;
 import de.yard.threed.engine.DirectionalLight;
 import de.yard.threed.engine.Input;
@@ -77,6 +78,7 @@ import java.util.List;
  * '+' inc speed (via GraphMovingSystem)
  * '-' reduce speed (via GraphMovingSystem)
  * </p>
+ * Uses FgVehicleLoader and FG compliant locomotive model from "railing/locomotive.xml".
  * <p>
  * 29.10.2017: Statt Viewpointsystem Teleport mit Avatar verwenden (z.B. fuer VR)
  * 11.05.2021: Gibt jetzt Observer. Avatar wird hier nicht mehr gebraucht. Stoert aber auch nicht.
@@ -270,8 +272,10 @@ public class RailingScene extends Scene {
     protected void addLight() {
         DirectionalLight light = new DirectionalLight(Color.WHITE, new Vector3(0, 30000000, 20000000));
         addLightToWorld(light);
-        light = new DirectionalLight(Color.WHITE, new Vector3(0, -30000000, -20000000));
-        addLightToWorld(light);
+        // 4.3.25 ambient light instead of second directional
+        //light = new DirectionalLight(Color.WHITE, new Vector3(0, -30000000, -20000000));
+        //addLightToWorld(light);
+        addLightToWorld(new AmbientLight(new Color(0.3f, 0.3f, 0.3f, 1.0f)));
     }
 
     int localState = 0;

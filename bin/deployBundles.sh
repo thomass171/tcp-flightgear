@@ -9,10 +9,8 @@ validateHOSTDIRFG
 
 export HOSTDIR=$HOSTDIRFG
 
-# temporary solution for bundle engine
-cp -rp $HOSTDIRFG/../tcp-22/bundles/engine $HOSTDIRFG/bundles
-# temporary solution for bundle data. Needed for wood textures in railing
-cp -rp $HOSTDIRFG/../tcp-22/bundles/data $HOSTDIRFG/bundles
+# 25.2.25 copy solution for bundle engine and data (needed for wood textures in railing)
+# no longer needed
 
 cd $PROJECT_HOME || checkrc
 sh $TCP22DIR/bin/deployBundle.sh -m traffic-fg || checkrc

@@ -191,10 +191,20 @@ scene graph.
 Currently the following animations are migrated:
   * PickAnimation
   * RotateAnimation, eg. windturbine, needle in ASI
+  * SGTexTransformAnimation. FG uses ancient OpenGls TextureMatrix for fixed pipelines. Meanwhile this should be done in shader.
 
 For animated scenery objects ECS entities containing a FgAnimationComponent will be
 created while for vehicle animations in sub models all FgAnimationComponents
 are collected in the vehicle entity.
+
+#### Nasal
+
+compile() is used in 
+  * canvas/Mapstructure
+  * FG1000
+  * GTX328 of ec130
+
+but not in 777, bluebird, ec135, SpaceShuttle. c172p only for "SelectableInterfaces".
 
 ### tools-fg
 

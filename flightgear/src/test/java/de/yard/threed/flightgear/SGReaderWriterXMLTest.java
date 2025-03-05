@@ -364,8 +364,17 @@ public class SGReaderWriterXMLTest {
         assertNotNull(bundle3072824);
 
         BuildResult result = SGReaderWriterXMLTest.loadModelAndWait(new BundleResource(bundle3072824, modelfile), animationList,
-                6, modelfile, modelfile);
-        AnimationAssertions.assertEgkkTowerAnimations(new SceneNode(result.getNode()),animationList);
+                7, modelfile, modelfile);
+        AnimationAssertions.assertEgkkTowerAnimations(new SceneNode(result.getNode()),animationList, false);
+
+        // change properties and recheck animations
+        assertEquals(0, FGGlobals.getInstance().get_props().getNode("/sim/time/sun-angle-rad", true).getDoubleValue());
+        // make it night
+        FGGlobals.getInstance().get_props().getNode("/sim/time/sun-angle-rad", true).setDoubleValue(2.0);
+
+        updateAnimations(animationList);
+        AnimationAssertions.assertEgkkTowerAnimations(new SceneNode(result.getNode()),animationList, true);
+
     }
 
     /**

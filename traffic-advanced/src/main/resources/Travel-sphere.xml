@@ -8,9 +8,14 @@
         <builder type="scenery" name="FgTerrainBuilder"/>
     </terrain>
 
-    <!-- lights taken from lights in TravelScene -->
+    <!-- lights taken from lights in TravelScene
+    direction "0, 30000000, 20000000" is from north/East roughly.
+    28.2.25: Second directional replaced with ambient. Used at night and where directional
+    doesn't hit, so probably no good lighting.
+    -->
     <light color="white" direction="0, 30000000, 20000000"/>
-    <light color="white" direction="0,-30000000,-20000000"/>
+    <!--<light color="white" direction="0,-30000000,-20000000"/>-->
+    <light color="0.3 0.3 0.3 1.0"/>
 
     <!-- initialPosition might be set here, but maybe its better as parameter combined with initialRoute
     From former hard coded EDDK setup (formerInitialPositionEDDK).-->

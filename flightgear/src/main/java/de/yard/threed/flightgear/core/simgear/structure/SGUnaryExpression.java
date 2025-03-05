@@ -50,7 +50,7 @@ public abstract class SGUnaryExpression extends SGExpression {
     }
 
     @Override
-    public String toString(){
-        return ""+_expression.toString();
+    public String toString() {
+        return "SGUnaryExpression expression=" + _expression + "("+ super.toString() + ")";
     }
 }

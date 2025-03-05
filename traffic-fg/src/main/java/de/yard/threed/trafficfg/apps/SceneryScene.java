@@ -15,6 +15,7 @@ import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.engine.AmbientLight;
 import de.yard.threed.engine.BaseEventRegistry;
 import de.yard.threed.engine.DirectionalLight;
 import de.yard.threed.engine.Input;
@@ -217,14 +218,12 @@ public class SceneryScene extends Scene {
     }
 
     public void addLight() {
-
+        // See EDDK-sphere.xml for reference.
         DirectionalLight light = new DirectionalLight(Color.WHITE, new Vector3(0, 30000000, 20000000));
 
         addLightToWorld(light);
-        light = new DirectionalLight(Color.WHITE, new Vector3(0, -30000000, -20000000));
 
-        addLightToWorld(light);
-
+        addLightToWorld(new AmbientLight(new Color(0.3f, 0.3f, 0.3f, 1.0f)));
     }
 
     public void add(SceneNode model, double x, double y, double z, double scale, Quaternion rotation) {

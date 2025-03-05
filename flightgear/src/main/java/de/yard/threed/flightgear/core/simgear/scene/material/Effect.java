@@ -17,7 +17,7 @@ import de.yard.threed.flightgear.core.simgear.scene.util.SGReaderWriterOptions;
 
 
 import de.yard.threed.core.platform.Log;
-import de.yard.threed.engine.platform.common.EffectShader;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +52,7 @@ public class Effect /*extends Effect osg::Object */ {
     //20.7.16 public boolean transparent = false;
     //11.3.16: Der Shader ist optional. Wenn er nicht angegeben ist, muss die Platform sehen, wie sie den Effekt hinbekommt.
     // Wenn ein Shader angegebn ist, wird er in allen Platformen verwendet.
-    public EffectShader shader = null;
+    //public EffectShader shader = null;
 
     //std::vector<osg::ref_ptr<Technique> > techniques;
     List<Technique> techniques = new ArrayList<>();
@@ -91,7 +91,7 @@ public class Effect /*extends Effect osg::Object */ {
      */
     private Effect(String name) {
         this.name = name;
-        shader = new EffectShader();
+        // shader = new EffectShader();
 
     }
 

@@ -16,7 +16,6 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.ResourceLoader;
-import de.yard.threed.engine.loader.MaterialFactory;
 import de.yard.threed.engine.loader.PortableModelBuilder;
 import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.engine.platform.ResourceLoaderFromDelayedBundle;

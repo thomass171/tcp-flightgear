@@ -1,7 +1,9 @@
 package de.yard.threed.flightgear.core.simgear.scene.model;
 
+import de.yard.threed.core.Matrix3;
 import de.yard.threed.core.Pair;
 import de.yard.threed.core.Util;
+import de.yard.threed.core.Vector2;
 import de.yard.threed.core.platform.NativeCollision;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.engine.*;
@@ -151,6 +153,9 @@ public abstract class SGAnimation {
                 type.equals("textrapezoid") || type.equals("texmultiple")) {
             //  SGTexTransformAnimation animInst(modelData);
             //  animInst.apply(node);
+            SGTexTransformAnimation animInst = new SGTexTransformAnimation(modelData, label);
+            animInst.apply(modelData.getXmlNode());
+            animation = animInst;
         } else if (type.equals("timed")) {
             //SGTimedAnimation animInst(modelData);
             //animInst.apply(node);
@@ -302,6 +307,10 @@ public abstract class SGAnimation {
         return readVec3(_configNode, name, suffix, def);
     }
 
+    Vector3 readVec3(SGPropertyNode cfg, String name) {
+        return readVec3(cfg, name, "", new Vector3());
+    }
+
 
     /**
      * factored out to share with SGKnobAnimation
@@ -350,8 +359,8 @@ public abstract class SGAnimation {
         centerAndAxis.setSecond(axis);
     }
 
-    /*
-    SGExpressiond* readOffsetValue(const char* tag_name) const;
+
+    /*SGExpressiond* readOffsetValue(const char* tag_name) const;
 
     void removeMode(osg::Node& node, osg::StateAttribute::GLMode mode);
     void removeAttribute(osg::Node& node, osg::StateAttribute::Type type);
@@ -361,15 +370,18 @@ public abstract class SGAnimation {
                                 osg::StateAttribute::Type type);
     void setRenderBinToInherit(osg::Node& node);
     void cloneDrawables(osg::Node& node);
-
-    std::string getType() const
-    { return std::string(_configNode->getStringValue("type", "")); }
-
-    const SGPropertyNode* getConfig() const
-    { return _configNode; }
-    SGPropertyNode* getModelRoot() const
-    { return _modelRoot; }
 */
+
+    public String getType() {
+        return _configNode.getStringValue("type", "");
+    }
+
+    /*
+        const SGPropertyNode* getConfig() const
+        { return _configNode; }
+        SGPropertyNode* getModelRoot() const
+        { return _modelRoot; }
+    */
     SGCondition getCondition() {
         SGPropertyNode conditionNode = _configNode.getChild("condition");
         if (conditionNode == null)
@@ -545,6 +557,20 @@ public abstract class SGAnimation {
     }
 
     /**
+     * Set up the transform matrix for a translation.
+     * FG-DIFF: FG uses Vec3
+     */
+    public static void set_translation(/*osg::Matrix &*/Matrix3 matrix, double position_m, /*SGVec3d*/Vector2 axis) {
+        Vector2 xyz = axis.multiply(position_m);
+        //matrix.makeIdentity();
+        matrix.init();
+        //matrix(3, 0) = xyz[0];
+        //matrix(3, 1) = xyz[1];
+        //matrix(3, 2) = xyz[2];
+        matrix.setTranslation(xyz);
+    }
+
+    /**
      * Read an interpolation table from properties.
      */
     static SGInterpTable read_interpolation_table(SGPropertyNode props) {
@@ -561,6 +587,17 @@ public abstract class SGAnimation {
         double offsetValue = configNode.getDoubleValue(offset, 0);
         if (offsetValue != 0)
             expr = new SGBiasExpression/*<double>*/(expr, offsetValue);
+        return expr;
+    }
+
+    static SGExpression/* d* */
+    read_offset_factor(SGPropertyNode configNode, SGExpression expr, String factor, String offset) {
+        double offsetValue = configNode.getDoubleValue(offset, 0);
+        if (offsetValue != 0)
+            expr = new SGBiasExpression/*<double>*/(expr, offsetValue);
+        double factorValue = configNode.getDoubleValue(factor, 1);
+        if (factorValue != 1)
+            expr = new SGScaleExpression/*<double>*/(expr, factorValue);
         return expr;
     }
 
