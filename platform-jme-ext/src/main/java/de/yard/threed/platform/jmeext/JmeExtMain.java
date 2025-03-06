@@ -95,6 +95,15 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
             //properties.put("initialHeading", "270");
             properties.put("scene", "de.yard.threed.trafficadvanced.apps.AdvancedSceneryScene");
         }
+        boolean bluebirdFreeFlight = false;
+        if (bluebirdFreeFlight) {
+            // 6.3.25: Either choose a route in cockpit or free flight from EDDKs 32L
+            // 32L from apt.dat. Not sure if heading fits exactly. Elevation should be taken from scenery at runtime.
+            properties.put("initialLocation", "50.85850600,  007.13874200 ,60.05");
+            properties.put("initialHeading", "320");
+            properties.put("initialVehicle", "bluebird");
+            properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
+        }
         return properties;
     }
 

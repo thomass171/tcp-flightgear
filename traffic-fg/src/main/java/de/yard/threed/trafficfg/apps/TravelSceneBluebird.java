@@ -137,7 +137,8 @@ public class TravelSceneBluebird extends BasicTravelScene {
         // "fgdatabasic" and "traffic-fg" are needed for bluebird
         // 'TerraySync' is loaded at runtime by TerraSyncBundleResolver' that is set up by the platform(using HOSTDIRFG on desktop and "bundles" in webgl)
         // 21.7.24: TerraSync-model isn't used anyway currently due to flag 'ignoreshared'. So save the time and memory for loading it.
-        return new String[]{"engine", FlightGear.getBucketBundleName("model"), "sgmaterial", "fgdatabasic", "traffic-fg"};
+        // 06.3.25: "data" is needed for initial earth texture. Strange we apparently never had it.
+        return new String[]{"engine", "data", FlightGear.getBucketBundleName("model"), "sgmaterial", "fgdatabasic", "traffic-fg"};
     }
 
     @Override
@@ -147,7 +148,8 @@ public class TravelSceneBluebird extends BasicTravelScene {
         vehiclelistname = "VehiclesWithCockpit";
 
         FlightGearMain.initFG(new FlightLocation(WorldGlobal.equator020000, new Degree(0), new Degree(0)), null);
-        FgBundleHelper.addProvider(new SimpleBundleResourceProvider("fgdatabasicmodel"));
+        // 6.3.25 Why should we need "fgdatabasicmodel" here? It's an advanced bundle. Probably a relict only causing error loggings
+        //FgBundleHelper.addProvider(new SimpleBundleResourceProvider("fgdatabasicmodel"));
 
         trafficConfig = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), new BundleResource("flight/EDDK-bluebird.xml"));
         // not until we define some worldPois = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), new BundleResource("world-pois.xml"));
@@ -157,16 +159,9 @@ public class TravelSceneBluebird extends BasicTravelScene {
         TerrainElevationProvider tep = TerrainElevationProvider.buildForStaticAltitude(80);
         SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, tep);
 
-        /*14.5.24 decoupled to SphereSystem/config
-        ScenerySystem ts = new ScenerySystem(world);
-        AbstractTerrainBuilder terrainBuilder = new FgTerrainBuilder();
-        terrainBuilder.init(world);
-        ts.setTerrainBuilder(terrainBuilder);
-        SystemManager.addSystem(ts, 0);
-
+        //14.5.24 ScenerySystem and TerrainBuilder(FgTerrainBuilder) decoupled to SphereSystem/config.
         // TerrainElevationProvider was created in FgTerrainBuilder. Needs help because EDDK groundnet exceeds EDDK tile, so define a default value 68.
-        ((TerrainElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION)).setDefaultAltitude(68.0);
-*/
+        // 6.3.25: EDDK gap helper also decoupled or considered useless?? ((TerrainElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION)).setDefaultAltitude(68.0);
 
         SystemManager.addSystem(new AutomoveSystem());
 
@@ -175,7 +170,6 @@ public class TravelSceneBluebird extends BasicTravelScene {
             hud.setText(0, " ");
         }
 
-        //4.12.23 configShuttle = ConfigHelper.getVehicleConfig(tw.tw, "simpleShuttle");
         orbit = RouteBuilder.buildEquatorOrbit();
 
         //nearView soll nur die Vehicle abdecken.

@@ -264,7 +264,7 @@ public class HangarScene extends Scene {
         // 9.8.24: "traffic-fg" for bluebird
         // Also "fgdatabasic" preloaded, because otherwise its loaded 'on demand', which only works with long loading vehicles, but not quick like bluebird.
         Platform.getInstance().addBundleResolver(new HttpBundleResolver("fgdatabasic@" + AdvancedConfiguration.BUNDLEPOOL_URL), true);
-        return new String[]{"engine", "traffic-advanced", "data", "traffic-fg", "fgdatabasic", FlightGearSettings.FGROOTCOREBUNDLE};
+        return new String[]{"engine", "traffic-advanced", "data", "traffic-fg", "fgdatabasic", /*6.3.25 FlightGearSettings.FGROOTCOREBUNDLE*/};
     }
 
     @Override

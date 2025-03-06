@@ -17,6 +17,7 @@ import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.Light;
 import de.yard.threed.engine.SceneNode;
+import de.yard.threed.engine.Texture;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsHelper;
 import de.yard.threed.engine.ecs.EcsTestHelper;
@@ -105,13 +106,24 @@ public class TravelSceneBluebirdTest {
 
         TravelSceneTestHelper.validateSphereProjections();
 
-        String[] bundleNames = BundleRegistry.getBundleNames();
-        // 5 appears correct
-        //TODO why 6 with initialRoute assertEquals(5, bundleNames.length);
-        assertNotNull(BundleRegistry.getBundle("fgdatabasic"));
-
         sceneRunner.runLimitedFrames(50);
         // now all major initing should have been done
+
+        String[] bundleNames = BundleRegistry.getBundleNames();
+        assertEquals(6 + (withBluebird ? 1 : 0), bundleNames.length);
+        // bundle order isn't reliable probably
+        assertNotNull(BundleRegistry.getBundle("fgdatabasic"));
+        assertNotNull(BundleRegistry.getBundle("traffic-fg"));
+        assertNotNull(BundleRegistry.getBundle("data"));
+        assertNotNull(BundleRegistry.getBundle("engine"));
+        assertNotNull(BundleRegistry.getBundle("sgmaterial"));
+        assertNotNull(BundleRegistry.getBundle("Terrasync-model"));
+        if (withBluebird) {
+            assertNotNull(BundleRegistry.getBundle("bluebird"));
+        }
+
+        // texture (from bundle "data") is used for initial earth model
+        assertTrue(Texture.hasTexture("2_no_clouds_4k.jpg"));
 
         FgTerrainBuilder fgTerrainBuilder = (FgTerrainBuilder) ((ScenerySystem) SystemManager.findSystem(ScenerySystem.TAG)).getTerrainBuilder();
         // Even though tiles are loaded async, they should exist now. 10 in total appears correct (9 surrounding+EDDK?). But only 4 are really available in project.

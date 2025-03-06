@@ -46,8 +46,8 @@ public class FgVehicleLoaderTest {
                 "            <aircraftdir>bluebird</aircraftdir>\n" +
                 "        </vehicle>";
         VehicleDefinition config = new XmlVehicleDefinition(getNodeFromXML(configXML));
-        //"fgdatabasic" and "fgrootcore"(but not sgmaterial, dafuer gibts keinen Provider,oder?).
-        assertEquals(2, FgBundleHelper.getProvider().size(), "provider.size");
+        // 6.3.25 No longer "fgrootcore", so only "fgdatabasic". But not sgmaterial which has no provider.
+        assertEquals(1/*2*/, FgBundleHelper.getProvider().size(), "provider.size");
 
         List<SceneNode> loaded = new ArrayList<>();
         List<FgVehicleLoaderResult> loadedResults = new ArrayList<>();
@@ -109,14 +109,11 @@ public class FgVehicleLoaderTest {
         assertEquals(1, mainpedals.size(), "mainpedals.size");
 
 
-        //AircraftProvider must have been removed. Only "fgdatabasic" and "fgrootcore" stay.
-        assertEquals(2, FgBundleHelper.getProvider().size(), "provider.size");
+        //AircraftProvider must have been removed. Only "fgdatabasic" stays.
+        assertEquals(1, FgBundleHelper.getProvider().size(), "provider.size");
         assertFalse(FgBundleHelper.getProvider().get(0).isAircraftSpecific(), "provider.isAircraftSpecific");
         assertTrue(FgBundleHelper.getProvider().get(0) instanceof SimpleBundleResourceProvider);
         assertEquals("fgdatabasic", ((SimpleBundleResourceProvider) FgBundleHelper.getProvider().get(0)).bundlename);
-        assertFalse(FgBundleHelper.getProvider().get(1).isAircraftSpecific(), "provider.isAircraftSpecific");
-        assertTrue(FgBundleHelper.getProvider().get(1) instanceof SimpleBundleResourceProvider);
-        assertEquals("fgrootcore", ((SimpleBundleResourceProvider) FgBundleHelper.getProvider().get(1)).bundlename);
 
         log.debug(bluebirdNode.dump("  ", 0));
         // full hierarchy is too large, so only check some

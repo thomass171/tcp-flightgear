@@ -290,7 +290,7 @@ public class FGGlobals {
         //29.6.17: wegen Bundle mal nicht mehr als basepath. 
         //SgResourceManager.getInstance().addBasePath(new SGPath(fg_root)/*, ResourceManager::PRIORITY_DEFAULT*/);
         FgBundleHelper.addProvider(new SimpleBundleResourceProvider("fgdatabasic"));
-        FgBundleHelper.addProvider(new SimpleBundleResourceProvider(FlightGearSettings.FGROOTCOREBUNDLE));
+         //6.3.25 FgBundleHelper.addProvider(new SimpleBundleResourceProvider(FlightGearSettings.FGROOTCOREBUNDLE));
     }
 
     public Bundle get_fg_root() {

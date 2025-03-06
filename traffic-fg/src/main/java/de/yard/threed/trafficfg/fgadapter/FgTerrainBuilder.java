@@ -50,7 +50,8 @@ public class FgTerrainBuilder implements AbstractSceneryBuilder {
         this.world = destinationNode;
 
         FlightGearMain.initFG(new FlightLocation(WorldGlobal.equator020000, new Degree(0), new Degree(0)), null);
-        FgBundleHelper.addProvider(new SimpleBundleResourceProvider("fgdatabasicmodel"));
+        // 6.3.25 Why should we need "fgdatabasicmodel" here for terrain? Probably a relict only causing error loggings
+        //FgBundleHelper.addProvider(new SimpleBundleResourceProvider("fgdatabasicmodel"));
         //4.1.18:TerraSync-model. Ob das hier gut ist?
         FgBundleHelper.addProvider(new SimpleBundleResourceProvider(FlightGear.getBucketBundleName("model")));
         // FG, Position ist initialisiert.

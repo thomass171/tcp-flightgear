@@ -2426,12 +2426,13 @@ where:
         }
 
         logger.info("fg_root = " + root);*/
-        Bundle root = BundleRegistry.getBundle(FlightGearSettings.FGROOTCOREBUNDLE);
+        /*6.3.25 Bundle root = BundleRegistry.getBundle(FlightGearSettings.FGROOTCOREBUNDLE);
         if (root == null) {
             logger.error("No FG_ROOT bundle");
             //TODO bessere Fehlerbehandleung ueber FlightGear.fginited wie home
-        }
-        FGGlobals.globals.set_fg_root(root);
+        }*/
+        // 6.3.25 set_fg_root is important event without FGROOTCORE
+        FGGlobals.globals.set_fg_root(null/*root*/);
 /*
 // validate it
         static char required_version[] = FLIGHTGEAR_VERSION;

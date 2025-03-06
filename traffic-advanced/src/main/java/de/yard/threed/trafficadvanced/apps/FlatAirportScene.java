@@ -168,7 +168,7 @@ public class FlatAirportScene extends FlightTravelScene {
         // "fgdatabasic" in project is only a small subset. The external should have 'before' prio to load instead of subset.
         // "data" is needed for taxiway ground texture.
         Platform.getInstance().addBundleResolver(new HttpBundleResolver("fgdatabasic@" +  AdvancedConfiguration.BUNDLEPOOL_URL), true);
-        return new String[]{"engine", "data", FlightGearSettings.FGROOTCOREBUNDLE, "fgdatabasic", /*9.12.23 "data-old", "fgdatabasic", FlightGearSettings.FGROOTCOREBUNDLE, "osmscenery",*/
+        return new String[]{"engine", "data", /*6.3.25FlightGearSettings.FGROOTCOREBUNDLE,*/ "fgdatabasic", /*9.12.23 "data-old", "fgdatabasic", FlightGearSettings.FGROOTCOREBUNDLE, "osmscenery",*/
                 "traffic-advanced", "traffic-fg"};
     }
 

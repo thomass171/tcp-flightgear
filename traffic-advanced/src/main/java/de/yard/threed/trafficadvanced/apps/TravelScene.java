@@ -147,7 +147,10 @@ import java.util.List;
  * 30.1.24: Still uses bundles from local directory (full Terrasync). But full sgmaterial is not available). See todo at bundlelist.
  * 13.3.24: Navigator and helper model disabled by default (currently also disables second level world teleports)
  * 17.5.24: Probably makes no sense to extend from TravelSceneBluebird. Better extract common code to systems
- * or helper.
+ * or TravelSceneHelper (composition over inheritance!).
+ * 06.03.25: Still it looks promising to have a common super class (which BasicTravelScene already is!). But at the end
+ * TravelSceneBluebird will always be a kind of show case. 'trips','buildVrControlPanel' and 'menu' are
+ * candidates for extraction to TravelSceneHelper.
  */
 public class TravelScene extends FlightTravelScene {
     static Log logger = Platform.getInstance().getLog(TravelScene.class);
@@ -181,11 +184,11 @@ public class TravelScene extends FlightTravelScene {
         AdvancedConfiguration.setAdvancedBundleResolver();
 
         //13.12.23 "fgdatabasicmodel" is loaded later when needed during vehicle loading.
-        // "data" is needed for taxiway ground texture.
-        return new String[]{"engine", "data-old", "data", "fgdatabasic", "sgmaterial",
+        // "data" is needed for taxiway ground texture. 6.3.25 really?? More likely for base earth texture
+        return new String[]{"engine", /*6.3.25 "data-old",*/ "data", "fgdatabasic", "sgmaterial",
                 //21.2.24: TerraSync-model isn't used anyway currently due to flag 'ignoreshared'. So save the time and memory for loading it.
                 //FlightGear.getBucketBundleName("model") ,
-                FlightGearSettings.FGROOTCOREBUNDLE,
+                //6.3.25 FlightGearSettings.FGROOTCOREBUNDLE,
                 "traffic-advanced", "traffic-fg"};
     }
 
