@@ -6,7 +6,6 @@ import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.engine.gui.Hud;
 import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.apps.BasicTravelScene;
-import de.yard.threed.traffic.config.VehicleConfigDataProvider;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.config.XmlVehicleDefinition;
 import de.yard.threed.trafficcore.config.AirportDefinition;

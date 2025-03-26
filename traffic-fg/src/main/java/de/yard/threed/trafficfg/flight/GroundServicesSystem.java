@@ -30,7 +30,6 @@ import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphNode;
 import de.yard.threed.graph.GraphPath;
 import de.yard.threed.graph.GraphPosition;
-import de.yard.threed.graph.GraphProjection;
 import de.yard.threed.graph.TurnExtension;
 import de.yard.threed.traffic.NoElevationException;
 import de.yard.threed.traffic.RequestRegistry;
@@ -44,7 +43,6 @@ import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.geodesy.MapProjection;
 import de.yard.threed.traffic.geodesy.SimpleMapProjection;
-import de.yard.threed.trafficcore.model.Airport;
 import de.yard.threed.trafficcore.model.Runway;
 import de.yard.threed.trafficfg.AirportTrafficContext;
 import de.yard.threed.trafficfg.TrafficEvent;
@@ -106,7 +104,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
     //23.5.2020 das hat doch in einem System nicht zu suchen
     @Deprecated
     private GroundNet groundnet;
-    public static boolean trafficsystemdebuglog = true;
+    public static boolean groundservicessystemdebuglog = true;
     private FollowMe followme;
     //12.2.2018:Die Projection sollten nur die Darsteller kennen (GraphVisualizationSystem,TerrainSystem)
     //public MapProjection projection;
@@ -212,7 +210,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
                     /*if (visualizer != null) {
                         visualizer.addLayer(groundnet.groundnetgraph, followme.teardropturn.getLayer());
                     }*/
-                    SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_LAYERCREATED, new Payload(groundnet.groundnetgraph, new Integer(followme.teardropturn.getLayer()))));
+                    SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_LAYERCREATED, new Payload(groundnet.groundnetgraph, Integer.valueOf(followme.teardropturn.getLayer()))));
 
 
                     GraphPath followmepath = groundnet.groundnetgraph.createPathFromGraphPosition(gmc1.getCurrentposition(), teardropturnatparking.arc.to, null, null);
@@ -298,7 +296,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
     public boolean processRequest(Request request) {
 
 
-        if (trafficsystemdebuglog) {
+        if (groundservicessystemdebuglog) {
             logger.debug("got request " + request.getType());
         }
         if (request.getType().equals(RequestRegistry.TRAFFIC_REQUEST_AIRCRAFTSERVICE)) {
@@ -397,7 +395,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
 
     @Override
     public void process(Event evt) {
-        if (trafficsystemdebuglog) {
+        if (groundservicessystemdebuglog) {
             logger.debug("got event " + evt);
         }
        /* if (evt.getType().equals(EventRegistry.TRAFFIC_EVENT_PARKEDAIRCRAFTSERVICEREQUEST)) {
@@ -506,6 +504,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
 
     private void spawnSingleService(EcsEntity aircraft, String servicetype, int servicedurationinseconds) {
         VehicleComponent vc = VehicleComponent.getVehicleComponent(aircraft);
+        TrafficSystem trafficSystem = (TrafficSystem) SystemManager.findSystem(TrafficSystem.TAG);
 
         /*20.11.23GroundServiceAircraftConfig*/
         VehicleDefinition aircraftconfig = /*20.11.23TrafficWorldConfig.getInstance().*/getAircraftConfigurationByType(vc.config.getModelType());
@@ -515,7 +514,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
             try {
                 //TrafficWorldConfig tw = TrafficWorldConfig.readDefault();
                 //28.11.23: vehicledefinitions now come from TrafficSystem
-                sp = new ServicePoint(groundnet, aircraft, aircraft.scenenode.getTransform().getPosition(), null, gmc.getCurrentposition().getDirection(), aircraftconfig, TrafficSystem.knownVehicles);
+                sp = new ServicePoint(groundnet, aircraft, aircraft.scenenode.getTransform().getPosition(), null, gmc.getCurrentposition().getDirection(), aircraftconfig, trafficSystem.getKnownVehicles());
                 launchServiceVehicle(servicetype, groundnet, sp, servicedurationinseconds);
                 //schedule.addAction(new VehicleServiceAction(schedule, GroundServicesSystem.fuelingduration));
                 //schedule.addAction(new VehicleReturnAction(schedule, false, sp /*sp.getWingReturnPath(true)*/, false));
@@ -624,7 +623,7 @@ public class GroundServicesSystem extends DefaultEcsSystem {
         /*if (visualizer != null) {
             visualizer.addLayer(groundnet.groundnetgraph, aircraftpath.layer);
         }*/
-        SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_LAYERCREATED, new Payload(groundnet.groundnetgraph, new Integer(aircraftpath.layer))));
+        SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_LAYERCREATED, new Payload(groundnet.groundnetgraph, Integer.valueOf(aircraftpath.layer))));
 
         // 2. Create Followme approach path to Aircraft 
         TurnExtension teardropturn = groundnet.createFollowMeVehicleApproach(aircraftpath);
@@ -635,14 +634,14 @@ public class GroundServicesSystem extends DefaultEcsSystem {
         /*if (visualizer != null) {
             visualizer.addLayer(groundnet.groundnetgraph, teardropturn.getLayer());
         }*/
-        SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_LAYERCREATED, new Payload(groundnet.groundnetgraph, new Integer(teardropturn.getLayer()))));
+        SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_LAYERCREATED, new Payload(groundnet.groundnetgraph, Integer.valueOf(teardropturn.getLayer()))));
 
 
         GraphPath followmepath = groundnet.groundnetgraph.createPathFromGraphPosition(GraphMovingComponent.getGraphMovingComponent(followmecar).getCurrentposition(), teardropturn.arc.to, null, null);
         /*if (visualizer != null) {
             visualizer.addLayer(groundnet.groundnetgraph, followmepath.layer);
         }*/
-        SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_LAYERCREATED, new Payload(groundnet.groundnetgraph, new Integer(followmepath.layer))));
+        SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_LAYERCREATED, new Payload(groundnet.groundnetgraph, Integer.valueOf(followmepath.layer))));
 
         // 3. move followme vehicle to aircraft
         GraphMovingComponent.getGraphMovingComponent(followmecar).setPath(followmepath, true);
@@ -986,12 +985,13 @@ public class GroundServicesSystem extends DefaultEcsSystem {
     }
 
     public static VehicleDefinition getAircraftConfigurationByType(String type) {
+        TrafficSystem trafficSystem = (TrafficSystem) SystemManager.findSystem(TrafficSystem.TAG);
         // 24.11.23: Replaced former AircraftConfigProvider by the more generic VehicleConfigDataProvider
-        VehicleDefinition vehicleDefinition = TrafficHelper.getVehicleConfigByDataprovider(null, type);
+        VehicleDefinition vehicleDefinition = trafficSystem.getVehicleConfig(null, type);
 
         if (vehicleDefinition == null) {
             // da genaue - vor allem Doorangaben - schwer zu bekommen sind, nehm ich die 738 als Default. Das passt werstmal fuer alle kleineren, solange kein Vehicle exakt anfährt.
-            vehicleDefinition = TrafficHelper.getVehicleConfigByDataprovider(null, "738");
+            vehicleDefinition = trafficSystem.getVehicleConfig(null, "738");
         }
         return vehicleDefinition;
     }

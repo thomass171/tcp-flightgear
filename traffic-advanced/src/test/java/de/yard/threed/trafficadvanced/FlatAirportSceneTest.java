@@ -126,11 +126,12 @@ public class FlatAirportSceneTest {
         assertTrue(((GraphTerrainSystem) SystemManager.findSystem(GraphTerrainSystem.TAG)).enabled);
 
         sceneRunner.runLimitedFrames(50);
+        TrafficSystem trafficSystem = ((TrafficSystem) SystemManager.findSystem(TrafficSystem.TAG));
 
         List<Vehicle> vehiclelist = TrafficHelper.getVehicleListByDataprovider();
         assertEquals(8, vehiclelist.size(), "size of vehiclelist");
 
-        VehicleDefinition/*Config*/ config = TrafficHelper.getVehicleConfigByDataprovider("VolvoFuel", null);
+        VehicleDefinition/*Config*/ config = trafficSystem.getVehicleConfig("VolvoFuel", null);
         assertNotNull(config);
 
         //11 passt: "Player",GS Vehicle (ohne delayed aircraft) Vehicle from sceneconfig, 3 Aircraft
@@ -172,7 +173,7 @@ public class FlatAirportSceneTest {
         sceneRunner.runLimitedFrames(10);
 
         // load c172p
-        Request request = RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null, null);
+        Request request = RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null, null, null);
         SystemManager.putRequest(request);
         TestUtils.waitUntil(() -> {
             sceneRunner.runLimitedFrames(10);

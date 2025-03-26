@@ -44,6 +44,7 @@ public class SGTexTransformAnimation extends SGAnimation {
     AnimationGroup animationGroup;
     // materials to which the animation applies
     public List<Material> materials;
+    boolean UniformTEXTUREMATRIXnotfoundLogged = false;
 
     abstract class /*SGTexTransformAnimation::*/Transform /*: public SGReferenced*/ {
 
@@ -385,7 +386,11 @@ public class SGTexTransformAnimation extends SGAnimation {
             if (uniform != null) {
                 uniform.setValue(textureMatrix);
             } else {
-                logger.warn("Uniform TEXTUREMATRIX not found");
+                if (!UniformTEXTUREMATRIXnotfoundLogged) {
+                    // avoid log flooding
+                    logger.warn("Uniform TEXTUREMATRIX not found");
+                    UniformTEXTUREMATRIXnotfoundLogged = true;
+                }
             }
         }
 

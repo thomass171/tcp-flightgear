@@ -110,6 +110,8 @@ public class TravelSceneTest {
         assertNotNull(BundleRegistry.getBundle("fgdatabasic"));
 
         sceneRunner.runLimitedFrames(50);
+        TrafficSystem trafficSystem = ((TrafficSystem) SystemManager.findSystem(TrafficSystem.TAG));
+
         EcsEntity userEntity = SystemManager.findEntities(e -> "Freds account name".equals(e.getName())).get(0);
         assertNotNull(userEntity, "userEntity");
         assertNotNull(userEntity.getName(), "name");
@@ -118,7 +120,7 @@ public class TravelSceneTest {
         List<Vehicle> vehiclelist = TrafficHelper.getVehicleListByDataprovider();
         assertEquals(8, vehiclelist.size(), "size of vehiclelist");
 
-        VehicleDefinition/*Config*/ config = TrafficHelper.getVehicleConfigByDataprovider("VolvoFuel", null);
+        VehicleDefinition/*Config*/ config = trafficSystem.getVehicleConfig("VolvoFuel", null);
         assertNotNull(config);
 
         // vehicle need groundnet to be loaded.
@@ -228,7 +230,7 @@ public class TravelSceneTest {
         sceneRunner.runLimitedFrames(10);
 
         // load c172p
-        Request request = RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null, null);
+        Request request = RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null, null, null);
         SystemManager.putRequest(request);
         TestUtils.waitUntil(() -> {
             sceneRunner.runLimitedFrames(10);

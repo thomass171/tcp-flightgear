@@ -49,6 +49,8 @@ import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.engine.util.NearView;
 import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.flightgear.FgBundleHelper;
+import de.yard.threed.traffic.GraphVehiclePositioner;
+import de.yard.threed.traffic.config.VehicleConfigDataProvider;
 import de.yard.threed.trafficadvanced.AdvancedConfiguration;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearMain;
@@ -82,7 +84,6 @@ import de.yard.threed.traffic.VehicleBuiltDelegate;
 import de.yard.threed.traffic.VehicleLauncher;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.traffic.config.PoiConfig;
-import de.yard.threed.traffic.config.VehicleConfigDataProvider;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.config.XmlVehicleDefinition;
 import de.yard.threed.traffic.flight.DoormarkerDelegate;
@@ -96,10 +97,10 @@ import de.yard.threed.trafficfg.AutomoveSystem;
 import de.yard.threed.trafficfg.FgBackProjectionProvider;
 import de.yard.threed.trafficfg.FgCalculations;
 import de.yard.threed.trafficfg.SGGeodAltitudeProvider;
+import de.yard.threed.traffic.SimpleVehiclePositioner;
 import de.yard.threed.trafficfg.StgCycler;
 import de.yard.threed.trafficfg.TravelHelper;
 import de.yard.threed.trafficfg.VehicleEntityBuilder;
-import de.yard.threed.trafficfg.config.ConfigHelper;
 import de.yard.threed.trafficfg.flight.FlightSystem;
 import de.yard.threed.trafficfg.flight.FlightVrControlPanel;
 import de.yard.threed.trafficfg.flight.GroundNet;
@@ -280,12 +281,14 @@ public class TravelScene extends FlightTravelScene {
 
         SystemManager.registerService("vehicleentitybuilder", new VehicleEntityBuilder());
         if (enableDoormarker) {
-            ((TrafficSystem) SystemManager.findSystem(TrafficSystem.TAG)).addVehicleBuiltDelegate(new DoormarkerDelegate());
+            trafficSystem.addVehicleBuiltDelegate(new DoormarkerDelegate());
         }
         //30.11.23 rely on generic provider, but add to TrafficSystem. SystemManager.putDataProvider("aircraftconfig", new AircraftConfigProvider(tw));
         TrafficConfig tw1 = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), new BundleResource("vehicle-definitions.xml"));
 
-        TrafficSystem.knownVehicles.addAll(XmlVehicleDefinition.convertVehicleDefinitions(tw1.getVehicleDefinitions()));
+        for (VehicleDefinition vd : XmlVehicleDefinition.convertVehicleDefinitions(tw1.getVehicleDefinitions())) {
+            trafficSystem.addKnownVehicle(vd);
+        }
 
         // 29.8.23: Missing for orbit tour, but is it correct? Well, orbittour seems to work.
         ((GraphMovingSystem) SystemManager.findSystem(GraphMovingSystem.TAG)).graphAltitudeProvider = new SGGeodAltitudeProvider();
@@ -293,7 +296,6 @@ public class TravelScene extends FlightTravelScene {
         //trafficSystem.addAdditionalData(getLocationList(), getGroundNet(),getDestinationNode(),nearView,getVehicleLoader());
         //groundnet is set later
         trafficSystem.locationList = getLocationList();
-        trafficSystem.destinationNode = getDestinationNode();
         trafficSystem.nearView = nearView;
         trafficSystem.setVehicleLoader(new FgVehicleLoader());
 
@@ -412,9 +414,10 @@ public class TravelScene extends FlightTravelScene {
         //4.12.23 VehicleDefinition vehicleConfig = /*DefaultTrafficWorld.getInstance().getConfiguration()*/ConfigHelper.getVehicleConfig(tw.tw, "Navigator");
         // "Navigator" resides in traffic-fg
         TrafficConfig trafficConfig = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), new BundleResource("flight/vehicle-definitions.xml"));
-        VehicleDefinition vehicleConfig = ConfigHelper.getVehicleConfig(trafficConfig.getVehicleDefinitions(), "Navigator");
+        VehicleDefinition vehicleConfig = VehicleConfigDataProvider.findVehicleDefinitionsByName( XmlVehicleDefinition.convertVehicleDefinitions(trafficConfig.getVehicleDefinitions()), "Navigator").get(0);
 
-        VehicleLauncher.launchVehicle(new Vehicle("Navigator"), vehicleConfig, null, null, avatarpc, getWorld(), null,
+        // 'navigator' will be positioned by teleport later.
+        VehicleLauncher.launchVehicle(new Vehicle("Navigator"), vehicleConfig, new SimpleVehiclePositioner(null),/*, null,*/ avatarpc, /*22.3.25 getWorld(),*/
                 /*4.12.23 sceneConfig.getBaseTransformForVehicleOnGraph()*//*TrafficSystem.baseTransformForVehicleOnGraph*/null, null/*nearView*/, Arrays.asList(new VehicleBuiltDelegate[]{((ecsEntity, config) -> {
 
                     // Weil der TeleporterSystem.init schon gelaufen ist, muss auch "needsupdate" gesetzt werden, darum stepTo().
@@ -668,12 +671,12 @@ public class TravelScene extends FlightTravelScene {
             boolean simplegraphtest = false;
             if (simplegraphtest) {
                 //4.12.23 VehicleDefinition configc172p = /*27.12.21 DefaultTrafficWorld.getInstance()*/ConfigHelper.getVehicleConfig(tw.tw, "c172p");
-                VehicleDefinition configc172p = TrafficHelper.getVehicleConfigByDataprovider("c172p", null);
+                VehicleDefinition configc172p = trafficSystem.getVehicleConfig("c172p", null);
                 GraphPosition c_4position = /*gsw.*/groundnet.getParkingPosition(/*gsw.*/groundnet.getParkPos("C_4"));
                 TrafficGraph trafficgraph = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildSimpleTestRouteB8toC4(/*gsw.*/groundnet);
-                VehicleLauncher.launchVehicle(new Vehicle("c172p"), configc172p, trafficgraph, new GraphPosition(trafficgraph.getBaseGraph().getEdge(0)),
-                        TeleportComponent.getTeleportComponent(UserSystem.getInitialUser()), TravelSceneHelper.getSphereWorld(), null,
-                        /*4.12.23 sceneConfig.getBaseTransformForVehicleOnGraph()*//*TrafficSystem.baseTransformForVehicleOnGraph*/null, null, new ArrayList<VehicleBuiltDelegate>(), new FgVehicleLoader(), null);
+                VehicleLauncher.launchVehicle(new Vehicle("c172p"), configc172p, new GraphVehiclePositioner(trafficgraph, new GraphPosition(trafficgraph.getBaseGraph().getEdge(0))),
+                        TeleportComponent.getTeleportComponent(UserSystem.getInitialUser()), /*22.3.25TravelSceneHelper.getSphereWorld(),*/ null,
+                         null, new ArrayList<VehicleBuiltDelegate>(), new FgVehicleLoader(), null);
             }
 
             //gsw.graphloaded = null;
@@ -869,11 +872,6 @@ public class TravelScene extends FlightTravelScene {
     }*/
 
     @Override
-    public VehicleConfigDataProvider getVehicleConfigDataProvider() {
-        return null;//4.12.23 new VehicleConfigDataProvider(tw.tw);
-    }
-
-    @Override
     public GeoCoordinate getCenter() {
         return WorldGlobal.EDDK_CENTER;
     }
@@ -950,7 +948,7 @@ public class TravelScene extends FlightTravelScene {
         });
         // 'L' for load
         controlmenu.addButton(2, 0, 1, Icon.IconCharacter(11), () -> {
-            SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null, null));
+            SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null, null, null));
             //updateHud();
         });
         controlmenu.addButton(3, 0, 1, Icon.ICON_CLOSE, () -> {

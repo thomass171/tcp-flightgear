@@ -43,7 +43,6 @@ import de.yard.threed.traffic.ScenerySystem;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.traffic.apps.BasicTravelScene;
-import de.yard.threed.traffic.config.VehicleConfigDataProvider;
 import de.yard.threed.traffic.flight.FlightLocation;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.traffic.geodesy.GeoCoordinate;
@@ -152,7 +151,6 @@ public class TrafficScene extends BasicTravelScene {
 
         //groundnet is set later
         //20.11.23 "NOT-YET"trafficSystem.locationList=getLocationList();
-        trafficSystem.destinationNode = getDestinationNode();
         trafficSystem.nearView = nearView;
         trafficSystem.setVehicleLoader(new FgVehicleLoader());
     }
@@ -321,11 +319,6 @@ public class TrafficScene extends BasicTravelScene {
         //20.11.23 "NOT-YET"SolarSystem solarSystem = new SolarSystem();
         SceneNode sun = null;//20.11.23 "NOT-YET"solarSystem.build(2 * WorldGlobal.DISTANCEMOONEARTH, WorldGlobal.DISTANCEMOONEARTH/*km(18000)*/);
         addToWorld(sun);
-    }
-
-    @Override
-    public VehicleConfigDataProvider getVehicleConfigDataProvider() {
-        return null;//20.11.23 "NOT-YET"new VehicleConfigDataProvider(tw.tw);
     }
 
     @Override

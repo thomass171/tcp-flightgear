@@ -241,7 +241,7 @@ public class RailingScene extends Scene {
         /*SystemManager.putDataProvider("vehicleconfig", new VehicleConfigDataProvider(
                 XmlVehicleDefinition.convertVehicleDefinitions(xmlVehicleConfig.getVehicleDefinitions())));*/
         // TODO add vehicle via event.
-        TrafficSystem.knownVehicles.add(XmlVehicleDefinition.convertVehicleDefinitions(xmlVehicleConfig.getVehicleDefinitions()).get(0));
+        trafficSystem.addKnownVehicle(XmlVehicleDefinition.convertVehicleDefinitions(xmlVehicleConfig.getVehicleDefinitions()).get(0));
 
         SystemManager.addSystem(new AvatarSystem(false));
 

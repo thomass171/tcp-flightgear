@@ -26,6 +26,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static de.yard.threed.trafficfg.TrafficConfigTest.getVehicleConfig;
+import static de.yard.threed.trafficfg.TrafficConfigTest.getVehicleConfigByType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -103,24 +105,5 @@ public class TrafficConfigTest {
        TestUtil.assertEquals("vehicles", 15/*bluebird14* /, tw.getVehicleCount());*/
     }
 
-
-
-    private VehicleDefinition getVehicleConfig(List<NativeNode> vds, String name) {
-        VehicleConfigDataProvider vcdp = new VehicleConfigDataProvider(
-                XmlVehicleDefinition.convertVehicleDefinitions(vds));
-
-        List<VehicleDefinition> vehicleDefinitions = vcdp.findVehicleDefinitionsByName(name);
-        return vehicleDefinitions.get(0);
-        //24.11.23 return ConfigHelper.getVehicleConfig(tw.tw, name);
-    }
-
-    private VehicleDefinition getVehicleConfigByType(List<NativeNode> vds, String type) {
-        VehicleConfigDataProvider vcdp = new VehicleConfigDataProvider(
-                XmlVehicleDefinition.convertVehicleDefinitions(vds));
-
-        List<VehicleDefinition> vehicleDefinitions = vcdp.findVehicleDefinitionsByModelType(type);
-        return vehicleDefinitions.get(0);
-        //24.11.23 return ConfigHelper.getVehicleConfig(tw.tw, name);
-    }
 }
 

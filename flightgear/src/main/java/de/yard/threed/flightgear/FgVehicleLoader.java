@@ -53,7 +53,7 @@ public class FgVehicleLoader implements VehicleLoader {
      *
      */
     @Override
-    public void loadVehicle(Vehicle vehicle, VehicleDefinition config, VehicleLoadedDelegate loaddelegate/*, XmlModelCompleteDelegate xmlloaddelegate*/) {
+    public void loadVehicle(Vehicle vehicle, VehicleDefinition config, VehicleLoadedDelegate loaddelegate) {
         //FGinit kann erst nach laden des Bundle gemacht werden.
         //ach, direkt oben anfangen wie FG
         //27.4.17: brauchts den fginit immer noch? Warum eigentlich? Zumindest mal fuer den AircraftPRovider und damit auch FgGlobals

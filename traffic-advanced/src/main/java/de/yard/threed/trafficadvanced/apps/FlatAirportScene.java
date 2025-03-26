@@ -77,6 +77,7 @@ import de.yard.threed.traffic.TravelSphere;
 import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.traffic.VehicleLauncher;
 import de.yard.threed.traffic.config.VehicleConfigDataProvider;
+import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.config.XmlVehicleDefinition;
 import de.yard.threed.traffic.flight.DoormarkerDelegate;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
@@ -307,7 +308,9 @@ public class FlatAirportScene extends FlightTravelScene {
         //SystemManager.putDataProvider("aircraftconfig", new AircraftConfigProvider(tw));
         //30.11.23 rely on generic provider, but add to TrafficSystem. SystemManager.putDataProvider("aircraftconfig", new VehicleConfigDataProvider(tw));
         TrafficConfig tw1 = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), new BundleResource("vehicle-definitions.xml"));
-        TrafficSystem.knownVehicles.addAll(XmlVehicleDefinition.convertVehicleDefinitions(tw1.getVehicleDefinitions()));
+        for (VehicleDefinition vd : XmlVehicleDefinition.convertVehicleDefinitions(tw1.getVehicleDefinitions())) {
+            trafficSystem.addKnownVehicle(vd);
+        }
 
         //trafficSystem.addAdditionalData(getLocationList(), getGroundNet(),getDestinationNode(),nearView,getVehicleLoader());
         //groundnet is set later
@@ -317,7 +320,6 @@ public class FlatAirportScene extends FlightTravelScene {
         airportDefinition = trafficConfig.findAirportDefinitionsByIcao("EDDK").get(0);
 
         trafficSystem.locationList = getLocationList();
-        trafficSystem.destinationNode = getDestinationNode();
         trafficSystem.nearView = nearView;
         trafficSystem.setVehicleLoader(new FgVehicleLoader());
     }
@@ -389,7 +391,7 @@ public class FlatAirportScene extends FlightTravelScene {
                     SystemManager.putRequest(new Request(UserSystem.USER_REQUEST_TELEPORT, new Payload(new Object[]{new IntHolder(0)})));
                 }),
                 new MenuItem(null, new Text("Load", Color.RED, Color.LIGHTGRAY), () -> {
-                    SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null, null));
+                    SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null, null, null));
                     // close menu
                     InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
                 }),
@@ -425,7 +427,7 @@ public class FlatAirportScene extends FlightTravelScene {
         if (makesimple) {
             SceneNode marker = ModelSamples.buildAxisHelper(200, 1);
             //6.12.23 marker.getTransform().setPosition(/*27.12.21 DefaultTrafficWorld.getInstance().getConfiguration()*/getAircraftConfiguration(modeltype).getCateringDoorPosition());
-            marker.getTransform().setPosition(TrafficHelper.getVehicleConfigByDataprovider(null, modeltype).getCateringDoorPosition());
+            marker.getTransform().setPosition(trafficSystem.getVehicleConfig(null, modeltype).getCateringDoorPosition());
             SceneNode basenode = VehicleLauncher.getModelNodeFromVehicleNode(aircraft.getSceneNode());
             /*aircraft.*/
             basenode.attach(marker);
@@ -1010,13 +1012,6 @@ public class FlatAirportScene extends FlightTravelScene {
         return DefaultTrafficWorld.getInstance();
     }*/
 
-    @Override
-    public VehicleConfigDataProvider getVehicleConfigDataProvider() {
-        // 30.11.23: Rely on generic provider
-        Util.nomore();
-        return null;
-        //return new VehicleConfigDataProvider(tw.tw);
-    }
 
     /**
      * Eine Sammlung von special paths with Besonderheiten bei der Pfadbildung.

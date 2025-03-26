@@ -57,7 +57,7 @@ public class TrafficConfigTest {
 
         TrafficConfig railing = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), BundleResource.buildFromFullString("railing/Railing.xml"));
         // 'Railing.xml' doesn't use include.
-        VehicleDefinition vc = getVehicleConfig(TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), BundleResource.buildFromFullString(("railing/locomotive.xml"))).getVehicleDefinitions(), "locomotive");
+        VehicleDefinition vc = VehicleConfigDataProvider.findVehicleDefinitionsByNameFromXml(TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), BundleResource.buildFromFullString(("railing/locomotive.xml"))).getVehicleDefinitions(), "locomotive").get(0);
         assertNotNull(vc, "VehicleDefinition");
         //SceneConfig sceneConfig = railing.getScene("Railing");
         List<NativeNode> viewpoints = railing.getViewpoints();
@@ -67,8 +67,8 @@ public class TrafficConfigTest {
     }
 
     @Test
-    public void testAirports(){
-        List<NativeNode> viewpoints ;
+    public void testAirports() {
+        List<NativeNode> viewpoints;
 
         TrafficConfig eddkFlat = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), BundleResource.buildFromFullString("flight/EDDK-flat.xml"));
         assertNotNull(eddkFlat);
@@ -116,22 +116,13 @@ public class TrafficConfigTest {
         assertEquals(WorldGlobal.eddkoverview.location.pitch.getDegree(), poi.pitch.getDegree(), "poi.name");
     }
 
-    private VehicleDefinition getVehicleConfig(List<NativeNode> vds, String name) {
-        VehicleConfigDataProvider vcdp = new VehicleConfigDataProvider(
-                XmlVehicleDefinition.convertVehicleDefinitions(vds));
-
-        List<VehicleDefinition> vehicleDefinitions = vcdp.findVehicleDefinitionsByName(name);
-        return vehicleDefinitions.get(0);
+    public static VehicleDefinition getVehicleConfig(List<NativeNode> vds, String name) {
+        return VehicleConfigDataProvider.findVehicleDefinitionsByNameFromXml(vds, name).get(0);
         //24.11.23 return ConfigHelper.getVehicleConfig(tw.tw, name);
     }
 
-    private VehicleDefinition getVehicleConfigByType(List<NativeNode> vds, String type) {
-        VehicleConfigDataProvider vcdp = new VehicleConfigDataProvider(
-                XmlVehicleDefinition.convertVehicleDefinitions(vds));
-
-        List<VehicleDefinition> vehicleDefinitions = vcdp.findVehicleDefinitionsByModelType(type);
-        return vehicleDefinitions.get(0);
-        //24.11.23 return ConfigHelper.getVehicleConfig(tw.tw, name);
+    public static VehicleDefinition getVehicleConfigByType(List<NativeNode> vds, String type) {
+        return VehicleConfigDataProvider.findVehicleDefinitionsByModelTypeFromXml(vds, type).get(0);
     }
 }
 

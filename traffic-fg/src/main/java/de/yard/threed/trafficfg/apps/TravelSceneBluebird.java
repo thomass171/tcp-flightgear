@@ -39,11 +39,9 @@ import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.engine.util.NearView;
 import de.yard.threed.engine.vr.VrInstance;
-import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.trafficfg.TrafficRuntimeTestUtil;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearMain;
-import de.yard.threed.flightgear.SimpleBundleResourceProvider;
 import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
@@ -70,7 +68,6 @@ import de.yard.threed.traffic.TrafficSystem;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.traffic.apps.BasicTravelScene;
 import de.yard.threed.traffic.config.PoiConfig;
-import de.yard.threed.traffic.config.VehicleConfigDataProvider;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.config.XmlVehicleDefinition;
 import de.yard.threed.traffic.flight.FlightLocation;
@@ -204,14 +201,15 @@ public class TravelSceneBluebird extends BasicTravelScene {
         SystemManager.registerService("vehicleentitybuilder", new VehicleEntityBuilder());
         vdefs = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), new BundleResource("flight/vehicle-definitions.xml"));
 
-        TrafficSystem.knownVehicles.addAll(XmlVehicleDefinition.convertVehicleDefinitions(vdefs.getVehicleDefinitions()));
+        for (VehicleDefinition vd : XmlVehicleDefinition.convertVehicleDefinitions(vdefs.getVehicleDefinitions())) {
+            trafficSystem.addKnownVehicle(vd);
+        }
 
         // 29.8.23: Missing for orbit tour, but is it correct? Well, orbittour seems to work.
         ((GraphMovingSystem) SystemManager.findSystem(GraphMovingSystem.TAG)).graphAltitudeProvider = new SGGeodAltitudeProvider();
 
         //groundnet is set later
         trafficSystem.locationList = airportDefinition.getLocations();
-        trafficSystem.destinationNode = getDestinationNode();
         trafficSystem.nearView = nearView;
         trafficSystem.setVehicleLoader(new FgVehicleLoader());
 
@@ -340,8 +338,8 @@ public class TravelSceneBluebird extends BasicTravelScene {
     @Override
     public LightDefinition[] getLight() {
         return new LightDefinition[]{
-        /*15.5.24   now in EDDK-sphere.xml      new LightDefinition(Color.WHITE, new Vector3(0, 30000000, 20000000)),
-                new LightDefinition(Color.WHITE, new Vector3(0, -30000000, -20000000)),*/
+                /*15.5.24   now in EDDK-sphere.xml      new LightDefinition(Color.WHITE, new Vector3(0, 30000000, 20000000)),
+                        new LightDefinition(Color.WHITE, new Vector3(0, -30000000, -20000000)),*/
         };
     }
 
@@ -556,11 +554,6 @@ public class TravelSceneBluebird extends BasicTravelScene {
     public VehicleLoader getVehicleLoader() {
         return new FgVehicleLoader();
     }*/
-
-    @Override
-    public VehicleConfigDataProvider getVehicleConfigDataProvider() {
-        return null;//4.12.23 new VehicleConfigDataProvider(tw.tw);
-    }
 
     @Override
     public GeoCoordinate getCenter() {

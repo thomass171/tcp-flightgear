@@ -18,6 +18,7 @@ import de.yard.threed.traffic.VehicleLauncher;
 import de.yard.threed.traffic.VehicleLoaderResult;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.config.XmlVehicleDefinition;
+import de.yard.threed.traffic.testutils.TrafficTestUtils;
 import de.yard.threed.trafficcore.model.Vehicle;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
@@ -55,16 +56,7 @@ public class FgVehicleLoaderTest {
         SGReaderWriterXML.clearStatistics();
         new FgVehicleLoader().loadVehicle(new Vehicle(config.getName()), config,
                 (SceneNode container, VehicleLoaderResult loaderResult, SceneNode lowresNode) -> {
-
-                    SceneNode vehicleModelnode = VehicleLauncher.getModelNodeFromVehicleNode(container);
-                    assertEquals("vehicle-container", container.getName());
-                    assertEquals("basenode", vehicleModelnode.getName());
-                    SceneNode zoffsetnode = vehicleModelnode.getParent();
-                    assertEquals("zoffsetnode", zoffsetnode.getName());
-                    TestUtils.assertVector3(new Vector3(0, 0, 1.2), zoffsetnode.getTransform().getPosition());
-                    // container1 is container again
-                    SceneNode container1 = zoffsetnode.getParent();
-                    assertEquals("vehicle-container", container1.getName());
+                    TrafficTestUtils.assertVehicleNodeHierarchy(container, 1.2);
                     loaded.add(container);
                     // animation loading might not been complete. TODO should. delegte called to often?
                     loadedResults.add((FgVehicleLoaderResult) loaderResult);

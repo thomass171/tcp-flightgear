@@ -887,10 +887,7 @@ public class GroundNetTest {
         //return TrafficWorldConfig.getAircraftConfiguration(airportDefinitions, s);
         //GroundServiceAircraftConfig c = aircrafts.get(type);
         // the first should be sufficient
-        VehicleConfigDataProvider vcdp = new VehicleConfigDataProvider(
-                XmlVehicleDefinition.convertVehicleDefinitions(vehicleDefinitions.getVehicleDefinitions()));
-
-        return vcdp.findVehicleDefinitionsByModelType(modeltype).get(0);
+        return VehicleConfigDataProvider.findVehicleDefinitionsByModelType(XmlVehicleDefinition.convertVehicleDefinitions(vehicleDefinitions.getVehicleDefinitions()), modeltype).get(0);
     }
 
     /**

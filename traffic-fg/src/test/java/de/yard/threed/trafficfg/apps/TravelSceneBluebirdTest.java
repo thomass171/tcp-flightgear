@@ -107,6 +107,7 @@ public class TravelSceneBluebirdTest {
         TravelSceneTestHelper.validateSphereProjections();
 
         sceneRunner.runLimitedFrames(50);
+        TrafficSystem trafficSystem = ((TrafficSystem) SystemManager.findSystem(TrafficSystem.TAG));
         // now all major initing should have been done
 
         String[] bundleNames = BundleRegistry.getBundleNames();
@@ -158,7 +159,7 @@ public class TravelSceneBluebirdTest {
         List<Vehicle> vehiclelist = TrafficHelper.getVehicleListByDataprovider();
         assertEquals(0, vehiclelist.size(), "size of vehiclelist");
 
-        VehicleDefinition config = TrafficHelper.getVehicleConfigByDataprovider("bluebird", null);
+        VehicleDefinition config = trafficSystem.getVehicleConfig("bluebird", null);
         assertNotNull(config);
 
         // initialRoute for now is not stored in TrafficSystem.
@@ -219,12 +220,14 @@ public class TravelSceneBluebirdTest {
                 log.debug("posrot=" + posrot);
                 // position by graph should comply to nodes position
                 TestUtils.assertVector3(posbluebird, posrot.position);
+                TrafficTestUtils.assertVehicleEntity(bluebird, "bluebird", 1.2, posrot.position, "TravelSphere", log);
                 // abort here for now
                 return;
             } else {
                 assertEquals("groundnet.EDDK", gmc.getGraph().getName());
                 // ref values for initial EDDK position taken from visual test
                 TestUtils.assertVector3(new Vector3(4001277.6476712367, 500361.77258586703, 4925186.718276716), posbluebird);
+                TrafficTestUtils.assertVehicleEntity(bluebird, "bluebird", 1.2, new Vector3(4001277.6476712367, 500361.77258586703, 4925186.718276716), "TravelSphere", log);
                 LocalTransform posrot = GraphMovingSystem.getPosRot(gmc);
                 log.debug("posrot=" + posrot);
                 // ref values taken from visual test
