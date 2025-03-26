@@ -2,7 +2,7 @@
  * JS part of tcp-flightgear.html
  */
 
-var host = "https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/tcp-22";
+var host = "https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/tcp-flightgear";
 
 function addPanel(label, contentProvider, optionalElement) {
     //console.log("addPanel " + label);
