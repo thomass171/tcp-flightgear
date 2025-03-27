@@ -87,9 +87,9 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         boolean blogSample = false;
         if (blogSample) {
             // Greenwich
-            //properties.put("initialLocation", "51.47752,0,500");
-            //properties.put("initialHeading", "270");
-            // Hamburg (kein tile?)
+            properties.put("initialLocation", "51.47752,0,500");
+            properties.put("initialHeading", "270");
+            // Hamburg (no tile?)
             //properties.put("initialLocation", "53.45,10.08,500");
             //properties.put("initialHeading", "300");
             // Edinburgh

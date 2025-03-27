@@ -476,12 +476,15 @@ public class SGReaderWriterXML {
                 }
             }
 
-            SceneNode submodelresultNode;
+            SceneNode submodelresultNode = null;
             // 12.2.24: No longer use same methode for XML and non XML. Decide here.
             if (bsubmodelpath.getExtension().equals("xml")) {
                 BuildResult submodelresult = sgLoad3DModel_internal(bsubmodelpath,/*MA23 submodelPath, options/*.get()* /,
                     sub_props.getNode("overlay"),*/ boptions, modeldelegate);
-                submodelresultNode = new SceneNode(submodelresult.getNode());
+                // 27.3.25 submodel load might fail, so check.
+                if (submodelresult.getNode() != null) {
+                    submodelresultNode = new SceneNode(submodelresult.getNode());
+                }
             } else {
                 BundleResource finalbsubmodelpath = bsubmodelpath;
                 SceneNode destinationNode = new SceneNode();
