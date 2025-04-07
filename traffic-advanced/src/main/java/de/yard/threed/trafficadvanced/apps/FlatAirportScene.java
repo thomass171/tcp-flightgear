@@ -81,7 +81,7 @@ import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.config.XmlVehicleDefinition;
 import de.yard.threed.traffic.flight.DoormarkerDelegate;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.traffic.geodesy.MapProjection;
 import de.yard.threed.traffic.osm.OsmRunway;
 import de.yard.threed.trafficadvanced.AdvancedConfiguration;

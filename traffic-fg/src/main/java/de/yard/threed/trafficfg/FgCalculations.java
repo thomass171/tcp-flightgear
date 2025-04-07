@@ -2,6 +2,7 @@ package de.yard.threed.trafficfg;
 
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.GeneralParameterHandler;
+import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.core.LatLon;
 import de.yard.threed.core.MathUtil2;
 import de.yard.threed.core.Quaternion;
@@ -11,14 +12,13 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.geodesy.ElevationProvider;
 import de.yard.threed.flightgear.core.simgear.geodesy.FgMath;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeodesy;
 
 /**
  * The flightgear implementation of EllipsoidCalculations.
  */
-public class FgCalculations implements EllipsoidCalculations {
+public class FgCalculations extends EllipsoidCalculations {
 
     private static Log logger = Platform.getInstance().getLog(FgCalculations.class);
 
@@ -26,21 +26,13 @@ public class FgCalculations implements EllipsoidCalculations {
     public static double ERAD = 6378138.12;
 
     /**
-     * Die richtige Rotation für einen Ort um dort parallel zur Erdoberfläche mit Blickrichtung zur Erdoberfläche
-     * und up Richtung Norden zu stehen.
-     * Warum man die direction nicht negieren muss, ist nicht ganz klar.
      * <p>
-     * 11.1.17: Jetzt FG OsgMath.makeZUpFrame()
+     * 11.1.17: Now FG OsgMath.makeZUpFrame()
      *
      * @param location
      * @return
      */
     public Quaternion buildRotation(SGGeod location) {
-        /*Vector3 v = location.toCart();
-        Vector3 direction = new Vector3().subtract(v);
-        // up ist nicht orthogonal. Und ist hier auf der z-Achse, weil die durch die Pole läuft.
-        Vector3 up = new Vector3(0, 0,WorldGlobal.EARTHRADIUS);
-        return new Quaternion(MathUtil2.buildLookRotation(/*direction* /v.vector3, up.vector3));*/
         return FgMath.makeZUpFrameRelative(location);
     }
 
@@ -48,7 +40,7 @@ public class FgCalculations implements EllipsoidCalculations {
      * 8.6.17: Die Methode ist wohl für die Platzierung vom Modeln. Für Camera muss das Ergebnis noch ...(gespiegelt?) werden.
      */
     @Override
-    public  Quaternion buildRotation(GeoCoordinate location, Degree heading, Degree pitch) {
+    public  Quaternion buildZUpRotation(GeoCoordinate location, Degree heading, Degree pitch) {
         Quaternion rotation = buildRotation(SGGeod.fromGeoCoordinate(location));
         // Rotation ist eigentlich CCW, Heading soll aber CW sein (in FG und intuitiv), darum negieren.
         // Scenery Objekte haben aber trotzdem CCW Haeding! Die mussen dann negiertes Heading hier reinstecken.

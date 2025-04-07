@@ -486,7 +486,7 @@ public class SceneryViewerScene extends Scene {
         //rotation = rotation.multiply(new Quaternion(new Degree(heading), new Degree(pitch), new Degree(roll)));
         Quaternion q = MathUtil2.buildQuaternionFromAngleAxis(new Degree(heading).toRad(), new Vector3(0, 0, 1).vector3);
         rotation = rotation.multiply(new Quaternion(q));*/
-        n.getTransform().setRotation(new FgCalculations().buildRotation(geo.toGeoCoordinate(), heading, new Degree(0)));
+        n.getTransform().setRotation(new FgCalculations().buildZUpRotation(geo.toGeoCoordinate(), heading, new Degree(0)));
 
         world.attach(n);
 
@@ -571,7 +571,7 @@ public class SceneryViewerScene extends Scene {
      */
     private Quaternion buildLookDownRotation(SGGeod location) {
         // Nach vorne kippen ist negativer Pitch. 8.6.17: Warum die Parameter so sind? Weil Camera anders als Model ist?
-        return new FgCalculations().buildRotation(location.toGeoCoordinate(), new Degree(-90), new Degree(0));
+        return new FgCalculations().buildZUpRotation(location.toGeoCoordinate(), new Degree(-90), new Degree(0));
     }
 
     /**

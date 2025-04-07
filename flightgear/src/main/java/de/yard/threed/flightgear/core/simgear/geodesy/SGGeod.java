@@ -6,7 +6,7 @@ import de.yard.threed.core.MathUtil2;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.core.GeoCoordinate;
 
 /**
  * FG has parameter order lon/lat always.

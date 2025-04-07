@@ -8,7 +8,7 @@ import de.yard.threed.graph.GraphComponent;
 import de.yard.threed.graph.GraphEdge;
 import de.yard.threed.graph.GraphNode;
 import de.yard.threed.traffic.NodeCoord;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.core.GeoCoordinate;
 
 
 /**

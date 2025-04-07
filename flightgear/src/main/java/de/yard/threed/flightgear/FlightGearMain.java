@@ -15,7 +15,7 @@ import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.NativeCollision;
 import de.yard.threed.core.platform.NativeSceneNode;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.core.GeoCoordinate;
 
 import java.util.List;
 

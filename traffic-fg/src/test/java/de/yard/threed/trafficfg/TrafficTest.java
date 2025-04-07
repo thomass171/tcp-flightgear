@@ -28,7 +28,7 @@ import de.yard.threed.javacommon.SimpleHeadlessPlatformFactory;
 import de.yard.threed.traffic.EllipsoidConversionsProvider;
 import de.yard.threed.traffic.NodeCoord;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.traffic.geodesy.MapProjection;
 import de.yard.threed.traffic.geodesy.SimpleMapProjection;
 import de.yard.threed.traffic.osm.OsmRunway;

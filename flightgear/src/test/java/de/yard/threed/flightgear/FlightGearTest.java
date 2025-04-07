@@ -33,7 +33,7 @@ import de.yard.threed.traffic.config.ConfigHelper;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.engine.testutil.TestHelper;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.trafficcore.model.Vehicle;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;

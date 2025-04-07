@@ -2,7 +2,7 @@ package de.yard.threed.trafficfg.flight;
 
 import de.yard.threed.core.Degree;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.trafficfg.FgCalculations;
 
 public class GeoUtil {

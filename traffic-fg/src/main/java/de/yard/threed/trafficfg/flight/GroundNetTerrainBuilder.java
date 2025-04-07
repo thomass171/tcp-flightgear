@@ -20,7 +20,7 @@ import de.yard.threed.graph.GraphVisualizer;
 import de.yard.threed.traffic.AbstractSceneryBuilder;
 import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.GraphTerrainVisualizer;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.traffic.geodesy.MapProjection;
 import de.yard.threed.trafficcore.model.Runway;
 import de.yard.threed.trafficfg.config.AirportConfig;

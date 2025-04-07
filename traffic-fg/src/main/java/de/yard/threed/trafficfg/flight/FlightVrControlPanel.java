@@ -9,6 +9,7 @@ import de.yard.threed.core.SpinnerHandler;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
+import de.yard.threed.engine.BaseRequestRegistry;
 import de.yard.threed.engine.Material;
 import de.yard.threed.engine.ecs.InputToRequestSystem;
 import de.yard.threed.engine.ecs.SystemManager;
@@ -104,10 +105,10 @@ public class FlightVrControlPanel {
             }).setIcon(Icon.IconCharacter(11));
         }
         cp.addArea(panelGrid.getPosition(2, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
-            logger.debug("minus clicked");
+            InputToRequestSystem.sendRequestWithId(new Request(BaseRequestRegistry.TRIGGER_REQUEST_START_SPEEDDOWN));
         }).setIcon(Icon.ICON_HORIZONTALLINE);
         cp.addArea(panelGrid.getPosition(3, 0), new DimensionF(ControlPanelColWidth[3], ControlPanelRowHeight), () -> {
-            logger.debug("plus clicked");
+            InputToRequestSystem.sendRequestWithId(new Request(BaseRequestRegistry.TRIGGER_REQUEST_START_SPEEDUP));
         }).setIcon(Icon.ICON_PLUS);
 
         return cp;

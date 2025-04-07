@@ -17,7 +17,7 @@ import de.yard.threed.traffic.SphereProjections;
 import de.yard.threed.traffic.TrafficEventRegistry;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.trafficfg.flight.GroundNet;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
 import de.yard.threed.trafficfg.flight.Parking;

@@ -15,6 +15,7 @@ import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.testutil.RuntimeTestUtil;
 import de.yard.threed.engine.AmbientLight;
+import de.yard.threed.engine.BaseRequestRegistry;
 import de.yard.threed.engine.Camera;
 import de.yard.threed.engine.DirectionalLight;
 import de.yard.threed.engine.Input;
@@ -340,10 +341,10 @@ public class RailingScene extends Scene {
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
         });
         controlmenu.addButton(2, 0, 1, Icon.ICON_HORIZONTALLINE, () -> {
-            //TODO incMovementSpeed
+            InputToRequestSystem.sendRequestWithId(new Request(BaseRequestRegistry.TRIGGER_REQUEST_START_SPEEDDOWN));
         });
         controlmenu.addButton(3, 0, 1, Icon.ICON_PLUS, () -> {
-            //TODO incMovementSpeed
+            InputToRequestSystem.sendRequestWithId(new Request(BaseRequestRegistry.TRIGGER_REQUEST_START_SPEEDUP));
         });
         controlmenu.addButton(4, 0, 1, Icon.ICON_CLOSE, () -> {
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_CONTROLMENU));

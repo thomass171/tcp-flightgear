@@ -30,7 +30,7 @@ import de.yard.threed.traffic.BasicRouteBuilder;
 import de.yard.threed.traffic.EllipsoidConversionsProvider;
 import de.yard.threed.traffic.GeoRoute;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.trafficfg.fgadapter.FgTerrainBuilder;
 import de.yard.threed.trafficfg.flight.GroundNet;
 import de.yard.threed.trafficfg.flight.GroundNetTest;

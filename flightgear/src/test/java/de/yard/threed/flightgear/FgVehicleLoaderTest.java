@@ -1,5 +1,6 @@
 package de.yard.threed.flightgear;
 
+import de.yard.threed.core.Quaternion;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.XmlException;
 import de.yard.threed.core.platform.NativeDocument;
@@ -56,7 +57,7 @@ public class FgVehicleLoaderTest {
         SGReaderWriterXML.clearStatistics();
         new FgVehicleLoader().loadVehicle(new Vehicle(config.getName()), config,
                 (SceneNode container, VehicleLoaderResult loaderResult, SceneNode lowresNode) -> {
-                    TrafficTestUtils.assertVehicleNodeHierarchy(container, 1.2);
+                    TrafficTestUtils.assertVehicleNodeHierarchy(container, 1.2, new Quaternion());
                     loaded.add(container);
                     // animation loading might not been complete. TODO should. delegte called to often?
                     loadedResults.add((FgVehicleLoaderResult) loaderResult);

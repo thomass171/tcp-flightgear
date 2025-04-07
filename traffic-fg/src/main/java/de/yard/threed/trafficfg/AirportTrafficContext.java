@@ -10,7 +10,7 @@ import de.yard.threed.traffic.TrafficContext;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.config.VehicleDefinition;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.trafficcore.config.LocatedVehicle;
 import de.yard.threed.trafficcore.model.SmartLocation;
 import de.yard.threed.trafficfg.config.AirportConfig;

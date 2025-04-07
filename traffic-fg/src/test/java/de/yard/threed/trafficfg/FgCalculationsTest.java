@@ -16,18 +16,20 @@ import de.yard.threed.traffic.flight.FlightLocation;
 import org.junit.jupiter.api.Test;
 
 /**
- * auch SGQuat, OsgMath.
+ * auch SGQuat, OsgMath, FlightLocation.
  * <p>
+ * 30.3.25: Renamed from FlightLocationTest to FgCalculationsTest
  * Created by thomass on 11.01.17.
  */
-public class FlightLocationTest {
+public class FgCalculationsTest {
     //static Platform platform = TestFactory.initPlatformForTest(false,false,null,true);
     static Platform platform = FgTestFactory.initPlatformForTest();
-    static Log logger = Platform.getInstance().getLog(FlightLocationTest.class);
+    static Log logger = Platform.getInstance().getLog(FgCalculationsTest.class);
     SGGeod suedpol = new SGGeod(new Degree(0), new Degree(-90), 0);
     SGGeod nordpol = new SGGeod(new Degree(0), new Degree(90), 0);
     SGGeod greenwich = new SGGeod(new Degree(0), new Degree(51.477524), 0);
     SGGeod nullequator = new SGGeod(new Degree(0), new Degree(0), 0);
+    EllipsoidCalculations ec = new FgCalculations();
 
     /**
      * siehe Wiki

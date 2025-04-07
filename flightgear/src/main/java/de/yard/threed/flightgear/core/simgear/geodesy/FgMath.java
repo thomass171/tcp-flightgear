@@ -6,6 +6,7 @@ import de.yard.threed.core.Quaternion;
 /**
  * Berechnungen aus FG, die hier gebraucht werden. Aus Copyright Gruenden evtl. fragwuerdig. Wobei, eigentlich ist es
  * aus OSG  (OsgMath).
+ * 31.3.25 Cloned to EllipsoidCalculations
  */
 public class FgMath {
     //osg::Matrix
@@ -49,12 +50,6 @@ public class FgMath {
         return result;
     }
 
-    /// Return a quaternion rotation from the earth centered to the
-    /// simulation usual horizontal local frame from given
-    /// longitude and latitude.
-    /// The horizontal local frame used in simulations isType the frame with x-axis
-    /// pointing north, the y-axis pointing eastwards and the z axis
-    /// pointing downwards.
     // Siehe Wiki.
     public static Quaternion/*SGQuat*/ fromLonLatRad(double lon, double lat)
     {

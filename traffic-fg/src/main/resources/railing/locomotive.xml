@@ -22,6 +22,12 @@
         </viewpoint>
         <!-- has no 'Backside' like loc in 'tcp-22'-->
         <initialcount>1</initialcount>
+
+        <transform>
+            <!-- See FgVehicleSpace.getLocSpaceToFgSpace() -->
+            <angle>90,0,0</angle>
+        </transform>
+
     </vehicledefinition>
 
 </c:config>

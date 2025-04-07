@@ -29,6 +29,7 @@ import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.graph.DefaultEdgeBasedRotationProvider;
 import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphPath;
+import de.yard.threed.traffic.FgVehicleSpace;
 import de.yard.threed.traffic.GraphTerrainSystem;
 import de.yard.threed.traffic.GraphVisualizationSystem;
 import de.yard.threed.traffic.RequestRegistry;
@@ -254,7 +255,7 @@ public class TravelSceneTest {
         assertNotNull(gmc.getGraph());
         assertFalse(gmc.hasAutomove());
         assertNull(gmc.getPath());
-        assertQuaternion(DefaultEdgeBasedRotationProvider.getFgVehicleForwardRotation(), gmc.customModelRotation);
+        assertQuaternion(FgVehicleSpace.getFgVehicleForwardRotation(), gmc.customModelRotation);
 
         // start c172p and wait until it has a flight route (first will be move to runway)
         TravelSceneTestHelper.assertDefaultTrip(sceneRunner, c172p, true);

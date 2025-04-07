@@ -45,7 +45,7 @@ import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.traffic.apps.BasicTravelScene;
 import de.yard.threed.traffic.flight.FlightLocation;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.FgCalculations;
 

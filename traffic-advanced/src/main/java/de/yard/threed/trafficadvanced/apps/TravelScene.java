@@ -89,7 +89,7 @@ import de.yard.threed.traffic.config.XmlVehicleDefinition;
 import de.yard.threed.traffic.flight.DoormarkerDelegate;
 import de.yard.threed.traffic.flight.FlightLocation;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.traffic.osm.OsmRunway;
 import de.yard.threed.trafficcore.model.Runway;
 import de.yard.threed.trafficcore.model.Vehicle;
@@ -301,7 +301,7 @@ public class TravelScene extends FlightTravelScene {
 
         if (VrInstance.getInstance() == null) {
             InputToRequestSystem inputToRequestSystem = (InputToRequestSystem) SystemManager.findSystem(InputToRequestSystem.TAG);
-            inputToRequestSystem.setControlMenuBuilder(camera -> buildControlMenuForScene(camera));
+            inputToRequestSystem.setControlMenuBuilder(camera -> buildControlMenuForScene(camera, true));
             // cameraForMenu already set by super class
         }
 
@@ -931,31 +931,7 @@ public class TravelScene extends FlightTravelScene {
         return DefaultTrafficWorld.getInstance();
     }*/
 
-    /**
-     * Non VR Control menu.
-     * Camera is a deferred camera defined during init.
-     * <p>
-     */
-    public GuiGrid buildControlMenuForScene(Camera camera) {
 
-        GuiGrid controlmenu = GuiGrid.buildForCamera(camera, 2, 4, 1, Color.BLACK_FULLTRANSPARENT, true);
-
-        controlmenu.addButton(0, 0, 1, Icon.ICON_POSITION, () -> {
-            InputToRequestSystem.sendRequestWithId(new Request(UserSystem.USER_REQUEST_TELEPORT, new Payload(new Object[]{new IntHolder(0)})));
-        });
-        controlmenu.addButton(1, 0, 1, Icon.ICON_MENU, () -> {
-            InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
-        });
-        // 'L' for load
-        controlmenu.addButton(2, 0, 1, Icon.IconCharacter(11), () -> {
-            SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null, null, null));
-            //updateHud();
-        });
-        controlmenu.addButton(3, 0, 1, Icon.ICON_CLOSE, () -> {
-            InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_CONTROLMENU));
-        });
-        return controlmenu;
-    }
 
     /**
      * 19.3.24: Now needed

@@ -44,7 +44,7 @@ import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.TrafficSystem;
 import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.traffic.config.VehicleDefinition;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.traffic.geodesy.SimpleMapProjection;
 import de.yard.threed.traffic.testutils.TrafficTestUtils;
 import de.yard.threed.trafficcore.model.Vehicle;
@@ -58,6 +58,8 @@ import de.yard.threed.trafficfg.flight.Parking;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.HashMap;
 import java.util.List;
@@ -76,7 +78,7 @@ public class TravelSceneBluebirdTest {
     /**
      *
      */
-    @Test
+    /*@Test
     public void testWithBluebird() throws Exception {
         run(true, null, null);
     }
@@ -92,11 +94,20 @@ public class TravelSceneBluebirdTest {
         //too early to parse GeoRoute here
         // basename is EDKB
         run(true, null, GeoRoute.SAMPLE_EDKB_EDDK);
-    }
+    }*/
+    @ParameterizedTest
+    @CsvSource(value = {
+            "true;;;",
+            "false;;;",
+            // Route is GeoRoute.SAMPLE_EDKB_EDDK
+            "true;wp:50.768,7.1672000->takeoff:50.7692,7.1617000->wp:50.7704,7.1557->wp:50.8176,7.0999->wp:50.8519,7.0921->touchdown:50.8625,7.1317000->wp:50.8662999,7.1443999;;",
+            // what is corresponding heading? 320? TODO
+            "true;;geo:50.85850600,  007.13874200 ,78.05;320",
+    }, delimiter = ';')
+    public void testBluebird(boolean withBluebird, String initialRoute, String initialLocation, String initialHeading) throws Exception {
 
-    public void run(boolean withBluebird, String basename, String initialRoute) throws Exception {
-
-        setup(withBluebird, basename, initialRoute);
+        String basename = null;
+        setup(withBluebird, basename, initialRoute, initialLocation, initialHeading);
 
         assertEquals(INITIAL_FRAMES, sceneRunner.getFrameCount());
         SphereSystem sphereSystem = (SphereSystem) SystemManager.findSystem(SphereSystem.TAG);
@@ -146,9 +157,9 @@ public class TravelSceneBluebirdTest {
         assertNotNull(initialPosition);
         if (basename != null) {
             Util.nomore();
-            TrafficTestUtils.assertGeoCoordinate(GeoCoordinate.parse(basename), initialPosition, "initialPosition");
+            TestUtils.assertGeoCoordinate(GeoCoordinate.parse(basename), initialPosition, "initialPosition");
         } else {
-            TrafficTestUtils.assertGeoCoordinate(TravelSceneBluebird.formerInitialPositionEDDK, initialPosition, "initialPosition");
+            TestUtils.assertGeoCoordinate(TravelSceneBluebird.formerInitialPositionEDDK, initialPosition, "initialPosition");
         }
 
         assertFalse(((GraphTerrainSystem) SystemManager.findSystem(GraphTerrainSystem.TAG)).enabled);
@@ -199,7 +210,9 @@ public class TravelSceneBluebirdTest {
             VehicleComponent vehicleComponent = VehicleComponent.getVehicleComponent(bluebird);
             //TODO not yet added assertNotNull(vehicleComponent);
             Vector3 posbluebird = bluebird.getSceneNode().getTransform().getPosition();
+            Quaternion rotationbluebird = bluebird.getSceneNode().getTransform().getRotation();
             log.debug("posbluebird=" + posbluebird);
+            log.debug("rotationbluebird=" + rotationbluebird);
             GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(bluebird);
             assertNotNull(gmc);
 
@@ -220,14 +233,33 @@ public class TravelSceneBluebirdTest {
                 log.debug("posrot=" + posrot);
                 // position by graph should comply to nodes position
                 TestUtils.assertVector3(posbluebird, posrot.position);
-                TrafficTestUtils.assertVehicleEntity(bluebird, "bluebird", 1.2, posrot.position, "TravelSphere", log);
+                TrafficTestUtils.assertVehicleEntity(bluebird, "bluebird", 1.2, posrot.position, "TravelSphere", new Quaternion(), log);
+                // abort here for now
+                return;
+            } else if (initialLocation != null) {
+                // position differs from 'initialRoute' we are in EDDK instead of EDKB
+                GeoCoordinate geoBluebird = ellipsoidCalculations.fromCart(posbluebird);
+                assertEquals(50.858506, geoBluebird.getLatDeg().getDegree(), 0.000001);
+                assertEquals(7.138742, geoBluebird.getLonDeg().getDegree(), 0.000001);
+                // elevation 78.05 was hard coded
+                assertEquals(78.05, geoBluebird.getElevationM(), 0.01);
+                // vehicle isn't on graph
+                assertNull(gmc.getCurrentposition());
+                // 'bluebird' is in FG space, so no local rotation required.
+                Quaternion expectedLocalVehicleRotation = new Quaternion();
+                TrafficTestUtils.assertVehicleEntity(bluebird, "bluebird", 1.2,
+                        ellipsoidCalculations.toCart(GeoCoordinate.parse("50.85850600,  007.13874200 ,78.05")),
+                        "TravelSphere", expectedLocalVehicleRotation, log);
+                // Not yet sure how to calc the ref value. For now use once existing values after visual check.
+                Quaternion expectedRotation = new Quaternion(-0.0947478409981826,-0.3212913237534745,-0.37675868791648814,-0.8636247003104818);
+                TestUtils.assertQuaternion(expectedRotation, rotationbluebird);
                 // abort here for now
                 return;
             } else {
                 assertEquals("groundnet.EDDK", gmc.getGraph().getName());
                 // ref values for initial EDDK position taken from visual test
                 TestUtils.assertVector3(new Vector3(4001277.6476712367, 500361.77258586703, 4925186.718276716), posbluebird);
-                TrafficTestUtils.assertVehicleEntity(bluebird, "bluebird", 1.2, new Vector3(4001277.6476712367, 500361.77258586703, 4925186.718276716), "TravelSphere", log);
+                TrafficTestUtils.assertVehicleEntity(bluebird, "bluebird", 1.2, new Vector3(4001277.6476712367, 500361.77258586703, 4925186.718276716), "TravelSphere", new Quaternion(), log);
                 LocalTransform posrot = GraphMovingSystem.getPosRot(gmc);
                 log.debug("posrot=" + posrot);
                 // ref values taken from visual test
@@ -261,7 +293,7 @@ public class TravelSceneBluebirdTest {
     /**
      * Needs parameter, so no @Before
      */
-    private void setup(boolean withBluebird, String basename, String initialRoute) throws Exception {
+    private void setup(boolean withBluebird, String basename, String initialRoute, String initialLocation, String initialHeading) throws Exception {
         HashMap<String, String> properties = new HashMap<String, String>();
         properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
         if (withBluebird) {
@@ -273,6 +305,12 @@ public class TravelSceneBluebirdTest {
         }
         if (initialRoute != null) {
             properties.put("initialRoute", initialRoute);
+        }
+        if (initialLocation != null) {
+            properties.put("initialLocation", initialLocation);
+        }
+        if (initialHeading != null) {
+            properties.put("initialHeading", initialHeading);
         }
 
         FgTestFactory.initPlatformForTest(properties, false, true, true, false);

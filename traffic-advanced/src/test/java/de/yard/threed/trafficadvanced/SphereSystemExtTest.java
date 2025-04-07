@@ -26,7 +26,7 @@ import de.yard.threed.traffic.SphereSystem;
 import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.TrafficEventRegistry;
 import de.yard.threed.traffic.TrafficHelper;
-import de.yard.threed.traffic.geodesy.GeoCoordinate;
+import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.trafficadvanced.apps.FlatAirportScene;
 import de.yard.threed.trafficfg.flight.GroundNetMetadata;
 import org.junit.jupiter.api.BeforeEach;

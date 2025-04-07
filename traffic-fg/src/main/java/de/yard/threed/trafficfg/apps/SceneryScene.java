@@ -78,7 +78,7 @@ import static de.yard.threed.engine.ecs.TeleporterSystem.EVENT_POSITIONCHANGED;
  * A scene for first person moving through a scenery/terrain. No traffic, no graph, no ground services.
  * Derived from TravelScene.
  * No login/avatar (so no user or AvatarSystem, user is manually registered as 'acting player'), just an entity with simple node that is FPS moved.
- * Also no teleport.
+ * Also no teleport and no TrafficSystem.
  * <p>
  * <p>
  * The origin of this coordinate system is the center of the earth. The X axis runs along a line from the center of the earth
