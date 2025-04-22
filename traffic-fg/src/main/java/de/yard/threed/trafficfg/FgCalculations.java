@@ -14,6 +14,7 @@ import de.yard.threed.traffic.geodesy.ElevationProvider;
 import de.yard.threed.flightgear.core.simgear.geodesy.FgMath;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeodesy;
+import de.yard.threed.trafficcore.geodesy.GeoTools;
 
 /**
  * The flightgear implementation of EllipsoidCalculations.
@@ -140,20 +141,8 @@ public class FgCalculations extends EllipsoidCalculations {
 
     @Override
     public Degree courseTo(LatLon latLon, LatLon dest) {
-        if (latLon.latRad == dest.latRad && latLon.lonRad == dest.lonRad) {
-            return new Degree(0);
-        }
-
-        //TODO Singularitaeten abfangen? an den Polen?
-        double dlon = dest.lonRad - latLon.lonRad;
-        double ret = 0;
-
-        ret = (Math.atan2(Math.sin(dlon) * Math.cos(dest.latRad),
-                Math.cos(latLon.latRad) * Math.sin(dest.latRad)
-                        - Math.sin(latLon.latRad) * Math.cos(dest.latRad)
-                        * Math.cos(dlon)) %/*,*/  (2 * Math.PI)) ;
-        return Degree.buildFromRadians(ret);
-
+        // 22.4.25: We now have a FG like solution in tcp-22.
+        return GeoTools.heading(latLon, dest);
     }
 
     /**

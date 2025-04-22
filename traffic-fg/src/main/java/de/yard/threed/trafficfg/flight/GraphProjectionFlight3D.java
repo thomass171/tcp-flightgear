@@ -9,7 +9,7 @@ import de.yard.threed.graph.GraphPosition;
 import de.yard.threed.graph.GraphProjection;
 import de.yard.threed.traffic.flight.FlightLocation;
 import de.yard.threed.core.GeoCoordinate;
-import de.yard.threed.traffic.geodesy.MapProjection;
+import de.yard.threed.trafficcore.geodesy.MapProjection;
 import de.yard.threed.trafficfg.FgCalculations;
 
 /**

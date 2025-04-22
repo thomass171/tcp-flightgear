@@ -17,7 +17,7 @@ import de.yard.threed.graph.Graph;
 import de.yard.threed.graph.GraphEdge;
 import de.yard.threed.graph.GraphNode;
 import de.yard.threed.graph.GraphPath;
-import de.yard.threed.traffic.geodesy.MapProjection;
+import de.yard.threed.trafficcore.geodesy.MapProjection;
 import de.yard.threed.traffic.osm.TerrainBuilder;
 import de.yard.threed.trafficfg.flight.Parking;
 

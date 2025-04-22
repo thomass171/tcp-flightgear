@@ -37,7 +37,7 @@ import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.geodesy.ElevationProvider;
 import de.yard.threed.core.GeoCoordinate;
-import de.yard.threed.traffic.geodesy.MapProjection;
+import de.yard.threed.trafficcore.geodesy.MapProjection;
 import de.yard.threed.trafficcore.model.Runway;
 
 import java.util.ArrayList;

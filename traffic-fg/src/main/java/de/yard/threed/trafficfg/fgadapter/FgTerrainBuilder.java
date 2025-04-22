@@ -25,7 +25,7 @@ import de.yard.threed.traffic.AbstractSceneryBuilder;
 import de.yard.threed.traffic.EllipsoidCalculations;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.traffic.flight.FlightLocation;
-import de.yard.threed.traffic.geodesy.MapProjection;
+import de.yard.threed.trafficcore.geodesy.MapProjection;
 import de.yard.threed.trafficfg.FgCalculations;
 
 import java.util.List;

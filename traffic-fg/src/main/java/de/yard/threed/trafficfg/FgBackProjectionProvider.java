@@ -2,7 +2,7 @@ package de.yard.threed.trafficfg;
 
 import de.yard.threed.graph.GraphProjection;
 import de.yard.threed.traffic.GraphBackProjectionProvider;
-import de.yard.threed.traffic.geodesy.MapProjection;
+import de.yard.threed.trafficcore.geodesy.MapProjection;
 import de.yard.threed.trafficfg.flight.GraphProjectionFlight3D;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
 

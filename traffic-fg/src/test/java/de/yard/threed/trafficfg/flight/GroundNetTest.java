@@ -47,7 +47,7 @@ import de.yard.threed.traffic.config.VehicleConfigDataProvider;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.config.XmlVehicleDefinition;
 import de.yard.threed.traffic.flight.FlightLocation;
-import de.yard.threed.traffic.geodesy.SimpleMapProjection;
+import de.yard.threed.trafficcore.geodesy.SimpleMapProjection;
 import de.yard.threed.trafficcore.config.AirportDefinition;
 import de.yard.threed.trafficcore.config.LocatedVehicle;
 import de.yard.threed.trafficfg.config.AirportConfig;

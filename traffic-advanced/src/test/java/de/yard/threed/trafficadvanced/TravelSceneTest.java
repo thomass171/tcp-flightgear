@@ -40,7 +40,7 @@ import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.TrafficSystem;
 import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.traffic.config.VehicleDefinition;
-import de.yard.threed.traffic.geodesy.SimpleMapProjection;
+import de.yard.threed.trafficcore.geodesy.SimpleMapProjection;
 import de.yard.threed.trafficadvanced.apps.FlatAirportScene;
 import de.yard.threed.trafficadvanced.apps.TravelScene;
 import de.yard.threed.trafficcore.model.Vehicle;

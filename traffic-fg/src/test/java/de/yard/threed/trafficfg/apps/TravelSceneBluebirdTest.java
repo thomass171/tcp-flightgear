@@ -45,7 +45,7 @@ import de.yard.threed.traffic.TrafficSystem;
 import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.core.GeoCoordinate;
-import de.yard.threed.traffic.geodesy.SimpleMapProjection;
+import de.yard.threed.trafficcore.geodesy.SimpleMapProjection;
 import de.yard.threed.traffic.testutils.TrafficTestUtils;
 import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.TrafficRuntimeTestUtil;
@@ -264,8 +264,9 @@ public class TravelSceneBluebirdTest {
                 log.debug("posrot=" + posrot);
                 // ref values taken from visual test
                 TestUtils.assertVector3(new Vector3(4001277.6476712367, 500361.77258586703, 4925186.718276716), posrot.position);
-                // as always comparing a quaternion has a risk a false negative
-                TestUtils.assertQuaternion(new Quaternion(0.25616279537311326, 0.2155633415950961, 0.7906922999954207, 0.5125609766212603), posrot.rotation);
+                // as always comparing a quaternion has a risk a false negative. 22.4.25: Values changed (negated) due to GeoTools change?
+                //TestUtils.assertQuaternion(new Quaternion(0.25616279537311326, 0.2155633415950961, 0.7906922999954207, 0.5125609766212603), posrot.rotation);
+                TestUtils.assertQuaternion(new Quaternion(-0.25616279537311326, -0.2155633415950961, -0.7906922999954207, -0.5125609766212603), posrot.rotation);
             }
 
         }

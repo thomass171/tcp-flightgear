@@ -14,7 +14,7 @@ import de.yard.threed.javacommon.JavaBundleResolverFactory;
 import de.yard.threed.javacommon.SimpleHeadlessPlatformFactory;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.core.GeoCoordinate;
-import de.yard.threed.traffic.geodesy.SimpleMapProjection;
+import de.yard.threed.trafficcore.geodesy.SimpleMapProjection;
 import de.yard.threed.traffic.osm.OsmRunway;
 import de.yard.threed.trafficcore.model.Runway;
 import de.yard.threed.trafficfg.FgCalculations;

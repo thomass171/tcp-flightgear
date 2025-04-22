@@ -16,7 +16,7 @@ import de.yard.threed.flightgear.testutil.FgTestUtils;
 import de.yard.threed.javacommon.SimpleHeadlessPlatformFactory;
 import de.yard.threed.traffic.RunwayHelper;
 import de.yard.threed.traffic.WorldGlobal;
-import de.yard.threed.traffic.geodesy.SimpleMapProjection;
+import de.yard.threed.trafficcore.geodesy.SimpleMapProjection;
 import de.yard.threed.traffic.osm.OsmRunway;
 import de.yard.threed.trafficcore.model.Runway;
 import org.junit.jupiter.api.Assertions;
@@ -135,7 +135,8 @@ public class GeodesyTest {
         // 22.3.18: Mit der Berechnung mit den MathUtil float MEthoden hatte ich weniger Rundungsfehler und kam genau auf 1000 als mit double. Hmmmm. Suspekt.
         Assertions.assertEquals( 1000, distance, 0.1f,"distance");
         course = new FgCalculations().courseTo(start,dest);
-        Assertions.assertEquals( -45f, (float) course.getDegree(), 0.01f,"course");
+        // Now with tcp-22 GeoTools value changed from -45 to 315.
+        Assertions.assertEquals( 315f, (float) course.getDegree(), 0.01f,"course");
 
     }
 
