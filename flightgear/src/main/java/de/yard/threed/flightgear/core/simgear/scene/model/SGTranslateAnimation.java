@@ -31,6 +31,7 @@ public class SGTranslateAnimation extends SGAnimation {
     double _initialValue;
     // The node where the translate finally applies
     public Group translateGroup;
+    boolean noTranslateGroupLogged = false;
 
     public SGTranslateAnimation(SGTransientModelData modelData, String label) {
         super(modelData, label);
@@ -70,7 +71,10 @@ public class SGTranslateAnimation extends SGAnimation {
     public void process(List<NativeCollision> pickingrayintersections, RequestHandler requestHandler) {
 
         if (translateGroup == null) {
-            logger.warn("No translateGroup in " + getConfigNode().getPath());
+            if (!noTranslateGroupLogged) {
+                logger.warn("No translateGroup in " + getConfigNode().getPath());
+                noTranslateGroupLogged = true;
+            }
             return;
         }
         if (_condition == null || _condition.test()) {

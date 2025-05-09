@@ -45,6 +45,7 @@ public class SGTexTransformAnimation extends SGAnimation {
     // materials to which the animation applies
     public List<Material> materials;
     boolean UniformTEXTUREMATRIXnotfoundLogged = false;
+    boolean noAnimationGroupLogged = false;
 
     abstract class /*SGTexTransformAnimation::*/Transform /*: public SGReferenced*/ {
 
@@ -359,7 +360,10 @@ public class SGTexTransformAnimation extends SGAnimation {
         Matrix3 textureMatrix = getTransformMatrix();
 
         if (animationGroup == null || animationGroup.childtarget == null) {
-            logger.warn("no animationGroup/childtarget");
+            if (!noAnimationGroupLogged) {
+                logger.warn("no animationGroup/childtarget");
+                noAnimationGroupLogged = true;
+            }
             return;
         }
         String s = animationGroup.childtarget.getTransform().getSceneNode().dump("  ", 0);

@@ -41,6 +41,7 @@ public class SGScaleAnimation extends SGAnimation {
     Vector3 _initialValue;
     // The node where the scale finally applies
     public Group scaleGroup;
+    boolean noScaleGroupLogged = false;
 
     public SGScaleAnimation(SGTransientModelData modelData, String label) {
         super(modelData, label);
@@ -134,7 +135,10 @@ public class SGScaleAnimation extends SGAnimation {
     public void process(List<NativeCollision> pickingrayintersections, RequestHandler requestHandler) {
 
         if (scaleGroup == null) {
-            logger.warn("No scaleGroup in " + getConfigNode().getPath());
+            if (!noScaleGroupLogged) {
+                logger.warn("No scaleGroup in " + getConfigNode().getPath());
+                noScaleGroupLogged = true;
+            }
             return;
         }
         if (_condition == null || _condition.test()) {
