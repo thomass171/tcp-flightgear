@@ -56,7 +56,6 @@ import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearMain;
 import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.SimpleBundleResourceProvider;
-import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
@@ -214,8 +213,8 @@ public class TravelScene extends FlightTravelScene {
         airportDefinition = trafficConfig.findAirportDefinitionsByIcao("EDDK").get(0);
 
         //solange es kein Terrain gibt, immer elevation 80; was aber reichlich fraglich ist. Der braucht keine adjustment world
-        TerrainElevationProvider tep = TerrainElevationProvider.buildForStaticAltitude(80);
-        SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, tep);
+        /*8.5.25 not any more StaticElevationProvider tep = StaticElevationProvider.buildForStaticAltitude(80);
+        SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, tep);*/
 
         // 25.9.23: Replace TerrainSystem with ScenerySystem
         /*14.5.24 decoupled to SphereSystem/configAbstractSceneryBuilder terrainBuilder = new FgTerrainBuilder();

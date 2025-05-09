@@ -13,7 +13,7 @@ import de.yard.threed.core.EventType;
 
 
 /**
- * 8.8.20: Braucht der ein FlightGearModuleBasic? Scheinbar ja, ist eigentlich auch klar.
+ * 8.8.20: Needs a FlightGearModuleBasic? Apparently, well, of course. Thats why it is basic.
  */
 public class FlightGearModuleScenery extends FlightGearModule {
     static Log logger = Platform.getInstance().getLog(FlightGearModuleScenery.class);

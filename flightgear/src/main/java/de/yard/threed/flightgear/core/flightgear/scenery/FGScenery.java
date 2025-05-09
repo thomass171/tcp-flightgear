@@ -134,27 +134,28 @@ public class FGScenery extends DefaultSGSubsystem {
         *material = intersectVisitor.getMaterial();
         return true;*/
 
-        // wie in FG einen senkrechten Ray erstellen
+        // like in FG create a vertical ray
 
         Ray ray = getVerticalRay(geod,worldadjustment);
-        //23.3.18 Subtree Suche ist Murks
+        //23.3.18 Subtree search is a botch
         List<NativeCollision> intersections = ray.getIntersections(/*terrain_branch*/);
         //logger.debug("get_elevation_m: found " + intersections.size() + " intersections overall with ray "+ray);
         int cnt = intersections.size();
         if (cnt > 0) {
-            // nehm ich einfach mal die erste groesser 0. Aber nur, wenn wirklich eine gefunden wurde
+            // take the first > 0 that appears to be real terrain.
             double bestelevation = 0;
             boolean found=false;
             for (int i = 0; i < cnt; i++) {
                 String path = new SceneNode(intersections.get(i).getSceneNode()).getPath();
-                // TODO Terrain als Filter um Gebaseude auszuschliessen duerfte nicht reichen 
+                // Different to FG filter for real terrain intersection, so eg. skip two background earth intersections
+                // TODO might need more filtering for filtering for buildings etc
                 if (StringUtils.contains(path,"Terrain")) {
                     Vector3 intersection = (intersections.get(i).getPoint()).subtract(worldadjustment);
                     //logger.debug("intersection="+intersection);
                     SGGeod coor = SGGeod.fromCart(intersection);
                     double elevation = coor.getElevationM();
                     if (elevation > 0 && elevation < 10000) {
-                        //alles andere ist nicht plausibel. Sonderfaelle erstmal ignorieren.
+                        //appears plausible. Edge cases not considered yet.
                         bestelevation = elevation;
                         found=true;
                     }
@@ -170,8 +171,7 @@ public class FGScenery extends DefaultSGSubsystem {
     }
 
     /**
-     * einen senkrechten Ray erstellen. Abweichend von FG immer von 0 bis 10000. ODer ich versteh deren Logik nicht
-     * Ray ist von weit oben Richtung Ursprung.
+     * Ray from far above to origin. Different to FG always from 10000 (or what is the FG logic?)
      * @param geod
      * @return
      */
@@ -180,10 +180,8 @@ public class FGScenery extends DefaultSGSubsystem {
         SGGeod geodStart = new SGGeod(geod.getLongitudeRad(), geod.getLatitudeRad(), 10000);
         //SGGeod geodEnd = new SGGeod(geod.getLongitudeRad(), geod.getLatitudeRad(), 0);
         Vector3 start = geodStart.toCart();
-        //Vector3 end = geodEnd.toCart();
-        //der Ray umgekehrt? komisch. Nee, eigentlich nicht. Von weit oben Richtung Ursprung.
+        // Revert it to point to origin
         Ray ray = new Ray(start.add(worldadjustment), start.negate());
-        //Ray ray = new Ray(end, start.subtract(end));
         return ray;
     }
 

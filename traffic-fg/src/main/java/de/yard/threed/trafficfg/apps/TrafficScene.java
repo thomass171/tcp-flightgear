@@ -1,6 +1,5 @@
 package de.yard.threed.trafficfg.apps;
 
-
 import de.yard.threed.core.Color;
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.Dimension;
@@ -25,11 +24,11 @@ import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.engine.util.NearView;
 import de.yard.threed.flightgear.FgBundleHelper;
+import de.yard.threed.traffic.TerrainElevationProvider;
 import de.yard.threed.trafficfg.fgadapter.FgTerrainBuilder;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearMain;
 import de.yard.threed.flightgear.SimpleBundleResourceProvider;
-import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
@@ -100,7 +99,7 @@ public class TrafficScene extends BasicTravelScene {
         //20.11.23 "NOT-YET"sceneConfig = tw.getScene("Flight");
 
         //solange es kein Terrain gibt, immer elevation 80; was aber reichlich fraglich ist. Der braucht keine adjustment world
-        TerrainElevationProvider tep = TerrainElevationProvider.buildForStaticAltitude(80);
+        TerrainElevationProvider tep = new TerrainElevationProvider(null);
         SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, tep);
 
         // 25.9.23: Replace TerrainSystem with ScenerySystem

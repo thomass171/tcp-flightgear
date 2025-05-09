@@ -15,7 +15,6 @@ import de.yard.threed.engine.ecs.UserSystem;
 import de.yard.threed.engine.gui.GuiGrid;
 import de.yard.threed.engine.gui.Icon;
 import de.yard.threed.engine.platform.common.Request;
-import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.traffic.AbstractSceneryBuilder;
 import de.yard.threed.traffic.BuilderRegistry;
 import de.yard.threed.traffic.RequestRegistry;

@@ -46,7 +46,7 @@ public class FlightGearModuleBasic extends FlightGearModule {
         // Scenery braucht eine aktuelle Position
         if (loc != null) {
             // initial weit ueber Aequator. 
-            PositionInit.initPositionFromGeod(loc);
+            PositionInit.initPositionFromGeod(loc.coordinates);
         }
         //Das FGAircraftModel wurde urspruenglich auch als Subsstem angelegt. Obs das braucht ist unklar.
         //28.3.18: eher nicht

@@ -1,5 +1,6 @@
 package de.yard.threed.flightgear;
 
+import de.yard.threed.core.LatLon;
 import de.yard.threed.core.Util;
 import de.yard.threed.flightgear.core.flightgear.main.FGProperties;
 import de.yard.threed.flightgear.core.simgear.Constants;
@@ -23,11 +24,11 @@ public class PositionInit {
     /**
      * FG-DIFF
      */
-    public static void initPositionFromGeod(FlightLocation loc) {
-        FGProperties.fgSetDouble( "/position/longitude-deg",loc.coordinates.getLonDeg().getDegree());
-        FGProperties.fgSetDouble( "/position/latitude-deg",loc.coordinates.getLatDeg().getDegree());
-        FGProperties.fgSetDouble( "/orientation/heading-deg", loc.heading.getDegree());
-        FGProperties.fgSetDouble("/position/altitude-ft", Constants.getElevationFt((double) loc.coordinates.getElevationM()));
+    public static void initPositionFromGeod(LatLon /*4.5.25 FlightLocation*/ loc) {
+        FGProperties.fgSetDouble( "/position/longitude-deg",loc.getLonDeg().getDegree());
+        FGProperties.fgSetDouble( "/position/latitude-deg",loc.getLatDeg().getDegree());
+        //4.5.25 FGProperties.fgSetDouble( "/orientation/heading-deg", loc.heading.getDegree());
+        //4.5.25FGProperties.fgSetDouble("/position/altitude-ft", Constants.getElevationFt((double) loc.coordinates.getElevationM()));
         FGProperties.fgSetBool("/sim/position-finalized", true);
 
     }

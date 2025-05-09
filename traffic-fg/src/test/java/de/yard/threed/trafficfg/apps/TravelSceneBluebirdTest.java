@@ -47,6 +47,7 @@ import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.trafficcore.geodesy.SimpleMapProjection;
 import de.yard.threed.traffic.testutils.TrafficTestUtils;
+import de.yard.threed.trafficcore.model.SmartLocation;
 import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.TrafficRuntimeTestUtil;
 import de.yard.threed.trafficfg.TravelHelper;
@@ -97,14 +98,18 @@ public class TravelSceneBluebirdTest {
     }*/
     @ParameterizedTest
     @CsvSource(value = {
-            "true;;;",
-            "false;;;",
+            ";true;;;;",
+            ";false;;;;",
             // Route is GeoRoute.SAMPLE_EDKB_EDDK
-            "true;wp:50.768,7.1672000->takeoff:50.7692,7.1617000->wp:50.7704,7.1557->wp:50.8176,7.0999->wp:50.8519,7.0921->touchdown:50.8625,7.1317000->wp:50.8662999,7.1443999;;",
-            // what is corresponding heading? 320? TODO
-            "true;;geo:50.85850600,  007.13874200 ,78.05;320",
+            ";true;wp:50.768,7.1672000->takeoff:50.7692,7.1617000->wp:50.7704,7.1557->wp:50.8176,7.0999->wp:50.8519,7.0921->touchdown:50.8625,7.1317000->wp:50.8662999,7.1443999;;;",
+            // EDDK 32L. elevation 78.05 is hard coded. What is exact corresponding heading? 320? TODOclarify
+            "EDDK-32L;true;;geo:50.85850600,  007.13874200 ,78.05;320; 78.05",
+            // EHAM, runway 06. No elevation, so terrain is needed. But terrain will not be available. A dummy tile will be created.
+            // Elevation 25.55 appears correct with dummy tile edge elevation of 30.
+            "EHAM;true;;geo:52.2878684, 4.73415315; 57.8; 25.55"
     }, delimiter = ';')
-    public void testBluebird(boolean withBluebird, String initialRoute, String initialLocation, String initialHeading) throws Exception {
+    public void testBluebird(String testCaseName, boolean withBluebird, String initialRoute, String initialLocation, String initialHeading,
+                             Double expectedInitialLocationElevation) throws Exception {
 
         String basename = null;
         setup(withBluebird, basename, initialRoute, initialLocation, initialHeading);
@@ -199,9 +204,7 @@ public class TravelSceneBluebirdTest {
         // 20.5.24 elevation 68.8 is the result of limited EDDK elevation provider (default elevation). But runway should have
         // correct elevation. Value differs slightly to TravelScene!?
         TravelSceneTestHelper.validatePlatzrunde(((TravelSceneBluebird) sceneRunner.ascene).platzrundeForVisualizationOnly, 71.31, 0.5, true);
-
         TravelSceneTestHelper.validateGroundnet();
-
 
         EcsEntity bluebird = null;
         if (withBluebird) {
@@ -237,22 +240,26 @@ public class TravelSceneBluebirdTest {
                 // abort here for now
                 return;
             } else if (initialLocation != null) {
-                // position differs from 'initialRoute' we are in EDDK instead of EDKB
+                // position differs from 'initialRoute' we are in EDDK or EHAM instead of EDKB
+                GeoCoordinate  initialLocationGeoCoordinate = SmartLocation.fromString(initialLocation).getGeoCoordinate();
+                initialLocationGeoCoordinate = GeoCoordinate.fromLatLon(initialLocationGeoCoordinate, expectedInitialLocationElevation);
+
                 GeoCoordinate geoBluebird = ellipsoidCalculations.fromCart(posbluebird);
-                assertEquals(50.858506, geoBluebird.getLatDeg().getDegree(), 0.000001);
-                assertEquals(7.138742, geoBluebird.getLonDeg().getDegree(), 0.000001);
-                // elevation 78.05 was hard coded
-                assertEquals(78.05, geoBluebird.getElevationM(), 0.01);
+                assertEquals(/*50.858506*/initialLocationGeoCoordinate.getLatDeg().getDegree(), geoBluebird.getLatDeg().getDegree(), 0.000001);
+                assertEquals(/*7.138742*/initialLocationGeoCoordinate.getLonDeg().getDegree(), geoBluebird.getLonDeg().getDegree(), 0.000001);
+                assertEquals(expectedInitialLocationElevation, geoBluebird.getElevationM(), 0.01);
                 // vehicle isn't on graph
                 assertNull(gmc.getCurrentposition());
                 // 'bluebird' is in FG space, so no local rotation required.
                 Quaternion expectedLocalVehicleRotation = new Quaternion();
                 TrafficTestUtils.assertVehicleEntity(bluebird, "bluebird", 1.2,
-                        ellipsoidCalculations.toCart(GeoCoordinate.parse("50.85850600,  007.13874200 ,78.05")),
+                        ellipsoidCalculations.toCart(initialLocationGeoCoordinate),
                         "TravelSphere", expectedLocalVehicleRotation, log);
-                // Not yet sure how to calc the ref value. For now use once existing values after visual check.
-                Quaternion expectedRotation = new Quaternion(-0.0947478409981826,-0.3212913237534745,-0.37675868791648814,-0.8636247003104818);
-                TestUtils.assertQuaternion(expectedRotation, rotationbluebird);
+                // Not yet sure how to calc the ref value. For now use once existing values after visual check ("EDDK-32L" only).
+                if (testCaseName.equals("EDDK-32L")) {
+                    Quaternion expectedRotation = new Quaternion(-0.0947478409981826, -0.3212913237534745, -0.37675868791648814, -0.8636247003104818);
+                    TestUtils.assertQuaternion(expectedRotation, rotationbluebird);
+                }
                 // abort here for now
                 return;
             } else {

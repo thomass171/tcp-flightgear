@@ -23,7 +23,7 @@ public class StgCycler {
     private Log logger = Platform.getInstance().getLog(StgCycler.class);
     //-1, um beim 0ten zu beginnen
     public int currentobject = -1;
-    public Group currentStgTile;
+    public SceneNode currentStgTile;
     Camera camera;
 
     public StgCycler(Camera camera) {

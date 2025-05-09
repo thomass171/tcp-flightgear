@@ -20,7 +20,6 @@ import de.yard.threed.engine.testutil.EngineTestFactory;
 import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.flightgear.SceneryTest;
-import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
@@ -29,12 +28,14 @@ import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.traffic.BasicRouteBuilder;
 import de.yard.threed.traffic.EllipsoidConversionsProvider;
 import de.yard.threed.traffic.GeoRoute;
+import de.yard.threed.traffic.TerrainElevationProvider;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.trafficfg.fgadapter.FgTerrainBuilder;
 import de.yard.threed.trafficfg.flight.GroundNet;
 import de.yard.threed.trafficfg.flight.GroundNetTest;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -52,12 +53,22 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class ElevationTest {
     Platform platform = FgTestFactory.initPlatformForTest(false, true, true);
 
+    FgTerrainBuilder fgTerrainBuilder;
+
+    @BeforeEach
+    public void setup() {
+        SceneNode world = new SceneNode();
+        world.setName("Scenery World");
+        fgTerrainBuilder = new FgTerrainBuilder();
+        // redundant? fgTerrainBuilder.init(world);
+    }
+
     @Test
     public void testEDDKGroundnetElevation() throws Exception {
         loadBtgOfEDDK();
 
         // EDDK groundnet exceeds EDDK tile, so define a default value 68. 31.5.24: Really?, using a default spoils test of intersection.
-        TerrainElevationProvider elevationProvider = new TerrainElevationProvider();
+        TerrainElevationProvider elevationProvider = new TerrainElevationProvider(fgTerrainBuilder);
         //29.5.24 no longer? keep for test
         elevationProvider.setDefaultAltitude(68.0);
         GroundNet groundNet = GroundNetTest.loadGroundNetForTesting(BundleRegistry.getBundle("traffic-fg"), 0, "EDDK", false,
@@ -70,7 +81,7 @@ public class ElevationTest {
         loadBtgOfEDDK();
 
         // EDDK groundnet exceeds EDDK tile, so define a default value 68. 31.5.24: Really?, using a default spoils test of intersection.
-        TerrainElevationProvider elevationProvider = new TerrainElevationProvider();
+        TerrainElevationProvider elevationProvider = new TerrainElevationProvider(fgTerrainBuilder);
 
         LatLon eddkCenter = new LatLon(new Degree(50.86538f), new Degree(7.139103f));
         Double elevation = elevationProvider.getElevation(eddkCenter.getLatDeg().getDegree(), eddkCenter.getLonDeg().getDegree());
@@ -111,7 +122,7 @@ public class ElevationTest {
             assertEquals(1, SceneNode.findNode(n -> "Terrain/e000n50/e007n50/EDDK.gltf".equals(n.getName() == null ? "" : n.getName()), Scene.getCurrent().getWorld()).size());
             assertEquals(1, SceneNode.findNode(n -> "Terrain/e000n50/e007n50/EDKB.gltf".equals(n.getName() == null ? "" : n.getName()), Scene.getCurrent().getWorld()).size());
 
-            SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, new TerrainElevationProvider());
+            SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, new TerrainElevationProvider(new FgTerrainBuilder()));
 
         } else {
             // FgTerrainBuilder makes a full FG init
@@ -179,9 +190,8 @@ public class ElevationTest {
                     .fromGeoRoute(initialRoute, geoCoordinate -> {
                         log.debug("No elevation for " + geoCoordinate + " of initialRoute");
                         missingElevation.setValue(true);
-                        Vector3 position = new FgCalculations().toCart(new GeoCoordinate(geoCoordinate.getLatDeg(), geoCoordinate.getLonDeg(), 0));
                         if (fgTerrainBuilder != null) {
-                            fgTerrainBuilder.updateForPosition(position, new Vector3());
+                            fgTerrainBuilder.updateForPosition(new GeoCoordinate(geoCoordinate.getLatDeg(), geoCoordinate.getLonDeg(), 0));
                             // Loading of bundles (STGs) is async.
                             TestHelper.processAsync();
                         }

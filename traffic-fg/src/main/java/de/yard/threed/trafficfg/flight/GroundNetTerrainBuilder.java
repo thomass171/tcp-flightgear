@@ -2,6 +2,7 @@ package de.yard.threed.trafficfg.flight;
 
 import de.yard.threed.core.Color;
 import de.yard.threed.core.Degree;
+import de.yard.threed.core.LatLon;
 import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
@@ -38,7 +39,7 @@ public class GroundNetTerrainBuilder implements AbstractSceneryBuilder {
 
 
     @Override
-    public void updateForPosition(Vector3 position, Vector3 direction) {
+    public void updateForPosition(LatLon position) {
 
     }
 
@@ -101,6 +102,12 @@ public class GroundNetTerrainBuilder implements AbstractSceneryBuilder {
 
     @Override
     public EllipsoidCalculations getEllipsoidCalculations() {
+        Util.notyet();
+        return null;
+    }
+
+    @Override
+    public Double getElevation(LatLon position) {
         Util.notyet();
         return null;
     }

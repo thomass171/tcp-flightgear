@@ -9,6 +9,8 @@ import de.yard.threed.core.LocalTransform;
 import de.yard.threed.core.Point;
 import de.yard.threed.core.Quaternion;
 import de.yard.threed.core.SmartArrayList;
+import de.yard.threed.core.StringUtils;
+import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.geometry.Face3;
@@ -49,9 +51,11 @@ import de.yard.threed.flightgear.FlightGearMain;
 import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.flightgear.TerraSyncBundleResolver;
+import de.yard.threed.flightgear.TerrainHelper;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.core.flightgear.scenery.FGTileMgr;
+import de.yard.threed.flightgear.core.flightgear.scenery.SceneryPager;
 import de.yard.threed.flightgear.core.osg.Group;
 import de.yard.threed.flightgear.core.osg.Node;
 import de.yard.threed.flightgear.core.osgdb.ReadResult;
@@ -76,11 +80,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Viewer fuer FG 3D scenery (STG,BTG) tiles optional with objects from STG.
+ * Viewer for FG 3D scenery (STG,BTG) tiles optional with objects from STG.
  * Doesn't use ECS like TerrainSystem which adds much more complexity (also by FG).
  * <p>
  * Keys:
- * UP/DOWN change position
+ * UP/DOWN change position (small steps)
  * (Shift)Cursor keys move from STG to STG.
  * PGUP/DOWN change viewpoint altitude.
  * n cycle through objects (stgcycler)
@@ -542,11 +546,10 @@ public class SceneryViewerScene extends Scene {
             if (terrainonly) {
                 options.pluginstringdata.put("SimGear::FG_ONLY_TERRAIN", "ON");
             }
-            Group rr = new ReaderWriterSTG().build(stgfile, options, boptions, true);
-            if (rr != null) {
-                world.attach(rr);
-                stgcycler.currentStgTile = rr;
-            }
+            // 7.5.25: Now with shared
+            SceneNode rr = SceneryPager.loadBucketByStg(stgfile, options, boptions);
+            world.attach(rr);
+            stgcycler.currentStgTile = rr;
             updatePosition();
             stgcycler.currentobject = 0;
         });
@@ -576,7 +579,6 @@ public class SceneryViewerScene extends Scene {
 
     /**
      * only on mouse click, else is inefficent.
-     *
      */
     private void checkForPickingRay(Point mouseclick) {
         Ray pickingray = getMainCamera().buildPickingRay(getMainCamera().getCarrier().getTransform(), mouseclick);

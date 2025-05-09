@@ -1,18 +1,21 @@
 package de.yard.threed.flightgear.core.flightgear.scenery;
 
+import de.yard.threed.core.Util;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.engine.SceneNode;
+import de.yard.threed.flightgear.LoaderOptions;
+import de.yard.threed.flightgear.TerrainHelper;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.SGLoaderOptions;
 import de.yard.threed.flightgear.core.osgdb.Options;
 import de.yard.threed.flightgear.core.osgdb.osgDB;
+import de.yard.threed.flightgear.core.simgear.bucket.SGBucket;
 import de.yard.threed.flightgear.core.simgear.scene.tgdb.ReaderWriterSTG;
 import de.yard.threed.flightgear.core.simgear.scene.util.SGReaderWriterOptions;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
-import de.yard.threed.core.platform.Config;
 import de.yard.threed.core.StringUtils;
 
 import java.util.ArrayList;
@@ -22,7 +25,7 @@ import java.util.List;
  * Created by thomass on 22.08.16.
  */
 public class SceneryPager {//extends lic osgDB::DatabasePager
-    Log logger = Platform.getInstance().getLog(SceneryPager.class);
+    static Log logger = Platform.getInstance().getLog(SceneryPager.class);
     public List<String> loadedBundle = new ArrayList<String>();
     public List<String> failedBundle = new ArrayList<String>();
 
@@ -56,25 +59,14 @@ public class SceneryPager {//extends lic osgDB::DatabasePager
                     }
                     if (b1 == null) {
                         failedBundle.add(bundlename);
-                    }else {
+                    } else {
                         loadedBundle.add(bundlename);
                     }
                     SGLoaderOptions opt = new SGLoaderOptions();
                     opt.materialLib = ((SGReaderWriterOptions) options).getMaterialLib();
                     opt.setPropertyNode(((SGReaderWriterOptions) options).getPropertyNode());
-                    //8.6.17: STG ist so speziell, die nicht mehr hinten rum über Registry/readnode etc. laden soll, sondern direkt.
-                    //4.1.18: per GLTF. Das STG; Laden wird auch wieder vielfach async sein.
-                    opt.usegltf = true;
-                    /*BuildResult*/
-                    // 30.8.24: Now with shared
-                    boolean ignoreshared = false;
-                    SceneNode result = new ReaderWriterSTG().build(fileName, options, opt, ignoreshared);
-                    if (result != null /*&& result.getNode() != null*/) {
-                        SceneNode n1 = result;//.getNode();
-                        if (n1 != null) {
-                            destinationnode.attach(n1);
-                        }
-                    }
+                    SceneNode result = loadBucketByStg(fileName, options, opt);
+                    destinationnode.attach(result);
                 });
             } else {
                 logger.warn("duplicate stg loading??");
@@ -88,6 +80,30 @@ public class SceneryPager {//extends lic osgDB::DatabasePager
         }
     }
 
+    /**
+     * Extracted from above for reusability.
+     * Always returns a node, in case of errors a dummy tile.
+     */
+    public static SceneNode loadBucketByStg(String fileName, Options options, LoaderOptions opt) {
+        //8.6.17: STG is loaded sync (not via Registry/readnode etc.), while its content will be loaded async again.
+        //4.1.18: per GLTF.
+        opt.usegltf = true;
+        /*BuildResult*/
+        // 30.8.24: Now with shared
+        boolean ignoreshared = false;
+        SceneNode result = new ReaderWriterSTG().build(fileName, options, opt, ignoreshared);
+        if (result != null /*&& result.getNode() != null*/) {
+            return result;
+        }
+        // 7.5.25 FG apparently does nothing in this situation and will just have 'water'. Not sure how that is implemented.
+        // Needs to be in a 'terrain' subtree for providing elevation. For now just create a green plane as dummy tile.
+        // Retrieve location via bucket index.
+        logger.warn("Tile " + fileName + " not found. Using dummy terrain");
+        long bindex = Util.parseLong(StringUtils.substringBefore(fileName, ".stg"));
+        SGBucket bucket = new SGBucket(bindex);
+        SceneNode planeNode = TerrainHelper.buildDummyTile(bucket);
+        return planeNode;
+    }
 
     // This isType passed a ref_ptr so that it can "take ownership" of the
     // node to delete and decrement its refcount while holding the

@@ -94,7 +94,7 @@ public class TrafficConfigTest {
         assertNotNull(eddk, "eddk");
         assertEquals(3, eddk.getVehicles().size(), "vehiclecnt");
         assertEquals("737-800 AB", eddk.getVehicles().get(1).getName(), "vehicle1.name");
-        assertEquals("parkpos:B_8", eddk.getVehicles().get(1).getLocation().location, "vehicle1.location");
+        assertEquals("parkpos:B_8", eddk.getVehicles().get(1).getLocation().getLocation(), "vehicle1.location");
         assertEquals("B_8", eddk.getVehicles().get(1).getLocation().getParkPos(), "vehicle1.parkpos");
     }
 

@@ -33,6 +33,7 @@ import de.yard.threed.engine.ecs.FirstPersonMovingComponent;
 import de.yard.threed.engine.ecs.FirstPersonMovingSystem;
 import de.yard.threed.engine.ecs.InputToRequestSystem;
 import de.yard.threed.engine.ecs.SystemManager;
+import de.yard.threed.engine.ecs.TeleporterSystem;
 import de.yard.threed.engine.gui.ControlPanel;
 import de.yard.threed.engine.gui.ControlPanelHelper;
 import de.yard.threed.engine.gui.NumericSpinnerHandler;
@@ -45,11 +46,11 @@ import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.engine.vr.VrOffsetWrapper;
 import de.yard.threed.flightgear.FgVehicleLoaderResult;
 import de.yard.threed.flightgear.ecs.FgAnimationComponent;
+import de.yard.threed.traffic.TerrainElevationProvider;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.trafficfg.fgadapter.FgTerrainBuilder;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearMain;
-import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.OpenGlProcessPolicy;
@@ -136,8 +137,8 @@ public class SceneryScene extends Scene {
         // 29.2.24 not used  FgBundleHelper.addProvider(new SimpleBundleResourceProvider(FlightGear.getBucketBundleName("model")));
         // FG, Position is initialisiert.
 
-        // A elevation provider is needed for calculating 3D coordinates from geo coordinates. To keep is simple, use a fix one for now.
-        TerrainElevationProvider tep = TerrainElevationProvider.buildForStaticAltitude(80);
+        // A elevation provider is needed for calculating 3D coordinates from geo coordinates.
+        TerrainElevationProvider tep = new TerrainElevationProvider(null);
         SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, tep);
 
 
@@ -280,7 +281,7 @@ public class SceneryScene extends Scene {
             SystemManager.sendEvent(BaseEventRegistry.buildUserAssembledEvent(userEntity));
 
             // trigger terrain loading
-            SystemManager.sendEvent(new Event(EVENT_POSITIONCHANGED, new Payload(new Object[]{loc})));
+            SystemManager.sendEvent(TeleporterSystem.buildPositionChanged(loc.position));
             //the SphereSystem way SystemManager.sendEvent(TrafficEventRegistry.buildLOCATIONCHANGED(initialPosition, null,                    (initialTile)));
 
             // No LoginSystem is used, so manually register user as 'acting player'.

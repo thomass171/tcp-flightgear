@@ -10,12 +10,13 @@ import de.yard.threed.core.MathUtil2;
 
 /**
  * Extracted parts from FGTileMgr for decoupling.
- * 
+ * Temporary instances are created by FGTileMgr for loading/queueing single tiles? Or populating a TileCache entry?
+ *
  * Created by thomass on 22.08.16.
  */
 public class FGTileMgrScheduler {
     static Log logger = Platform.getInstance().getLog(FGTileMgrScheduler.class);
-    //22.3.18 mehrfache Referenzen vermeiden private Group terrain_branch;
+    //22.3.18 avoid multiple references private Group terrain_branch;
     TileCache tile_cache;
     double _maxTileRangeM;
     
@@ -52,7 +53,7 @@ public class FGTileMgrScheduler {
             logger.debug(/*SG_LOG(SG_TERRAIN, SG_DEBUG,*/ "schedule_scenery: Scheduling tile at bucket:" + bucket + " return false");
             return false;
         }
-        logger.debug(/*SG_LOG(SG_TERRAIN, SG_DEBUG,*/ "schedule_scenery: Scheduling tile at bucket:" + bucket + " with range_m "+range_m);
+        logger.debug( "schedule_scenery: Scheduling tile at bucket:" + bucket + " with range_m "+range_m);
 
         //SGVec3d cartPos = SGVec3d::fromGeod (position);
         Vector3 cartPos = position.toCart();
@@ -140,7 +141,7 @@ public class FGTileMgrScheduler {
 
         double tile_width = curr_bucket.get_width_m();
         double tile_height = curr_bucket.get_height_m();
-        logger.info("scheduling needed tiles for " + curr_bucket);
+        logger.info("scheduling needed tiles for " + curr_bucket + "tile_cache.size="+tile_cache.get_size());
 
         // cout << "tile width = " << tile_width << "  tile_height = "        //      << tile_height << endl;
 

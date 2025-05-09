@@ -370,3 +370,8 @@ The property tree layout for effects looks like
 
 For terrain effects the material definitions are converted to the above layout
 in SGMaterial.buildEffectProperties(). Eg. global-summer.xml defines "<texture>Terrain/dry_pasture4.png</texture>" in a material.
+
+## Scenery
+
+FG apparently does nothing when a tile is not found and will just have 'water'. Not sure how that is
+implemented. For now we just create a green plane as dummy tile when a tile is not found.

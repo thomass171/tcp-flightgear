@@ -15,10 +15,10 @@ import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.XmlDocument;
+import de.yard.threed.engine.ecs.DataProvider;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.testutil.EngineTestFactory;
 import de.yard.threed.engine.util.XmlHelper;
-import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeodesy;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
@@ -40,6 +40,8 @@ import de.yard.threed.graph.TurnExtension;
 import de.yard.threed.traffic.NoElevationException;
 import de.yard.threed.traffic.PositionHeading;
 import de.yard.threed.traffic.SphereProjections;
+import de.yard.threed.traffic.StaticElevationProvider;
+import de.yard.threed.traffic.TerrainElevationProvider;
 import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.config.ConfigHelper;
@@ -1003,11 +1005,11 @@ public class GroundNetTest {
 
     public static GroundNet loadGroundNetForTesting(Bundle bundle, int smoothmode, String icao, boolean strict) throws NoElevationException {
 
-        return loadGroundNetForTesting(bundle, smoothmode, icao, strict, new TerrainElevationProvider(DEFAULTELEVATION));
+        return loadGroundNetForTesting(bundle, smoothmode, icao, strict,  StaticElevationProvider.buildForStaticAltitude(DEFAULTELEVATION));
 
     }
 
-    public static GroundNet loadGroundNetForTesting(Bundle bundle, int smoothmode, String icao, boolean strict, TerrainElevationProvider elevationProvider) throws NoElevationException {
+    public static GroundNet loadGroundNetForTesting(Bundle bundle, int smoothmode, String icao, boolean strict, DataProvider elevationProvider) throws NoElevationException {
 
         // remove existing provider
         SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, null);

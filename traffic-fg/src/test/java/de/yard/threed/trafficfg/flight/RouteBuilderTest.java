@@ -7,11 +7,11 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.engine.testutil.EngineTestFactory;
-import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.graph.Graph;
 import de.yard.threed.javacommon.JavaBundleResolverFactory;
 import de.yard.threed.javacommon.SimpleHeadlessPlatformFactory;
+import de.yard.threed.traffic.StaticElevationProvider;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.trafficcore.geodesy.SimpleMapProjection;
@@ -43,7 +43,7 @@ public class RouteBuilderTest {
         //Geht ECS ueberhaupt im Test? Hmmm.Lassen wir mal.
         //EcsEntity aircraft = new EcsEntity(null, new GraphMovingComponent(null, null, null));
         //21.3.24 SimpleMapProjection projection = (SimpleMapProjection) groundnet.projection;
-        FlightRouteGraph flightpath = new RouteBuilder(new FgCalculations()).buildFlightGraphForAircraftTrafficPattern(runway14l/*,projection*/, TerrainElevationProvider.buildForStaticAltitude(80), 0, new GeneralParameterHandler<GeoCoordinate>() {
+        FlightRouteGraph flightpath = new RouteBuilder(new FgCalculations()).buildFlightGraphForAircraftTrafficPattern(runway14l/*,projection*/, StaticElevationProvider.buildForStaticAltitude(80), 0, new GeneralParameterHandler<GeoCoordinate>() {
             @Override
             public void handle(GeoCoordinate parameter) {
                 // ignore for now
@@ -62,7 +62,7 @@ public class RouteBuilderTest {
     @Test
     public void testEDDKOrbit() {
         Runway runway14l = OsmRunway.eddk14L();
-        FlightRouteGraph orbit = new RouteBuilder(new FgCalculations()).buildFlightGraphForAircraftTrafficPattern(runway14l,TerrainElevationProvider.buildForStaticAltitude(80),1, new GeneralParameterHandler<GeoCoordinate>() {
+        FlightRouteGraph orbit = new RouteBuilder(new FgCalculations()).buildFlightGraphForAircraftTrafficPattern(runway14l, StaticElevationProvider.buildForStaticAltitude(80),1, new GeneralParameterHandler<GeoCoordinate>() {
             @Override
             public void handle(GeoCoordinate parameter) {
                 // ignore for now
@@ -77,7 +77,7 @@ public class RouteBuilderTest {
     @Test
     public void testEDDKtoEDDF() {
         Runway runway14l = OsmRunway.eddk14L();
-        FlightRouteGraph route = new RouteBuilder(new FgCalculations()).buildFlightGraph(runway14l, TerrainElevationProvider.buildForStaticAltitude(80),"EDDF", new GeneralParameterHandler<GeoCoordinate>() {
+        FlightRouteGraph route = new RouteBuilder(new FgCalculations()).buildFlightGraph(runway14l, StaticElevationProvider.buildForStaticAltitude(80),"EDDF", new GeneralParameterHandler<GeoCoordinate>() {
             @Override
             public void handle(GeoCoordinate parameter) {
                 // ignore for now
@@ -96,7 +96,7 @@ public class RouteBuilderTest {
     @Test
     public void testFromCologneToEquatorOrbit() {
         Runway runway14l = OsmRunway.eddk14L();
-        FlightRouteGraph orbit = new RouteBuilder(new FgCalculations()).buildFlightGraphForAircraftTrafficPattern(runway14l,TerrainElevationProvider.buildForStaticAltitude(80),3, new GeneralParameterHandler<GeoCoordinate>() {
+        FlightRouteGraph orbit = new RouteBuilder(new FgCalculations()).buildFlightGraphForAircraftTrafficPattern(runway14l,StaticElevationProvider.buildForStaticAltitude(80),3, new GeneralParameterHandler<GeoCoordinate>() {
             @Override
             public void handle(GeoCoordinate parameter) {
                 // ignore for now

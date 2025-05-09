@@ -1,6 +1,8 @@
 package de.yard.threed.trafficfg.fgadapter;
 
 import de.yard.threed.core.Degree;
+import de.yard.threed.core.GeoCoordinate;
+import de.yard.threed.core.LatLon;
 import de.yard.threed.core.LocalTransform;
 import de.yard.threed.core.NumericValue;
 import de.yard.threed.core.Quaternion;
@@ -15,7 +17,6 @@ import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.FlightGearMain;
 import de.yard.threed.flightgear.PositionInit;
 import de.yard.threed.flightgear.SimpleBundleResourceProvider;
-import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.core.flightgear.scenery.FGTileMgr;
@@ -23,6 +24,7 @@ import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.graph.GraphNode;
 import de.yard.threed.traffic.AbstractSceneryBuilder;
 import de.yard.threed.traffic.EllipsoidCalculations;
+import de.yard.threed.traffic.TerrainElevationProvider;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.traffic.flight.FlightLocation;
 import de.yard.threed.trafficcore.geodesy.MapProjection;
@@ -33,13 +35,14 @@ import java.util.List;
 /**
  * Wrapper for low level FGTileMgrScheduler, FGTileMgr and SceneryPager
  * Extracted from TravelScene and TerrainSystem.
+ *
+ * Includes full FG setup. A good idea? But might be safe to recall it multiple times.
  */
 public class FgTerrainBuilder implements AbstractSceneryBuilder {
     Log logger = Platform.getInstance().getLog(FgTerrainBuilder.class);
     //range, so wie es von FG gelogged wurde.
     double range_m = 32000;
     FGTileMgr tilemgr;
-    boolean fgenabled=true;
     boolean terrainonly = false;
     SceneNode world, earth;
     // simpleearth ist nur eine einzige Textur. Ansonsten FG Scenery.
@@ -58,19 +61,20 @@ public class FgTerrainBuilder implements AbstractSceneryBuilder {
 
         // Following from TerrainSystem.init:
 
-        //als Radius die Basis von SGGeod Meeresspiegel +1 nehmen. Kommt aber irgendwie zu hoch
+        // a global simple earth sphere as background
+        // a radius of SGGeod sealevel +1 will be too high for some reason
         //earth = buildEarth(/*SGGeod.ERAD-10000*/WorldGlobal.EARTHRADIUS);
         earth = buildEarth(SGGeod.ERAD - 100000);
         world.attach(earth);
 
 
-        if (/*FlightGear.inited FlightGearModuleScenery.inited &&*/ fgenabled) {
+        //if (/*FlightGear.inited FlightGearModuleScenery.inited &&*/ fgenabled) {
             FlightGearModuleScenery.init(terrainonly, false);
             tilemgr = FlightGearModuleScenery.getInstance().get_tile_mgr();
             tilemgr.init();
-        }
-        TerrainElevationProvider tep = new TerrainElevationProvider();
-        tep.setWorld(world);
+        //}
+        TerrainElevationProvider tep = new TerrainElevationProvider(this);
+
         //TODO 25.11.21: Wo kommt denn der her, der hier erst gelöscht werden muss?
         SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, null);
         SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, tep);
@@ -82,26 +86,23 @@ public class FgTerrainBuilder implements AbstractSceneryBuilder {
     }
 
     @Override
-    public void updateForPosition(Vector3 position, Vector3 direction) {
+    public void updateForPosition(LatLon position/*, Vector3 direction*/) {
 
         // 23.9.23 dont' care about direction/rotation any more.
         //LocalTransform newpos = (LocalTransform) evt.getPayloadByIndex(0);
-        LocalTransform newpos = new LocalTransform(position,new Quaternion());
-        FlightLocation fl = FlightLocation.fromPosRot(newpos);
-        PositionInit.initPositionFromGeod(fl);
+        /*4.5.25 LocalTransform newpos = new LocalTransform(position,new Quaternion());
+        FlightLocation fl = FlightLocation.fromPosRot(newpos);*/
+        PositionInit.initPositionFromGeod(position);
 
-        logger.debug("updateForPosition: fgenabled=" + fgenabled + ",fginited=" + FlightGearModuleScenery.inited);
+        logger.debug("updateForPosition: position=" + position + ",fginited=" + FlightGearModuleScenery.inited);
 
-        if (!fgenabled || !FlightGearModuleScenery.inited)
+        if (!FlightGearModuleScenery.inited)
             return;
-
-      /*  if (gwloaded)
-            return;
-        gwloaded=true;*/
 
         // Muss 2-mal aufgerufen werden!
-        tilemgr.schedule_tiles_at(SGGeod.fromGeoCoordinate(fl.coordinates)/*WorldGlobal.greenwichtilecenter*/, range_m);
-        tilemgr.schedule_tiles_at(SGGeod.fromGeoCoordinate(fl.coordinates)/*WorldGlobal.greenwichtilecenter*/, range_m);
+        GeoCoordinate c = GeoCoordinate.fromLatLon(position, 0);
+        tilemgr.schedule_tiles_at(SGGeod.fromGeoCoordinate(c)/*WorldGlobal.greenwichtilecenter*/, range_m);
+        tilemgr.schedule_tiles_at(SGGeod.fromGeoCoordinate(c)/*WorldGlobal.greenwichtilecenter*/, range_m);
         tilemgr.update_queues(false);
         //31.5.24: attach to world moved to init()
     }
@@ -126,11 +127,17 @@ public class FgTerrainBuilder implements AbstractSceneryBuilder {
         return new FgCalculations();
     }
 
-    public List<String> getLoadedBundles(){
+    @Override
+    public Double getElevation(LatLon position) {
+        SGGeod coor = SGGeod.fromLatLon(position);
+        return FlightGearModuleScenery.getInstance().get_scenery().get_elevation_m(coor, (world != null) ? world.getTransform().getPosition() : new Vector3());
+    }
+
+    public List<String> getLoadedBundles() {
         return FlightGearModuleScenery.getInstance().get_tile_mgr().getPager().loadedBundle;
     }
 
-    public List<String> getFailedBundles(){
+    public List<String> getFailedBundles() {
         return FlightGearModuleScenery.getInstance().get_tile_mgr().getPager().failedBundle;
     }
 

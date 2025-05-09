@@ -18,4 +18,15 @@ public class SceneSetup {
         properties.put("initialVehicle", "bluebird");
         properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
     }
+
+    /**
+     * 6.5.25: EHAM, runway 06. No elevation, so terrain is needed. Outside 'advanced' terrain will not be available, so a dummy tile is built.
+     */
+    public static void setupForBluebirdFreeFlightFromEHAM(HashMap<String, String> properties) {
+
+        properties.put("initialLocation", "geo:52.2878684, 4.73415315");
+        properties.put("initialHeading", "57.8");
+        properties.put("initialVehicle", "bluebird");
+        properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
+    }
 }

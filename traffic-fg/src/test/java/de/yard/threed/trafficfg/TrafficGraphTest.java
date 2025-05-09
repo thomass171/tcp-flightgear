@@ -10,7 +10,6 @@ import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.testutil.EngineTestFactory;
-import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.graph.DefaultEdgeBasedRotationProvider;
@@ -28,6 +27,7 @@ import de.yard.threed.graph.GraphUtils;
 import de.yard.threed.graph.TurnExtension;
 import de.yard.threed.javacommon.JavaBundleResolverFactory;
 import de.yard.threed.javacommon.SimpleHeadlessPlatformFactory;
+import de.yard.threed.traffic.StaticElevationProvider;
 import de.yard.threed.traffic.TrafficGraphFactory;
 
 import de.yard.threed.trafficfg.flight.GeoUtil;
@@ -111,7 +111,7 @@ public class TrafficGraphTest {
 
         GroundNet groundnet = GroundNetTest.loadGroundNetForTesting(bundleAirportsConfig, 0, "EDDK", false);
         SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, null);
-        SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, TerrainElevationProvider.buildForStaticAltitude(80));
+        SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, StaticElevationProvider.buildForStaticAltitude(80));
         Graph graph = new RouteBuilder(new FgCalculations()).buildSimpleTestRouteB8toC4(groundnet).getBaseGraph();
         GraphEdge edge = graph.getEdge(0);
         Quaternion rotation = DefaultEdgeBasedRotationProvider.get3DRotation(false, edge.getEffectiveBeginDirection(), graph.getGraphOrientation().getUpVector(edge));

@@ -42,7 +42,6 @@ import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.trafficfg.TrafficRuntimeTestUtil;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearMain;
-import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
@@ -153,8 +152,8 @@ public class TravelSceneBluebird extends BasicTravelScene {
         airportDefinition = trafficConfig.findAirportDefinitionsByIcao("EDDK").get(0);
 
         //solange es kein Terrain gibt, immer elevation 80; was aber reichlich fraglich ist. Der braucht keine adjustment world
-        TerrainElevationProvider tep = TerrainElevationProvider.buildForStaticAltitude(80);
-        SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, tep);
+        /*8.5.25 not any more TerrainElevationProvider tep = new TerrainElevationProvider(null);
+        SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, tep);*/
 
         //14.5.24 ScenerySystem and TerrainBuilder(FgTerrainBuilder) decoupled to SphereSystem/config.
         // TerrainElevationProvider was created in FgTerrainBuilder. Needs help because EDDK groundnet exceeds EDDK tile, so define a default value 68.

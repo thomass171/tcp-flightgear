@@ -65,10 +65,10 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         //properties.put("argv.vehiclelist","GenericRoad");
 
         // traffic-fg
-        properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryScene");
-        properties.put("scene", "de.yard.threed.trafficfg.apps.RailingScene");
+        //properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryScene");
+        //properties.put("scene", "de.yard.threed.trafficfg.apps.RailingScene");
         // TravelSceneBluebird needs initialVehicle
-        //properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
+        properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryViewerScene");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.FgModelPreviewScene");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.FgGalleryScene");
@@ -81,7 +81,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
 
         // traffic-advanced
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.FlatAirportScene");
-        //properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
+        properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.HangarScene");
 
         boolean blogSample = false;
@@ -100,6 +100,10 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         boolean bluebirdFreeFlight = false;
         if (bluebirdFreeFlight) {
             SceneSetup.setupForBluebirdFreeFlight(properties);
+        }
+        boolean bluebirdInEHAM = false;
+        if (bluebirdInEHAM) {
+            SceneSetup.setupForBluebirdFreeFlightFromEHAM(properties);
         }
         return properties;
     }

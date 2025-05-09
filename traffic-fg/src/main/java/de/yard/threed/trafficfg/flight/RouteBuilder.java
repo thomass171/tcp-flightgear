@@ -9,7 +9,6 @@ import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.engine.ecs.DataProvider;
 import de.yard.threed.engine.ecs.SystemManager;
-import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.graph.Graph;
 import de.yard.threed.graph.GraphNode;
@@ -44,7 +43,7 @@ public class RouteBuilder extends BasicRouteBuilder {
      */
     public FlightRouteGraph buildFlightRouteGraph(Runway runway, MapProjection projection, int pattern) {
         logger.debug("buildFlightRouteGraph with projection " + projection);
-        FlightRouteGraph graph = buildFlightGraphForAircraftTrafficPattern(runway/*, projection*/, (TerrainElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION), pattern, new GeneralParameterHandler<GeoCoordinate>() {
+        FlightRouteGraph graph = buildFlightGraphForAircraftTrafficPattern(runway/*, projection*/, (ElevationProvider) SystemManager.getDataProvider(SystemManager.DATAPROVIDERELEVATION), pattern, new GeneralParameterHandler<GeoCoordinate>() {
             @Override
             public void handle(GeoCoordinate parameter) {
                 logger.warn("missing elevation");
@@ -77,7 +76,7 @@ public class RouteBuilder extends BasicRouteBuilder {
      *
      * @return
      */
-    public FlightRouteGraph buildFlightGraphForAircraftTrafficPattern(Runway departing, TerrainElevationProvider elevationprovider, int pattern, GeneralParameterHandler<GeoCoordinate> missingElevationHandler) {
+    public FlightRouteGraph buildFlightGraphForAircraftTrafficPattern(Runway departing, ElevationProvider elevationprovider, int pattern, GeneralParameterHandler<GeoCoordinate> missingElevationHandler) {
         Graph graph = buildTakeOffGraph(departing, BasicRouteBuilder.platzrundealtitude, elevationprovider,missingElevationHandler);
         GraphNode sidnode = graph.getNode(graph.getNodeCount() - 1);
         FlightRouteGraph flightRoute = null;
@@ -211,7 +210,7 @@ public class RouteBuilder extends BasicRouteBuilder {
     /**
      * @return
      */
-    public FlightRouteGraph buildFlightGraph(Runway departing, TerrainElevationProvider elevationprovider, String flightdestination, GeneralParameterHandler<GeoCoordinate> missingElevationHandler) {
+    public FlightRouteGraph buildFlightGraph(Runway departing, ElevationProvider elevationprovider, String flightdestination, GeneralParameterHandler<GeoCoordinate> missingElevationHandler) {
         Graph graph = buildTakeOffGraph(departing, cruisingaltitude, elevationprovider, missingElevationHandler);
         GraphNode sidnode = graph.getNode(graph.getNodeCount() - 1);
         FlightRouteGraph flightRoute = null;
@@ -326,7 +325,7 @@ public class RouteBuilder extends BasicRouteBuilder {
      *
      * @return
      */
-    public void addLandingGraph(Runway runway, Graph graph, GraphNode lastnode, double altitude, TerrainElevationProvider elevationprovider, GeneralParameterHandler<GeoCoordinate> missingElevationHandler) {
+    public void addLandingGraph(Runway runway, Graph graph, GraphNode lastnode, double altitude, ElevationProvider elevationprovider, GeneralParameterHandler<GeoCoordinate> missingElevationHandler) {
         RunwayHelper runwayHelper = new RunwayHelper(runway, new FgCalculations());
         SGGeod starpoint = GeoUtil.applyCourseDistance(SGGeod.fromLatLon(runwayHelper.getTakeoffPoint()), runwayHelper.getHeading().reverse(), 3000);
         starpoint.setElevationM(altitude);

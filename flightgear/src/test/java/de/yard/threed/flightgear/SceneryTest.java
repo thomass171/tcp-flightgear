@@ -8,8 +8,10 @@ import de.yard.threed.core.loader.InvalidDataException;
 import de.yard.threed.core.loader.LoaderGLTF;
 import de.yard.threed.core.loader.PortableModel;
 import de.yard.threed.core.loader.PreparedModel;
+import de.yard.threed.core.platform.NativeCollision;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.testutil.TestUtils;
+import de.yard.threed.engine.Ray;
 import de.yard.threed.engine.Scene;
 import de.yard.threed.engine.Texture;
 import de.yard.threed.engine.TexturePool;
@@ -27,6 +29,7 @@ import de.yard.threed.core.Quaternion;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.flightgear.core.FlightGear;
+import de.yard.threed.flightgear.core.flightgear.scenery.FGScenery;
 import de.yard.threed.flightgear.core.flightgear.scenery.FGTileMgrScheduler;
 import de.yard.threed.flightgear.core.flightgear.scenery.SceneryPager;
 import de.yard.threed.flightgear.core.flightgear.scenery.TileCache;
@@ -71,7 +74,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * High Level Tests for material und SGTileGeometry, z.B. Obj, SGBucket, ReaderWriterSTG,FGTileMgrScheduler, SQQaut, OsgMath
+ * High Level Tests for material und SGTileGeometry, z.B. Obj, SGBucket, ReaderWriterSTG,
+ * FGTileMgrScheduler, SQQaut, OsgMath, TerrainHelper
  * <p>
  * FGTileMgr ist in FlightGeartest, weil er zu stark eingebunden ist.
  * <p>
@@ -534,6 +538,25 @@ public class SceneryTest {
             TestHelper.processAsync();
             return loaded.getValue();
         }, 10000);
+    }
+
+    /**
+     * Bucket 3023754 is at 52.1875, 4.625 (EHAM)
+     */
+    @Test
+    public void testTerrainHelper() {
+        SGBucket bucket = new SGBucket(3023754);
+
+        Ray ray = FGScenery.getVerticalRay(bucket.get_center(), new Vector3());
+        List<NativeCollision> intersections = ray.getIntersections();
+        assertEquals(0, intersections.size(), "intersections");
+
+        SceneNode dummyTile = TerrainHelper.buildDummyTile(bucket);
+        assertEquals("dummyTile3023754", dummyTile.getName());
+        // tile needs to be in world for intersection detection
+        Scene.getCurrent().addToWorld(dummyTile);
+        intersections = ray.getIntersections();
+        assertEquals(1, intersections.size(), "intersections");
     }
 
     public static SceneNode loadSTGFromBundleAndWait(int tile) throws Exception {

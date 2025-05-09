@@ -1,5 +1,6 @@
 package de.yard.threed.trafficfg.apps;
 
+import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.NativeLight;
@@ -19,6 +20,8 @@ import de.yard.threed.flightgear.ecs.FgAnimationComponent;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,19 +37,14 @@ public class ScenerySceneTest {
     /**
      *
      */
-    @Test
-    public void testLaunch() throws Exception {
-        launch(null);
-    }
-
-    @Test
-    public void testLaunchWithVehicle() throws Exception {
-        launch("bluebird");
-    }
-
-    private void launch(String initialVehicle) throws Exception {
+    @ParameterizedTest
+    @CsvSource(value = {
+            ",",
+            "bluebird,"
+    })
+    void launch(String initialVehicle) throws Exception {
         HashMap<String, String> properties = new HashMap<String, String>();
-        if (initialVehicle != null) {
+        if (!StringUtils.empty(initialVehicle )) {
             properties.put("initialVehicle", initialVehicle);
         }
         sceneRunner = buildSceneRunner("de.yard.threed.trafficfg.apps.SceneryScene", properties, INITIAL_FRAMES);
@@ -60,6 +58,8 @@ public class ScenerySceneTest {
         logger.debug("position=" + position);
 
         assertNull(ObserverComponent.getObserverComponent(userEntity));
+
+        sceneRunner.runLimitedFrames(5);
 
         String[] bundleNames = BundleRegistry.getBundleNames();
 

@@ -52,7 +52,6 @@ import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearSettings;
-import de.yard.threed.flightgear.TerrainElevationProvider;
 import de.yard.threed.flightgear.core.FlightGearModuleBasic;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
@@ -70,6 +69,7 @@ import de.yard.threed.traffic.EllipsoidConversionsProvider;
 import de.yard.threed.traffic.PositionHeading;
 import de.yard.threed.traffic.RequestRegistry;
 import de.yard.threed.traffic.SphereProjections;
+import de.yard.threed.traffic.StaticElevationProvider;
 import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.TrafficSystem;
@@ -288,7 +288,7 @@ public class FlatAirportScene extends FlightTravelScene {
         initHud();
         updateHud();
 
-        SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, TerrainElevationProvider.buildForStaticAltitude(0));
+        SystemManager.putDataProvider(SystemManager.DATAPROVIDERELEVATION, StaticElevationProvider.buildForStaticAltitude(0));
 
         //13.12.18 buildControlMenu();
         //7.10.21 activateTile(tilelist[major]);
