@@ -3,7 +3,6 @@ package de.yard.threed.flightgear.core.simgear.scene.model;
 import de.yard.threed.core.Matrix3;
 import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.TreeNodeVisitor;
-import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.NativeCollision;
@@ -12,7 +11,6 @@ import de.yard.threed.core.platform.PlatformHelper;
 import de.yard.threed.core.platform.Uniform;
 import de.yard.threed.engine.Material;
 import de.yard.threed.engine.SceneNode;
-import de.yard.threed.engine.Transform;
 import de.yard.threed.engine.platform.common.RequestHandler;
 import de.yard.threed.flightgear.core.osg.Group;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
@@ -26,7 +24,6 @@ import de.yard.threed.flightgear.core.simgear.structure.SGClipExpression;
 import de.yard.threed.flightgear.core.simgear.structure.SGConstExpression;
 import de.yard.threed.flightgear.core.simgear.structure.SGExpression;
 import de.yard.threed.flightgear.core.simgear.structure.SGInterpTableExpression;
-import de.yard.threed.flightgear.core.simgear.structure.SGPropertyExpression;
 import de.yard.threed.flightgear.core.simgear.structure.SGStepExpression;
 
 import java.util.ArrayList;
@@ -46,6 +43,7 @@ public class SGTexTransformAnimation extends SGAnimation {
     public List<Material> materials;
     boolean UniformTEXTUREMATRIXnotfoundLogged = false;
     boolean noAnimationGroupLogged = false;
+    boolean noUpdateCallbackLogged = false;
 
     abstract class /*SGTexTransformAnimation::*/Transform /*: public SGReferenced*/ {
 
@@ -402,7 +400,10 @@ public class SGTexTransformAnimation extends SGAnimation {
 
     public Matrix3 getTransformMatrix() {
         if (updateCallback == null) {
-            logger.warn("no updateCallback");
+            if (!noUpdateCallbackLogged) {
+                logger.warn("no updateCallback");
+                noUpdateCallbackLogged = true;
+            }
             return new Matrix3();
         }
         return updateCallback.operator();

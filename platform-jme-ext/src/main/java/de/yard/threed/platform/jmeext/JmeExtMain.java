@@ -95,7 +95,11 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
             // Edinburgh
             //properties.put("initialLocation", "55.99,-3.2,1500");
             //properties.put("initialHeading", "270");
-            properties.put("scene", "de.yard.threed.trafficadvanced.apps.AdvancedSceneryScene");
+            // c172p at EDDK 06
+            properties.put("initialVehicle", "c172p");
+            properties.put("initialLocation", "geo:50.860122,7.123778");
+            properties.put("initialHeading", "64.333166015357");
+            properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         }
         boolean bluebirdFreeFlight = false;
         if (bluebirdFreeFlight) {
