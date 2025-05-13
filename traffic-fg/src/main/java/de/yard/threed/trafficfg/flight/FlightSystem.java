@@ -8,10 +8,12 @@ import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
+import de.yard.threed.engine.BaseRequestRegistry;
 import de.yard.threed.engine.ecs.DefaultEcsSystem;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsGroup;
 import de.yard.threed.engine.ecs.SystemManager;
+import de.yard.threed.engine.ecs.UserSystem;
 import de.yard.threed.engine.ecs.VelocityComponent;
 import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.platform.common.RequestType;
@@ -112,8 +114,11 @@ public class FlightSystem extends DefaultEcsSystem {
             //  Servicepoint cleanen? Evtl. ist ja noch Service aktiv. TODO
             TrafficRequest tr = (TrafficRequest) request.getPayloadByIndex(0);
             //Schedule schedule = new Schedule(null, tr.groundnet/*, trafficSystem*/);
-            buildAircraftDepartAction(/*tr.groundnet,*/ tr.aircraft,/* tr.holding, tr.departing, */tr.flightdestination);
-
+            String failMsg = buildAircraftDepartAction(/*tr.groundnet,*/ tr.aircraft,/* tr.holding, tr.departing, */tr.flightdestination);
+            if (failMsg != null /*not set :-( && request.getUserEntityId() != null*/) {
+                // showing a GUI message for the requesting user is OK so far. Showing it in some cockpit instrument doesn't appear better.
+                SystemManager.putRequest(BaseRequestRegistry.buildUserMessageRequest(UserSystem.getInitialUser().getId(), failMsg, 3000, request.getUserEntityId()));
+            }
             //if needed load destination airport to have it available at takeoff.TODO Bravo hat flightdestination null
             if (tr.flightdestination != null && tr.flightdestination.isType(Destination.TYPE_ICAO_PARKPOS)) {
                 String icao = tr.flightdestination.getIcao();
@@ -147,10 +152,11 @@ public class FlightSystem extends DefaultEcsSystem {
      * Move Aircraft to Runway.
      * Geht bis zum Holdingpoint, der den Übergang zum Flightgraph darstellt.
      * Der Begriff "holding" ist nicht ganz sauber, weil er vor der Runway liegt.
+     * 13.5.25: Returns null on success and a fail message in case of failure.
      * <p>
      * Created by thomass on 13.02.2018.
      */
-    private void buildAircraftDepartAction(/*GroundNet groundnet,*/ EcsEntity aircraft/*, GraphNode holding, Runway runway,*/, Destination flightdestination) {
+    private String buildAircraftDepartAction(/*GroundNet groundnet,*/ EcsEntity aircraft/*, GraphNode holding, Runway runway,*/, Destination flightdestination) {
         GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(aircraft);
         VehicleComponent vhc = VehicleComponent.getVehicleComponent(aircraft);
         GraphPosition start = gmc.getCurrentposition();
@@ -171,7 +177,7 @@ public class FlightSystem extends DefaultEcsSystem {
         //}
         if (groundNet == null) {
             logger.warn("no groundnet");
-            return;
+            return "no groundnet";
         }
 
         //Die arrived werden noch nicht ricvhtig mit MovenmentCompioentn angelegt. Darum einen c172p an der Runway sezten.
@@ -180,17 +186,19 @@ public class FlightSystem extends DefaultEcsSystem {
         GraphNode holding = groundNet.getHolding(runway.getFromNumber())/*getName())*/ /*enternodefromgroundnet*/;
         if (holding == null) {
             logger.error("No holding found on runway " + runway.getName());
-            return;
+            return "No holding found on runway " + runway.getName();
         }
         if (start == null) {
-            //Seit 2/2023 bei TravelScene (s)tart. Wahrscheinlich war das schon immer so, wenn man (s) vor (l) pressed.
-            throw new RuntimeException("start is null");
+            // Might happen when pressing (s) before a vehicle is loaded?
+            // 12.5.25 Or when a vehicle isn't bound to a graph at all.
+            logger.warn("no graph start location");
+            return "no graph start location";
         }
 
         GraphPath path = groundNet.groundnetgraph.createPathFromGraphPosition(start, holding, null, vhc.config);
         if (path == null) {
             logger.error("no path found to " + holding);
-            return;
+            return "no path found to " + holding;
         }
         path.setName("toTakeoff");
         SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_PATHCREATED, new Payload(groundNet.groundnetgraph, path)));
@@ -204,6 +212,7 @@ public class FlightSystem extends DefaultEcsSystem {
         if (!aircraft.lockEntity(this)) {
             logger.error("Lock vehicle failed");
         }
+        return null;
     }
 
     /**
