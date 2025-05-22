@@ -216,7 +216,8 @@ public class DelayLoadReadFileCallback /*extends OptionsReadFileCallback*/ {
                 // Build entity for animated objects
                 if (animationList.size() > 0) {
                     // 21.11.24: Also add scene node to entity
-                    EcsEntity entity = new EcsEntity(destinationNode, new FgAnimationComponent(destinationNode, animationList));
+                    // 14.5.25: Is this a scenery model? We could pass the global property tree, but the tree parameter is intended a vehicle local one for syncing, so null
+                    EcsEntity entity = new EcsEntity(destinationNode, new FgAnimationComponent(destinationNode, animationList, null));
                     logger.debug("Building entity with animations " + source.getFullName());
                     entity.setName(source.getFullName());
                 }

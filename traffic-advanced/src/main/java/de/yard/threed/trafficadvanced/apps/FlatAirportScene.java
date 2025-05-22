@@ -36,6 +36,7 @@ import de.yard.threed.engine.ecs.EntityFilter;
 import de.yard.threed.engine.ecs.InputToRequestSystem;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.ecs.TeleportComponent;
+import de.yard.threed.engine.ecs.TeleporterSystem;
 import de.yard.threed.engine.ecs.UserSystem;
 import de.yard.threed.engine.ecs.VelocityComponent;
 import de.yard.threed.engine.geometry.ShapeGeometry;
@@ -55,7 +56,6 @@ import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.core.FlightGearModuleBasic;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
-import de.yard.threed.flightgear.ecs.PropertyComponent;
 import de.yard.threed.graph.GraphEventRegistry;
 import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphNode;
@@ -380,7 +380,7 @@ public class FlatAirportScene extends FlightTravelScene {
                     logger.debug("Default Trip");
                     // close menu
                     InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
-                    TravelHelper.startDefaultTrip(getAvatarVehicle());
+                    TravelHelper.startDefaultTrip(TeleporterSystem.getTeleportEntity());
                 }),
                 new MenuItem(null, new Text("Auto Start", Color.RED, Color.LIGHTGRAY), () -> {
                     SystemManager.putRequest(new Request(UserSystem.USER_REQUEST_AUTOMOVE));
@@ -609,26 +609,12 @@ public class FlatAirportScene extends FlightTravelScene {
 
         debugupdate();
 
-        adjustASI();
-
         //26.10.18: Jetzt 'S' statt Alpha6. Aber nicht im FPC mode ohne Avatar.
         if (Input.getKeyDown(KeyCode.S) /*&& /*24.10.21avatar*//*10.3.22AvatarSystem.getAvatar() != null*/) {
-            TravelHelper.startDefaultTrip(getAvatarVehicle());
+            TravelHelper.startDefaultTrip(TeleporterSystem.getTeleportEntity());
         }
         if (Input.getKeyDown(KeyCode.Alpha4)) {
-            TravelHelper.startFlight(Destination.buildByIcao("EDDF"), getAvatarVehicle());
-        }
-    }
-
-    public static void adjustASI() {
-        // fuer Speed Indicator für c172 asi. 6.4.21 Was in GraphMovingSystem before.
-        // TODO generisch (auch in RailingScene)
-        EcsEntity vehicle = TrafficHelper.findVehicleByName("c172p");
-        if (vehicle != null) {
-            PropertyComponent pc = PropertyComponent.getPropertyComponent(vehicle);
-            if (pc != null) {
-                pc.setSpeed(VelocityComponent.getVelocityComponent(vehicle).getMovementSpeed());
-            }
+            TravelHelper.startFlight(Destination.buildByIcao("EDDF"), TeleporterSystem.getTeleportEntity());
         }
     }
 
@@ -775,7 +761,7 @@ public class FlatAirportScene extends FlightTravelScene {
                     public void down() {
                     }
                 }, () -> {
-                    TravelHelper.startDefaultTrip(getAvatarVehicle());
+                    TravelHelper.startDefaultTrip(TeleporterSystem.getTeleportEntity());
                 },
                 // service handler
                 new SpinnerHandler() {

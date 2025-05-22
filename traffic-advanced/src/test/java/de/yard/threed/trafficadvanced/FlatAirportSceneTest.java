@@ -3,7 +3,7 @@ package de.yard.threed.trafficadvanced;
 
 import de.yard.threed.core.Event;
 import de.yard.threed.core.Payload;
-import de.yard.threed.core.Util;
+import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.NativeSceneNode;
@@ -11,7 +11,6 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
-import de.yard.threed.engine.Texture;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsHelper;
 import de.yard.threed.engine.ecs.EcsTestHelper;
@@ -24,32 +23,26 @@ import de.yard.threed.engine.testutil.SceneRunnerForTesting;
 import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.graph.GraphMovingComponent;
-import de.yard.threed.javacommon.ConfigurationByEnv;
 import de.yard.threed.traffic.GraphTerrainSystem;
 import de.yard.threed.traffic.GraphVisualizationSystem;
-import de.yard.threed.traffic.RequestRegistry;
 import de.yard.threed.traffic.SphereProjections;
 import de.yard.threed.traffic.TrafficEventRegistry;
-import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.TrafficSystem;
 import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.traffic.config.VehicleDefinition;
-import de.yard.threed.traffic.testutils.TrafficTestUtils;
 import de.yard.threed.trafficadvanced.apps.FlatAirportScene;
 import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.TravelSceneTestHelper;
-import de.yard.threed.trafficfg.apps.TravelSceneBluebird;
 import de.yard.threed.trafficfg.flight.GroundNetMetadata;
 import de.yard.threed.trafficfg.flight.GroundServiceComponent;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.HashMap;
 import java.util.List;
 
-import static de.yard.threed.javanative.JavaUtil.sleepMs;
 import static de.yard.threed.traffic.SphereSystem.USER_REQUEST_SPHERE;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -73,22 +66,15 @@ public class FlatAirportSceneTest {
     static final int INITIAL_FRAMES = 10;
     Log log;
 
-    /**
-     *
-     */
-    @Test
-    public void testEDDKWithDoormarker() throws Exception {
-        runEDDK(true);
-    }
+    @ParameterizedTest
+    @CsvSource(value = {
+            "true;",
+            "false;",
+            "false;c172p",
+    }, delimiter = ';')
+    public void runEDDK(boolean enableDoormarker, String initialVehicle) throws Exception {
 
-    @Test
-    public void testEDDKWithoutDoormarker() throws Exception {
-        runEDDK(false);
-    }
-
-    public void runEDDK(boolean enableDoormarker) throws Exception {
-
-        setup(FlatAirportScene.DEFAULT_TILENAME, enableDoormarker);
+        setup(FlatAirportScene.DEFAULT_TILENAME, enableDoormarker, initialVehicle);
 
         /*DefaultTrafficWorld.instance = null;
         assertNull("", DefaultTrafficWorld.getInstance());
@@ -109,7 +95,7 @@ public class FlatAirportSceneTest {
         assertNotNull(BundleRegistry.getBundle("fgdatabasic"));
 
         List<Event> completeEvents = EcsTestHelper.getEventsFromHistory(TrafficEventRegistry.TRAFFIC_EVENT_SPHERE_LOADED);
-        assertEquals( 1, completeEvents.size());
+        assertEquals(1, completeEvents.size());
 
         /*do we have these events here?
         completeEvents = EcsTestHelper.getEventsFromHistory(TrafficEventRegistry.TRAFFIC_EVENT_GRAPHLOADED);
@@ -135,7 +121,7 @@ public class FlatAirportSceneTest {
         assertNotNull(config);
 
         //11 passt: "Player",GS Vehicle (ohne delayed aircraft) Vehicle from sceneconfig, 3 Aircraft
-        int expectedNumberOfEntites = 11;
+        int expectedNumberOfEntites = initialVehicle == null ? 11 : 12;
         TestUtils.waitUntil(() -> {
             TestHelper.processAsync();
             List<EcsEntity> entities = SystemManager.findEntities((EntityFilter) null);
@@ -143,7 +129,7 @@ public class FlatAirportSceneTest {
         }, 40000);
 
         // 23.5.24: Is 0.0 really correct elevation. Routebuilder should have converted original 3D->2D.
-        TravelSceneTestHelper.validatePlatzrunde(((FlatAirportScene)sceneRunner.ascene).platzrundeForVisualizationOnly, 0.0, 0.0, false);
+        TravelSceneTestHelper.validatePlatzrunde(((FlatAirportScene) sceneRunner.ascene).platzrundeForVisualizationOnly, 0.0, 0.0, false);
 
         TravelSceneTestHelper.validateGroundnet();
 
@@ -172,43 +158,17 @@ public class FlatAirportSceneTest {
         SystemManager.putRequest(new Request(UserSystem.USER_REQUEST_AUTOMOVE, new Payload(new Object[]{null})));
         sceneRunner.runLimitedFrames(10);
 
-        // load c172p
-        Request request = RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null, null, null);
-        SystemManager.putRequest(request);
-        TestUtils.waitUntil(() -> {
-            sceneRunner.runLimitedFrames(10);
-            sleepMs(100);
-            return BundleRegistry.getBundle("c172p") != null;
-        }, 30000);
-        assertNotNull(BundleRegistry.getBundle("c172p"));
+        // load next vehicle (by not passing a name), which typically is c172p. Second name parameter is the expected value!
+        EcsEntity c172p = TravelSceneTestHelper.loadAndValidateVehicle(sceneRunner, null, "c172p");
 
-        // Optionals should not have been created. But testing that way is a false positive for unknwn reasons.
-        assertEquals(0, SceneNode.findByName("LandingLightCone").size());
-
-        EcsEntity c172p = EcsHelper.findEntitiesByName("c172p").get(0);
-        //log.debug(c172p.getSceneNode().dump(" ", 0));
-
-        TestUtils.waitUntil(() -> {
-            sceneRunner.runLimitedFrames(10);
-            return SceneNode.findByName("Aircraft/Instruments-3d/garmin196/garmin196.gltf").size() > 0;
-        }, 30000);
-
-        // garmin has multiple components and names. just look for one
-        NativeSceneNode garmin196 = SceneNode.findByName("Aircraft/Instruments-3d/garmin196/garmin196.gltf").get(0);
-        //16.8.24 TODO assertTrue(Texture.hasTexture("screens.png"), "garmin.texture");
-
-        // start c172p roundtrip
-        //SystemManager.putRequest(RequestRegistry.buildLoadVehicle(-1, null, null, null));
-
-        // start c172p and wait until it has a flight route
-        TravelSceneTestHelper.assertDefaultTrip(sceneRunner, c172p, false);
-
+        // start c172p default trip and wait until it has a flight route
+        TravelSceneTestHelper.startAndValidateDefaultTrip(sceneRunner, c172p, false);
 
     }
 
     /**
      * Used for both (Flat)TravelScene tests for testing before any vehicle movement but after loading.
-     * Auf die Reigenfolge der Tests achten. Zuerst die Basisdinge fuer anderes testen. Sonst hilft es nicht bei der Fehlersuche.
+     * Care for test order. First test basic issues.
      */
     public static void validateStaticEDDK(boolean enableDoormarker) {
 
@@ -238,7 +198,7 @@ public class FlatAirportSceneTest {
     /**
      * Needs parameter, so no @Before
      */
-    private void setup(String tileName, boolean enableDoormarker) throws Exception {
+    private void setup(String tileName, boolean enableDoormarker, String initialVehicle) throws Exception {
         HashMap<String, String> properties = new HashMap<String, String>();
         properties.put("scene", "de.yard.threed.trafficadvanced.apps.FlatAirportScene");
         properties.put("visualizeTrack", "true");
@@ -246,6 +206,10 @@ public class FlatAirportSceneTest {
         if (tileName != null) {
             properties.put("argv.basename", tileName);
         }
+        if (!StringUtils.empty(initialVehicle)) {
+            properties.put("initialVehicle", initialVehicle);
+        }
+
         //9.12.23 sceneRunner = TrafficTestUtils.setupForScene(INITIAL_FRAMES, ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties));
         FgTestFactory.initPlatformForTest(properties, false, true, true, false);
 

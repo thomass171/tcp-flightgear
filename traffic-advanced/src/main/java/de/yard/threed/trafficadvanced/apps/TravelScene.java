@@ -34,6 +34,7 @@ import de.yard.threed.engine.ecs.EcsSystem;
 import de.yard.threed.engine.ecs.InputToRequestSystem;
 import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.ecs.TeleportComponent;
+import de.yard.threed.engine.ecs.TeleporterSystem;
 import de.yard.threed.engine.ecs.UserSystem;
 import de.yard.threed.engine.gui.ControlPanel;
 import de.yard.threed.engine.gui.ControlPanelArea;
@@ -350,7 +351,7 @@ public class TravelScene extends FlightTravelScene {
                 new MenuItem(null, new Text("Enter Equator Orbit", Color.RED, Color.LIGHTGRAY), () -> {
                     logger.debug("menu: equator orbit");
                     //8.3.20 enterEquatorOrbit();
-                    TravelHelper.startFlight(Destination.buildForOrbit(true), getAvatarVehicle());
+                    TravelHelper.startFlight(Destination.buildForOrbit(true), TeleporterSystem.getTeleportEntity());
                     //openclosemenu();
                 }),
                 new MenuItem(null, new Text("Enter Moon Orbit", Color.RED, Color.LIGHTGRAY), () -> {
@@ -387,10 +388,10 @@ public class TravelScene extends FlightTravelScene {
         switch (tripindex) {
             case 0:
                 // 13.7.24 Don't ignore initialRoute TravelHelper.startFlight(Destination.buildRoundtrip(0), getAvatarVehicle());
-                TravelHelper.startDefaultTrip(getAvatarVehicle());
+                TravelHelper.startDefaultTrip(TeleporterSystem.getTeleportEntity());
                 break;
             case 1:
-                TravelHelper.startFlight(Destination.buildRoundtrip(1), getAvatarVehicle());
+                TravelHelper.startFlight(Destination.buildRoundtrip(1), TeleporterSystem.getTeleportEntity());
                 break;
             default:
                 logger.error("invalid tripindex " + tripindex);
@@ -689,7 +690,7 @@ public class TravelScene extends FlightTravelScene {
         // 29.8.23: As long a menu isn't working start orbit tour via key.'R' probably not yet in use.
         if (Input.getKeyDown(KeyCode.R)) {
             logger.debug("orbit tour:" + dumpSceneGraph());
-            TravelHelper.startFlight(Destination.buildRoundtrip(1), getAvatarVehicle());
+            TravelHelper.startFlight(Destination.buildRoundtrip(1), TeleporterSystem.getTeleportEntity());
         }
 
         if (stgcycler != null) {
@@ -739,14 +740,13 @@ public class TravelScene extends FlightTravelScene {
            orbittour=buildOrbitTour();
 
         }*/
-        FlatAirportScene.adjustASI();
 
         //26.10.18: Jetzt 'S' statt Alpha6. Aber nicht im FPC mode ohne Avatar.
         if (Input.getKeyDown(KeyCode.S) /*10.3.22&& AvatarSystem.getAvatar() != null*/) {
-            TravelHelper.startDefaultTrip(getAvatarVehicle());
+            TravelHelper.startDefaultTrip(TeleporterSystem.getTeleportEntity());
         }
         if (Input.getKeyDown(KeyCode.Alpha4)) {
-            TravelHelper.startFlight(Destination.buildByIcao("EDDF"), getAvatarVehicle());
+            TravelHelper.startFlight(Destination.buildByIcao("EDDF"), TeleporterSystem.getTeleportEntity());
         }
     }
 
@@ -815,7 +815,7 @@ public class TravelScene extends FlightTravelScene {
 
         //14.11.18: Eine GMC beisst sich zwar mit dem Teleporter, aber damit er sich mal im Orbit bewegen.
         //das ist etwas provisorisch
-        EcsEntity currentvehicle = getAvatarVehicle();
+        EcsEntity currentvehicle = TeleporterSystem.getTeleportEntity();
         boolean mitnavigator = true;
         if (currentvehicle == null) {
             logger.error("avatars vehicle not found");

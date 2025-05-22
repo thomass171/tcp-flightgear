@@ -1,8 +1,6 @@
 package de.yard.threed.trafficadvanced;
 
 
-import de.yard.threed.core.Event;
-import de.yard.threed.core.LatLon;
 import de.yard.threed.core.Payload;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.Log;
@@ -11,7 +9,6 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
-import de.yard.threed.engine.Texture;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsHelper;
 import de.yard.threed.engine.ecs.EcsTestHelper;
@@ -20,37 +17,27 @@ import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.ecs.TeleportComponent;
 import de.yard.threed.engine.ecs.TeleporterSystem;
 import de.yard.threed.engine.ecs.UserSystem;
-import de.yard.threed.engine.ecs.VelocityComponent;
 import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.testutil.ExpectedEntity;
 import de.yard.threed.engine.testutil.SceneRunnerForTesting;
 import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
-import de.yard.threed.graph.DefaultEdgeBasedRotationProvider;
 import de.yard.threed.graph.GraphMovingComponent;
-import de.yard.threed.graph.GraphPath;
 import de.yard.threed.traffic.FgVehicleSpace;
-import de.yard.threed.traffic.GraphTerrainSystem;
 import de.yard.threed.traffic.GraphVisualizationSystem;
 import de.yard.threed.traffic.RequestRegistry;
-import de.yard.threed.traffic.SphereProjections;
 import de.yard.threed.traffic.SphereSystem;
-import de.yard.threed.traffic.TrafficEventRegistry;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.TrafficSystem;
-import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.traffic.config.VehicleDefinition;
-import de.yard.threed.trafficcore.geodesy.SimpleMapProjection;
-import de.yard.threed.trafficadvanced.apps.FlatAirportScene;
 import de.yard.threed.trafficadvanced.apps.TravelScene;
 import de.yard.threed.trafficcore.model.Vehicle;
-import de.yard.threed.trafficfg.TravelHelper;
 import de.yard.threed.trafficfg.TravelSceneTestHelper;
-import de.yard.threed.trafficfg.apps.TravelSceneBluebird;
-import de.yard.threed.trafficfg.flight.GroundNetMetadata;
 import de.yard.threed.trafficfg.flight.GroundServiceComponent;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.HashMap;
 import java.util.List;
@@ -73,7 +60,7 @@ public class TravelSceneTest {
     /**
      *
      */
-    @Test
+   /* @Test
     public void testWithDoormarkerAndNavigator() throws Exception {
         run(true, true, false);
     }
@@ -86,9 +73,15 @@ public class TravelSceneTest {
     @Test
     public void testNavigatorWorldTeleport() throws Exception {
         run(false, true, true);
-    }
+    }*/
 
-    public void run(boolean enableDoormarker, boolean enableNavigator, boolean worldTeleport) throws Exception {
+    @ParameterizedTest
+    @CsvSource(value = {
+            "true;true;false",
+            "false;false;false",
+            "false;true;true",
+    }, delimiter = ';')
+    public void testTravelScene(boolean enableDoormarker, boolean enableNavigator, boolean worldTeleport) throws Exception {
 
         if (worldTeleport && !enableNavigator) {
             fail("invalid");
@@ -177,11 +170,11 @@ public class TravelSceneTest {
         validateStaticEDDK(enableDoormarker);
         if (enableNavigator) {
             // 2*3 for navigator, 2 for LSG, 1 for 738, position not tested.
-            EcsTestHelper.assertTeleportComponent(userEntity, 3 + 3 + 2 + 1, 8, null);
+            EcsTestHelper.assertTeleportComponent(TeleportComponent.getTeleportComponent(userEntity), 3 + 3 + 2 + 1, 8, null,"738");
             EcsEntity navigator = EcsHelper.findEntitiesByName("Navigator").get(0);
             assertNotNull(navigator);
             // from 'world-pois.xml' 10 are listed. 4 appears correct which is current EDDK navigator overview position, but who set index 4??
-            EcsTestHelper.assertTeleportComponent(navigator, 10, 4, null);
+            EcsTestHelper.assertTeleportComponent(TeleportComponent.getTeleportComponent(navigator), 10, 4, null,null);
             TeleportComponent navigatorTeleportComponent = TeleportComponent.getTeleportComponent(navigator);
             assertEquals("Dahlem 1300", navigatorTeleportComponent.getPointLabel(3));
             assertEquals("EDDK Overview", navigatorTeleportComponent.getPointLabel(4));
@@ -203,7 +196,7 @@ public class TravelSceneTest {
             }
         } else {
             // without navigator we only have the eddk overview viewpoint
-            EcsTestHelper.assertTeleportComponent(userEntity, 1 + 2 + 1, 3, null);
+            EcsTestHelper.assertTeleportComponent(TeleportComponent.getTeleportComponent(userEntity), 1 + 2 + 1, 3, null, "738");
         }
 
         EcsEntity entity747 = EcsHelper.findEntitiesByName("747 KLM").get(0);
@@ -258,7 +251,7 @@ public class TravelSceneTest {
         assertQuaternion(FgVehicleSpace.getFgVehicleForwardRotation(), gmc.customModelRotation);
 
         // start c172p and wait until it has a flight route (first will be move to runway)
-        TravelSceneTestHelper.assertDefaultTrip(sceneRunner, c172p, true);
+        TravelSceneTestHelper.startAndValidateDefaultTrip(sceneRunner, c172p, true);
         TestUtils.waitUntil(() -> {
             sceneRunner.runLimitedFrames(2);
             sleepMs(10);
@@ -266,6 +259,7 @@ public class TravelSceneTest {
         }, 5000);
 
         assertTrue(gmc.hasAutomove());
+        TravelSceneTestHelper.validateFgProperties(c172p, true);
 
     }
 

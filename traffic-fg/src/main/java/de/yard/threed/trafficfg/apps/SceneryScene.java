@@ -348,7 +348,7 @@ public class SceneryScene extends Scene {
             vehicleEntity = new EcsEntity(currentaircraft);
             vehicleEntity.setName(vehicleDefinition.getName());
             vehicleEntity.addComponent(new FirstPersonMovingComponent(currentaircraft.getTransform()));
-            vehicleEntity.addComponent(new FgAnimationComponent(currentaircraft, fgVehicleLoaderResult.animationList));
+            vehicleEntity.addComponent(new FgAnimationComponent(currentaircraft, fgVehicleLoaderResult.animationList, null));
 
             waitsForInitialVehicle = false;
         });

@@ -71,7 +71,8 @@ public class ModelFactory {
         List<SGAnimation> animationList = new ArrayList<SGAnimation>();
 
         SceneNode destinationNode = buildModelFromBundleXml(modelfile,rootnode,animationList);
-        EcsEntity entity = new EcsEntity(destinationNode, new FgAnimationComponent(destinationNode, animationList));
+        // 14.5.25: Assume it is no vehicle so no local property tree
+        EcsEntity entity = new EcsEntity(destinationNode, new FgAnimationComponent(destinationNode, animationList, null));
         entity.setName(""/*config.getName()*/);
         //entity.setBasenode(basenode);
 

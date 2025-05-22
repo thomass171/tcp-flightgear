@@ -80,6 +80,9 @@ public class FgAnimationUpdateSystem extends DefaultEcsSystem {
         long startTime = Platform.getInstance().currentTimeMillis();
 
         FgAnimationComponent ac = (FgAnimationComponent) group.cl.get(0);
+        // 14.5.25: Now we have generic property sync (was in PropertyComponent once)
+        ac.syncProperties();
+
         for (int i = 0; i < ac.animationList.size(); i++) {
             SGAnimation a = ac.animationList.get((i));
             a.process(intersections, new AUSRequestHandler());

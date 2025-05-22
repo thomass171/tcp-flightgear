@@ -7,6 +7,7 @@ import de.yard.threed.engine.ObserverComponent;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsTestHelper;
 import de.yard.threed.engine.ecs.SystemManager;
+import de.yard.threed.engine.ecs.TeleportComponent;
 import de.yard.threed.engine.ecs.VelocityComponent;
 import de.yard.threed.engine.testutil.SceneRunnerForTesting;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGMaterialAnimation;
@@ -59,8 +60,9 @@ public class RailingSceneTest {
         sceneRunner.runLimitedFrames(50);
         // loc should still be not moving
         // TODO check autostart mode
+        TeleportComponent tc = TeleportComponent.getTeleportComponent(userEntity);
         // should start in vehicle. TODO: Check why 0,0,0 is correct position
-        EcsTestHelper.assertTeleportComponent(userEntity, 1 + 3, 3, new Vector3());
+        EcsTestHelper.assertTeleportComponent(tc, 1 + 3, 3, new Vector3(),"locomotive");
         GraphMovingSystem graphMovingSystem = (GraphMovingSystem) SystemManager.findSystem(GraphMovingSystem.TAG);
         GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(locEntity);
         assertNotNull(gmc);

@@ -36,6 +36,7 @@ import de.yard.threed.engine.ecs.SystemState;
 import de.yard.threed.engine.ecs.TeleporterSystem;
 import de.yard.threed.engine.ecs.UserSystem;
 import de.yard.threed.engine.ecs.VelocityComponent;
+import de.yard.threed.engine.ecs.VelocitySystem;
 import de.yard.threed.engine.geometry.ShapeGeometry;
 import de.yard.threed.engine.gui.DefaultMenuProvider;
 import de.yard.threed.engine.gui.FovElement;
@@ -53,7 +54,6 @@ import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
-import de.yard.threed.flightgear.ecs.PropertyComponent;
 import de.yard.threed.graph.Graph;
 import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphMovingSystem;
@@ -165,6 +165,7 @@ public class RailingScene extends Scene {
 
         // We use 'ASI' from FG, so need the system for updating animations
         SystemManager.addSystem(new FgAnimationUpdateSystem());
+        SystemManager.addSystem(new VelocitySystem());
 
         //23.10.19: plane below rails
         Material goundmat = Material.buildLambertMaterial(Color.GREEN);
@@ -313,16 +314,6 @@ public class RailingScene extends Scene {
             logger.info("tests completed");
         }
 
-        // fuer Speed Indicator.
-        // TODO generic
-        List<EcsEntity> engines = EcsHelper.findEntitiesByName("locomotive"/*"Locomotive"*/);
-        if (engines.size() > 0) {
-            PropertyComponent pc = PropertyComponent.getPropertyComponent(engines.get(0));
-            if (pc != null) {
-                pc.setSpeed(VelocityComponent.getVelocityComponent(engines.get(0)).getMovementSpeed());
-            }
-        }
-
         Observer.getInstance().update();
     }
 
@@ -341,10 +332,10 @@ public class RailingScene extends Scene {
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
         });
         controlmenu.addButton(2, 0, 1, Icon.ICON_HORIZONTALLINE, () -> {
-            InputToRequestSystem.sendRequestWithId(new Request(BaseRequestRegistry.TRIGGER_REQUEST_START_SPEEDDOWN));
+            InputToRequestSystem.sendRequestWithId(new Request(BaseRequestRegistry.TRIGGER_REQUEST_SPEEDDOWN));
         });
         controlmenu.addButton(3, 0, 1, Icon.ICON_PLUS, () -> {
-            InputToRequestSystem.sendRequestWithId(new Request(BaseRequestRegistry.TRIGGER_REQUEST_START_SPEEDUP));
+            InputToRequestSystem.sendRequestWithId(new Request(BaseRequestRegistry.TRIGGER_REQUEST_SPEEDUP));
         });
         controlmenu.addButton(4, 0, 1, Icon.ICON_CLOSE, () -> {
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_CONTROLMENU));

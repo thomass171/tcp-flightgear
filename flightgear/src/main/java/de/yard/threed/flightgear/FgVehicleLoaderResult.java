@@ -1,10 +1,10 @@
 package de.yard.threed.flightgear;
 
 import de.yard.threed.engine.ecs.EcsEntity;
+import de.yard.threed.engine.ecs.VelocityComponent;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.flightgear.ecs.FgAnimationComponent;
-import de.yard.threed.flightgear.ecs.PropertyComponent;
 import de.yard.threed.traffic.VehicleLoaderResult;
 
 import java.util.ArrayList;
@@ -26,9 +26,12 @@ public class FgVehicleLoaderResult implements VehicleLoaderResult {
     public void applyResultsToEntity(EcsEntity vehicleEntity) {
         // die animationlist wird sukzessive gefuellt. 22.10.19: Hier? kommt er doch nur einmal hin??
         if (animationList != null) {
-            vehicleEntity.addComponent(new FgAnimationComponent(vehicleEntity.getSceneNode(), animationList));
-            //3.4.18: dann bekommt er auch mal einen PropertyTree
-            vehicleEntity.addComponent(new PropertyComponent(propertyNodeFromOpt/*rootpropertyNode*/));
+            FgAnimationComponent fgAnimationComponent = new FgAnimationComponent(vehicleEntity.getSceneNode(), animationList, propertyNodeFromOpt);
+            //14.5.25: PropertyComponent merged into FgAnimationComponent
+            fgAnimationComponent.addPropertySync(
+                    FgAnimationComponent.C172P_SPD,
+                            parameter ->  VelocityComponent.getVelocityComponent(vehicleEntity).getMovementSpeed());
+            vehicleEntity.addComponent(fgAnimationComponent);
         }
     }
 }
