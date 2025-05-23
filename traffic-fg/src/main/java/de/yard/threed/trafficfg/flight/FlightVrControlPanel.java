@@ -105,10 +105,10 @@ public class FlightVrControlPanel {
             }).setIcon(Icon.IconCharacter(11));
         }
         cp.addArea(panelGrid.getPosition(2, 0), new DimensionF(ControlPanelColWidth[2], ControlPanelRowHeight), () -> {
-            InputToRequestSystem.sendRequestWithId(new Request(BaseRequestRegistry.TRIGGER_REQUEST_START_SPEEDDOWN));
+            InputToRequestSystem.sendRequestWithId(new Request(BaseRequestRegistry.TRIGGER_REQUEST_SPEEDDOWN));
         }).setIcon(Icon.ICON_HORIZONTALLINE);
         cp.addArea(panelGrid.getPosition(3, 0), new DimensionF(ControlPanelColWidth[3], ControlPanelRowHeight), () -> {
-            InputToRequestSystem.sendRequestWithId(new Request(BaseRequestRegistry.TRIGGER_REQUEST_START_SPEEDUP));
+            InputToRequestSystem.sendRequestWithId(new Request(BaseRequestRegistry.TRIGGER_REQUEST_SPEEDUP));
         }).setIcon(Icon.ICON_PLUS);
 
         return cp;
