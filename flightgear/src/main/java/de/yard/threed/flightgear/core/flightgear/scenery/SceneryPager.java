@@ -95,6 +95,7 @@ public class SceneryPager {//extends lic osgDB::DatabasePager
         if (result != null /*&& result.getNode() != null*/) {
             return result;
         }
+        // 5.6.25 ReaderWriterSTG might have decided to load water.
         // 7.5.25 FG apparently does nothing in this situation and will just have 'water'. Not sure how that is implemented.
         // Needs to be in a 'terrain' subtree for providing elevation. For now just create a green plane as dummy tile.
         // Retrieve location via bucket index.

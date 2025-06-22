@@ -657,9 +657,10 @@ public class SGMaterial extends BVHMaterial {
      * Applies an effect to a texture via Geode node visitor in FG? No, it is done
      * duringterrain building, so before draw.
      */
-    Effect get_effect(int i) {
+    public Effect get_effect(int i) {
         // 28.10.24 avoid NPE
-        if (_status.get(i).getEffect() == null) {
+        if (_status.size() <= i || _status.get(i).getEffect() == null) {
+            logger.warn("No effect/material at index " + i + ". Material not found previously for effect '" + effect + "'?");
             return null;
         }
         // 28.10.24: Somehow strange to have a additional effect_realized flag outside of effect. Effect also has one.

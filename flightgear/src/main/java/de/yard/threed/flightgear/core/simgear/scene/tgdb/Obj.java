@@ -292,7 +292,7 @@ public class Obj {
             if (mat != null) {
                 //12.12.17: im Effect ist das "endgültige" Material enthalten. Der EffectGeode treagt dazu nichts bei, zumindest nichts bekanntes.
                 //Darum kommt jetzt auch nur noch "echtes" Material rein (wegen preprocess)
-                eg.material = mat;
+                eg.setMaterial(mat);
                 //eg.setMaterial(p.mat);
                 //Effect e = p.mat.get_one_effect(p.textureindex);///*->getSecond*/.getTextureIndex()));
                 //eg.setEffect(e);

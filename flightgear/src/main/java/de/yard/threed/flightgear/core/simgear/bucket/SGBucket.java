@@ -140,23 +140,23 @@ public class SGBucket {
 
         // find subdivision or super lon if needed
         if (span <= 1.0) {
-        /* We have more than one tile per degree of
-         * longitude, so we need an x offset.
-         */
+            /* We have more than one tile per degree of
+             * longitude, so we need an x offset.
+             */
             x = floorWithEpsilon((dlon - lon) / span);
         } else {
-        /* We have one or more degrees per tile,
-         * so we need to find the base longitude
-         * of that tile.
-         *
-         * First we calculate the integral base longitude
-         * (e.g. -85.5 => -86) and then find the greatest
-         * multiple of span that isType less than or equal to
-         * that longitude.
-         *
-         * That way, the Greenwich Meridian isType always
-         * a tile border.
-         */
+            /* We have one or more degrees per tile,
+             * so we need to find the base longitude
+             * of that tile.
+             *
+             * First we calculate the integral base longitude
+             * (e.g. -85.5 => -86) and then find the greatest
+             * multiple of span that isType less than or equal to
+             * that longitude.
+             *
+             * That way, the Greenwich Meridian isType always
+             * a tile border.
+             */
             lon = (short) (Math.floor(lon / span) * span);
             x = 0;
         }
@@ -173,18 +173,18 @@ public class SGBucket {
             lat = 89;
             y = 7;
         } else {
-        /* Latitude base and offset are easier, as
-         * tiles always are 1/8 degree of latitude wide.
-         */
+            /* Latitude base and offset are easier, as
+             * tiles always are 1/8 degree of latitude wide.
+             */
             y = floorWithEpsilon((dlat - lat) * 8);
         }
     }
 
     /* Calculate the greatest integral value less than
- * or equal to the given value (floor(x)),
- * but attribute coordinates close to the boundary to the next
- * (increasing) integral
- */
+     * or equal to the given value (floor(x)),
+     * but attribute coordinates close to the boundary to the next
+     * (increasing) integral
+     */
     static int floorWithEpsilon(double x) {
         return (int) Math.floor(x + Constants.SG_EPSILON);
     }
@@ -309,7 +309,7 @@ public class SGBucket {
     /**
      * @return the center lon of a tile.
      */
-    double get_center_lon() {
+    public double get_center_lon() {
         double span = sg_bucket_span(lat + y / 8.0 + SG_HALF_BUCKET_SPAN);
 
         if (span >= 1.0) {
@@ -658,8 +658,8 @@ boolean operator!=(const SGBucket&lhs,const SGBucket&rhs)
     }
 
     @Override
-    public String toString(){
-        return "lon=" + lon+",lat="+lat+ ", tile-width-m:" + get_width_m() + ", tile-height-m:" + get_height_m();
+    public String toString() {
+        return "index=" + gen_index() + ",lon=" + lon + ",lat=" + lat + ", tile-width-m:" + get_width_m() + ", tile-height-m:" + get_height_m();
     }
 
 

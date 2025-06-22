@@ -3,12 +3,14 @@ package de.yard.threed.flightgear;
 import de.yard.threed.core.BooleanHolder;
 import de.yard.threed.core.BuildResult;
 import de.yard.threed.core.GeneralParameterHandler;
+import de.yard.threed.core.LatLon;
 import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.loader.InvalidDataException;
 import de.yard.threed.core.loader.LoaderGLTF;
 import de.yard.threed.core.loader.PortableModel;
 import de.yard.threed.core.loader.PreparedModel;
 import de.yard.threed.core.platform.NativeCollision;
+import de.yard.threed.core.platform.NativeSceneNode;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.Ray;
@@ -18,8 +20,10 @@ import de.yard.threed.engine.TexturePool;
 import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.ModelLoader;
+import de.yard.threed.engine.test.testutil.TestUtil;
 import de.yard.threed.engine.testutil.EngineTestFactory;
 import de.yard.threed.engine.testutil.TestHelper;
+import de.yard.threed.flightgear.core.FlightGearModuleBasic;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
@@ -30,6 +34,7 @@ import de.yard.threed.engine.SceneNode;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.flightgear.scenery.FGScenery;
+import de.yard.threed.flightgear.core.flightgear.scenery.FGTileMgr;
 import de.yard.threed.flightgear.core.flightgear.scenery.FGTileMgrScheduler;
 import de.yard.threed.flightgear.core.flightgear.scenery.SceneryPager;
 import de.yard.threed.flightgear.core.flightgear.scenery.TileCache;
@@ -415,7 +420,7 @@ public class SceneryTest {
         FGTileMgrScheduler fgTileMgrScheduler = new FGTileMgrScheduler(tile_cache, _maxTileRangeM/*, terrain_branch*/);
         double duration = 1;
         fgTileMgrScheduler.schedule_scenery(elsdorf, _maxTileRangeM, duration);
-        // Mit der dustance oben so austariert, dass 3x3 geladen werden.
+        // Mit der distance oben so austariert, dass 3x3 geladen werden.
         assertEquals(9, tile_cache.get_size());
 
         SceneryPager sceneryPager = new SceneryPager();
@@ -557,6 +562,65 @@ public class SceneryTest {
         Scene.getCurrent().addToWorld(dummyTile);
         intersections = ray.getIntersections();
         assertEquals(1, intersections.size(), "intersections");
+    }
+
+    /**
+     * 8.10.23: Was using 'greenwichtilecenter' once, but greenwichs tile is not content of project. Switched to refbtg.
+     */
+    @Test
+    public void testOceanTile() throws Exception {
+
+        // there might be fragments from previous tests. Hope remove catches the oldest.
+        log.debug((Platform.getInstance()).findSceneNodeByName("World").size() + " worlds found");
+        while ((Platform.getInstance()).findSceneNodeByName("World").size() > 1) {
+            SceneNode.removeSceneNodeByName("World");
+        }
+        log.debug((Platform.getInstance()).findSceneNodeByName("World").size() + " worlds found after cleanup");
+        //PropertyTree und FGScenery is needed (includes FGTileMgr)
+        FlightGearModuleBasic.init(null, null);
+        FlightGearModuleScenery.init(false, false);
+
+        // don't load model bundle so don't have scenery objects but only terrain.
+
+        FGTileMgr tilemgr = FlightGearModuleScenery.getInstance().get_tile_mgr();
+        tilemgr.init();
+        TestUtil.assertEquals("terraingroup.children", 0, FlightGearModuleScenery.getInstance().get_scenery().get_terrain_branch().getTransform().getChildCount());
+
+        // typical range for getting ...
+        double range_m = 32000;
+
+        LatLon somewhereInNorthSea = LatLon.fromDegrees(54.917587, 4.752215);
+
+        // try only once, not twice like in other tests
+        tilemgr.schedule_tiles_at(SGGeod.fromLatLon(somewhereInNorthSea), range_m);
+        // trigger async load (done in SceneryPager).
+        tilemgr.update_queues(false);
+
+        // Loading of tiles and STGs is async.
+        TestHelper.processAsync();
+        TestHelper.processAsync();
+
+        FGScenery scenery = FlightGearModuleScenery.getInstance().get_scenery();
+        //Die "9" haengt evtl. auch davon ab, welche Bundle verfuegbar sind. Aber das ist schon pausibel, 1 Tile in jede Richtung
+        TestUtil.assertEquals("terraingroup.children", 9, scenery.get_terrain_branch().getTransform().getChildCount());
+        //Ist die Scenery auch richtig im Tree eingehangen? Das macht FGScenery aber nicht mehr selber.
+        Scene.getCurrent().addToWorld(scenery.get_scene_graph());
+        List<NativeSceneNode> scenerynodes = Platform.getInstance().findSceneNodeByName("FGScenery");
+        // size() varies between 1 and 2. TODO clarify why
+        assertTrue(scenerynodes.size() > 0,"size found="+scenerynodes.size());
+        SceneNode scenerynode = new SceneNode(scenerynodes.get(0));
+        TestUtil.assertEquals("", "FGScenery", scenerynode.getName());
+        SGGeod somewhereAboveNorthSea = SGGeod.fromLatLon(somewhereInNorthSea);
+        somewhereAboveNorthSea.setElevationM(350);
+        // Wait for async scenery load
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            Double elevation = scenery.get_elevation_m(somewhereAboveNorthSea, new Vector3());
+            return elevation != null;
+        }, 10000);
+
+        Double elevation = scenery.get_elevation_m(somewhereAboveNorthSea, new Vector3());
+        TestUtil.assertNotNull("elevation", elevation);
     }
 
     public static SceneNode loadSTGFromBundleAndWait(int tile) throws Exception {

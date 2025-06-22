@@ -21,6 +21,10 @@ import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.testutil.ExpectedEntity;
 import de.yard.threed.engine.testutil.SceneRunnerForTesting;
 import de.yard.threed.engine.testutil.TestHelper;
+import de.yard.threed.flightgear.core.FlightGearModuleScenery;
+import de.yard.threed.flightgear.core.flightgear.scenery.FGTileMgr;
+import de.yard.threed.flightgear.core.flightgear.scenery.FGTileMgrScheduler;
+import de.yard.threed.flightgear.core.simgear.scene.tgdb.SGOceanTile;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.traffic.FgVehicleSpace;
@@ -35,7 +39,6 @@ import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.TravelSceneTestHelper;
 import de.yard.threed.trafficfg.flight.GroundServiceComponent;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -57,37 +60,21 @@ public class TravelSceneTest {
     static final int INITIAL_FRAMES = 10;
     Log log;
 
-    /**
-     *
-     */
-   /* @Test
-    public void testWithDoormarkerAndNavigator() throws Exception {
-        run(true, true, false);
-    }
-
-    @Test
-    public void testWithoutDoormarker() throws Exception {
-        run(false, false, false);
-    }
-
-    @Test
-    public void testNavigatorWorldTeleport() throws Exception {
-        run(false, true, true);
-    }*/
-
     @ParameterizedTest
     @CsvSource(value = {
-            "true;true;false",
-            "false;false;false",
-            "false;true;true",
+            "true;true;false;null;null",
+            "false;false;false;null;null",
+            "false;true;true;null;null",
+            // 21.6.25: EHAM, runway 06. Should also load SGOceanTile.
+            "false;false;false;geo:52.2878684, 4.73415315;57.8",
     }, delimiter = ';')
-    public void testTravelScene(boolean enableDoormarker, boolean enableNavigator, boolean worldTeleport) throws Exception {
+    public void testTravelScene(boolean enableDoormarker, boolean enableNavigator, boolean worldTeleport, String initialLocation, String initialHeading) throws Exception {
 
         if (worldTeleport && !enableNavigator) {
             fail("invalid");
         }
 
-        setup(enableDoormarker, enableNavigator);
+        setup(enableDoormarker, enableNavigator, initialLocation, initialHeading);
         Log log = Platform.getInstance().getLog(TravelSceneTest.class);
 
         assertEquals(INITIAL_FRAMES, sceneRunner.getFrameCount());
@@ -168,13 +155,27 @@ public class TravelSceneTest {
         TravelSceneTestHelper.validateGroundnet();
 
         validateStaticEDDK(enableDoormarker);
+
+        FGTileMgr fgTileMgr = FlightGearModuleScenery.getInstance().get_tile_mgr();
+        // Q&D check for EHAM
+        if (initialLocation.contains("52.2878684")) {
+            // Not sure why it is 10, maybe 3x3 + EHAM?
+            assertEquals(10, fgTileMgr.getTileCacheContent().size());
+            // EHAM: 1 ocean tile appears correct with 3x3 tiles
+            assertEquals(1, SGOceanTile.created.size());
+        } else {
+            // Not sure why it is 16 or 10? TODO explain why
+            assertEquals(enableNavigator?16:10, fgTileMgr.getTileCacheContent().size());
+            //TODO explain why 1 and 7?
+            assertEquals(enableNavigator?7:1, SGOceanTile.created.size());
+        }
         if (enableNavigator) {
             // 2*3 for navigator, 2 for LSG, 1 for 738, position not tested.
-            EcsTestHelper.assertTeleportComponent(TeleportComponent.getTeleportComponent(userEntity), 3 + 3 + 2 + 1, 8, null,"738");
+            EcsTestHelper.assertTeleportComponent(TeleportComponent.getTeleportComponent(userEntity), 3 + 3 + 2 + 1, 8, null, "738");
             EcsEntity navigator = EcsHelper.findEntitiesByName("Navigator").get(0);
             assertNotNull(navigator);
             // from 'world-pois.xml' 10 are listed. 4 appears correct which is current EDDK navigator overview position, but who set index 4??
-            EcsTestHelper.assertTeleportComponent(TeleportComponent.getTeleportComponent(navigator), 10, 4, null,null);
+            EcsTestHelper.assertTeleportComponent(TeleportComponent.getTeleportComponent(navigator), 10, 4, null, null);
             TeleportComponent navigatorTeleportComponent = TeleportComponent.getTeleportComponent(navigator);
             assertEquals("Dahlem 1300", navigatorTeleportComponent.getPointLabel(3));
             assertEquals("EDDK Overview", navigatorTeleportComponent.getPointLabel(4));
@@ -295,12 +296,18 @@ public class TravelSceneTest {
     /**
      * Needs parameter, so no @Before
      */
-    private void setup(boolean enableDoormarker, boolean enableNavigator) throws Exception {
+    private void setup(boolean enableDoormarker, boolean enableNavigator, String initialLocation, String initialHeading) throws Exception {
         HashMap<String, String> properties = new HashMap<String, String>();
         properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         properties.put("visualizeTrack", "true");
         properties.put("enableDoormarker", "" + enableDoormarker);
         properties.put("enableNavigator", "" + enableNavigator);
+        if (initialLocation != null) {
+            properties.put("initialLocation", initialLocation);
+        }
+        if (initialHeading != null) {
+            properties.put("initialHeading", initialHeading);
+        }
         //9.12.23 sceneRunner = TrafficTestUtils.setupForScene(INITIAL_FRAMES, ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties));
         FgTestFactory.initPlatformForTest(properties, false, true, true, false);
 

@@ -18,7 +18,6 @@ import java.util.List;
 
 /**
  * Created by thomass on 07.06.16.
- * 
  */
 // Define a structure containing global scenery parameters
 public class FGScenery extends DefaultSGSubsystem {
@@ -86,7 +85,7 @@ public class FGScenery extends DefaultSGSubsystem {
         if (!FlightGear.myfg) {
             _listener = new ScenerySwitchListener(this);
         }
-        
+
         //24.3.18: MA22 und überhaupt. Das muss doch auch in world. Ja, aber in die FlightWorld! Und das macht TerrainSystem
         // 30.5.24 really? TerrainSystem/ScenerySystem don't add it.
         // 3.6.24: Scene.world is wrong anyway. Should be Sphere.world. That is set
@@ -114,10 +113,10 @@ public class FGScenery extends DefaultSGSubsystem {
     /**
      * picking Ray instead of OSG interSectionVisitor
      */
-   /* bool*/
-    public Double    get_elevation_m(SGGeod geod/*, double& alt,
+    /* bool*/
+    public Double get_elevation_m(SGGeod geod/*, double& alt,
                                const simgear::BVHMaterial** material,
-                               const osg::Node* butNotFrom*/,Vector3 worldadjustment) {
+                               const osg::Node* butNotFrom*/, Vector3 worldadjustment) {
         /*SGVec3d start = geod.toCart();
         SGGeod geodEnd = geod;
         geodEnd.setElevationM(SGMiscd::min(geod.getElevationM() - 10, -10000));
@@ -136,7 +135,7 @@ public class FGScenery extends DefaultSGSubsystem {
 
         // like in FG create a vertical ray
 
-        Ray ray = getVerticalRay(geod,worldadjustment);
+        Ray ray = getVerticalRay(geod, worldadjustment);
         //23.3.18 Subtree search is a botch
         List<NativeCollision> intersections = ray.getIntersections(/*terrain_branch*/);
         //logger.debug("get_elevation_m: found " + intersections.size() + " intersections overall with ray "+ray);
@@ -144,25 +143,26 @@ public class FGScenery extends DefaultSGSubsystem {
         if (cnt > 0) {
             // take the first > 0 that appears to be real terrain.
             double bestelevation = 0;
-            boolean found=false;
+            boolean found = false;
             for (int i = 0; i < cnt; i++) {
                 String path = new SceneNode(intersections.get(i).getSceneNode()).getPath();
                 // Different to FG filter for real terrain intersection, so eg. skip two background earth intersections
                 // TODO might need more filtering for filtering for buildings etc
-                if (StringUtils.contains(path,"Terrain")) {
+                if (StringUtils.contains(path, "Terrain")) {
                     Vector3 intersection = (intersections.get(i).getPoint()).subtract(worldadjustment);
                     //logger.debug("intersection="+intersection);
                     SGGeod coor = SGGeod.fromCart(intersection);
                     double elevation = coor.getElevationM();
-                    if (elevation > 0 && elevation < 10000) {
+                    // 22.6.25: Elevation might be a little below 0, eg. on ocean tiles. So limit "0"->"-1"
+                    if (elevation > -1 && elevation < 10000) {
                         //appears plausible. Edge cases not considered yet.
                         bestelevation = elevation;
-                        found=true;
+                        found = true;
                     }
                 }
             }
-            if (!found){
-                logger.warn("get_elevation_m: found " + intersections.size() + " intersections overall, but no elevation for "+geod+". worldadjustment="+worldadjustment);
+            if (!found) {
+                logger.warn("get_elevation_m: found " + intersections.size() + " intersections overall, but no elevation for " + geod + ". worldadjustment=" + worldadjustment);
                 return null;
             }
             return bestelevation;
@@ -172,10 +172,11 @@ public class FGScenery extends DefaultSGSubsystem {
 
     /**
      * Ray from far above to origin. Different to FG always from 10000 (or what is the FG logic?)
+     *
      * @param geod
      * @return
      */
-    public static Ray getVerticalRay(SGGeod geod,Vector3 worldadjustment) {
+    public static Ray getVerticalRay(SGGeod geod, Vector3 worldadjustment) {
 
         SGGeod geodStart = new SGGeod(geod.getLongitudeRad(), geod.getLatitudeRad(), 10000);
         //SGGeod geodEnd = new SGGeod(geod.getLongitudeRad(), geod.getLatitudeRad(), 0);

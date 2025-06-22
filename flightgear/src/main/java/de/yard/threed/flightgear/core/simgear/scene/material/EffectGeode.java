@@ -2,6 +2,8 @@ package de.yard.threed.flightgear.core.simgear.scene.material;
 
 import de.yard.threed.core.geometry.SimpleGeometry;
 import de.yard.threed.core.loader.PortableMaterial;
+import de.yard.threed.core.platform.Log;
+import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.engine.GenericGeometry;
@@ -23,11 +25,12 @@ import de.yard.threed.core.resource.ResourcePath;
  * 26.10.24: HmmHmm
  */
 public class EffectGeode extends Geode {
+    static Log log = Platform.getInstance().getLog(EffectGeode.class);
     /*osg::ref_ptr<*/ Effect _effect;
-    SGMaterial _material;
-    //Alternative zur Nutzung von SGMaterial und Effect. 28.12.17: Jetzt LoadedMaterial statt Material
+    //21.6.25 not is use for a long time now SGMaterial _material;
+    //Alternative for using SGMaterial and Effect. 28.12.17: Jetzt LoadedMaterial statt Material
     //26.10.24 does this really belong here? Maybe. It's the effective material used finally.
-    public /*Portable*/Material material;
+    private /*Portable*/Material material;
 
         /*    #if OSG_VERSION_LESS_THAN(3,3,2)
     typedef DrawableList::iterator DrawablesIterator;
@@ -61,12 +64,19 @@ public class EffectGeode extends Geode {
         // addUpdateCallback(new Effect::InitializeCallback);
     }
 
-    SGMaterial getMaterial() {
+    /*21.6.25 SGMaterial getMaterial() {
         return _material;
     }
 
     public void setMaterial(SGMaterial mat) {
         _material = mat;
+    }*/
+
+    /**
+     * 21.6.25 Replacing above
+     */
+    public void setMaterial(Material mat) {
+        material = mat;
     }
 
     //virtual void resizeGLObjectBuffers(unsigned int maxSize);
@@ -145,11 +155,11 @@ public class EffectGeode extends Geode {
                 mat = null;//Material.buildBasicMaterial(Color.YELLOW);
             } else {
                 //11.11.24 never reached?
-                if (true) throw new RuntimeException("unexpected reached");
-                PortableMaterial lmat = null;//_effect.getMaterialDefinitionForTerrainOnly();
-                //mat = PortableModelBuilder.buildMaterial(BundleRegistry.getBundle(SGMaterialLib.BUNDLENAME),
-                //        lmat, (lmat.texture != null) ? lmat.texture : null/*obj.texture*/, new ResourcePath(""/*texturebasepath*/),geometry.getNormals()!=null);
-                mat = new DefaultMaterialFactory().buildMaterial(resourceLoader, lmat, new ResourcePath(""), geometry.getNormals() != null);
+                //9.6.25 Eg. reached for scenery tiles with effects/materials which are defined but are not
+                // available, eg. due to missing texture (eg. 'Ocean' without bundlepool).
+                // Also stay with wireframe for now
+                log.warn("No material for effect ");
+                mat = null;
 
             }
         }

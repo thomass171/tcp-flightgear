@@ -198,7 +198,8 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
         Bundle bundle = BundleRegistry.getBundle(bundlename);
         if (bundle == null) {
             logger.error("Bundle for stg '" + stgname + "' not found in " + BundleRegistry.TERRAYSYNCPREFIX);
-            return null;//BuildResult.ERROR_IN_READING_FILE;
+            // 5.6.25: No longer just return null (causing dummy terrain) but trigger ocean tile load.
+            return /*new BuildResult*/(modelBin.load(bucket, options, boptions));
         }
         // 21.2.24: Bundle "Terrasync-model" no longer mandatory but just optional, (see also flag 'ignoreshared').
         // silently ignore if it doesn't exist. Maybe log once?
@@ -258,13 +259,14 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
     */
         }
 
-        //17.1.18: Bundle wieder freigeben
+        //17.1.18: release bundle
         BundleRegistry.unregister(bundlename);
         return /*new BuildResult*/(modelBin.load(bucket, options, boptions));
     }
 
     class _ModelBin {
-        public boolean _foundBase;
+        // flag for token "OBJECT_BASE" found in stg during parseSTG()
+        private boolean _foundBase;
         List<_Object> _objectList = new ArrayList<_Object>();
         // 23.8.24: Also contains shared objects
         List<_ObjectStatic> _objectStaticList = new ArrayList<_ObjectStatic>();
@@ -555,7 +557,7 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
         }
 
 
-        public Group/*Node*/ load(SGBucket bucket, Options opt, LoaderOptions bopt) {
+        private Group/*Node*/ load(SGBucket bucket, Options opt, LoaderOptions bopt) {
             if (terrainloaddebuglog) {
                 logger.debug("ReaderWriterSTG.load:  " + bucket);
             }
@@ -568,6 +570,9 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
             //TODO  terrainGroup.setDataVariance(osg::Object::STATIC);
             terrainGroup.setName("terrain");
 
+            // 5.6.25: Not sure about the intention of '_foundBase'. Apparently we will not load a BTG
+            // when we didn't load a STG previously? Instead we will load water.
+            // Maybe parts of the semantic were lost somewhere.
             if (_foundBase) {
                 //for (std::list < _Object >::iterator i = _objectList.begin();            i != _objectList.end();            ++i){
                 for (_Object i : _objectList) {
@@ -588,14 +593,15 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
 
                 }
             } else {
-                logger.info(/*SG_LOG(SG_TERRAIN, SG_INFO, */"  Generating ocean tile: " + bucket.gen_base_path() + "/" + bucket.gen_index_str());
+                logger.info("Generating ocean tile: " + bucket.gen_base_path() + "/" + bucket.gen_index_str());
 
-                Node node = null;//TODO new SGOceanTile(bucket, options.getMaterialLib());
+                // osg::Node* SGOceanTile(const SGBucket& b, SGMaterialLib *matlib, int latPoints = 5, int lonPoints = 5);
+                SceneNode node = /*new*/ SGOceanTile.SGOceanTile(bucket, options.getMaterialLib(), 5, 5).node;
                 if (node != null) {
                     node.setName("SGOceanTile");
                     terrainGroup.attach(node);
                 } else {
-                    logger.info(/*SG_LOG( SG_TERRAIN, SG_ALERT, */                       "Warning: failed to generate ocean tile!");
+                    logger.warn("Warning: failed to generate ocean tile!");
                 }
             }
 

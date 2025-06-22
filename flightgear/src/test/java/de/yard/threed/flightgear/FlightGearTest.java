@@ -65,7 +65,7 @@ public class FlightGearTest {
         FlightGearModuleBasic.init(null, null);
         FlightGearModuleScenery.init(false, false);
         // 1.10.23 was 288 from Granada bundle, 283 now from project might be correct
-        TestUtil.assertEquals("matlib.size", /*FG 3.4 284*/283, FlightGearModuleScenery.getInstance().get_matlib().matlib.size());
+        TestUtil.assertEquals("matlib.size", /*FG 3.4 284*/283, FlightGearModuleScenery.getInstance().get_matlib().getMatlibSize());
     }
 
     /**

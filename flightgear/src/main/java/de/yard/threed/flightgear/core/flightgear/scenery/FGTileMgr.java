@@ -19,6 +19,8 @@ import de.yard.threed.flightgear.core.simgear.structure.DefaultSGSubsystem;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.StringUtils;
 
+import java.util.HashMap;
+
 /**
  * tilemgr.[ch]xx
  * <p>
@@ -116,7 +118,7 @@ public class FGTileMgr extends DefaultSGSubsystem {
         if (terrainonly) {
             _options.pluginstringdata.put("SimGear::FG_ONLY_TERRAIN", "ON");
         }
-        
+
         if (!_disableNasalHooks.getBoolValue()) {
             //TODO _options.setModelData(new FGNasalModelDataProxy);
         }
@@ -196,7 +198,7 @@ public class FGTileMgr extends DefaultSGSubsystem {
                     if (!downloading && nonExpiredOrCurrent) {
                         // schedule tile for loading with osg pager
                         _pager.queueRequest(e.tileFileName, e.getNode(), e.get_priority(), /*framestamp, e.getDatabaseRequest(),*/ _options/*.get()*/, e.get_tile_bucket().gen_base_path());
-                        e.queued=true;
+                        e.queued = true;
                         loading++;
                     }
                 } // of tile not loaded case
@@ -312,11 +314,11 @@ public class FGTileMgr extends DefaultSGSubsystem {
 
     /**
      * schedule tiles for the viewer bucket
-// (FDM/AI/groundcache/... should use "schedule_scenery" instead)
+     * // (FDM/AI/groundcache/... should use "schedule_scenery" instead)
      * Runs async!
      */
     public void schedule_tiles_at(SGGeod location, double range_m) {
-        
+
         logger.debug("schedule_tiles_at location=" + location + ",range_m=" + range_m);
 
         current_bucket = new SGBucket(location);
@@ -373,6 +375,13 @@ public class FGTileMgr extends DefaultSGSubsystem {
 
     public SceneryPager getPager() {
         return _pager;
+    }
+
+    /**
+     * For testing only
+     */
+    public HashMap<Long, TileEntry> getTileCacheContent() {
+        return tile_cache.tile_cache;
     }
 }
 

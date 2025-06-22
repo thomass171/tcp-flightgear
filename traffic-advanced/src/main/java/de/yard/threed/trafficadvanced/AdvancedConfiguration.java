@@ -4,6 +4,10 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.HttpBundleResolver;
 import de.yard.threed.flightgear.TerraSyncBundleResolver;
 
+/**
+ * Configuration for bundles in bundlepool.
+ * See also README.md for 'bundlepool'.
+ */
 public class AdvancedConfiguration {
 
     public static String BUNDLEPOOL_URL = "https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool";

@@ -3,14 +3,12 @@ package de.yard.threed.trafficfg.apps;
 import de.yard.threed.core.Color;
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.Dimension;
-import de.yard.threed.core.Event;
 import de.yard.threed.core.GeneralParameterHandler;
+import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.core.LocalTransform;
 import de.yard.threed.core.Point;
 import de.yard.threed.core.Quaternion;
 import de.yard.threed.core.SmartArrayList;
-import de.yard.threed.core.StringUtils;
-import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.geometry.Face3;
@@ -48,31 +46,26 @@ import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.platform.common.Settings;
 import de.yard.threed.flightgear.FlightGearMain;
-import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.LoaderOptions;
-import de.yard.threed.flightgear.TerraSyncBundleResolver;
-import de.yard.threed.flightgear.TerrainHelper;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.core.flightgear.scenery.FGTileMgr;
 import de.yard.threed.flightgear.core.flightgear.scenery.SceneryPager;
-import de.yard.threed.flightgear.core.osg.Group;
 import de.yard.threed.flightgear.core.osg.Node;
 import de.yard.threed.flightgear.core.osgdb.ReadResult;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.bucket.SGBucket;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeodesy;
-import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialLib;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
 import de.yard.threed.flightgear.core.simgear.scene.model.XmlModelCompleteDelegate;
 import de.yard.threed.flightgear.core.simgear.scene.tgdb.Obj;
-import de.yard.threed.flightgear.core.simgear.scene.tgdb.ReaderWriterSTG;
 import de.yard.threed.flightgear.core.simgear.scene.util.SGReaderWriterOptions;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.traffic.flight.FlightLocation;
+import de.yard.threed.trafficcore.model.SmartLocation;
 import de.yard.threed.trafficfg.FgCalculations;
 import de.yard.threed.trafficfg.StgCycler;
 
@@ -114,7 +107,7 @@ public class SceneryViewerScene extends Scene {
     // 99=default, whats really intended. Beginnend auf reftbtg (oder anderem start STG) mit Navigation. Other modes are only for testing.
     // STG wird immer erst bei Navigation dorthin
     // geladen, damit man Grenzen besser erkenn kann.
-    int mode = 99;
+    int runMode = 99;
     // 0 = no (wireframe), 1= Colorpalette, 2=FG material
     int materialmode = 2;
     SceneNode centercube;
@@ -195,7 +188,7 @@ public class SceneryViewerScene extends Scene {
         // boptions.setPropertyNode(new SGPropertyNode());
         // boptions.getDatabasePathList().add(fghome + "/TerraSync");
 
-        switch (mode) {
+        switch (runMode) {
             case 0:
                 // Die Runway in Dahlem ist eine Luecke. War das immer schon? Wahrscheinlich. Ueber den tilemgr (mode99) ist die Luecke nicht.
                 // Es gibt ja auch ein EDKV.btg.gz.
@@ -255,6 +248,15 @@ public class SceneryViewerScene extends Scene {
                 break;
             case 99:
                 SGGeod pos = tiles[tileindex];
+                String initialLocation = Platform.getInstance().getConfiguration().getString("initialLocation");
+                if (initialLocation != null) {
+                    SmartLocation smartLocation = SmartLocation.fromString(initialLocation);
+
+                    GeoCoordinate geo = smartLocation.getGeoCoordinate();
+                    if (geo != null) {
+                        pos = SGGeod.fromLatLon(geo, 0);
+                    }
+                }
                 currentbucket = new SGBucket(pos.getLongitudeDeg(), pos.getLatitudeDeg());
                 loadbucket();
                 break;
@@ -354,19 +356,19 @@ public class SceneryViewerScene extends Scene {
         double currentdelta = getDeltaTime();
 
         if (Input.getKey(KeyCode.Shift)) {
-            if (Input.getKeyDown(KeyCode.UpArrow) && mode == 99) {
+            if (Input.getKeyDown(KeyCode.UpArrow) && runMode == 99) {
                 currentbucket = currentbucket.sibling(0, 1);
                 loadbucket();
             }
-            if (Input.getKeyDown(KeyCode.DownArrow) && mode == 99) {
+            if (Input.getKeyDown(KeyCode.DownArrow) && runMode == 99) {
                 currentbucket = currentbucket.sibling(0, -1);
                 loadbucket();
             }
-            if (Input.getKeyDown(KeyCode.LeftArrow) && mode == 99) {
+            if (Input.getKeyDown(KeyCode.LeftArrow) && runMode == 99) {
                 currentbucket = currentbucket.sibling(-1, 0);
                 loadbucket();
             }
-            if (Input.getKeyDown(KeyCode.RightArrow) && mode == 99) {
+            if (Input.getKeyDown(KeyCode.RightArrow) && runMode == 99) {
                 currentbucket = currentbucket.sibling(1, 0);
                 loadbucket();
             }

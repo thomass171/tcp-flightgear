@@ -48,8 +48,8 @@ public class SGMaterialTest {
         SGMaterialLib matlib = initSGMaterialLib();
 
         // 1.10.23 was 288 from Granada bundle, 283 now from project might be correct
-        Assertions.assertEquals(/*FG 3.4 284*/283, matlib.matlib.size(),"matlib.size");
-        List<SGMaterial> mixedForestlist = matlib.matlib.get("MixedForest");
+        Assertions.assertEquals(/*FG 3.4 284*/283, matlib.getMatlibSize(),"matlib.size");
+        List<SGMaterial> mixedForestlist = matlib.find("MixedForest");
         // 1.10.23 was 24, now 2(?)
         Assertions.assertEquals(/*FG 3.4 8*/2, mixedForestlist.size(),"matlib.MixedForest.size");
         SGGeod refcenter = SGGeod.fromCart(FlightGear.refbtgcenter);
@@ -96,12 +96,25 @@ public class SGMaterialTest {
     @Test
     public void testGrassRwyEffect() {
         SGMaterialLib matlib = initSGMaterialLib();
-        List<SGMaterial> grassrwylist = matlib.matlib.get("grass_rwy");
+        List<SGMaterial> grassrwylist = matlib.find("grass_rwy");
         Assertions.assertEquals(1, grassrwylist.size(),"matlib.grass_rwy.size");
         SGGeod refcenter = SGGeod.fromCart(FlightGear.refbtgcenter);
         SGMaterial grassrwy = matlib.find("grass_rwy", new Vector2((float) refcenter.getLongitudeDeg().getDegree(), (float) refcenter.getLatitudeDeg().getDegree()));
         Assertions.assertNotNull( grassrwy,"matlib.grass_rwy");
         Assertions.assertEquals(75, (float) grassrwy.get_xsize(),"xsize");
+    }
+
+    /**
+     * Material 'Ocean' is not available in the project data (no texture)
+     */
+    @Test
+    public void testOcean() {
+        SGMaterialLib matlib = initSGMaterialLib();
+        // 'Ocean' exists, but has no texture
+        List<SGMaterial> oceanlist = matlib.find("Ocean");
+        // SGMaterial exists even though it has no texture
+        Assertions.assertEquals(1, oceanlist.size(),"Ocean");
+
     }
 
     public static SGMaterialLib initSGMaterialLib() {

@@ -17,12 +17,11 @@ import de.yard.threed.flightgear.core.simgear.structure.SGException;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.resource.Bundle;
-import de.yard.threed.core.platform.Config;
 
 import java.util.List;
 
 /**
- * Aus matlib.[hc]xx
+ * From matlib.[hc]xx
  * Material management class
  * <p>
  * 12.6.17: Jetzt auch aus Bundle, das schon geladen sein muss.
@@ -54,8 +53,8 @@ public class SGMaterialLib {
     const_iterator const_material_map_iterator;*/
 
     // Um aus der Vielzahl von Namen für ein Material einfach zum Material zu kommen. Ein Name kann auch mehrere Materialen zugeordnet haben.
-    //Wofuer das ist??
-    /*material_map*/ public CppHashMap<String, List<SGMaterial>> matlib = new CppHashMap<String, List<SGMaterial>>(new ArrayListSGMaterialFactory());
+    // 7.6.25: CppHashMap does an auto create for not existing keys. So better make it privaze and provide a more intuitive API.
+    /*material_map*/ private CppHashMap<String, List<SGMaterial>> matlib = new CppHashMap<String, List<SGMaterial>>(new ArrayListSGMaterialFactory());
 
 
     // Constructor
@@ -149,7 +148,7 @@ public class SGMaterialLib {
                         logger.warn("No effect(texture?) for material " + name);
                     }
                     if (materiallibdebuglog) {
-                        logger.debug(/*(SG_TERRAIN,*/ "Built material for name " + name);
+                        logger.debug("Built material for name " + name);
                     }
                 }
             }
@@ -157,28 +156,34 @@ public class SGMaterialLib {
         return true;
     }
 
-    // find a material record by material name
+    /**
+     * find a material record by material name for the specified area.
+     */
     public SGMaterial find(String material, Vector2 center) {
         SGMaterial result = null;
-        /*const_material_map_iterator it = matlib.find(material);
-        if (it != end()) {
+        List<SGMaterial> it = matlib.find(material);
+        if (it != null/*end()*/) {
             // We now have a list of materials that match this
             // name. Find the getFirst one that matches.
             // We start at the end of the list, as the materials
             // list isType ordered with the smallest regions at the end.
-            material_list::const_reverse_iterator iter = it -> getSecond.rbegin();
-            while (iter != it -> getSecond.rend()) {
+            //material_list::const_reverse_iterator iter = it -> getSecond.rbegin();
+
+            //fall through to lower loop
+           /* while (iter != it -> getSecond.rend()) {
                 result =*iter;
                 if (result -> valid(center)) {
                     return result;
                 }
                 iter++;
+            }*/
+        } else {
+            if (material.equals("Grassland")) {
+                result = null;
             }
-        }*/
-        if (material.equals("Grassland")) {
-            result = null;
+            // 8.6.25 : Creates the entry with empty list??
+            it = matlib.get(material);
         }
-        List<SGMaterial> it = matlib.get(material);
         for (int i = it.size() - 1; i >= 0; i--) {
             result = it.get(i);
             if (result.valid(center)) {
@@ -190,10 +195,18 @@ public class SGMaterialLib {
     }
 
     /**
-     * Helpful for testing
+     * Helpful for testing.
+     * But creates a not existing key??
      */
     public List<SGMaterial> get(String material) {
         return matlib.get(material);
+    }
+
+    /**
+     * 8.6.25: More intuitive than auto create get()
+     */
+    public List<SGMaterial> find(String material) {
+        return matlib.find(material);
     }
 
     SGMaterial find(String material, SGGeod center) {
@@ -219,7 +232,7 @@ public class SGMaterialLib {
         for (; it != matlib.rend(); ++it) {
             newCache -> insert(it -> getFirst, find(it -> getFirst, center));
         }*/
-        //TODO reverse from end wie iterator
+        //TODO reverse from end like iterator
         for (String name : matlib.keySet()) {
             newCache.insert(name, find(name, center));
         }
@@ -273,4 +286,8 @@ public class SGMaterialLib {
             return 0;
         return userData . getMaterial();
     }*/
+
+    public int getMatlibSize() {
+        return matlib.size();
+    }
 }

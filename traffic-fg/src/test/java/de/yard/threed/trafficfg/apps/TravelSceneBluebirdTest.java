@@ -70,8 +70,8 @@ public class TravelSceneBluebirdTest {
             // EDDK 32L. elevation 78.05 is hard coded. What is exact corresponding heading? 320? TODOclarify
             "EDDK-32L;true;;geo:50.85850600,  007.13874200 ,78.05;320; 78.05",
             // EHAM, runway 06. No elevation, so terrain is needed. But terrain will not be available. A dummy tile will be created.
-            // Elevation 25.55 appears correct with dummy tile edge elevation of 30.
-            "EHAM;true;;geo:52.2878684, 4.73415315; 57.8; 25.55"
+            // Elevation 25.55 appears correct with dummy tile edge elevation of 30. 22.6.25: But now we have ocean tile, so "25.55"->"-0.144"
+            "EHAM;true;;geo:52.2878684, 4.73415315; 57.8; -0.144"
     }, delimiter = ';')
     public void testBluebird(String testCaseName, boolean withBluebird, String initialRoute, String initialLocation, String initialHeading,
                              Double expectedInitialLocationElevation) throws Exception {

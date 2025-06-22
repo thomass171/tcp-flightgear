@@ -83,6 +83,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.FlatAirportScene");
         properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.HangarScene");
+        properties.put("scene", "de.yard.threed.trafficadvanced.apps.AdvancedSceneryViewerScene");
 
         boolean blogSample = false;
         if (blogSample) {
@@ -107,7 +108,11 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         }
         boolean bluebirdInEHAM = false;
         if (bluebirdInEHAM) {
-            SceneSetup.setupForBluebirdFreeFlightFromEHAM(properties);
+            SceneSetup.setupTravelSceneBluebirdForBluebirdFreeFlightFromEHAM(properties);
+        }
+        boolean sceneryViewInEHAM = false;
+        if (sceneryViewInEHAM) {
+            SceneSetup.setupSceneryViewSceneForEHAM(properties);
         }
         return properties;
     }

@@ -301,6 +301,14 @@ The bundle fgdatabasic (build from fg-raw-data) is a subset of the $FGROOT/Aircr
 More advanced aircraft model are used in module traffic-advanced. These are loaded from an external server, which is a temporary solution
 until there is a full FG proxy set up.
 
+## BundlePool
+
+This project only contains a subset of FG data used for unit testing 
+and for running the demo scenes in 'traffic-fg'. For a better
+user experience the scenes in 'traffic-advanced' use 
+externally hosted bundles, to which the phrase "bundlepool" refers.
+
+
 # Implementation Details
 
 ## Model

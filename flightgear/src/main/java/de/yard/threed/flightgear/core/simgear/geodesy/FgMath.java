@@ -50,10 +50,12 @@ public class FgMath {
         return result;
     }
 
-    // Siehe Wiki.
+    /**
+     * Identical (general well known) implementation like in SGQuat and EllipsoidCalculations, which is not available here.
+     * See wiki.
+     */
     public static Quaternion/*SGQuat*/ fromLonLatRad(double lon, double lat)
     {
-        //TODO Quaternion auf double umstellen
         //SGQuat q;
         double zd2 = 0.5*lon;
         double yd2 = -0.25*/*SGMisc<double>::pi()*/Math.PI - 0.5*lat;

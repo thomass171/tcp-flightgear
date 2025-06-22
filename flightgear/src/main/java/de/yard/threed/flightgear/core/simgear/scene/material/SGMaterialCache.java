@@ -3,7 +3,7 @@ package de.yard.threed.flightgear.core.simgear.scene.material;
 import java.util.HashMap;
 
 /**
- * Aus matlib.[hc]xx
+ * From matlib.[hc]xx
  * <p/>
  * Created by thomass on 04.08.16.
  */
