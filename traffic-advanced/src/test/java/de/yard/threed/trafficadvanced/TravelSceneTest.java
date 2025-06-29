@@ -35,6 +35,7 @@ import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.TrafficSystem;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.trafficadvanced.apps.TravelScene;
+import de.yard.threed.trafficadvanced.testutil.AdvancedBundleResolverSetup;
 import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.TravelSceneTestHelper;
 import de.yard.threed.trafficfg.flight.GroundServiceComponent;
@@ -309,7 +310,7 @@ public class TravelSceneTest {
             properties.put("initialHeading", initialHeading);
         }
         //9.12.23 sceneRunner = TrafficTestUtils.setupForScene(INITIAL_FRAMES, ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties));
-        FgTestFactory.initPlatformForTest(properties, false, true, true, false);
+        FgTestFactory.initPlatformForTest(properties, false, true, true, false, new AdvancedBundleResolverSetup());
 
         sceneRunner = (SceneRunnerForTesting) SceneRunnerForTesting.getInstance();
         sceneRunner.runLimitedFrames(INITIAL_FRAMES);

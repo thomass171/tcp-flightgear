@@ -50,32 +50,32 @@ public class FgTestFactory {
 
     @Deprecated
     public static Platform initPlatformForTestWithFgResolver() {
-        return initPlatformForTest(new HashMap<>(), true, true, true, false);
+        return initPlatformForTest(new HashMap<>(), true, true, true, false, new BundleResolverSetup.DefaultBundleResolverSetup());
     }
 
     @Deprecated
     public static Platform initPlatformForTest() {
-        return initPlatformForTest(new HashMap<>(), true, false, false, false);
+        return initPlatformForTest(new HashMap<>(), true, false, false, false, new BundleResolverSetup.DefaultBundleResolverSetup());
     }
 
     @Deprecated
     public static Platform initPlatformForTest(HashMap<String, String> properties) {
-        return initPlatformForTest(properties, false, true, true, false);
+        return initPlatformForTest(properties, false, true, true, false, new BundleResolverSetup.DefaultBundleResolverSetup());
 
     }
 
     public static Platform initPlatformForTest(boolean addTestResourcesBundle, boolean addTerraSyncResolver, boolean addMaterialLib) {
-        return initPlatformForTest(new HashMap<>(), addTestResourcesBundle, addTerraSyncResolver, addMaterialLib, false);
+        return initPlatformForTest(new HashMap<>(), addTestResourcesBundle, addTerraSyncResolver, addMaterialLib, false, new BundleResolverSetup.DefaultBundleResolverSetup());
     }
 
     public static Platform initPlatformForTest(boolean addTestResourcesBundle, boolean addTerraSyncResolver, boolean addMaterialLib, boolean forBtgConversion) {
-        return initPlatformForTest(new HashMap<>(), addTestResourcesBundle, addTerraSyncResolver, addMaterialLib, forBtgConversion);
+        return initPlatformForTest(new HashMap<>(), addTestResourcesBundle, addTerraSyncResolver, addMaterialLib, forBtgConversion, new BundleResolverSetup.DefaultBundleResolverSetup());
     }
 
     /**
      * FG Resolver are probably not needed or trigger false positive results in tools.
      */
-    public static Platform initPlatformForTest(HashMap<String, String> properties, boolean addTestResourcesBundle, boolean addTerraSyncResolver, boolean addMaterialLib, boolean forBtgConversion) {
+    public static Platform initPlatformForTest(HashMap<String, String> properties, boolean addTestResourcesBundle, boolean addTerraSyncResolver, boolean addMaterialLib, boolean forBtgConversion, BundleResolverSetup bundleResolverSetup) {
 
         FgBundleHelper.clear();
         ReaderWriterSTG.btgLoaded.clear();
@@ -106,10 +106,7 @@ public class FgTestFactory {
                 configuration1 -> {
                     // use AdvancedHeadlessPlatform to have AsyncHelper and thus model loading
                     PlatformInternals platformInternals = AdvancedHeadlessPlatform.init(configuration1, new SimpleEventBusForTesting());
-                    if (addTerraSyncResolver) {
-                        Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver(configuration1.getString("HOSTDIRFG") + "/bundles"));
-                    }
-                    Platform.getInstance().addBundleResolver(new SimpleBundleResolver(configuration1.getString("HOSTDIRFG") + "/bundles", new DefaultResourceReader()));
+                    bundleResolverSetup.setupResolver(configuration1, addTerraSyncResolver);
                     return platformInternals;
                 }, (InitMethod) null, configuration);
 
@@ -119,7 +116,7 @@ public class FgTestFactory {
             // 7.11.24 moved out from "if" because also needed without materiallib because it sets up the property tree
             FlightGearModuleBasic.init(null, null);
             if (addMaterialLib) {
-                // material is needed in following setup
+                // material is needed in following setup. For FlightGearModuleScenery?
                 EngineTestFactory.loadBundleSync(SGMaterialLib.BUNDLENAME);
 
 

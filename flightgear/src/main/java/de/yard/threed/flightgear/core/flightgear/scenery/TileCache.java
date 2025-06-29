@@ -23,7 +23,7 @@ public class TileCache {
     // typedef tile_map::const_iterator const_tile_map_iterator;
     // cache storage space
     //map offenbar ohne autocreate
-    HashMap<Long, TileEntry> /*tile_map*/ tile_cache = new HashMap<Long, TileEntry>();
+    private HashMap<Long, TileEntry> /*tile_map*/ tile_cache = new HashMap<Long, TileEntry>();
 
     // maximum cache size
     int max_cache_size;
@@ -64,7 +64,7 @@ public class TileCache {
 
     // Constructor
     public TileCache() {
-        max_cache_size = 100;
+        max_cache_size = 300;//100;
         current_time = 0.0;
 
         tile_cache.clear();
@@ -87,10 +87,11 @@ public class TileCache {
         //SG_LOG( SG_TERRAIN, SG_DEBUG, "FREEING CACHE ENTRY = " << tile_index );
         TileEntry tile = tile_cache.get(tile_index);
         tile.removeFromSceneGraph();
+        logger.debug("Freeying tile_index " + tile_index + ",cache size now " + tile_cache.size());
         tile_cache.remove(/*erase*/tile_index);
         //delete tile;
     }
-    
+
     // Check if the specified "bucket" exists in the cache
     boolean exists(SGBucket b) {
         long tile_index = b.gen_index();
@@ -102,7 +103,7 @@ public class TileCache {
     // Return the index of a tile to be dropped from the cache, return -1 if
     // nothing available to be removed.
     long get_drop_tile() {
-        
+
         long min_index = -1;
         double min_time = java.lang.Double.MAX_VALUE;//DBL_MAX;
         float priority = java.lang.Float.MAX_VALUE;//FLT_MAX;
@@ -111,17 +112,17 @@ public class TileCache {
         //tile_map_iterator end = tile_cache.end();
 
         //for (; current != end; ++current) {
-        for (long index:tile_cache.keySet()){
+        for (long index : tile_cache.keySet()) {
             //long index = current.getFirst;
             TileEntry e = tile_cache.get(index);//current.getSecond;
             if ((!e.is_current_view()) &&
                     (e.is_expired(current_time))) {
                 if (e.is_expired(current_time - 1.0) &&
                         !e.is_loaded()) {
-                /* Immediately drop "empty" tiles which are no longer used/requested, and were last requested > 1 getSecond ago...
-                 * Allow a 1 getSecond timeout since an empty tiles may just be loaded...
-                 */
-                    logger.debug( "    dropping an unused and empty tile");
+                    /* Immediately drop "empty" tiles which are no longer used/requested, and were last requested > 1 getSecond ago...
+                     * Allow a 1 getSecond timeout since an empty tiles may just be loaded...
+                     */
+                    logger.debug("    dropping an unused and empty tile");
                     min_index = index;
                     break;
                 }
@@ -136,7 +137,7 @@ public class TileCache {
             }
         }
 
-        logger.debug( "    index = " + min_index);
+        logger.debug("    index = " + min_index);
         logger.debug("    min_time = " + min_time);
 
         return min_index;
@@ -163,11 +164,12 @@ public class TileCache {
 
     // Clear all flags indicating tiles belonging to the current viewer
     void clear_current_view() {
+        //logger.debug("clear_current_view, cache size " + tile_cache.size());
         /*tile_map_iterator current = tile_cache.begin();
         tile_map_iterator end = tile_cache.end();
         for (; current != end; ++current) {*/
-        for (long index : tile_cache.keySet()){
-            TileEntry  e = tile_cache.get(index);//current.getSecond;
+        for (long index : tile_cache.keySet()) {
+            TileEntry e = tile_cache.get(index);//current.getSecond;
             if (e.is_current_view()) {
                 // update expiry time for tiles belonging to most recent position
                 e.update_time_expired(current_time);
@@ -186,12 +188,13 @@ public class TileCache {
 
     // Clear all completely loaded tiles (ignores partially loaded tiles)
     void clear_cache() {
+        logger.debug("clear_cache");
         List<Long> indexList = new ArrayList<Long>();
         //tile_map_iterator current = tile_cache.begin();
         //tile_map_iterator end = tile_cache.end();
 
         //for (; current != end; ++current) {
-        for (long index : tile_cache.keySet()){
+        for (long index : tile_cache.keySet()) {
             //long index = current.getFirst;
             TileEntry e = tile_cache.get(index);//getSecond;
             if (e.is_loaded()) {
@@ -200,8 +203,8 @@ public class TileCache {
                 indexList.add(index);
             }
         }
-        for ( int it = 0;        it<indexList.size (); it++){
-            entry_free((long)indexList.get(it));
+        for (int it = 0; it < indexList.size(); it++) {
+            entry_free((long) indexList.get(it));
         }
     }
 
@@ -228,9 +231,9 @@ public class TileCache {
     }
 
     // External linear traversal of cache
-   public void reset_traversal() {
+    public void reset_traversal() {
         current = 0;//tile_cache.begin();
-       keyset = new ArrayList<Long>(tile_cache.keySet());
+        keyset = new ArrayList<Long>(tile_cache.keySet());
     }
 
     public boolean at_end() {
@@ -262,7 +265,8 @@ public class TileCache {
     boolean insert_tile(TileEntry e) {
         // register tile in the cache
         long tile_index = e.get_tile_bucket().gen_index();
-        tile_cache.put(tile_index,e);
+        logger.debug("Putting tile_index " + tile_index + ",cache size now " + tile_cache.size());
+        tile_cache.put(tile_index, e);
         e.update_time_expired(current_time);
 
         return true;
@@ -294,6 +298,13 @@ public class TileCache {
         } else {
             t.update_time_expired(current_time + request_time);
         }
+    }
+
+    /**
+     * For testing only
+     */
+    public HashMap<Long, TileEntry> getTileCacheContent() {
+        return tile_cache;
     }
 }
 

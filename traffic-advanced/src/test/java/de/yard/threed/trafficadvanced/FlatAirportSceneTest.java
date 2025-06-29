@@ -32,6 +32,7 @@ import de.yard.threed.traffic.TrafficSystem;
 import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.trafficadvanced.apps.FlatAirportScene;
+import de.yard.threed.trafficadvanced.testutil.AdvancedBundleResolverSetup;
 import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.TravelSceneTestHelper;
 import de.yard.threed.trafficfg.flight.GroundNetMetadata;
@@ -211,7 +212,7 @@ public class FlatAirportSceneTest {
         }
 
         //9.12.23 sceneRunner = TrafficTestUtils.setupForScene(INITIAL_FRAMES, ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties));
-        FgTestFactory.initPlatformForTest(properties, false, true, true, false);
+        FgTestFactory.initPlatformForTest(properties, false, true, true, false, new AdvancedBundleResolverSetup());
 
         sceneRunner = (SceneRunnerForTesting) SceneRunnerForTesting.getInstance();
         sceneRunner.runLimitedFrames(INITIAL_FRAMES);

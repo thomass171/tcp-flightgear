@@ -191,6 +191,9 @@ public class FGTileMgr extends DefaultSGSubsystem {
                 // wie FG das hinbekommt??
                 e.prep_ssg_node((float) vis);
 
+                //logger.debug("update_queues for tile index " + e.get_tile_bucket().gen_index() +
+                //        ",loaded=" + e.is_loaded() + ",queued=" + e.queued+ ",_current_view=" + e._current_view);
+
                 if (!e.is_loaded() && !e.queued) {
                     boolean nonExpiredOrCurrent = !e.is_expired(current_time) || e.is_current_view();
                     boolean downloading = isTileDirSyncing(e.tileFileName);
@@ -200,10 +203,12 @@ public class FGTileMgr extends DefaultSGSubsystem {
                         _pager.queueRequest(e.tileFileName, e.getNode(), e.get_priority(), /*framestamp, e.getDatabaseRequest(),*/ _options/*.get()*/, e.get_tile_bucket().gen_base_path());
                         e.queued = true;
                         loading++;
+                    } else {
+                        logger.debug("not queueing tile");
                     }
                 } // of tile not loaded case
             } else {
-                logger.error(/*SG_LOG(SG_TERRAIN, SG_ALERT,*/ "Warning: empty tile in cache!");
+                logger.error("Warning: empty tile in cache!");
             }
             tile_cache.next();
             sz++;
@@ -219,6 +224,7 @@ public class FGTileMgr extends DefaultSGSubsystem {
         }
 
         if (dropTiles) {
+            logger.debug("dropTiles");
             long drop_index = _enableCache ? tile_cache.get_drop_tile() :
                     tile_cache.get_first_expired_tile();
             while (drop_index > -1) {
@@ -381,7 +387,7 @@ public class FGTileMgr extends DefaultSGSubsystem {
      * For testing only
      */
     public HashMap<Long, TileEntry> getTileCacheContent() {
-        return tile_cache.tile_cache;
+        return tile_cache.getTileCacheContent();
     }
 }
 

@@ -14,6 +14,7 @@ import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.trafficadvanced.apps.HangarScene;
+import de.yard.threed.trafficadvanced.testutil.AdvancedBundleResolverSetup;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -93,7 +94,7 @@ public class HangarSceneTest {
         if (initialVehicle != null) {
             properties.put("initialVehicle", initialVehicle);
         }
-        FgTestFactory.initPlatformForTest(properties, false, true, true, false);
+        FgTestFactory.initPlatformForTest(properties, false, true, true, false, new AdvancedBundleResolverSetup());
 
         sceneRunner = (SceneRunnerForTesting) SceneRunnerForTesting.getInstance();
         sceneRunner.runLimitedFrames(INITIAL_FRAMES);

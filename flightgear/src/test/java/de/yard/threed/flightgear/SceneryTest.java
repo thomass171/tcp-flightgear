@@ -518,6 +518,9 @@ public class SceneryTest {
         String basename = StringUtils.substringBeforeLast(bpath.getFullName(), ".btg");
         bpath = new BundleResource(bpath.bundle, basename + ".gltf");
 
+        // moved from inside callback to here because inside it will cause a recursive cycle of asyncs
+        SGMaterialLib matlib = SGMaterialTest.initSGMaterialLib();
+
         //AbstractLoader tile = LoaderGLTF.buildLoader(bpath, null);
         BooleanHolder loaded = new BooleanHolder(false);
         LoaderGLTF.load(new ResourceLoaderFromBundle(bpath), new GeneralParameterHandler<PortableModel>() {
@@ -525,7 +528,6 @@ public class SceneryTest {
             public void handle(PortableModel ppfile) {
                 ModelAssertions.assertRefbtg(ppfile, true, true);
 
-                SGMaterialLib matlib = SGMaterialTest.initSGMaterialLib();
                 SGMaterialCache matcache = null;
                 matcache = matlib.generateMatCache(SGGeod.fromCart(FlightGear.refbtgcenter));
 
@@ -603,7 +605,7 @@ public class SceneryTest {
         FGScenery scenery = FlightGearModuleScenery.getInstance().get_scenery();
         //Die "9" haengt evtl. auch davon ab, welche Bundle verfuegbar sind. Aber das ist schon pausibel, 1 Tile in jede Richtung
         TestUtil.assertEquals("terraingroup.children", 9, scenery.get_terrain_branch().getTransform().getChildCount());
-        //Ist die Scenery auch richtig im Tree eingehangen? Das macht FGScenery aber nicht mehr selber.
+        // FGScenery doesn't attach the scenery to world
         Scene.getCurrent().addToWorld(scenery.get_scene_graph());
         List<NativeSceneNode> scenerynodes = Platform.getInstance().findSceneNodeByName("FGScenery");
         // size() varies between 1 and 2. TODO clarify why

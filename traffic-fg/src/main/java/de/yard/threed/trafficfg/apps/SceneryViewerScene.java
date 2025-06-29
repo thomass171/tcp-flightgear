@@ -9,6 +9,7 @@ import de.yard.threed.core.LocalTransform;
 import de.yard.threed.core.Point;
 import de.yard.threed.core.Quaternion;
 import de.yard.threed.core.SmartArrayList;
+import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.geometry.Face3;
@@ -45,6 +46,7 @@ import de.yard.threed.engine.gui.Hud;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.platform.common.Settings;
+import de.yard.threed.engine.test.testutil.TestUtil;
 import de.yard.threed.flightgear.FlightGearMain;
 import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.flightgear.core.FlightGear;
@@ -67,6 +69,7 @@ import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.traffic.flight.FlightLocation;
 import de.yard.threed.trafficcore.model.SmartLocation;
 import de.yard.threed.trafficfg.FgCalculations;
+import de.yard.threed.trafficfg.SceneSetup;
 import de.yard.threed.trafficfg.StgCycler;
 
 import java.util.ArrayList;
@@ -422,7 +425,12 @@ public class SceneryViewerScene extends Scene {
             nordpolcheck();
         }
         if (Input.getKeyDown(KeyCode.V)) {
-            FlightGearMain.runFlightgearTests(new Vector3());
+            // ray will always hit blue cube
+            Double elevation = FlightGearModuleScenery.getInstance().get_scenery().get_elevation_m(
+                    SGGeod.fromLatLon(Util.parseLatLon(SceneSetup.EHAM06)), new Vector3());
+            logger.debug("EHAM06 elevation="+ elevation);
+
+            //28.6.25 unclear test case conditions: FlightGearMain.runFlightgearTests(new Vector3());
         }
         if (fps != null) {
             fps.update(currentdelta);

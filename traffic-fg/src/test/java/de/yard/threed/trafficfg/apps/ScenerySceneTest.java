@@ -17,6 +17,7 @@ import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.core.simgear.scene.tgdb.ReaderWriterSTG;
 import de.yard.threed.flightgear.ecs.FgAnimationComponent;
+import de.yard.threed.flightgear.testutil.BundleResolverSetup;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -109,7 +110,7 @@ public class ScenerySceneTest {
         properties.put("scene", scene);
         properties.putAll(additionalProperties);
         // buildDefaultConfigurationWithEnv is needed for HOSTDIR
-        FgTestFactory.initPlatformForTest(properties, false, true, true, false);
+        FgTestFactory.initPlatformForTest(properties, false, true, true, false, new BundleResolverSetup.DefaultBundleResolverSetup());
         // not sufficient SceneRunnerForTesting sceneRunner = SceneRunnerForTesting.setupForScene(initial_frames, ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties), new String[]{"engine", SGMaterialLib.BUNDLENAME});
         SceneRunnerForTesting sceneRunner = (SceneRunnerForTesting) SceneRunnerForTesting.getInstance();
         sceneRunner.runLimitedFrames(initial_frames);

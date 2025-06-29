@@ -7,6 +7,8 @@ import java.util.HashMap;
  */
 public class SceneSetup {
 
+    public static String EHAM06="52.2878684, 4.73415315";
+
     /**
      * 6.3.25: Either choose a route in cockpit or free flight from EDDKs 32L
      */
@@ -20,18 +22,19 @@ public class SceneSetup {
     }
 
     /**
-     * 6.5.25: EHAM, runway 06. No elevation, so terrain is needed. Outside 'advanced' terrain will not be available, so a dummy tile is built (meanwhile wireframe water?).
+     * 6.5.25: EHAM, runway 06. No elevation, so terrain is needed. Outside 'advanced' terrain
+     * will not be available, so a dummy tile is built (meanwhile wireframe water?).
      */
     public static void setupTravelSceneBluebirdForBluebirdFreeFlightFromEHAM(HashMap<String, String> properties) {
 
-        properties.put("initialLocation", "geo:52.2878684, 4.73415315");
+        properties.put("initialLocation", "geo:"+EHAM06);
         properties.put("initialHeading", "57.8");
         properties.put("initialVehicle", "bluebird");
         properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
     }
 
     /**
-     * 6.5.25: EHAM, runway 06. No elevation, so terrain is needed. Outside 'advanced' terrain will not be available, so a dummy tile is built.
+     * 6.5.25: EHAM, runway 06. 'advanced', so terrain and c172p should be available.
      */
     public static void setupTravelSceneForC172pFreeFlightFromEHAM(HashMap<String, String> properties) {
 

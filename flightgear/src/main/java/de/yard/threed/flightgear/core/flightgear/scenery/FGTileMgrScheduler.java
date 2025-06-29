@@ -11,7 +11,7 @@ import de.yard.threed.core.MathUtil2;
 /**
  * Extracted parts from FGTileMgr for decoupling.
  * Temporary instances are created by FGTileMgr for loading/queueing single tiles? Or populating a TileCache entry?
- *
+ * <p>
  * Created by thomass on 22.08.16.
  */
 public class FGTileMgrScheduler {
@@ -19,13 +19,13 @@ public class FGTileMgrScheduler {
     //22.3.18 avoid multiple references private Group terrain_branch;
     TileCache tile_cache;
     double _maxTileRangeM;
-    
-    public FGTileMgrScheduler(TileCache tile_cache, double _maxTileRangeM/*, Group terrain_branch*/){
+
+    public FGTileMgrScheduler(TileCache tile_cache, double _maxTileRangeM/*, Group terrain_branch*/) {
         this.tile_cache = tile_cache;
         this._maxTileRangeM = _maxTileRangeM;
-     //   this.terrain_branch = terrain_branch;
+        //   this.terrain_branch = terrain_branch;
     }
-    
+
     /**
      * Schedules scenery for given position. Load request remains valid for given duration
      * (duration=0.0 => nothing isType loaded).
@@ -53,7 +53,7 @@ public class FGTileMgrScheduler {
             logger.debug(/*SG_LOG(SG_TERRAIN, SG_DEBUG,*/ "schedule_scenery: Scheduling tile at bucket:" + bucket + " return false");
             return false;
         }
-        logger.debug( "schedule_scenery: Scheduling tile at bucket:" + bucket + " with range_m "+range_m);
+        logger.debug("schedule_scenery: Scheduling tile at bucket:" + bucket + " with range_m " + range_m);
 
         //SGVec3d cartPos = SGVec3d::fromGeod (position);
         Vector3 cartPos = position.toCart();
@@ -96,15 +96,16 @@ public class FGTileMgrScheduler {
         return available;
     }
 
-    /** schedule a tile for loading, keep request for given amount of time.
-     * Returns true if tile isType already loaded.
-     * 
+    /**
+     * schedule a tile for loading, keep request for given amount of time.
+     * Returns true if tile is already loaded.
+     * <p>
      * 28.6.17:Wird auch verwendet, um zu pruefen obs ein Tile gibt. Wenn nicht, wird ein neuer "empty" entry im cache angelegt.
      */
     boolean sched_tile(SGBucket b, double priority, boolean current_view, double duration) {
-        //zu oft tsch_log("sched_tile\n");
         // see if tile already exists in the cache
         TileEntry t = tile_cache.get_tile(b);
+        // too often logger.debug("sched_tile " + b.gen_index() + ",current_view=" + current_view + ",t=" + t);
         if (t == null) {
             // create a new entry
             t = new TileEntry(b);
@@ -120,7 +121,11 @@ public class FGTileMgrScheduler {
                 return false;
             }
 
-            logger.debug("sched_tile: new TileEntry for bucket "+b+", cache size= " + (int) tile_cache.get_size());
+            logger.debug("sched_tile: new TileEntry for bucket " + b + ", cache size= " + (int) tile_cache.get_size());
+        } else {
+            if (t.is_loaded()) {
+                logger.warn("sched_tile for " + b.gen_index() + " which claims to be loaded already. Gap in terrain?");
+            }
         }
 
         // update tile's properties
@@ -129,21 +134,20 @@ public class FGTileMgrScheduler {
         return t.is_loaded();
     }
 
-    /** schedule needed buckets for the current viewer position for loading,
-     * keep request for given amount of time 
+    /**
+     * schedule needed buckets for the current viewer position for loading,
+     * keep request for given amount of time
      */
     public void schedule_needed(SGBucket curr_bucket, double vis) {
         // sanity check (unfortunately needed!)
         if (!curr_bucket.isValid()) {
-            logger.error(/*SG_LOG( SG_TERRAIN, SG_ALERT,     */               "Attempting to schedule tiles for invalid bucket");
+            logger.error("Attempting to schedule tiles for invalid bucket");
             return;
         }
 
         double tile_width = curr_bucket.get_width_m();
         double tile_height = curr_bucket.get_height_m();
-        logger.info("scheduling needed tiles for " + curr_bucket + "tile_cache.size="+tile_cache.get_size());
-
-        // cout << "tile width = " << tile_width << "  tile_height = "        //      << tile_height << endl;
+        logger.info("scheduling needed tiles for " + curr_bucket + ", tile_cache.size=" + tile_cache.get_size());
 
         double tileRangeM = Math.min(vis, _maxTileRangeM/*.getDoubleValue()*/);
         int xrange = (int) (tileRangeM / tile_width) + 1;
@@ -156,11 +160,9 @@ public class FGTileMgrScheduler {
         }
 
         // make the cache twice as large to avoid losing terrain when switching
-        // between aircraft and tower views
-        tile_cache.set_max_cache_size((2 * xrange + 2) * (2 * yrange + 2) * 2);
-        // cout << "xrange = " << xrange << "  yrange = " << yrange << endl;
-        // cout << "max cache size = " << tile_cache.get_max_cache_size()
-        //      << " current cache size = " << tile_cache.get_size() << endl;
+        // between aircraft and tower views.
+        // 25.6.25: FG-DIFF No longer set cache size but rely on default. As we have teleport avoid reducing the cache size too large . However needs a solution one day.
+        // tile_cache.set_max_cache_size((2 * xrange + 2) * (2 * yrange + 2) * 2);
 
         // clear flags of all tiles belonging to the previous viewer set 
         tile_cache.clear_current_view();
@@ -174,8 +176,8 @@ public class FGTileMgrScheduler {
 
         int x, y;
 
-    /* schedule all tiles, use distance-based loading priority,
-     * so tiles are loaded in innermost-to-outermost sequence. */
+        /* schedule all tiles, use distance-based loading priority,
+         * so tiles are loaded in innermost-to-outermost sequence. */
         for (x = -xrange; x <= xrange; ++x) {
             for (y = -yrange; y <= yrange; ++y) {
                 SGBucket b = curr_bucket.sibling(x, y);

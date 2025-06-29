@@ -44,7 +44,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
             properties.put("yoffsetVR", "0.3");
         }
 
-        properties.put("logging.level.de.yard.threed","DEBUG");
+        properties.put("logging.level.de.yard.threed", "DEBUG");
 
         // 'initialVehicle' might cause NPE if not found
         //properties.put("initialVehicle", "c172p");
@@ -102,18 +102,10 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
             properties.put("initialHeading", "64.333166015357");
             properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         }
-        boolean bluebirdFreeFlight = false;
-        if (bluebirdFreeFlight) {
-            SceneSetup.setupForBluebirdFreeFlight(properties);
-        }
-        boolean bluebirdInEHAM = false;
-        if (bluebirdInEHAM) {
-            SceneSetup.setupTravelSceneBluebirdForBluebirdFreeFlightFromEHAM(properties);
-        }
-        boolean sceneryViewInEHAM = false;
-        if (sceneryViewInEHAM) {
-            SceneSetup.setupSceneryViewSceneForEHAM(properties);
-        }
+        //SceneSetup.setupForBluebirdFreeFlight(properties);
+        //SceneSetup.setupTravelSceneBluebirdForBluebirdFreeFlightFromEHAM(properties);
+        //SceneSetup.setupTravelSceneForC172pFreeFlightFromEHAM(properties);
+        //SceneSetup.setupSceneryViewSceneForEHAM(properties);
         return properties;
     }
 

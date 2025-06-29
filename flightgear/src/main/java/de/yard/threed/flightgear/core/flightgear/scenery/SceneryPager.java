@@ -48,6 +48,7 @@ public class SceneryPager {//extends lic osgDB::DatabasePager
      */
     public void queueRequest(String fileName, SceneNode/*Group*/ destinationnode, float priority, /*osg::FrameStamp* frameStamp,  osg::ref_ptr<osg::Referenced>& databaseRequest,*/        Options options,
                              String basepath) {
+        //logger.debug("queueRequest");
         SceneNode n = null;
         if (basepath != null) {
             String bundlename = FlightGear.getBucketBundleName(StringUtils.substringBeforeLast(fileName, ".stg"));

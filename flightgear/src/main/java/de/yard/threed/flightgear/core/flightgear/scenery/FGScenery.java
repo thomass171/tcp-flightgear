@@ -154,7 +154,8 @@ public class FGScenery extends DefaultSGSubsystem {
                     SGGeod coor = SGGeod.fromCart(intersection);
                     double elevation = coor.getElevationM();
                     // 22.6.25: Elevation might be a little below 0, eg. on ocean tiles. So limit "0"->"-1"
-                    if (elevation > -1 && elevation < 10000) {
+                    // 28.6.25 EHAM is appx. 4.5 below sea level
+                    if (elevation > -30 && elevation < 10000) {
                         //appears plausible. Edge cases not considered yet.
                         bestelevation = elevation;
                         found = true;

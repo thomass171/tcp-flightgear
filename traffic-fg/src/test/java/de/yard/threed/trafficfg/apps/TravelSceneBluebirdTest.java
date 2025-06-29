@@ -22,6 +22,7 @@ import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.testutil.SceneRunnerForTesting;
 import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.ecs.FgAnimationComponent;
+import de.yard.threed.flightgear.testutil.BundleResolverSetup;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphMovingSystem;
@@ -296,7 +297,7 @@ public class TravelSceneBluebirdTest {
             properties.put("initialHeading", initialHeading);
         }
 
-        FgTestFactory.initPlatformForTest(properties, false, true, true, false);
+        FgTestFactory.initPlatformForTest(properties, false, true, true, false, new BundleResolverSetup.DefaultBundleResolverSetup());
 
         sceneRunner = (SceneRunnerForTesting) SceneRunnerForTesting.getInstance();
         sceneRunner.runLimitedFrames(INITIAL_FRAMES);
