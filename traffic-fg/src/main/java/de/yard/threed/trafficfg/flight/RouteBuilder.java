@@ -15,13 +15,14 @@ import de.yard.threed.graph.GraphNode;
 import de.yard.threed.graph.GraphOrientation;
 import de.yard.threed.traffic.BasicRouteBuilder;
 import de.yard.threed.traffic.Destination;
-import de.yard.threed.traffic.EllipsoidCalculations;
+import de.yard.threed.trafficcore.EllipsoidCalculations;
 import de.yard.threed.traffic.GreatCircle;
-import de.yard.threed.traffic.RunwayHelper;
+import de.yard.threed.trafficcore.GeoRouteBuilder;
+import de.yard.threed.trafficcore.RunwayHelper;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
-import de.yard.threed.traffic.geodesy.ElevationProvider;
+import de.yard.threed.trafficcore.ElevationProvider;
 import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.trafficcore.geodesy.MapProjection;
 import de.yard.threed.trafficcore.model.Runway;
@@ -33,9 +34,10 @@ import de.yard.threed.trafficfg.FgCalculations;
  */
 public class RouteBuilder extends BasicRouteBuilder {
     static Log logger = Platform.getInstance().getLog(RouteBuilder.class);
+    EllipsoidCalculations rbcp;
 
     public RouteBuilder(EllipsoidCalculations rbcp) {
-        super(rbcp);
+        this.rbcp = rbcp;
     }
 
     /**
@@ -77,7 +79,7 @@ public class RouteBuilder extends BasicRouteBuilder {
      * @return
      */
     public FlightRouteGraph buildFlightGraphForAircraftTrafficPattern(Runway departing, ElevationProvider elevationprovider, int pattern, GeneralParameterHandler<GeoCoordinate> missingElevationHandler) {
-        Graph graph = buildTakeOffGraph(departing, BasicRouteBuilder.platzrundealtitude, elevationprovider,missingElevationHandler);
+        Graph graph = buildTakeOffGraph(departing, GeoRouteBuilder.circuitAltitude, elevationprovider,missingElevationHandler);
         GraphNode sidnode = graph.getNode(graph.getNodeCount() - 1);
         FlightRouteGraph flightRoute = null;
         Vector3 loc;
@@ -88,18 +90,18 @@ public class RouteBuilder extends BasicRouteBuilder {
 
         switch (pattern) {
             case 0:
-                //Platzrunde
+                //Circuit
                 SGGeod turnpoint = GeoUtil.applyCourseDistance(SGGeod.fromCart(sidnode.getLocation()),
                         departingRunwayHelper.getHeading().add(new Degree(90)), 600);
-                turnpoint.setElevationM(platzrundealtitude);
+                turnpoint.setElevationM(GeoRouteBuilder.circuitAltitude);
                 GraphNode turn0 = graph.addNode("turn0", turnpoint.toCart());
                 graph.connectNodes(sidnode, turn0, "querabflug");
                 turnpoint = GeoUtil.applyCourseDistance(turnpoint,
                         departingRunwayHelper.getHeading().add(new Degree(180)), 6000);
-                turnpoint.setElevationM(platzrundealtitude);
+                turnpoint.setElevationM(GeoRouteBuilder.circuitAltitude);
                 GraphNode turn1 = graph.addNode("turn1", turnpoint.toCart());
                 graph.connectNodes(turn0, turn1, "gegenanflug");
-                addLandingGraph(departing, graph, turn1, platzrundealtitude, elevationprovider, missingElevationHandler);
+                addLandingGraph(departing, graph, turn1, GeoRouteBuilder.circuitAltitude, elevationprovider, missingElevationHandler);
                 graph.setName("Platzrunde");
                 flightRoute = new FlightRouteGraph(graph, graph.getEdge(1), graph.getEdge(graph.getEdgeCount() - 2));
                 flightRoute.nextDestination = Destination.buildForLanding(departing);
@@ -124,7 +126,7 @@ public class RouteBuilder extends BasicRouteBuilder {
                     graph.connectNodes(lastnode, n);
                     lastnode = n;
                 }
-                addLandingGraph(departing, graph, lastnode, platzrundealtitude, elevationprovider, missingElevationHandler);
+                addLandingGraph(departing, graph, lastnode, GeoRouteBuilder.circuitAltitude, elevationprovider, missingElevationHandler);
                 for (int i = 0; i < graph.getNodeCount(); i++) {
                     loc = graph.getNode(i).getLocation();
                     SGGeod g = SGGeod.fromCart(loc);
@@ -211,7 +213,7 @@ public class RouteBuilder extends BasicRouteBuilder {
      * @return
      */
     public FlightRouteGraph buildFlightGraph(Runway departing, ElevationProvider elevationprovider, String flightdestination, GeneralParameterHandler<GeoCoordinate> missingElevationHandler) {
-        Graph graph = buildTakeOffGraph(departing, cruisingaltitude, elevationprovider, missingElevationHandler);
+        Graph graph = buildTakeOffGraph(departing, GeoRouteBuilder.cruisingAltitude, elevationprovider, missingElevationHandler);
         GraphNode sidnode = graph.getNode(graph.getNodeCount() - 1);
         FlightRouteGraph flightRoute = null;
 
@@ -308,7 +310,7 @@ public class RouteBuilder extends BasicRouteBuilder {
         //graph.connectNodes(holding,v1);
         GraphNode takeoff = graph.addNode("takeoff", rbcp.toCart(GeoCoordinate.fromLatLon(runwayHelper.getTakeoffPoint(), 0), elevationprovider, missingElevationHandler));
         graph.connectNodes(holding, takeoff, "starting");
-        SGGeod sidpoint = GeoUtil.applyCourseDistance(SGGeod.fromLatLon(runwayHelper.getTakeoffPoint()), runwayHelper.getHeading(), 3000);
+        SGGeod sidpoint = GeoUtil.applyCourseDistance(SGGeod.fromLatLon(runwayHelper.getTakeoffPoint()), runwayHelper.getHeading(), GeoRouteBuilder.takeoffToSidPointDistance);
         sidpoint.setElevationM(altitude);
         GraphNode sid = graph.addNode("sid", sidpoint.toCart());
         graph.connectNodes(takeoff, sid, "takeoff");

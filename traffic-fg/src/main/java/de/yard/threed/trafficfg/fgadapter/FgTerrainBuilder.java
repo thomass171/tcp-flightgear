@@ -23,7 +23,7 @@ import de.yard.threed.flightgear.core.flightgear.scenery.FGTileMgr;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.graph.GraphNode;
 import de.yard.threed.traffic.AbstractSceneryBuilder;
-import de.yard.threed.traffic.EllipsoidCalculations;
+import de.yard.threed.trafficcore.EllipsoidCalculations;
 import de.yard.threed.traffic.TerrainElevationProvider;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.traffic.flight.FlightLocation;

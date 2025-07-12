@@ -64,7 +64,7 @@ import de.yard.threed.graph.GraphProjection;
 import de.yard.threed.graph.GraphVisualizer;
 import de.yard.threed.traffic.AbstractSceneryBuilder;
 import de.yard.threed.traffic.Destination;
-import de.yard.threed.traffic.EllipsoidCalculations;
+import de.yard.threed.trafficcore.EllipsoidCalculations;
 import de.yard.threed.traffic.EllipsoidConversionsProvider;
 import de.yard.threed.traffic.PositionHeading;
 import de.yard.threed.traffic.RequestRegistry;

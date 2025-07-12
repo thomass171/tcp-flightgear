@@ -27,7 +27,7 @@ import de.yard.threed.flightgear.core.simgear.scene.tgdb.SGReaderWriterBTG;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.traffic.BasicRouteBuilder;
 import de.yard.threed.traffic.EllipsoidConversionsProvider;
-import de.yard.threed.traffic.GeoRoute;
+import de.yard.threed.trafficcore.GeoRoute;
 import de.yard.threed.traffic.TerrainElevationProvider;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.core.GeoCoordinate;
@@ -186,8 +186,8 @@ public class ElevationTest {
             attemptCounter.inc();
             BooleanHolder missingElevation = new BooleanHolder(false);
 
-            flightRoute.add(new BasicRouteBuilder(new FgCalculations())
-                    .fromGeoRoute(initialRoute, geoCoordinate -> {
+            flightRoute.add(new BasicRouteBuilder()
+                    .fromGeoRoute(new FgCalculations(), initialRoute, geoCoordinate -> {
                         log.debug("No elevation for " + geoCoordinate + " of initialRoute");
                         missingElevation.setValue(true);
                         if (fgTerrainBuilder != null) {

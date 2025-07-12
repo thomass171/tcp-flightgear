@@ -19,7 +19,7 @@ import de.yard.threed.graph.GraphNode;
 import de.yard.threed.graph.GraphOrientation;
 import de.yard.threed.graph.GraphVisualizer;
 import de.yard.threed.traffic.AbstractSceneryBuilder;
-import de.yard.threed.traffic.EllipsoidCalculations;
+import de.yard.threed.trafficcore.EllipsoidCalculations;
 import de.yard.threed.traffic.GraphTerrainVisualizer;
 import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.trafficcore.geodesy.MapProjection;

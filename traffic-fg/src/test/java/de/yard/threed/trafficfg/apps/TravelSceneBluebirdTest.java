@@ -26,7 +26,7 @@ import de.yard.threed.flightgear.testutil.BundleResolverSetup;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphMovingSystem;
-import de.yard.threed.traffic.EllipsoidCalculations;
+import de.yard.threed.trafficcore.EllipsoidCalculations;
 import de.yard.threed.traffic.GraphTerrainSystem;
 import de.yard.threed.traffic.GraphVisualizationSystem;
 import de.yard.threed.traffic.ScenerySystem;

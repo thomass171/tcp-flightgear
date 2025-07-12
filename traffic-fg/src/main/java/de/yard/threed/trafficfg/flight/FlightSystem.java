@@ -24,7 +24,7 @@ import de.yard.threed.graph.GraphNode;
 import de.yard.threed.graph.GraphPath;
 import de.yard.threed.graph.GraphPosition;
 import de.yard.threed.traffic.Destination;
-import de.yard.threed.traffic.EllipsoidCalculations;
+import de.yard.threed.trafficcore.EllipsoidCalculations;
 import de.yard.threed.traffic.FlightRouteBuilder;
 import de.yard.threed.traffic.OrbitToOrbitRouteBuilder;
 import de.yard.threed.traffic.RequestRegistry;
@@ -111,6 +111,7 @@ public class FlightSystem extends DefaultEcsSystem {
     public boolean processRequest(Request request) {
         logger.debug("got event " + request.getType());
         if (request.getType().equals(RequestRegistry.TRAFFIC_REQUEST_AIRCRAFTDEPARTING)) {
+            // Assumes that the aircraft is somewhere on the groundnet and needs to move to runway first.
             //  Servicepoint cleanen? Evtl. ist ja noch Service aktiv. TODO
             TrafficRequest tr = (TrafficRequest) request.getPayloadByIndex(0);
             //Schedule schedule = new Schedule(null, tr.groundnet/*, trafficSystem*/);
@@ -149,14 +150,15 @@ public class FlightSystem extends DefaultEcsSystem {
     }
 
     /**
-     * Move Aircraft to Runway.
-     * Geht bis zum Holdingpoint, der den Übergang zum Flightgraph darstellt.
-     * Der Begriff "holding" ist nicht ganz sauber, weil er vor der Runway liegt.
+     * Move Aircraft to some 'holding point' (not really correct as it is on the runway instead of before)
+     * on the runway. From there a flight graph will continue moving.
+     * Also creates a travelplan for the vehicle to reach 'flightdestination'.
+     * Currently hardcoded for EDDK!
      * 13.5.25: Returns null on success and a fail message in case of failure.
      * <p>
      * Created by thomass on 13.02.2018.
      */
-    private String buildAircraftDepartAction(/*GroundNet groundnet,*/ EcsEntity aircraft/*, GraphNode holding, Runway runway,*/, Destination flightdestination) {
+    private String buildAircraftDepartAction(EcsEntity aircraft, Destination flightdestination) {
         GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(aircraft);
         VehicleComponent vhc = VehicleComponent.getVehicleComponent(aircraft);
         GraphPosition start = gmc.getCurrentposition();
@@ -164,7 +166,7 @@ public class FlightSystem extends DefaultEcsSystem {
         // TrafficGraph trafficGraph = (TrafficGraph) gmc.getGraph();
         String icao = "EDDK";//trafficGraph.icao;
 
-        logger.debug("buildAircraftDepartAction for " + aircraft.getName());
+        logger.debug("buildAircraftDepartAction for taxiing vehicle " + aircraft.getName());
 
         GroundNet groundNet = null;
         Runway runway = null;
@@ -240,6 +242,8 @@ public class FlightSystem extends DefaultEcsSystem {
         GraphNode positiononrunway = position.getNodeInDirectionOfOrientation();
 
         Destination travelDestination = vhc.travelplan.travelDestination;
+        logger.debug("buildAircraftDepartAction departing for vehicle " + aircraft.getName() +
+                " from runway "+departing+" with destination "+travelDestination);
 
         if (travelDestination.isType(Destination.TYPE_ICAO_PARKPOS)) {
             Util.notyet();

@@ -34,7 +34,7 @@ import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
 import de.yard.threed.traffic.AbstractSceneryBuilder;
-import de.yard.threed.traffic.EllipsoidCalculations;
+import de.yard.threed.trafficcore.EllipsoidCalculations;
 import de.yard.threed.traffic.GraphBackProjectionProvider;
 import de.yard.threed.traffic.GraphTerrainSystem;
 import de.yard.threed.traffic.LightDefinition;

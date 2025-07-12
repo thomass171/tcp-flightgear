@@ -29,6 +29,7 @@ import de.yard.threed.traffic.NodeCoord;
 import de.yard.threed.traffic.StaticElevationProvider;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.core.GeoCoordinate;
+import de.yard.threed.trafficcore.GeoRouteBuilder;
 import de.yard.threed.trafficcore.geodesy.MapProjection;
 import de.yard.threed.trafficcore.geodesy.SimpleMapProjection;
 import de.yard.threed.traffic.osm.OsmRunway;
@@ -86,7 +87,7 @@ public class TrafficTest {
         //TestUtil.assertEquals("edges", 7, graph.getEdgeCount());
         //2D Projection legt elevation in Z ab. Toleranz muss relativ hoch sein.
         Assertions.assertEquals(27, graph.findNodeByName("holding").getLocation().getZ(), 0.5f,"holding.altitude");
-        Assertions.assertEquals(RouteBuilder.platzrundealtitude, graph.findNodeByName("sid").getLocation().getZ(), 0.5f,"sid.altitude");
+        Assertions.assertEquals(GeoRouteBuilder.circuitAltitude, graph.findNodeByName("sid").getLocation().getZ(), 0.5f,"sid.altitude");
 
         System.out.println("platzrunde=" + smoothedflightpath);
         GraphNode holding = groundnet.getHolding(runway14l.getFromNumber()/*getName()*/);

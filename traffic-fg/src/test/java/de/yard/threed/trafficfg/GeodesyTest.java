@@ -14,7 +14,7 @@ import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeodesy;
 import de.yard.threed.flightgear.testutil.FgTestUtils;
 import de.yard.threed.javacommon.SimpleHeadlessPlatformFactory;
-import de.yard.threed.traffic.RunwayHelper;
+import de.yard.threed.trafficcore.RunwayHelper;
 import de.yard.threed.traffic.WorldGlobal;
 import de.yard.threed.trafficcore.geodesy.SimpleMapProjection;
 import de.yard.threed.traffic.osm.OsmRunway;

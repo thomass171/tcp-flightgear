@@ -18,7 +18,7 @@ import de.yard.threed.graph.Graph;
 import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphPath;
 import de.yard.threed.graph.ProjectedGraph;
-import de.yard.threed.traffic.EllipsoidCalculations;
+import de.yard.threed.trafficcore.EllipsoidCalculations;
 import de.yard.threed.traffic.RequestRegistry;
 import de.yard.threed.traffic.SphereProjections;
 import de.yard.threed.traffic.TrafficEventRegistry;

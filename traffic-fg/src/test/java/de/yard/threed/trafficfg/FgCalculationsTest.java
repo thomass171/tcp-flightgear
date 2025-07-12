@@ -11,7 +11,7 @@ import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.flightgear.core.simgear.geodesy.FgMath;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
-import de.yard.threed.traffic.EllipsoidCalculations;
+import de.yard.threed.trafficcore.EllipsoidCalculations;
 import de.yard.threed.traffic.flight.FlightLocation;
 import org.junit.jupiter.api.Test;
 
