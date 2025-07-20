@@ -26,6 +26,7 @@ import de.yard.threed.engine.ObserverSystem;
 import de.yard.threed.engine.Scene;
 import de.yard.threed.engine.SceneMode;
 import de.yard.threed.engine.SceneNode;
+import de.yard.threed.engine.SimpleTransform;
 import de.yard.threed.engine.Transform;
 import de.yard.threed.engine.apps.ModelSamples;
 import de.yard.threed.engine.ecs.EcsEntity;
@@ -46,8 +47,10 @@ import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.engine.vr.VrOffsetWrapper;
 import de.yard.threed.flightgear.FgVehicleLoaderResult;
 import de.yard.threed.flightgear.ecs.FgAnimationComponent;
+import de.yard.threed.traffic.PositionerFactory;
 import de.yard.threed.traffic.TerrainElevationProvider;
 import de.yard.threed.traffic.TrafficHelper;
+import de.yard.threed.trafficcore.model.SmartLocation;
 import de.yard.threed.trafficfg.fgadapter.FgTerrainBuilder;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearMain;
@@ -90,6 +93,7 @@ import static de.yard.threed.engine.ecs.TeleporterSystem.EVENT_POSITIONCHANGED;
  * w/a/s/d, cursor
  * <p>
  * 11.3.24: Animation added (windturbine and tower)
+ * 20.7.25: Support for initialLocation/Heading added
  */
 public class SceneryScene extends Scene {
     static Log logger = Platform.getInstance().getLog(SceneryScene.class);
@@ -101,6 +105,8 @@ public class SceneryScene extends Scene {
     private LocalTransform captainPosition;
     private SceneNode vehicleModelnode = null;
     VrInstance vrInstance;
+    // for testing
+    public static SimpleTransform mainTransform = null;
 
     @Override
     public String[] getPreInitBundle() {
@@ -109,7 +115,7 @@ public class SceneryScene extends Scene {
         // 21.7.24: TerraSync-model isn't used anyway currently due to flag 'ignoreshared'. So save the time and memory for loading it.
         // "fgdatabasic" and "traffic-fg" are needed for bluebird
         // 'TerraySync' is loaded at runtime by TerraSyncBundleResolver' that is set up by the platform(using HOSTDIRFG on desktop and "bundles" in webgl)
-        return new String[]{"engine", FlightGear.getBucketBundleName("model")+"-delayed", "sgmaterial", "fgdatabasic", "traffic-fg"};
+        return new String[]{"engine", FlightGear.getBucketBundleName("model") + "-delayed", "sgmaterial", "fgdatabasic", "traffic-fg"};
     }
 
     /**
@@ -264,29 +270,47 @@ public class SceneryScene extends Scene {
             fpmc.getFirstPersonTransformer().setMovementSpeed(150);
             userEntity.addComponent(fpmc);
 
-            FlightLocation initialFlightLocation = TrafficHelper.getInitialFlightLocation();
-            if (initialFlightLocation == null) {
-                initialFlightLocation = WorldGlobal.eddkoverview.location;
-            }
-            LocalTransform loc = initialFlightLocation.toPosRot(ellipsoidCalculations);
-            transform.setPosition(loc.position);
+            // 14.7.25 Use smartlocation like in other situations
+
             // Base rotation to make user node a FG model ...
-            rotation = new OpenGlProcessPolicy(null).opengl2fg.extractQuaternion();
+            Quaternion opengl2fgRotation = new OpenGlProcessPolicy(null).opengl2fg.extractQuaternion();
             // .. that is suited for FG geo transformation and FirstPersonTransformers OpenGL coordinate system.
-            // Unclear why it is this order of rotation multiply.
-            rotation = loc.rotation.multiply(rotation);
-            transform.setRotation(rotation);
+
+            Vector3 positionForTerrain = null;
+            Quaternion finalRotation = null;
+            SmartLocation smartLocation = SmartLocation.fromString(Platform.getInstance().getConfiguration().getString("initialLocation"));
+            if (smartLocation != null) {
+                PositionerFactory.PositionerFactoryResult result = PositionerFactory.buildFromLocation(smartLocation, Platform.getInstance().getConfiguration().getString("initialHeading"));
+
+                if (result.getStatus() == PositionerFactory.SUCCESS) {
+                    result.positioner.positionTransform(transform);
+                    // Unclear why it is this order of rotation multiply.
+                    finalRotation=transform.getRotation().multiply(opengl2fgRotation);
+                    positionForTerrain = transform.getPosition();
+                }
+            }
+            if (positionForTerrain == null) {
+                // go to default
+                LocalTransform loc = WorldGlobal.eddkoverview.location.toPosRot(ellipsoidCalculations);
+                transform.setPosition(loc.position);
+                finalRotation = loc.rotation.multiply(opengl2fgRotation);
+                positionForTerrain = loc.position;
+            }
+            transform.setRotation(finalRotation);
 
             // Let ObserverSystem attach observer
             SystemManager.sendEvent(BaseEventRegistry.buildUserAssembledEvent(userEntity));
 
             // trigger terrain loading
-            SystemManager.sendEvent(TeleporterSystem.buildPositionChanged(loc.position));
+            SystemManager.sendEvent(TeleporterSystem.buildPositionChanged(positionForTerrain));
             //the SphereSystem way SystemManager.sendEvent(TrafficEventRegistry.buildLOCATIONCHANGED(initialPosition, null,                    (initialTile)));
 
             // No LoginSystem is used, so manually register user as 'acting player'.
             ((InputToRequestSystem) SystemManager.findSystem(InputToRequestSystem.TAG)).setUserEntityId(userEntity.getId());
 
+            mainTransform = transform;
+            logger.debug("mainTransform.position="+mainTransform.getPosition());
+            logger.debug("mainTransform.rotation="+mainTransform.getRotation());
         }
 
         // Platzrunde (und wakeup) erst anlegen, wenn das Terrain da ist und worldadjustment durch ist. Schwierig zu erkennen

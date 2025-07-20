@@ -52,4 +52,16 @@ public class SceneSetup {
         properties.put("initialLocation", "geo:52.2878684, 4.73415315");
         properties.put("scene", "de.yard.threed.trafficadvanced.apps.AdvancedSceneryViewerScene");
     }
+
+    /**
+     * The base scene for moving in scenery, not the historic top down viewer scene
+     */
+    public static void setupAdvancedScenerySceneForEHAM(HashMap<String, String> properties) {
+
+        // above runway '06'
+        properties.put("initialLocation", "geo:52.2878684, 4.73415315,300");
+        properties.put("initialHeading", "60");
+        properties.put("scene", "de.yard.threed.trafficadvanced.apps.AdvancedSceneryScene");
+
+    }
 }

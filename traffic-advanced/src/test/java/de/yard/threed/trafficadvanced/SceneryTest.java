@@ -66,7 +66,7 @@ public class SceneryTest {
 
         // make bundle available to avoid ocean tile
         EngineTestFactory.loadBundleSync(BundleRegistry.TERRAYSYNCPREFIX + "3023763");
-        EngineTestFactory.loadBundleSync(BundleRegistry.TERRAYSYNCPREFIX + "model");
+        EngineTestFactory.loadBundleAndWait(BundleRegistry.TERRAYSYNCPREFIX + "model", 120000);
         SGReaderWriterOptions options = new SGReaderWriterOptions();
 
         LoaderOptions opt = new LoaderOptions();

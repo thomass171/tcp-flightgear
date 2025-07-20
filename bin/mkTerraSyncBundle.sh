@@ -58,8 +58,16 @@ processTerraSyncFile() {
 		echo processing $filename":" $BASENAME $SUFFIX
 		case $SUFFIX in
 			# maybe 'rgb' should be discarded. Who can read it at all? (3.9.24 many base model use 'rgb'!)
-			# 15.3.24: 'gltf' and 'bin' added
-			"xml"|"png"|"jpg"|"stg"|"rgb"|"gltf"|"bin")
+			# 13.7.25 so we should convert it. BTW: LoaderAC renames references to 'rgb' in 'ac' files to 'png', so GLTF files will always use 'png'.
+			"rgb")
+        if [ ! -r $DESTDIR/$BASENAME.png -o $FORCE = "1" ]
+        then
+          # CmdLine tool of https://imagemagick.org. BTW, gimp knows how to display rgb files
+          magick $filename $DESTDIR/$BASENAME.png
+        fi
+        ;;
+      # 15.3.24: 'gltf' and 'bin' added
+			"xml"|"png"|"jpg"|"stg"|"gltf"|"bin")
 				if [ ! -r $DESTDIR/$BASENAME.$SUFFIX -o $FORCE = "1" ]
 				then
 					#echo cp file
