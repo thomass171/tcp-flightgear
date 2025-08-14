@@ -115,7 +115,8 @@ public class SceneryScene extends Scene {
         // 21.7.24: TerraSync-model isn't used anyway currently due to flag 'ignoreshared'. So save the time and memory for loading it.
         // "fgdatabasic" and "traffic-fg" are needed for bluebird
         // 'TerraySync' is loaded at runtime by TerraSyncBundleResolver' that is set up by the platform(using HOSTDIRFG on desktop and "bundles" in webgl)
-        return new String[]{"engine", FlightGear.getBucketBundleName("model") + "-delayed", "sgmaterial", "fgdatabasic", "traffic-fg"};
+        // 10.8.25 "data" is needed for 'earth' texture after earth building uses DefaultMaterialFactory
+        return new String[]{"engine", FlightGear.getBucketBundleName("model") + "-delayed", "sgmaterial", "fgdatabasic", "traffic-fg", "data"};
     }
 
     /**

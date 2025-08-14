@@ -150,7 +150,7 @@ public class FgTerrainBuilder implements AbstractSceneryBuilder {
         SceneNode m = null, model = new SceneNode();
         //30.3.18: Erdkugel unabhaengig vom Flag immer bauen
         if (/*simpleearth*/true) {
-            m = ModelSamples.buildEarth(128, NumericValue.SMOOTH);
+            m = ModelSamples.buildEarth(128);
             m.getTransform().setScale(new Vector3(radius, radius, radius));
             // m.setScale(new Vector3(600, 600, 600));
             // Der Pazifik ist rechts auf pos x. Darum einmal rumdrehen, damit dort der
