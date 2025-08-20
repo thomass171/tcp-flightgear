@@ -1,5 +1,7 @@
 package de.yard.threed.trafficfg;
 
+import de.yard.threed.trafficcore.GeoRoute;
+
 import java.util.HashMap;
 
 /**
@@ -7,7 +9,7 @@ import java.util.HashMap;
  */
 public class SceneSetup {
 
-    public static String EHAM06="52.2878684, 4.73415315";
+    public static String EHAM06 = "52.2878684, 4.73415315";
 
     /**
      * 6.3.25: Either choose a route in cockpit or free flight from EDDKs 32L
@@ -27,7 +29,7 @@ public class SceneSetup {
      */
     public static void setupTravelSceneBluebirdForBluebirdFreeFlightFromEHAM(HashMap<String, String> properties) {
 
-        properties.put("initialLocation", "geo:"+EHAM06);
+        properties.put("initialLocation", "geo:" + EHAM06);
         properties.put("initialHeading", "57.8");
         properties.put("initialVehicle", "bluebird");
         properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
@@ -64,4 +66,19 @@ public class SceneSetup {
         properties.put("scene", "de.yard.threed.trafficadvanced.apps.AdvancedSceneryScene");
 
     }
+
+    /**
+     *
+     */
+    public static void setupBluebirdForRouteFromEDKB(HashMap<String, String> properties, Double maximumSpeed) {
+
+        properties.put("initialRoute", GeoRoute.SAMPLE_EDKB_EDDK);
+        if (maximumSpeed != null) {
+            properties.put("vehicle.bluebird.maximumspeed", "" + maximumSpeed);
+            properties.put("vehicle.bluebird.acceleration", "" + maximumSpeed * 0.05);
+        }
+        properties.put("initialVehicle", "bluebird");
+        properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
+    }
+
 }

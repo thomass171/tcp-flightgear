@@ -1,27 +1,14 @@
 <!--
-20.11.23: External hosted model. Extracted from TrafficWorld.xml.
-Does not contain project model like 'bluebird'.
+See tcp-22:traffic.xsd for property documentation.
 
-Hat Analogien zur groundservices.xml, aber trotzdem ist sie eigenstaendig. Im Zweifel werden Daten hierhin dupliziert,
-einfach um die Uabhängigkeit zu wahren.
-12.7.17: Die gab737 nicht mehr weil deplaziert und zu speziell für 737.
-1.3.18: Die Abgrenzung Vehicle/Aircraft wirkt passend, führt im Code aber zu unschönen Dopplungen.
-Auch gibt es keinen passenden Oberbegriff. Lauf leo heisst vehicle aber nicht Flugzeug, wohl aber Gefährt.
-Das passt wieder. Also doch vehicle als Oberbegriff. Und aircraft kommt wieder weg. Stattdessen ein Attribut isarircraft?
-Ist ein Shuttle ein aircraft?
+Similar to groundservices.xml of project GroundServices.
+.
+12.7.17: No longer gab737
 27.12.18: Nur vehicle scheint mit Bezug auf Verallgemeinerung (z.B railing) wirklich sinnvoll. Wichtig ist eher die Frage, ob
 es ein Cockpit gibt. Dass ein AI Vehicle sehr schlank im Vergleich zu einem FullFeatures Aircraft mir Cockpit ist, ist zwar
 für die Resourcen bedeutend, aber nicht unbedingt für die Konfiguration. In der Tat sollte es aber nur ein FF vehicle in einer Scene
 geben. "aircrafts" entählt keine Vehiclee, sondern Aicraft Properties!
-24.1.19: Die Vehicle Model sollen/muessen alle dieselbe Orientierung haben.
-
-simple bezeichnet alle FG AI aircraft, 777 und c172p sind FlightgearAircraft".
-    ich lass das mit simple. Stattdessen attribute "ai".
-
-"B_2:::747-400:747 KLM:0",
-        "B_8:fgdatabasicmodel:AI/Aircraft/737/737-AirBerlin.xml:738: AB:3",
-        "C_4:fgdatabasicmodel::738:738:0"};
-        Die Viewpoints sind immer Model bezogen ohne zoffset.
+24.1.19: Vehicle Model should have the same orientation (FG?).
 
     Die "90,0,90" Rotationen für die Cockpitposition sind eigentlich immer gleich und auch plausibel, weil die Vehicle ja
     dieselbe Orientierung haben.
@@ -30,6 +17,11 @@ simple bezeichnet alle FG AI aircraft, 777 und c172p sind FlightgearAircraft".
       wobei z=0 der Ground ist. Das mit z muss sich aber noch bewähren.
       door positions aus tag "<door>"
 
+20.11.23: External hosted model. Extracted from TrafficWorld.xml.
+Does not contain project model like 'bluebird'.
+
+20.08.25: 'bluebird' added since this is just a list of vehicle available in 'bundlepool'. And 'bluebird'
+is now in bundlepool just because it is an easy to load lightweight model.
 -->
 
 
@@ -269,6 +261,39 @@ simple bezeichnet alle FG AI aircraft, 777 und c172p sind FlightgearAircraft".
         <initialcount>1</initialcount>
     </vehicledefinition>
 
+    <!-- 20.8.24 'bluebird' copied from 'traffic-fg' and linked to bundlepool-->
+    <vehicledefinition name="bluebird" type="aircraft">
+        <bundlename>https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool/bluebird</bundlename>
+        <modelfile>Models/bluebird.xml</modelfile>
+        <zoffset>1.2</zoffset>
+        <unscheduledmoving>0</unscheduledmoving>
+        <!-- 233 km/h, 125 kn -->
+        <maximumspeed>64.7</maximumspeed>
+        <acceleration>14.5</acceleration>
+        <!-- 55 kn, vr brauch ich eigentlich nicht
+        <vr>28.3</vr> 20.11.23 dann lass ich es mal weg -->
+        <viewpoint name="Captain">
+            <!-- 5.2.24: heads up: position 1.45 seems appx 1.2 too low when attaching wrong node (skipping zoffset).-->
+            <transform>
+                <position>-7.26, 0, 1.45</position>
+                <angle>90, 0, 90</angle>
+            </transform>
+        </viewpoint>
+        <viewpoint name="BackSide">
+            <transform>
+                <position>90,20,15</position>
+                <angle>0, 90, 90</angle>
+            </transform>
+        </viewpoint>
+        <aircraftdir>bluebird</aircraftdir>
+        <optional>nav_sphere_L1</optional>
+        <optional>nav_sphere_L2</optional>
+        <optional>nav_sphere_R1</optional>
+        <optional>nav_sphere_R2</optional>
+        <optional>strobe_sphere_L</optional>
+        <optional>strobe_sphere_R</optional>
+        <optional>Shadow</optional>
+    </vehicledefinition>
 
 
     <vehicles name="GenericRoad">
