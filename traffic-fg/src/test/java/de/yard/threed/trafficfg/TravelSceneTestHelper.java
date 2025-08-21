@@ -1,5 +1,6 @@
 package de.yard.threed.trafficfg;
 
+import de.yard.threed.core.Quaternion;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.NativeSceneNode;
 import de.yard.threed.core.resource.BundleRegistry;
@@ -18,11 +19,8 @@ import de.yard.threed.graph.Graph;
 import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.graph.GraphPath;
 import de.yard.threed.graph.ProjectedGraph;
+import de.yard.threed.traffic.*;
 import de.yard.threed.trafficcore.EllipsoidCalculations;
-import de.yard.threed.traffic.RequestRegistry;
-import de.yard.threed.traffic.SphereProjections;
-import de.yard.threed.traffic.TrafficEventRegistry;
-import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
 import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.trafficfg.flight.GroundNet;
@@ -92,7 +90,7 @@ public class TravelSceneTestHelper {
             // garmin has multiple components and names. just look for one
             NativeSceneNode garmin196 = SceneNode.findByName("Aircraft/Instruments-3d/garmin196/garmin196.gltf").get(0);
             //16.8.24 TODO assertTrue(Texture.hasTexture("screens.png"), "garmin.texture");
-        }else if ("bluebird".equals(expectedVehicleAndBundleName)) {
+        } else if ("bluebird".equals(expectedVehicleAndBundleName)) {
             // nothing yet to check
         } else {
             throw new RuntimeException("unexpected/unvalidated vehicle");
@@ -165,8 +163,31 @@ public class TravelSceneTestHelper {
         //log.debug("speed=" + speed);
         if (shouldHaveSpeed) {
             assertTrue(speed > 0.1 && speed < 1000, "" + speed);
-        }else {
+        } else {
             assertTrue(Math.abs(speed) < 0.00000001, "" + speed);
         }
+    }
+
+    /**
+     * Not sure how useful this extraction is. Should at least assert position/rotation
+     */
+    public static EcsEntity assertBluebird() {
+        EcsEntity bluebird = EcsHelper.findEntitiesByName("bluebird").get(0);
+        assertNotNull(bluebird);
+        VehicleComponent vehicleComponent = VehicleComponent.getVehicleComponent(bluebird);
+        //TODO not yet added assertNotNull(vehicleComponent);
+        Vector3 posbluebird = bluebird.getSceneNode().getTransform().getPosition();
+        Quaternion rotationbluebird = bluebird.getSceneNode().getTransform().getRotation();
+        //log.debug("posbluebird=" + posbluebird);
+        //log.debug("rotationbluebird=" + rotationbluebird);
+        GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(bluebird);
+        assertNotNull(gmc);
+
+        // No entity is created for vehicle sub models. The animations are contained in the vehicle entity
+        FgAnimationComponent fgAnimationComponent = FgAnimationComponent.getFgAnimationComponent(bluebird);
+        assertNotNull(fgAnimationComponent);
+        // currently 587 animations(!)
+        assertTrue(fgAnimationComponent.animationList.size() > 100, "" + fgAnimationComponent.animationList.size());
+        return bluebird;
     }
 }

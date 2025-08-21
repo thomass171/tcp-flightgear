@@ -62,21 +62,158 @@ public class TravelSceneBluebirdTest {
     SceneRunnerForTesting sceneRunner;
     static final int INITIAL_FRAMES = 10;
 
+    // set up in baseTest()
+    EllipsoidCalculations ellipsoidCalculations;
+
     @ParameterizedTest
     @CsvSource(value = {
-            ";true;;;;",
+            "simple;true;;;;",
             ";false;;;;",
-            // Route is GeoRoute.SAMPLE_EDKB_EDDK
-            ";true;wp:50.768,7.1672000->takeoff:50.7692,7.1617000->wp:50.7704,7.1557->wp:50.8176,7.0999->wp:50.8519,7.0921->touchdown:50.8625,7.1317000->wp:50.8662999,7.1443999;;;",
+    }, delimiter = ';')
+    public void testBluebird(String testCaseName, boolean withBluebird) throws Exception {
+
+        baseTest(withBluebird, null, null, null);
+
+        EcsEntity bluebird;
+        Vector3 posbluebird;
+        GraphMovingComponent gmc;
+        if (withBluebird) {
+            bluebird = TravelSceneTestHelper.assertBluebird();
+        } else {
+            // without initialVehicle 'bluebird'
+            // 'EDDK-sphere.xml' has no vehicle list, so needs to load by name
+            bluebird = TravelSceneTestHelper.loadAndValidateVehicle(sceneRunner, "bluebird", "bluebird");
+            assertNotNull(bluebird);
+        }
+        gmc = GraphMovingComponent.getGraphMovingComponent(bluebird);
+        assertNotNull(gmc);
+        posbluebird = bluebird.getSceneNode().getTransform().getPosition();
+
+        // standard test case with 'bluebird' on usual EDDK position. Other test cases terminated or branched earlier.
+        assertEquals("groundnet.EDDK", gmc.getGraph().getName());
+        // ref values for initial EDDK position taken from visual test
+        TestUtils.assertVector3(new Vector3(4001277.6476712367, 500361.77258586703, 4925186.718276716), posbluebird);
+        TrafficTestUtils.assertVehicleEntity(bluebird, "bluebird", 1.2, new Vector3(4001277.6476712367, 500361.77258586703, 4925186.718276716), "TravelSphere", new Quaternion(), log);
+        LocalTransform posrot = GraphMovingSystem.getPosRot(gmc);
+        log.debug("posrot=" + posrot);
+        // ref values taken from visual test
+        TestUtils.assertVector3(new Vector3(4001277.6476712367, 500361.77258586703, 4925186.718276716), posrot.position);
+        // as always comparing a quaternion has a risk a false negative. 22.4.25: Values changed (negated) due to GeoTools change?
+        //TestUtils.assertQuaternion(new Quaternion(0.25616279537311326, 0.2155633415950961, 0.7906922999954207, 0.5125609766212603), posrot.rotation);
+        TestUtils.assertQuaternion(new Quaternion(-0.25616279537311326, -0.2155633415950961, -0.7906922999954207, -0.5125609766212603), posrot.rotation);
+
+        // 'bluebird' is on usual EDDK position, so start bluebird roundtrip
+        TravelSceneTestHelper.startAndValidateDefaultTrip(sceneRunner, bluebird, true);
+
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
             // EDDK 32L. elevation 78.05 is hard coded. What is exact corresponding heading? 320? TODOclarify
-            "EDDK-32L;true;;geo:50.85850600,  007.13874200 ,78.05;320; 78.05",
+            "EDDK-32L;geo:50.85850600,  007.13874200 ,78.05;320; 78.05",
             // EHAM, runway 06. No elevation, so terrain is needed. But terrain will not be available. A dummy tile will be created.
             // Elevation 25.55 appears correct with dummy tile edge elevation of 30. 22.6.25: But now we have ocean tile, so "25.55"->"-0.144"
-            "EHAM;true;;geo:52.2878684, 4.73415315; 57.8; -0.144"
+            "EHAM;geo:52.2878684, 4.73415315; 57.8; -0.144",
     }, delimiter = ';')
-    public void testBluebird(String testCaseName, boolean withBluebird, String initialRoute, String initialLocation, String initialHeading,
-                             Double expectedInitialLocationElevation) throws Exception {
+    public void testBluebirdWithInitialLocation(String testCaseName, String initialLocation, String initialHeading,
+                                                Double expectedInitialLocationElevation) throws Exception {
 
+        baseTest(true, null, initialLocation, initialHeading);
+
+        EcsEntity bluebird = TravelSceneTestHelper.assertBluebird();
+        GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(bluebird);
+        assertNotNull(gmc);
+        Vector3 posbluebird = bluebird.getSceneNode().getTransform().getPosition();
+        Quaternion rotationbluebird = bluebird.getSceneNode().getTransform().getRotation();
+
+        // position differs from 'initialRoute' we are in EDDK or EHAM instead of EDKB
+        GeoCoordinate initialLocationGeoCoordinate = SmartLocation.fromString(initialLocation).getGeoCoordinate();
+        initialLocationGeoCoordinate = GeoCoordinate.fromLatLon(initialLocationGeoCoordinate, expectedInitialLocationElevation);
+
+        GeoCoordinate geoBluebird = ellipsoidCalculations.fromCart(posbluebird);
+        assertEquals(/*50.858506*/initialLocationGeoCoordinate.getLatDeg().getDegree(), geoBluebird.getLatDeg().getDegree(), 0.000001);
+        assertEquals(/*7.138742*/initialLocationGeoCoordinate.getLonDeg().getDegree(), geoBluebird.getLonDeg().getDegree(), 0.000001);
+        assertEquals(expectedInitialLocationElevation, geoBluebird.getElevationM(), 0.01);
+        // vehicle isn't on graph
+        assertNull(gmc.getCurrentposition());
+        // 'bluebird' is in FG space, so no local rotation required.
+        Quaternion expectedLocalVehicleRotation = new Quaternion();
+        TrafficTestUtils.assertVehicleEntity(bluebird, "bluebird", 1.2,
+                ellipsoidCalculations.toCart(initialLocationGeoCoordinate),
+                "TravelSphere", expectedLocalVehicleRotation, log);
+        // Not yet sure how to calc the ref value. For now use once existing values after visual check ("EDDK-32L" only).
+        if (testCaseName.equals("EDDK-32L")) {
+            Quaternion expectedRotation = new Quaternion(-0.0947478409981826, -0.3212913237534745, -0.37675868791648814, -0.8636247003104818);
+            TestUtils.assertQuaternion(expectedRotation, rotationbluebird);
+        }
+        TravelSceneTestHelper.validateFgProperties(bluebird, false);
+        // just speed up
+        SystemManager.putRequest(new Request(BaseRequestRegistry.TRIGGER_REQUEST_START_SPEEDUP, UserSystem.getInitialUser().getId()));
+        sceneRunner.runLimitedFrames(5);
+        TravelSceneTestHelper.validateFgProperties(bluebird, true);
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            // Route is GeoRoute.SAMPLE_EDKB_EDDK
+            "EDKB-EDDK;wp:50.768,7.1672000->takeoff:50.7692,7.1617000->wp:50.7704,7.1557->wp:50.8176,7.0999->wp:50.8519,7.0921->touchdown:50.8625,7.1317000->wp:50.8662999,7.1443999",
+            // Route from EDDK 14L to EHAM 18L
+            "EDDK-EHAM;wp:50.8800381,7.1296996->takeoff:50.8764919,7.1348404->wp:50.8566037,7.1636556->wp:50.8480166,7.1594773->wp:50.8459351,7.1456370->wp:50.8524115,7.1357771->wp:52.3457417,4.8181967->wp:52.3522189,4.8080071->wp:52.3525042,4.7933074->wp:52.3464347,4.7824657->touchdown:52.3195264,4.7800279->wp:52.2908234,4.7774309",
+    }, delimiter = ';')
+    public void testBluebirdWithInitialRoute(String testCaseName, String initialRoute) throws Exception {
+
+        baseTest(true, initialRoute, null, null);
+
+        EcsEntity bluebird = TravelSceneTestHelper.assertBluebird();
+        GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(bluebird);
+        assertNotNull(gmc);
+        Vector3 posbluebird = bluebird.getSceneNode().getTransform().getPosition();
+
+        // TODO no name yet assertEquals("??.EDDK", gmc.getGraph().getName());
+        if (testCaseName.equals("EDKB-EDDK")) {
+            GeoCoordinate geoBluebird = ellipsoidCalculations.fromCart(posbluebird);
+            assertEquals(50.768, geoBluebird.getLatDeg().getDegree(), 0.000001);
+            assertEquals(7.1672, geoBluebird.getLonDeg().getDegree(), 0.000001);
+            // elevation 68.79 appears correct. Now 60.15? Can also be correct.13.11.24 Now 59.96
+            assertEquals(59.96, geoBluebird.getElevationM(), 0.01);
+            LocalTransform posrot = GraphMovingSystem.getPosRot(gmc);
+            log.debug("posrot=" + posrot);
+            // position by graph should comply to nodes position
+            TestUtils.assertVector3(posbluebird, posrot.position);
+            TrafficTestUtils.assertVehicleEntity(bluebird, "bluebird", 1.2, posrot.position, "TravelSphere", new Quaternion(), log);
+        }
+    }
+
+    /**
+     * Needs parameter, so no @Before
+     */
+    private void setup(boolean withBluebird, String basename, String initialRoute, String initialLocation, String initialHeading) throws Exception {
+        HashMap<String, String> properties = new HashMap<String, String>();
+        properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
+        if (withBluebird) {
+            properties.put("initialVehicle", "bluebird");
+        }
+        // Default for basename is scene dependent
+        if (basename != null) {
+            properties.put("basename", basename);
+        }
+        if (initialRoute != null) {
+            properties.put("initialRoute", initialRoute);
+        }
+        if (initialLocation != null) {
+            properties.put("initialLocation", initialLocation);
+        }
+        if (initialHeading != null) {
+            properties.put("initialHeading", initialHeading);
+        }
+
+        FgTestFactory.initPlatformForTest(properties, false, true, true, false, new BundleResolverSetup.DefaultBundleResolverSetup());
+
+        sceneRunner = (SceneRunnerForTesting) SceneRunnerForTesting.getInstance();
+        sceneRunner.runLimitedFrames(INITIAL_FRAMES);
+    }
+
+    private void baseTest(boolean withBluebird, String initialRoute, String initialLocation, String initialHeading) throws Exception {
         String basename = null;
         setup(withBluebird, basename, initialRoute, initialLocation, initialHeading);
 
@@ -134,7 +271,7 @@ public class TravelSceneBluebirdTest {
         }
 
         assertFalse(((GraphTerrainSystem) SystemManager.findSystem(GraphTerrainSystem.TAG)).enabled);
-        EllipsoidCalculations ellipsoidCalculations = TrafficHelper.getEllipsoidConversionsProviderByDataprovider();
+        ellipsoidCalculations = TrafficHelper.getEllipsoidConversionsProviderByDataprovider();
         assertNotNull(ellipsoidCalculations);
 
         // 'bluebird' isn't in vehiclelist but set by property 'initialVehicle'
@@ -183,123 +320,5 @@ public class TravelSceneBluebirdTest {
         TravelSceneTestHelper.validatePlatzrunde(((TravelSceneBluebird) sceneRunner.ascene).platzrundeForVisualizationOnly, 71.31, 0.5, true);
         TravelSceneTestHelper.validateGroundnet();
 
-        EcsEntity bluebird;
-        Vector3 posbluebird;
-        GraphMovingComponent gmc;
-        if (withBluebird) {
-            bluebird = EcsHelper.findEntitiesByName("bluebird").get(0);
-            assertNotNull(bluebird);
-            VehicleComponent vehicleComponent = VehicleComponent.getVehicleComponent(bluebird);
-            //TODO not yet added assertNotNull(vehicleComponent);
-            posbluebird = bluebird.getSceneNode().getTransform().getPosition();
-            Quaternion rotationbluebird = bluebird.getSceneNode().getTransform().getRotation();
-            log.debug("posbluebird=" + posbluebird);
-            log.debug("rotationbluebird=" + rotationbluebird);
-            gmc = GraphMovingComponent.getGraphMovingComponent(bluebird);
-            assertNotNull(gmc);
-
-            // No entity is created for vehicle sub models. The animations are contained in the vehicle entity
-            FgAnimationComponent fgAnimationComponent = FgAnimationComponent.getFgAnimationComponent(bluebird);
-            assertNotNull(fgAnimationComponent);
-            // currently 587 animations(!)
-            assertTrue(fgAnimationComponent.animationList.size() > 100, "" + fgAnimationComponent.animationList.size());
-
-            if (initialRoute != null) {
-                // TODO no name yet assertEquals("??.EDDK", gmc.getGraph().getName());
-                GeoCoordinate geoBluebird = ellipsoidCalculations.fromCart(posbluebird);
-                assertEquals(50.768, geoBluebird.getLatDeg().getDegree(), 0.000001);
-                assertEquals(7.1672, geoBluebird.getLonDeg().getDegree(), 0.000001);
-                // elevation 68.79 appears correct. Now 60.15? Can also be correct.13.11.24 Now 59.96
-                assertEquals(59.96, geoBluebird.getElevationM(), 0.01);
-                LocalTransform posrot = GraphMovingSystem.getPosRot(gmc);
-                log.debug("posrot=" + posrot);
-                // position by graph should comply to nodes position
-                TestUtils.assertVector3(posbluebird, posrot.position);
-                TrafficTestUtils.assertVehicleEntity(bluebird, "bluebird", 1.2, posrot.position, "TravelSphere", new Quaternion(), log);
-                // abort here for now
-                return;
-            } else if (initialLocation != null) {
-                // position differs from 'initialRoute' we are in EDDK or EHAM instead of EDKB
-                GeoCoordinate initialLocationGeoCoordinate = SmartLocation.fromString(initialLocation).getGeoCoordinate();
-                initialLocationGeoCoordinate = GeoCoordinate.fromLatLon(initialLocationGeoCoordinate, expectedInitialLocationElevation);
-
-                GeoCoordinate geoBluebird = ellipsoidCalculations.fromCart(posbluebird);
-                assertEquals(/*50.858506*/initialLocationGeoCoordinate.getLatDeg().getDegree(), geoBluebird.getLatDeg().getDegree(), 0.000001);
-                assertEquals(/*7.138742*/initialLocationGeoCoordinate.getLonDeg().getDegree(), geoBluebird.getLonDeg().getDegree(), 0.000001);
-                assertEquals(expectedInitialLocationElevation, geoBluebird.getElevationM(), 0.01);
-                // vehicle isn't on graph
-                assertNull(gmc.getCurrentposition());
-                // 'bluebird' is in FG space, so no local rotation required.
-                Quaternion expectedLocalVehicleRotation = new Quaternion();
-                TrafficTestUtils.assertVehicleEntity(bluebird, "bluebird", 1.2,
-                        ellipsoidCalculations.toCart(initialLocationGeoCoordinate),
-                        "TravelSphere", expectedLocalVehicleRotation, log);
-                // Not yet sure how to calc the ref value. For now use once existing values after visual check ("EDDK-32L" only).
-                if (testCaseName.equals("EDDK-32L")) {
-                    Quaternion expectedRotation = new Quaternion(-0.0947478409981826, -0.3212913237534745, -0.37675868791648814, -0.8636247003104818);
-                    TestUtils.assertQuaternion(expectedRotation, rotationbluebird);
-                }
-                TravelSceneTestHelper.validateFgProperties(bluebird, false);
-                // just speed up
-                SystemManager.putRequest( new Request(BaseRequestRegistry.TRIGGER_REQUEST_START_SPEEDUP, UserSystem.getInitialUser().getId()));
-                sceneRunner.runLimitedFrames(5);
-                TravelSceneTestHelper.validateFgProperties(bluebird, true);
-                // abort here for now
-                return;
-            }
-        } else {
-            // 'EDDK-sphere.xml' has no vehicle list, so needs to load by name
-            bluebird = TravelSceneTestHelper.loadAndValidateVehicle(sceneRunner, "bluebird", "bluebird");
-            assertNotNull(bluebird);
-            posbluebird = bluebird.getSceneNode().getTransform().getPosition();
-            gmc = GraphMovingComponent.getGraphMovingComponent(bluebird);
-            assertNotNull(gmc);
-        }
-
-        // standard test case with 'bluebird' on usual EDDK position
-        assertEquals("groundnet.EDDK", gmc.getGraph().getName());
-        // ref values for initial EDDK position taken from visual test
-        TestUtils.assertVector3(new Vector3(4001277.6476712367, 500361.77258586703, 4925186.718276716), posbluebird);
-        TrafficTestUtils.assertVehicleEntity(bluebird, "bluebird", 1.2, new Vector3(4001277.6476712367, 500361.77258586703, 4925186.718276716), "TravelSphere", new Quaternion(), log);
-        LocalTransform posrot = GraphMovingSystem.getPosRot(gmc);
-        log.debug("posrot=" + posrot);
-        // ref values taken from visual test
-        TestUtils.assertVector3(new Vector3(4001277.6476712367, 500361.77258586703, 4925186.718276716), posrot.position);
-        // as always comparing a quaternion has a risk a false negative. 22.4.25: Values changed (negated) due to GeoTools change?
-        //TestUtils.assertQuaternion(new Quaternion(0.25616279537311326, 0.2155633415950961, 0.7906922999954207, 0.5125609766212603), posrot.rotation);
-        TestUtils.assertQuaternion(new Quaternion(-0.25616279537311326, -0.2155633415950961, -0.7906922999954207, -0.5125609766212603), posrot.rotation);
-
-        // 'bluebird' is on usual EDDK position, so start bluebird roundtrip
-        TravelSceneTestHelper.startAndValidateDefaultTrip(sceneRunner, bluebird, true);
-
-    }
-
-    /**
-     * Needs parameter, so no @Before
-     */
-    private void setup(boolean withBluebird, String basename, String initialRoute, String initialLocation, String initialHeading) throws Exception {
-        HashMap<String, String> properties = new HashMap<String, String>();
-        properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
-        if (withBluebird) {
-            properties.put("initialVehicle", "bluebird");
-        }
-        // Default for basename is scene dependent
-        if (basename != null) {
-            properties.put("basename", basename);
-        }
-        if (initialRoute != null) {
-            properties.put("initialRoute", initialRoute);
-        }
-        if (initialLocation != null) {
-            properties.put("initialLocation", initialLocation);
-        }
-        if (initialHeading != null) {
-            properties.put("initialHeading", initialHeading);
-        }
-
-        FgTestFactory.initPlatformForTest(properties, false, true, true, false, new BundleResolverSetup.DefaultBundleResolverSetup());
-
-        sceneRunner = (SceneRunnerForTesting) SceneRunnerForTesting.getInstance();
-        sceneRunner.runLimitedFrames(INITIAL_FRAMES);
     }
 }
