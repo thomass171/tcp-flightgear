@@ -33,7 +33,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
     @Override
     public HashMap<String, String> getInitialProperties() {
         HashMap<String, String> properties = new HashMap<String, String>();
-        //13.3.24: No longer exists. Its too unspecific properties.put("enableUsermode", "false");
+
         properties.put("visualizeTrack", "true");
         properties.put("enableHud", "true");
         properties.put("enableDoormarker", "true");
@@ -106,6 +106,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         //SceneSetup.setupTravelSceneForC172pFreeFlightFromEHAM(properties);
         //SceneSetup.setupSceneryViewSceneForEHAM(properties);
         //SceneSetup.setupAdvancedScenerySceneForEHAM(properties);
+        //SceneSetup.setupBluebirdForRouteFromEDDKtoEHAM(properties, 2233.0);
         return properties;
     }
 

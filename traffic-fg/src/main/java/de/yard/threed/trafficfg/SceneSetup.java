@@ -10,6 +10,8 @@ import java.util.HashMap;
 public class SceneSetup {
 
     public static String EHAM06 = "52.2878684, 4.73415315";
+    // Currently intersects earth. Needs more altitude.
+    public static String EDDK14LtoEHAM18L = "wp:50.8800381,7.1296996->takeoff:50.8764919,7.1348404->wp:50.8566037,7.1636556->wp:50.8480166,7.1594773->wp:50.8459351,7.1456370->wp:50.8524115,7.1357771->wp:52.3457417,4.8181967->wp:52.3522189,4.8080071->wp:52.3525042,4.7933074->wp:52.3464347,4.7824657->touchdown:52.3195264,4.7800279->wp:52.2908234,4.7774309";
 
     /**
      * 6.3.25: Either choose a route in cockpit or free flight from EDDKs 32L
@@ -79,6 +81,21 @@ public class SceneSetup {
         }
         properties.put("initialVehicle", "bluebird");
         properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
+    }
+
+    /**
+     * For easy test of scenery load between EDDK and EHAM. Highspeed routed flight to EHAM (appx 3 minutes).
+     * Currently intersects earth. Needs more altitude.
+     */
+    public static void setupBluebirdForRouteFromEDDKtoEHAM(HashMap<String, String> properties, Double maximumSpeed) {
+
+        properties.put("initialRoute", EDDK14LtoEHAM18L);
+        if (maximumSpeed != null) {
+            properties.put("vehicle.bluebird.maximumspeed", "" + maximumSpeed);
+            properties.put("vehicle.bluebird.acceleration", "" + maximumSpeed * 0.05);
+        }
+        properties.put("initialVehicle", "bluebird");
+        properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
     }
 
 }

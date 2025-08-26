@@ -54,6 +54,8 @@ import java.util.Map;
  * <p>
  * Layer: 0,1,2 smoothings.
  * 15.2.18: Optional nicht mehr in 2D projected.
+ *
+ * 21.8.25: Cannot easily moved to tcp-22 because it contains flightgear XML dependent reading of groundnets. Should have an abstraction layer.
  * <p>
  * Created by thomass on 27.03.17.
  */

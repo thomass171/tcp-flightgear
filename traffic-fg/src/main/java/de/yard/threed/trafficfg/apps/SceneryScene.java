@@ -91,6 +91,7 @@ import static de.yard.threed.engine.ecs.TeleporterSystem.EVENT_POSITIONCHANGED;
  * <p>
  * Keys:
  * w/a/s/d, cursor
+ * Also mouse drag and touchscreen.
  * <p>
  * 11.3.24: Animation added (windturbine and tower)
  * 20.7.25: Support for initialLocation/Heading added
@@ -172,6 +173,8 @@ public class SceneryScene extends Scene {
         InputToRequestSystem inputToRequestSystem = new InputToRequestSystem();
 
         FirstPersonMovingSystem.addDefaultKeyBindingsforContinuousMovement(inputToRequestSystem);
+        // standard drag to rotation speed seems quite ok
+        FirstPersonMovingSystem.setMouseDragBindingsforMovement(inputToRequestSystem);
         SystemManager.addSystem(inputToRequestSystem);
 
         FirstPersonMovingSystem firstPersonMovingSystem = FirstPersonMovingSystem.buildFromConfiguration();

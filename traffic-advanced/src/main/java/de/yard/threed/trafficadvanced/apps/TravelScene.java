@@ -475,14 +475,14 @@ public class TravelScene extends FlightTravelScene {
         return null;
     }
 
-    @Override
+    /*@Override
     public LightDefinition[] getLight() {
 
         return new LightDefinition[]{
                 /*15.5.24   now in Travel-sphere.xml new LightDefinition(Color.WHITE, new Vector3(0, 30000000, 20000000)),
-                new LightDefinition(Color.WHITE, new Vector3(0, -30000000, -20000000)),*/
+                new LightDefinition(Color.WHITE, new Vector3(0, -30000000, -20000000)),* /
         };
-    }
+    }*/
 
     /**
      * Override the default control panel with the flight travel default menu.

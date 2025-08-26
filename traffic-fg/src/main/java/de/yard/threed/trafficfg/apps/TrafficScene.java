@@ -207,13 +207,13 @@ public class TrafficScene extends BasicTravelScene {
         return null;
     }
 
-    @Override
+    /*@Override
     public LightDefinition[] getLight() {
         return new LightDefinition[]{
                 new LightDefinition(Color.WHITE, new Vector3(0, 30000000, 20000000)),
                 new LightDefinition(Color.WHITE, new Vector3(0, -30000000, -20000000)),
         };
-    }
+    }*/
 
     private void setModelLocation(SceneNode model, LocalTransform posrot) {
         model.getTransform().setPosition(posrot.position);

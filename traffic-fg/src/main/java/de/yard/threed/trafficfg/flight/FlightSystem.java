@@ -43,6 +43,7 @@ import de.yard.threed.trafficfg.TrafficRequest;
  * In 2D only a local pattern('Platzrunde').
  * <p>
  * Was intended as TravelSystem.
+ * Cannot easily be moved to tcp-22 because it needs GroundNet
  * <p>
  * Created by thomass on 26.03.19.
  */
