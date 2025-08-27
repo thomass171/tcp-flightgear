@@ -143,12 +143,12 @@ public class TravelSceneBluebirdTest {
     @ParameterizedTest
     @CsvSource(value = {
             // Route is GeoRoute.SAMPLE_EDKB_EDDK
-            "EDKB-EDDK;wp:50.768,7.1672000->takeoff:50.7692,7.1617000->wp:50.7704,7.1557->wp:50.8176,7.0999->wp:50.8519,7.0921->touchdown:50.8625,7.1317000->wp:50.8662999,7.1443999",
+            "EDKB-EDDK;wp:50.768,7.1672000->takeoff:50.7692,7.1617000->wp:50.7704,7.1557->wp:50.8176,7.0999->wp:50.8519,7.0921->touchdown:50.8625,7.1317000->wp:50.8662999,7.1443999;0",
             // Route from EDDK 14L to EHAM 18L for testing scenery load (requests). We can do it in project without successful load,
             // we only want to see the events.???
-            "EDDK-EHAM;wp:50.8800381,7.1296996->takeoff:50.8764919,7.1348404->wp:50.8566037,7.1636556->wp:50.8480166,7.1594773->wp:50.8459351,7.1456370->wp:50.8524115,7.1357771->wp:52.3457417,4.8181967->wp:52.3522189,4.8080071->wp:52.3525042,4.7933074->wp:52.3464347,4.7824657->touchdown:52.3195264,4.7800279->wp:52.2908234,4.7774309",
+            "EDDK-EHAM;wp:50.8800381,7.1296996->takeoff:50.8764919,7.1348404->wp:50.8566037,7.1636556->wp:50.8480166,7.1594773->wp:50.8459351,7.1456370->wp:50.8524115,7.1357771->wp:52.3457417,4.8181967->wp:52.3522189,4.8080071->wp:52.3525042,4.7933074->wp:52.3464347,4.7824657->touchdown:52.3195264,4.7800279->wp:52.2908234,4.7774309;10",
     }, delimiter = ';')
-    public void testBluebirdWithInitialRoute(String testCaseName, String initialRoute) throws Exception {
+    public void testBluebirdWithInitialRoute(String testCaseName, String initialRoute, int expectedAdditionalLoadSceneryRequests) throws Exception {
 
         baseTest(true, initialRoute, null, null);
 
@@ -174,14 +174,14 @@ public class TravelSceneBluebirdTest {
         VelocityComponent vc = VelocityComponent.getVelocityComponent(bluebird);
 
         // 15.5.25: We have no generic 'start' via request yet
-        // let 'bluebird' move to see position/terrain update requests.
+        // let 'bluebird' move to see position/terrain update requests (depending on test case only outside local terrain).
         vc.setMaximumSpeed(2000);
         vc.setAcceleration(20.0);
         TravelHelper.startDefaultTrip(bluebird);
         List<Request> loadSceneryRequests = EcsTestHelper.getRequestsFromSystemTracker(RequestRegistry.TRAFFIC_REQUEST_LOAD_SCENERY);
-        sceneRunner.runLimitedFrames(50, 1.0);
+        sceneRunner.runLimitedFrames(200, 1.0);
         int additionalLoadSceneryRequests = EcsTestHelper.getRequestsFromSystemTracker(RequestRegistry.TRAFFIC_REQUEST_LOAD_SCENERY).size() - loadSceneryRequests.size();
-        assertTrue(additionalLoadSceneryRequests > 10, "additionalLoadSceneryRequests lower 10:" + additionalLoadSceneryRequests);
+        assertTrue(additionalLoadSceneryRequests > expectedAdditionalLoadSceneryRequests, "additionalLoadSceneryRequests lower " + expectedAdditionalLoadSceneryRequests + ":" + additionalLoadSceneryRequests);
 
     }
 
