@@ -81,6 +81,7 @@ public class FgTestFactory {
         ReaderWriterSTG.btgLoaded.clear();
         SGModelLib.clear();
         MakeEffect.clearEffectCache();
+        MakeEffect.errorList.clear();
         Effect.effectListForTesting = new ArrayList<>();
         SGOceanTile.created.clear();
 

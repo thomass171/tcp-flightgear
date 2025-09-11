@@ -701,7 +701,7 @@ public class SGReaderWriterXML {
         // 29.10.24: We don't replace the node via visitor like FG but create ModelFactories instead
         // FG Node modelWithEffects = Model.instantiateEffects(group/*.get()*/, effect_nodes, options/*.get()*/);
         // FG group = /*static_cast < Group * > (*/(Group) modelWithEffects/*.get()*/;
-        Model.instantiateEffects(group/*.get()*/, effect_nodes, options/*.get()*/, label);
+        Model.instantiateEffects(group/*.get()*/, effect_nodes, options/*.get()*/, label, bpath);
 
         logger.debug("Building animations for " + bpath.name + ". nodecount=" + animation_nodes.size());
 

@@ -13,20 +13,20 @@ import java.util.List;
  */
 public class FgBundleHelper {
 
-    Log logger= Platform.getInstance().getLog(FgBundleHelper.class);
+    Log logger = Platform.getInstance().getLog(FgBundleHelper.class);
 
     //Locating relative resources across bundles.
     static private List<BundleResourceProvider> providerlist = new ArrayList<BundleResourceProvider>();
 
     /**
-     *
-     *
-     * 1) Current context(bundle)
+     * Find bundle where 'resource' resides. We
+     * 1) Check the 'current' context(bundle). This is probably the 'most nearby' location. And here
+     * we check bot absolute and relative location (to 'current')
      * 2) search provider list
      * <p>
      * Returns null if resource not found.
-     * context isType current "location" in a bundle.
-     * Da muss aber der Pfad drin gesetzt sein. Da kann man auch direkt den Pfad uebergeben. TODO
+     * was SGModelLib.findDataFile(effectFileName, options) originally?
+     * In 'current' muss aber der Pfad drin gesetzt sein. Da kann man auch direkt den Pfad uebergeben. TODO
      * <p>
      * // FG hat im CurrentAircraftDirProvider einen Nebeneffekt, der absolute Pfade beachtet. Ob das Absicht ist?
      * Es ist nicht erkennbar, wo FG absolute Pfade abdeckt. Darum hier extra eingebaut. Das gibts in FG nicht.

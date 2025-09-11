@@ -5,10 +5,11 @@
 # and copies/converts the files to
 #   $TERRASYNCBUNDLEDIR(default is $HOSTDIRFG/bundles/TerraSync).
 #
+# If a destination file already exists, it will be skipped (See option '-f')
 # Per Option an alternatives dir can be set for bundling Custom Sceneries.
-#  - just copies (no rsync Probleme/Loeschungen)
+#  - just copies (no rsync problems/deletions)
 #  - es wird nicht mehr versucht, nur die in stg verwendeten Model zu bundeln, einfach alles
-#  - der Aufbau/die Struktur der Bundle bleibt aber erhalten.
+#  - the structure of a bundle is retained.
 #
 # The Terrain and Objects STGs result in the same bundle (directory-no.txt).
 #
@@ -54,6 +55,7 @@ processTerraSyncFile() {
 		fi
 		DESTDIR=$TERRASYNCBUNDLEDIR/$DIRNAME
 		BASENAME=`basename $BASENAME .$SUFFIX`
+		export ADDITIONAL_LOADER=de.yard.threed.toolsfg.LoaderBTGBuilder
 		export DIRNAME SUFFIX DESTDIR BASENAME
 		echo processing $filename":" $BASENAME $SUFFIX
 		case $SUFFIX in
@@ -77,14 +79,14 @@ processTerraSyncFile() {
 			"ac")
 				if [ ! -r $DESTDIR/$BASENAME.gltf -o $FORCE = "1" ]
 				then
-					sh $PROJECT_HOME/bin/convertModel.sh $filename $DESTDIR
+					sh $TCP22DIR/bin/convertSingleModelToGltf.sh $filename $DESTDIR
 					relax
 				fi
 				;;
 			"btg")
 				if [ ! -r $DESTDIR/$BASENAME.gltf -o $FORCE = "1" ]
 				then
-					sh $PROJECT_HOME/bin/convertModel.sh $filename $DESTDIR
+					sh $TCP22DIR/bin/convertSingleModelToGltf.sh $filename $DESTDIR
 					relax
 				fi
 				;;
@@ -95,8 +97,8 @@ processTerraSyncFile() {
 				  # keep filename but use /tmp
 					TMPFILE=/tmp/$BASENAME.btg
 					cat $filename | gunzip > $TMPFILE
-					sh $PROJECT_HOME/bin/convertModel.sh $TMPFILE $DESTDIR
-					checkrc $PROJECT_HOME/bin/convertModel.sh
+					sh $TCP22DIR/bin/convertSingleModelToGltf.sh $TMPFILE $DESTDIR
+					checkrc $TCP22DIR/bin/convertSingleModelToGltf.sh
 					rm -f $TMPFILE
 					relax
 				fi
@@ -117,8 +119,6 @@ validateTERRASYNCDIR() {
 }
 
 export TERRASYNCBUNDLEDIR=$HOSTDIRFG/bundles/TerraSync
-
-
 
 FORCE=0
 if [ "$1" = "-f" ]
@@ -141,6 +141,9 @@ then
 	fi
 	shift
 fi
+
+# convertSingleModelToGltf needs HOSTDIR for building a platform and loading other bundle (eg. sgmaterial)
+export HOSTDIR=$HOSTDIRFG
 
 mkdir -p $TERRASYNCBUNDLEDIR
 checkrc mkdir

@@ -1,25 +1,13 @@
 package de.yard.threed.flightgear;
 
-import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.loader.LoadedObject;
 import de.yard.threed.core.loader.LoaderAC;
 import de.yard.threed.core.loader.PortableModelDefinition;
 import de.yard.threed.core.loader.PortableModel;
 import de.yard.threed.core.loader.StringReader;
 import de.yard.threed.core.platform.Platform;
-import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
-import de.yard.threed.engine.testutil.EngineTestFactory;
-import de.yard.threed.flightgear.core.PropertyList;
-import de.yard.threed.flightgear.core.flightgear.main.AircraftResourceProvider;
-import de.yard.threed.flightgear.core.flightgear.main.FGProperties;
-import de.yard.threed.flightgear.core.osg.Node;
-import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
-import de.yard.threed.flightgear.core.simgear.misc.SGPath;
-import de.yard.threed.flightgear.core.simgear.props.PropsIO;
-import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialLib;
-import de.yard.threed.flightgear.core.simgear.structure.SGException;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -38,7 +26,7 @@ public class LoaderACTest {
     @Test
     public void testFuelOilAmps() {
         try {
-            BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "models/FuelOilAmps.ac");
+            BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "Models/FuelOilAmps.ac");
             LoaderAC ac = new LoaderAC(new StringReader(br.bundle.getResource(br).getContentAsString()), br);
             System.out.println(ac.loadedfile.dumpMaterial("\n"));
             assertNotNull(ac.loadedfile.object);
@@ -77,7 +65,7 @@ public class LoaderACTest {
     @Test
     public void testControlLight() {
         try {
-            BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "models/ControlLight.ac");
+            BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "Models/ControlLight.ac");
             LoaderAC ac = new LoaderAC(new StringReader(br.bundle.getResource(br).getContentAsString()), false);
 
             //LoaderAC ac = new LoaderAC(FileReader.getFileStream(new BundleResource("flusi/ControlLight.ac")), false);

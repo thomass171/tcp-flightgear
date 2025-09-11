@@ -19,8 +19,11 @@ public class SimpleBundleResourceProvider implements BundleResourceProvider {
         this.bundlename=bundlename;
     }
 
+    /**
+     * 8.9.25 No need for resolve relative?
+     */
     @Override
-    public BundleResource resolve(String resource/*, Bundle currrentbundle*/) {
+    public BundleResource resolve(String resource/*, BundleResource current/*, Bundle currrentbundle*/) {
         Bundle bundle = BundleRegistry.getBundle(bundlename);
         if (bundle == null){
             logger.error("Bundle not found: "+bundlename);

@@ -7,6 +7,9 @@
 # The bundle directory.txt isn't handled here.
 #
 
+error moved to tcp-22 convertSingleModelToGltf.sh
+exit 1
+
 OWNDIR=`dirname $0`
 source $OWNDIR/common.sh || exit 1
 

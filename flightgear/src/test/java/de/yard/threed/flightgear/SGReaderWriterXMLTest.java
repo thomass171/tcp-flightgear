@@ -161,12 +161,12 @@ public class SGReaderWriterXMLTest {
         // Needs a bundle with name "777" for resolving "Aircraft/777/Models/777-200.ac".
         TestBundle bundle777 = new TestBundle("777", new String[]{}, "");
         // different case of 'models'!
-        bundle777.addAdditionalResource("Models/777-200.xml", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("models/777-200.xml")), true));
-        bundle777.addAdditionalResource("Models/777-200.gltf", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("models/cube.gltf")), true));
-        bundle777.addAdditionalResource("Models/777-200.bin", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("models/cube.bin")), false));
+        bundle777.addAdditionalResource("Models/777-200.xml", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("Models/777-200.xml")), true));
+        bundle777.addAdditionalResource("Models/777-200.gltf", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("Models/cube.gltf")), true));
+        bundle777.addAdditionalResource("Models/777-200.bin", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("Models/cube.bin")), false));
         // Also mock an non XML submodel. Caused RTE once by trying recursive sync load instead of async.
-        bundle777.addAdditionalResource("Models/Airport/Vehicle/hoskosh-ti-1500.gltf", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("models/cube.gltf")), true));
-        bundle777.addAdditionalResource("Models/Airport/Vehicle/hoskosh-ti-1500.bin", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("models/cube.bin")), false));
+        bundle777.addAdditionalResource("Models/Airport/Vehicle/hoskosh-ti-1500.gltf", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("Models/cube.gltf")), true));
+        bundle777.addAdditionalResource("Models/Airport/Vehicle/hoskosh-ti-1500.bin", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("Models/cube.bin")), false));
         bundle777.complete();
         BundleRegistry.registerBundle(bundle777.name, bundle777);
 
@@ -215,7 +215,7 @@ public class SGReaderWriterXMLTest {
 
         List<SGAnimation> animationList = new ArrayList<SGAnimation>();
         Bundle bundleTestResources = BundleRegistry.getBundle("test-resources");
-        BundleResource br = new BundleResource(bundleTestResources, "models/777-200.xml");
+        BundleResource br = new BundleResource(bundleTestResources, "Models/777-200.xml");
         // Aircraft/777/Models/777-200.ac does not exist in bundle or cannot be resolved respectively
 
         BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(br, null, (bpath, destinationNode, alist) -> {

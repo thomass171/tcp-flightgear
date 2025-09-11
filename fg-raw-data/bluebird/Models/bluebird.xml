@@ -14470,4 +14470,24 @@
 			<pitch-deg>-19</pitch-deg>
 		</offsets>
 	</model>
+	<!-- 7.9.25 cockpit enhanced-->
+	<model>
+		<path>Interior/Panel/Instruments/digital-clock/digital-clock.xml</path>
+		<offsets>
+			<x-m>-8.290</x-m>
+			<y-m>0.2</y-m>
+			<z-m>1.200</z-m>
+			<pitch-deg>-19</pitch-deg>
+		</offsets>
+	</model>
+	<model>
+		<path>Interior/Panel/Instruments/mag-compass/mag-compass.xml</path>
+		<offsets>
+			<x-m>-8.290</x-m>
+			<y-m>0.2</y-m>
+			<z-m>1.200</z-m>
+			<pitch-deg>-19</pitch-deg>
+		</offsets>
+	</model>
+
 </PropertyList>

@@ -94,20 +94,16 @@ import java.util.Map;
  * <p>
  * Uses ECS (eg. TeleporterSystem) but no graphs.
  * <p>
- * Was ist mit Animationen?
+ * What about Animations?
  * <p>
- * Und bzgl. Animationen: Die kann man hier im Vehicle dann nutz/testbar machen.
+ * 18.10.19: x/y/z calibration has wrong orientation?
+ * Uses y=0 plane different from FlatTravelScene?
  * <p>
- * Vielleicht kann man dies zu einer HangarScene mit allen Vehicles ausbauen, auch mit Nutzung von ShadowModellen und Teleport.
- * 18.10.19: x/y/z Kalibrierung hat falsche Orientierung.
- * Ich leg für hier mal wie Railing y=0 Ebene fest, einfach, damit es anders ist als FlatTravelScene.
- * <p>
- * Tasten:
+ * Keys:
  * t teleport, cycle position
- * l cycle aircraft (war mal 'n')
+ * l cycle aircraft (was 'n' once)
  * m cycle menu (cdu and 'normal')
- * 7.3.21: Dass 'Lok' hier mit drin ist, ist ja doch ein boesses Coupling. Die gehört nach 'railing' und damit fertig. Obwohl, der kann hier Bundle laden
- * wie er möchte.
+ * 7.3.21: 'Lok' doesn't really belong here but to 'railing'. Otherwise it's just a vehicle model loaded from a bundle
  * <p>
  * 4.12.23: Migration from TrafficWorldConfig to TrafficConfig (without sceneconfig).
  * 30.1.24: f.k.a. CockpitScene
@@ -273,17 +269,13 @@ public class HangarScene extends Scene {
     }
 
     /**
-     * Licht in diesem Sinne gibt es mit dem model-combined shader nicht.
-     * Aber es werden ja vielleicht, zumindest zum Test, auch mal
-     * Standardshader verwendet. Und die brauchen dieses Licht.
+     *
      */
     private void addLight() {
-        // Licht aus Höhe 60. 2.5.19: Auf einmal ist alles so dunkel. Komisch. Obwohl irgendwie plausibel. Darum noch eins von hinten.
+        // Light from above
         Light light = new DirectionalLight(Color.WHITE, new Vector3(0, 60, 0));
         addLightToWorld(light);
         // 4.3.25 ambient light instead of second directional
-        //light = new DirectionalLight(Color.WHITE, new Vector3(1, 0, 0));
-        //addLightToWorld(light);
         addLightToWorld(new AmbientLight(new Color(0.3f, 0.3f, 0.3f, 1.0f)));
     }
 

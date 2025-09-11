@@ -1,6 +1,7 @@
 package de.yard.threed.flightgear.core.simgear.scene.model;
 
 import de.yard.threed.core.platform.*;
+import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.engine.Material;
 import de.yard.threed.engine.Mesh;
 import de.yard.threed.engine.SceneNode;
@@ -332,7 +333,7 @@ public class Model {
      * @return
      */
     /*ref_ptr<*/
-    public static /*Node*/ Map<String, AbstractMaterialFactory> instantiateEffects(/*osg::*/Node modelGroup, PropertyList effectProps, SGReaderWriterOptions options, String label) {
+    public static /*Node*/ Map<String, AbstractMaterialFactory> instantiateEffects(/*osg::*/Node modelGroup, PropertyList effectProps, SGReaderWriterOptions options, String label, BundleResource current) {
         SGPropertyNode/*_ptr*/ defaultEffectPropRoot = null;
         Map<String, AbstractMaterialFactory> factories = new HashMap<>();
         /*MakeEffectVisitor visitor(options);
@@ -389,8 +390,8 @@ public class Model {
                         Mesh mesh = n.getMesh();
                         if (mesh != null) {
                             Material mat = mesh.getMaterial();
-                            // configNode points to one effect definition in the model.xml. 'objname' in label is more helpful than index.
-                            applyEffectToObject(configNode, mat, options, label + ".effect." + objname);
+                            // configNode points to one effect definition in the model.xml (or any other model xml file). 'objname' in label is more helpful than index.
+                            applyEffectToObject(configNode, mat, options, label + ".effect." + objname, current);
                             //mat.setTransparency(true);
                             //effect.apply();
                             meshfound = true;
@@ -421,14 +422,14 @@ public class Model {
     /**
      * Try to build effect here like MakeEffectVisitor does.
      */
-    static private void applyEffectToObject(SGPropertyNode configNode, Material material, SGReaderWriterOptions options, String label) {
+    static private void applyEffectToObject(SGPropertyNode configNode, Material material, SGReaderWriterOptions options, String label, BundleResource current) {
         //
         SGPropertyNode ssRoot = new SGPropertyNode();
         Effect.makeParametersFromStateSet(ssRoot/*StateSet is from OSG, ss*/);
         SGPropertyNode effectRoot = new SGPropertyNode();
         // No idea if using configNode instead of _currentEffectParent is good here
         MakeEffect.mergePropertyTrees(effectRoot, ssRoot, configNode/* _currentEffectParent*/);
-        Effect effect = MakeEffect.makeEffect(effectRoot, true, options, label, false, new EffectMaterialWrapper(material));
+        Effect effect = MakeEffect.makeEffect(effectRoot, true, options, label, false, new EffectMaterialWrapper(material), current);
 
     }
 }

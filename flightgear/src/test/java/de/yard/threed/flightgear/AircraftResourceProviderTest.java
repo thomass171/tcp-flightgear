@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class AircraftResourceProviderTest {
     Platform platform = FgTestFactory.initPlatformForTest(true, false, false);
 
-    String resourceInXml = "Aircraft/777/models/777-200.ac";
+    String resourceInXml = "Aircraft/777/Models/777-200.ac";
 
     /**
      * Should resolve without ac listed.
@@ -38,8 +38,8 @@ public class AircraftResourceProviderTest {
 
         // now add bundle. gltf should resolve as 'ac'.
         TestBundle bundle777 = new TestBundle("777", new String[]{}, "");
-        bundle777.addAdditionalResource("models/777-200.gltf",bundleTestResources.getResource("models/cube.gltf"));
-        bundle777.addAdditionalResource("models/777-200.bin",bundleTestResources.getResource("models/cube.bin"));
+        bundle777.addAdditionalResource("Models/777-200.gltf",bundleTestResources.getResource("Models/cube.gltf"));
+        bundle777.addAdditionalResource("Models/777-200.bin",bundleTestResources.getResource("Models/cube.bin"));
         bundle777.complete();
         BundleRegistry.registerBundle(bundle777.name, bundle777);
 

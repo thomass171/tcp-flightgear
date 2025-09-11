@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+
+<!-- Just a fantasy model for testing several issues, eg.
+    effect resolving. Derived from 'Models/c172p.xml'.
+    Bluebird meanwhile is also a good option for testing effects.
+   -->
+
+<PropertyList>
+
+    <!--<path>c172p.ac</path>-->
+    <!-- from c172p -->
+    <model>
+        <path>Effects/interior/procedural_light_dome.xml</path>
+        <offsets>
+            <x-m> 0.48 </x-m>
+            <y-m> 0.00 </y-m>
+            <z-m> 0.405 </z-m>
+        </offsets>
+        <condition>
+            <greater-than>
+                <property>/sim/model/lightmap/dome/factor</property>
+                <value>0</value>
+            </greater-than>
+        </condition>
+    </model>
+    <model>
+        <name>strobe-light-left</name>
+        <path>
+            <!-- test will map 'c172p' to test-resources-->
+            Aircraft/c172p/Models/Effects/lights/procedural_light_left_strobe.xml
+        </path>
+        <offsets>
+            <x-m>0.15</x-m>
+            <y-m>-5.66</y-m>
+            <z-m>0.53365</z-m>
+        </offsets>
+    </model>
+
+    <effect>
+        <inherits-from>
+            Aircraft/c172p/Models/Effects/interior/lm-interior-panel
+        </inherits-from>
+        <object-name>panel_1_gauges</object-name>
+        <object-name>Pedestal</object-name>
+        <object-name>InstrumentCover</object-name>
+        <object-name>panel_1_1.inf</object-name>
+        <object-name>panel_1_1_right</object-name>
+        <object-name>gloveboxdoor</object-name>
+        <object-name>glovebox</object-name>
+        <object-name>gloveboxfull</object-name>
+    </effect>
+</PropertyList>

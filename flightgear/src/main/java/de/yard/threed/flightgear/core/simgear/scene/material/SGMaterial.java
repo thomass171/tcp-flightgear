@@ -771,8 +771,9 @@ public class SGMaterial extends BVHMaterial {
             SGPropertyNode.makeChild(effectParamProp, "scale").setVector3Value(new Vector3((float) xsize, (float) ysize, 0.0f));
             SGPropertyNode.makeChild(effectParamProp, "light-coverage").setDoubleValue(light_coverage);
 
-            // 28.10.24: Build an effect for the texture defined in the material
-            matState.setEffect(MakeEffect.makeEffect(effectProp, false, options, "SGMaterial...", forBtgConversion, null));
+            // 28.10.24: Build an effect for the texture defined in the material.
+            // 6.9.25 No current available? Not needed?
+            matState.setEffect(MakeEffect.makeEffect(effectProp, false, options, "SGMaterial...", forBtgConversion, null, null));
             if (matState.getEffect() != null && matState.getEffect().valid()) {
                 //TODO matState.effect.setUserData(user.get());
             }

@@ -5,6 +5,7 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.flightgear.EffectMaterialWrapper;
+import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.props.PropsIO;
@@ -23,6 +24,8 @@ import java.util.List;
  */
 public class MakeEffect {
 
+    // for debugging and testing
+    public static List<String> errorList = new ArrayList<>();
 
     //typedef vector<const SGPropertyNode*> RawPropVector;
     // Is the effectMap just a cache of effects? key apparently is an object node name.
@@ -118,9 +121,14 @@ public class MakeEffect {
      * Build or lookup effect (eg. inherited).
      * 17.10.24 not used at all currently. Now it is used.
      * Returns null if the effect couldn't be found/built.
+     * Needs advanced lookup for different possible location (absolute,relative,aircraft)
+     * An effect might also be from aircraft itself (eg. "Aircraft/c172p/Models/Effects/interior/lm-gps"),
+     * so needs bundle resolving instead of hard coded "fgdatabasic".
+     * And it might also be relative to current effect
+     * And needs to return the BundleResource because the path needs to be adjusted.
      */
-    public static Effect makeEffect(String name, boolean realizeTechniques, SGReaderWriterOptions options, String label,boolean forBtgConversion,
-                                    EffectMaterialWrapper wrapper) {
+    public static Effect makeEffect(String name, boolean realizeTechniques, SGReaderWriterOptions options, String label, boolean forBtgConversion,
+                                    EffectMaterialWrapper wrapper/*, BundleResource context*/, BundleResource current) {
        /* {
             OpenThreads::ScopedLock < OpenThreads::ReentrantMutex > lockEntity(effectMutex);
             EffectMap::iterator itr = effectMap.find(name);
@@ -138,12 +146,12 @@ public class MakeEffect {
 
         getLog().debug("makeEffect: effectFileName=" + effectFileName);
 
-        //28.6.17: Effects kommen aus root bundle
-        //17.10.24: No longer (or never). Now from "fgdatabasic"
-        /*String*/
-        BundleResource absFileName = new BundleResource(BundleRegistry.getBundle("fgdatabasic"), effectFileName);//SGModelLib.findDataFile(effectFileName, options);
-        if (/*StringUtils.empty(*/!absFileName.exists()) {
-            getLog().error(/*SG_LOG(SG_INPUT, SG_ALERT, */"can't find \"" + effectFileName + "\"");
+        //28.6.17: Effects come from "fgdatabasic".
+        //01.09.25: But might also be from aircraft itself, so needs bundle resolving instead of hard coded "fgdatabasic".
+        // was SGModelLib.findDataFile(effectFileName, options) originally
+        BundleResource absFileName = FgBundleHelper.findPath(effectFileName, current);
+        if (/*StringUtils.empty(*/absFileName == null || !absFileName.exists()) {
+            getLog().error("can't find effect file '" + effectFileName + "'");
             return null;
         }
         SGPropertyNode/*_ptr*/ effectProps = new SGPropertyNode();
@@ -154,7 +162,7 @@ public class MakeEffect {
             return null;
         }
         /*ref_ptr<*/
-        Effect result = makeEffect(effectProps/*.ptr()*/, realizeTechniques, options, label, forBtgConversion, wrapper);
+        Effect result = makeEffect(effectProps/*.ptr()*/, realizeTechniques, options, label, forBtgConversion, wrapper, current);
         if (result != null && result.valid()) {
             /*OpenThreads::ScopedLock < OpenThreads::ReentrantMutex > lockEntity(effectMutex);
             pair<EffectMap::iterator, bool > irslt
@@ -185,16 +193,15 @@ public class MakeEffect {
      * 15.11.24: Don't remember why we once didn't want to pass material. We need a pendant to OSG::StateSet, a destination where the effect can
      * apply to. For now thats the wrapper.
      *
-     *
-     * @param prop Either points to the root of the effect definition (from a ".eff" file) or the
-     *             effect definition of model.xml??? But should have properties that
-     *             might be resolved via "use", like "<use>blend/active</use>".
+     * @param prop              Either points to the root of the effect definition (from a ".eff" file) or the
+     *                          effect definition of model.xml??? But should have properties that
+     *                          might be resolved via "use", like "<use>blend/active</use>".
      * @param realizeTechniques
      * @param options
      * @return
      */
-    public static Effect makeEffect(SGPropertyNode prop, boolean realizeTechniques, SGReaderWriterOptions options, String label/*, SGMaterial mat*/,boolean forBtgConversion,
-                                    EffectMaterialWrapper wrapper) {
+    public static Effect makeEffect(SGPropertyNode prop, boolean realizeTechniques, SGReaderWriterOptions options, String label/*, SGMaterial mat*/, boolean forBtgConversion,
+                                    EffectMaterialWrapper wrapper, BundleResource current) {
         // Give default names to techniques and passes
         List<SGPropertyNode> techniques = prop.getChildren("technique");
         for (int i = 0; i < (int) techniques.size(); ++i) {
@@ -227,9 +234,9 @@ public class MakeEffect {
         Effect parent = null;
         //siehe Header
         if (inheritProp != null/*28.10.24 && false*/) {
-            getLog().debug("Building/Lookup inherited effect " + inheritProp.getStringValue());
+            getLog().debug("Building/Lookup inherited effect " + inheritProp.getStringValue() + " from path "+prop.getPath());
             //also commented in FG prop.removeChild("inherits-from"); Maybe was intended to avoid a "inherits-from" property in the merged root tree of the effect.
-            parent = makeEffect(inheritProp.getStringValue(), false, options, label, forBtgConversion, wrapper);
+            parent = makeEffect(inheritProp.getStringValue(), false, options, label, forBtgConversion, wrapper, current);
             if (parent != null) {
                 // parent is the inherited effect now, eg "model-transparent"
                 /*TODO? Effect::Key key;
@@ -274,7 +281,8 @@ public class MakeEffect {
                     */
                 }
             } else {
-                getLog().error(/*SG_LOG(SG_INPUT, SG_ALERT,*/ "can't find base effect " + inheritProp.getStringValue());
+                getLog().error("can't find base effect " + inheritProp.getStringValue());
+                errorList.add("can't find base effect '" + inheritProp.getStringValue() + "'");
                 return null;
             }
         } else {

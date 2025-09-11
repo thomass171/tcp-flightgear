@@ -7,15 +7,11 @@ import de.yard.threed.core.platform.NativeJsonValue;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleData;
-import de.yard.threed.core.resource.ResourcePath;
-import de.yard.threed.core.resource.URL;
 import de.yard.threed.core.testutil.InMemoryBundle;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.Material;
 import de.yard.threed.engine.Scene;
-import de.yard.threed.engine.testutil.EngineTestFactory;
 import de.yard.threed.flightgear.core.EffectFactory;
-import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.SGLoaderOptions;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.scene.material.Effect;
@@ -36,7 +32,7 @@ import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.javanative.FileReader;
 import de.yard.threed.tools.GltfBuilderResult;
 import de.yard.threed.tools.GltfProcessor;
-import org.junit.jupiter.api.Assertions;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -50,13 +46,16 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Also for SGAnimation. Und damit allgemein auch fuer SGReaderWriterXML.
+ * Also for SGAnimation and thus also for SGReaderWriterXML.
  * Siehe auch ModelBuildTest.
  * 19.8.24: parts of "windturbine" tests moved to SGReaderWriterXMLTest because it seems a better location because its no real "effect" in terms of FG. Maybe
  * all animation tests should move? Hmm, MaterialAnimations might be effects again. And only here materialLib is available!
+ * Also for MakeEffect.
+ * Effect tests are also in VehicleEffectTest
  * <p>
  * Created by thomass on 27.10.15.
  */
+@Slf4j
 public class EffectTest {
     Platform platform = FgTestFactory.initPlatformForTest(true, true, true);
     Log logger = Platform.getInstance().getLog(EffectTest.class);
@@ -92,15 +91,15 @@ public class EffectTest {
         GltfBuilderResult lf = new GltfProcessor().convertToGltf(TestUtils.locatedTestFile(acfile), Optional.empty());
 
         NativeJsonValue gltf = platform.parseJson(lf.gltfstring);
-        Assertions.assertNotNull(gltf, "parsedgltf");
-        InMemoryBundle bundle = new InMemoryBundle("models/CDU-777-boeing", lf.gltfstring, lf.bin);
+        assertNotNull(gltf, "parsedgltf");
+        InMemoryBundle bundle = new InMemoryBundle("Models/CDU-777-boeing", lf.gltfstring, lf.bin);
 
-        bundle.addAdditionalResource("models/CDU-777-boeing.xml", new BundleData(new SimpleByteBuffer(FileReader.readFully(new FileInputStream(new File(TestUtils.locatedTestFile(xmlfile))))), true));
+        bundle.addAdditionalResource("Models/CDU-777-boeing.xml", new BundleData(new SimpleByteBuffer(FileReader.readFully(new FileInputStream(new File(TestUtils.locatedTestFile(xmlfile))))), true));
 
         // "*.ac" is not really content, but 'gltf' is OK
-        assertTrue(bundle.exists(new BundleResource("models/CDU-777-boeing.ac")));
+        assertTrue(bundle.exists(new BundleResource("Models/CDU-777-boeing.ac")));
 
-        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundle, "models/CDU-777-boeing.xml"), opt, (bpath, destinationNode, alist) -> {
+        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(new BundleResource(bundle, "Models/CDU-777-boeing.xml"), opt, (bpath, destinationNode, alist) -> {
             if (alist != null) {
                 animationList.addAll(alist);//  xmlloaddelegate.modelComplete( animationList);
             }
@@ -173,7 +172,7 @@ public class EffectTest {
         Material material = Material.buildBasicMaterial(Color.BLUE);
         EffectMaterialWrapper wrapper = new EffectMaterialWrapper(material);
         int oldCounter=EffectMaterialWrapper.counter;
-        Effect effect = MakeEffect.makeEffect(name, true, new SGReaderWriterOptions(), "test", false,wrapper );
+        Effect effect = MakeEffect.makeEffect(name, true, new SGReaderWriterOptions(), "test", false,wrapper ,null);
         assertNotNull(effect);
         assertEquals(SceneryTest.INITIAL_EFFECTS + 1, MakeEffect.effectMap.size());
         assertEquals(1, EffectMaterialWrapper.counter-oldCounter);

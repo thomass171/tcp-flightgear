@@ -41,7 +41,7 @@
                 <version>2.22.2</version>
                 <configuration>
                     <!--23.1.18: -XX:-UseGCOverheadLimit for avoiding "gc overhead limit exceeded", 2024->3000-->
-                    <argLine>-Xms512m -Xmx3000m -XX:-UseGCOverheadLimit</argLine>
+                    <argLine>-Xms512m -Xmx4000m -XX:-UseGCOverheadLimit</argLine>
                 </configuration>
             </plugin>
             <plugin>

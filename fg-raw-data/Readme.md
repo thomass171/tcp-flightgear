@@ -13,6 +13,22 @@ By Stewart Andreason (http://seahorseCorral.org/flightgear_aircraft.html).
 
 Files are from appx. 2019. All files are unchanged.
 
+But some effect/model files were added for testing and more extended
+cockpit. In 2024 Garmin was added to the cockpit.
+
+Originally 'bluebird' has no real effect
+file (with suffix 'eff'). So all 'eff' files were added for testing. These are
+(or should be) added to the cockpit of 'bluebird'.
+
+Added from c172p (the 2025 converted):
+  * .../mag-compass (uses Aircraft references)
+  * .../digital-clock
+  * interior/procedural-light-dome.eff
+  * Effects/interior/lm-mag.eff
+  * Effects/interior/lm-magr.eff
+  * Effects/interior/lm_mag.png
+  * Effects/interior/interior-glass-reflection-panel-front.eff
+
 ## fgdatabasic
 
 A subset of the full 'fgdatabasic' bundle. Using the same name is confusing,

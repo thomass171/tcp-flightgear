@@ -8,11 +8,12 @@ import de.yard.threed.flightgear.core.simgear.misc.SGPath;
 import de.yard.threed.core.resource.Bundle;
 
 /**
- * 30.9.19: Der ist doch obsolet? Offenbar.
+ * 30.9.19: Apperently obselete. Only retained as empty reminder class
  *
  * Created by thomass on 30.05.16.
  */
-public class CurrentAircraftDirProvider implements ResourceProvider, BundleResourceProvider {
+public class CurrentAircraftDirProvider{}
+        /*8.9.25 implements ResourceProvider, BundleResourceProvider {
     private CurrentAircraftDirProvider() {
     //TODO super  r(simgear::ResourceManager::PRIORITY_HIGH)
     
@@ -33,9 +34,9 @@ public class CurrentAircraftDirProvider implements ResourceProvider, BundleResou
      * Und der Aircraftprovider sucht da auch,aber nur mit Sonderpfaden.
      * 
      * @return
-     */
+     * /
     @Override
-    public BundleResource resolve(String resource/*, Bundle currrentbundle*/) {
+    public BundleResource resolve(String resource/*, Bundle currrentbundle* /) {
         String  aircraftDir = FGProperties.fgGetString("/sim/aircraft-dir");
         Bundle bundle = BundleRegistry.getBundle(aircraftDir);
         if (bundle != null && bundle.exists(resource)){
@@ -48,4 +49,4 @@ public class CurrentAircraftDirProvider implements ResourceProvider, BundleResou
     public boolean isAircraftSpecific() {
         return false;
     }
-}
+}*/

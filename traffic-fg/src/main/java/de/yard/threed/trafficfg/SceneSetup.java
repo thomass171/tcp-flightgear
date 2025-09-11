@@ -98,4 +98,14 @@ public class SceneSetup {
         properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
     }
 
+    /**
+     *
+     */
+    public static void setupTravelSceneForC172pFreeFlightFromEDDK14L(HashMap<String, String> properties) {
+
+        properties.put("initialLocation", "geo:50.85850600, 007.13874200");
+        properties.put("initialHeading", "320");
+        properties.put("initialVehicle", "c172p");
+        properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
+    }
 }

@@ -41,7 +41,7 @@ import java.util.List;
  * An extension of the generic model viewer for viewing FG XML model.
  * Like super class not using ECS.
  * <p>
- * 22.12.18: Not using trafficConfig. But "AircraftDir" is needed for FG aitcraft. Doesn't know "optionals" and
+ * 22.12.18: Not using trafficConfig. But "AircraftDir" is needed for FG aircraft. Doesn't know "optionals" and
  * "zoffset" and so on. But that is acceptable.
  * FG Animations are supported manually (outside ECS).
  * Keys are
@@ -66,51 +66,60 @@ public class FgModelPreviewScene extends ModelPreviewScene {
     public static SmartModelLoader terrasyncSmartModelLoader;
 
     /**
-     * 9.1.18: Starts with bundle name (before of first ':') or a 'A' als
-     * Kenner fuer ein FGAircraft (mit Zusatzdefinitionen), H is TerraSync-model,
-     * T is TerraSync
+     * See SmartModelLoader for meaning of prefixes (typically it is a bundle name). 'fgdatabasic' is the limited one from project(?).
+     * Prefixes
+     * 'H': TerraSync-model
+     * 'A': Aircraft model (full and single components, requiring AircraftResourceProvider)
+     * 'Tindex': TerraSync model from tile
+     * are registered additionally here.
+     * <p>
      * 9.1.22: Separator now is ':' instead of '-'
      */
     @Override
     public String[] getModelList() {
+        String bundlePool = "https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool";
         return new String[]{
                 //Antenna on top rotates.
                 "T3072824:Objects/e000n50/e007n50/egkk_tower.xml",
                 //windturbine should have two rotations (currently only one)
                 "H:Models/Power/windturbine.xml",
                 // optionals are not considered in 'A'!
-                "A:Models/777-200.xml;bundleUrl=https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool/777",
+                "A:Models/777-200.xml;bundleUrl="+bundlePool+"/777",
+                // 'garmin196' is contained in base project
                 "fgdatabasic:Aircraft/Instruments-3d/garmin196/garmin196.xml",
                 "",
                 //5
-                "fgdatabasicmodel:Models/Airport/Pushback/Douglas.xml",
-                //hat ein rotierendes und damit blinkendes Rundumlicht
-                "fgdatabasicmodel-Models/Airport/Pushback/Goldhofert.xml",
-                // 7:Die AI Aircrafts rotieren "richtig".
-                "fgdatabasicmodel-AI/Aircraft/737/737-AirBerlin.xml",
-                "fgdatabasicmodel-AI/Aircraft/747/744-KLM.xml",
+                "fgdatabasicmodel:Models/Airport/Pushback/Douglas.xml;bundleUrl="+bundlePool+"/fgdatabasicmodel",
+                //has a rotating and blinking head light
+                "fgdatabasicmodel:Models/Airport/Pushback/Goldhofert.xml;bundleUrl="+bundlePool+"/fgdatabasicmodel",
+                // 7:AI Aircrafts have 'correct' rotation
+                "fgdatabasicmodel:AI/Aircraft/737/737-AirBerlin.xml;bundleUrl="+bundlePool+"/fgdatabasicmodel",
+                "fgdatabasicmodel:AI/Aircraft/747/744-KLM.xml;bundleUrl="+bundlePool+"/fgdatabasicmodel",
                 "fgdatabasicmodel-Followmeausfgaddonkopiert/followme.xml",
                 "fgdatabasicmodel-Catering6620KopiertAusTerrasync/catruckmed-lsg1.xml",
                 "fgdatabasicmodel-Models/Airport/Pushback/Forklift.xml",
                 "fgdatabasicmodel-Models/Airport/Pushback/Military.xml",
                 "fgdatabasicmodel-FuelTruck/Fuel_Truck_Short_VolvoFM.xml",
                 //
+                // the digital-clock model isn't origin based but somewhere at (-0.36431,0.07009,0.40234) in ac-space. Fix this via offset.
+                "bluebird:Models/Interior/Panel/Instruments/digital-clock/digital-clock.xml;offset=0.38,0.39,-0.08;scale=1.0",
+                //15: the mag-compass model isn't origin based but somewhere at (-0.4,0.25034,0.01142) in ac-space. Fix this via offset.
+                "bluebird:Models/Interior/Panel/Instruments/mag-compass/mag-compass.xml;offset=0.37,0.015,-0.23;scale=1.0",
                 "",
-                //15
                 "",
-                "",
-                "",
-                // 18: Fehlen c172 Teile aus FGROOT? Zumindest sieht die C172 so nicht sehr huebsch aus.
-                "A-Models/c172p.xml",
-                "fgdatabasic-Aircraft/Instruments-3d/garmin196/garmin196.xml",
-                "777-Models/OHpanel.xml",
+                // 18: Are c172 parts missing from FGROOT? There are gaps like missing wing and wheels
+                // 1.9.25 And it doesn't look nice (any more?). 'glass' is not correct. Was anything lost
+                // with new shader or JME? But in ThreeJS it is the same way strange. But lets focus on 2025 model.
+                "A:Models/c172p.xml;bundleUrl="+bundlePool+"/c172p.2018",
+                "A:Models/c172p.xml;bundleUrl="+bundlePool+"/c172p.2025",
+                "??777-Models/OHpanel.xml",
                 //21:nochmal aus data (als Testreferenz)
-                "data-flusi/Overhead-777/OHpanel.xml",
-                "EDDK-eddk-latest.xml",
+                "??data-flusi/Overhead-777/OHpanel.xml",
+                "??EDDK-eddk-latest.xml",
                 //23: gltf geht wohl, hat aber keine ACPolicy. Darum xml. 29.12.18: EDDK-Terminal1 findet er nicht mehr. Das liegt nicht mehr in fgbasicmodel, sondern in ???
-                "EDDK-final/EDDK-Terminal1.xml",
-                "EDDK-EDDK-StarB.gltf",
-                "railing-loc.xml",
+                "??EDDK-final/EDDK-Terminal1.xml",
+                "??EDDK-EDDK-StarB.gltf",
+                "??railing-loc.xml",
                 // 26
                 "bluebird:Models/bluebird.xml",
                 "traffic-fg:flight/navigator.xml",
@@ -134,6 +143,9 @@ public class FgModelPreviewScene extends ModelPreviewScene {
     @Override
     public void customInit() {
 
+        // init FG before using 'arp' in extendSmartModelLoaderForFG()
+        arp = initFG();
+
         extendSmartModelLoaderForFG(arp, new GeneralParameterHandler<List<SGAnimation>>() {
             @Override
             public void handle(List<SGAnimation> animationsOfLoadedModel) {
@@ -143,8 +155,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
             }
         });
 
-        major = 29;
-        arp = initFG();
+        major = 14;
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
     }
@@ -159,15 +170,12 @@ public class FgModelPreviewScene extends ModelPreviewScene {
             }
         });
 
-        // 9.10.24 not sure if 'A' is still needed. Yes, is needed for setting aircraftresourceprovider
+        // 9.10.24 'A' is still needed for setting aircraftresourceprovider with aircraft bundle name
         SmartModelLoader.register("A", new SmartModelLoader() {
             @Override
             public void loadModelBySource(String prefix, String modelname, String bundleUrl, ModelBuildDelegate delegate) {
-                // int index = StringUtils.indexOf(modelname, "-");
-                //modelname = StringUtils.substring(modelname, index + 1);
-                //29.12.18: FlightGearAircraft ist doch schon durch XML abgeloest
-                //FlightGearAircraft aircraft = FlightGearAircraft.get(StringUtils.substring(modelname, index + 1));
-                //aircraftdir, bundlename und modelname sind gluecklicherweise herleitbar.
+                String bundleNameOfCurrentAircraft = StringUtils.substringAfterLast(bundleUrl,"/");
+                // 'basename' is the name used in the XML files for referencing itself, eg."Aircraft/c172p/..."
                 String basename = "xx";
                 if (StringUtils.contains(modelname, "777")) {
                     basename = "777";
@@ -175,10 +183,11 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                 if (StringUtils.contains(modelname, "c172p")) {
                     basename = "c172p";
                 }
-                String bundlename = basename;//aircraft.bundlename;
-                //modelname = aircraft.modelname;
-                arp.setAircraftDir(basename/*aircraft.aircraftdir*/);
-                SmartModelLoader.defaultSmartModelLoader.loadModelBySource(bundlename, modelname, bundleUrl, delegate);
+                if (basename == null) {
+                    throw new RuntimeException("unknown aircraft basename");
+                }
+                arp.setAircraftDirAndBundle(basename, bundleNameOfCurrentAircraft);
+                SmartModelLoader.defaultSmartModelLoader.loadModelBySource(bundleNameOfCurrentAircraft, modelname, bundleUrl, delegate);
             }
         });
 
@@ -210,7 +219,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                     result = new BuildResult(destination.nativescenenode);
                     AbstractSceneRunner.instance.loadBundle(bundleUrl != null ? bundleUrl : bundlename, (Bundle b_isnull) -> {
                         Bundle b = BundleRegistry.getBundle(bundlename);
-                         addPossibleXmlModelFromBundle(b, modelname, bundleUrl, animationHandler, delegate);
+                        addPossibleXmlModelFromBundle(b, modelname, bundleUrl, animationHandler, delegate);
                         /*if (res.getNode() != null) {
                             destination.attach(new SceneNode(res.getNode()));
                         } else {
@@ -228,14 +237,14 @@ public class FgModelPreviewScene extends ModelPreviewScene {
     }
 
     /**
-     * Die FG Komponenten initen bzw. einhaengen, die fuer Model laden gebraucht werden. Mehr aber nicht.
-     * Nachbildung des FlightGear.init(7);
+     * Init FG components that are needed for model load, but nothing more.
+     * Similar to FlightGear.init(7);
      * Die Reihenfolge orientiert sich an FG fgIdleFunction()
      * System swerden hier nocht nicht angelegt.
-     * 21.10.17: jetzt ohne initFG.
+     * 21.10.17: Now without initFG.
      */
     private static AircraftResourceProvider initFG() {
-        // In fgdatabasic sind manche Aircraftteile, z.B. Instruments3D für CDU
+        // Some aircraft components like Instruments3D/CDU reside in 'fgdatabasic'
         FgBundleHelper.addProvider(new SimpleBundleResourceProvider("fgdatabasic"));
         AircraftResourceProvider arp = new AircraftResourceProvider();
         FgBundleHelper.addProvider(arp);

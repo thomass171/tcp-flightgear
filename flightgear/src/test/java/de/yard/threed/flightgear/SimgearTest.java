@@ -17,11 +17,9 @@ import de.yard.threed.engine.testutil.EngineTestFactory;
 
 
 import de.yard.threed.core.resource.Bundle;
-import de.yard.threed.core.resource.BundleData;
 import de.yard.threed.core.StringUtils;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
@@ -32,8 +30,8 @@ import org.junit.jupiter.api.Test;
 public class SimgearTest {
     static Platform platform = FgTestFactory.initPlatformForTest(true,true,true);
 
-    String modelfile = "models/efis-ctl1.xml";
-    String testfile777200 = "models/777-200.xml";
+    String modelfile = "Models/efis-ctl1.xml";
+    String testfile777200 = "Models/777-200.xml";
 
     @Test
     public void testProperties() {
@@ -118,9 +116,9 @@ public class SimgearTest {
         //FGProperties.fgSetString("/sim/aircraft-dir", "My-777");
         FGProperties.fgSetString("/sim/aircraft-dir", bundleTestResources.name);
         //String path = "Aircraft/My-777/Models/777-200.ac";
-        String path = "Aircraft/"+bundleTestResources.name+"/models/777-200.ac.gz";
+        String path = "Aircraft/"+bundleTestResources.name+ "/Models/777-200.ac.gz";
         BundleResource result  = new AircraftResourceProvider().resolve(path);
-        Assertions.assertEquals( "models", result.getPath().getPath());
+        Assertions.assertEquals("Models", result.getPath().getPath());
         Assertions.assertEquals( "777-200.ac.gz", result.getName());
         Assertions.assertEquals( bundleTestResources.name, result.bundle.name);
     }

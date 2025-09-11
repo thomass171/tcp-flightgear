@@ -11,15 +11,24 @@ import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.StringUtils;
 
 /**
+ * Find an FG aircraft component by pseudo path prefix 'Aircraft'. We need to know the bundle from where to
+ * get the component during aircraft load when we only have reference 'Aircraft'.
  * See README.md for more details.
- *
+ * <p>
  * Created by thomass on 30.05.16.
- * 22.10.17: Kann jetzt auch ohne Property "/sim/aircraft-dir" arbeiten.
+ * 22.10.17: No longer requires property "/sim/aircraft-dir".
  * 02.10.19: Das ist doch Bundle bezogen. TODO Darum die Constructor mal deprecated oder aendern.
  */
 public class AircraftResourceProvider implements /*30.9.19ResourceProvider,*/ BundleResourceProvider {
     private Log logger = Platform.getInstance().getLog(AircraftResourceProvider.class);
+    // The aircraft name used by the aircraft for identifying itself in references.
+    // For example 'c172p' uses 'include="Aircraft/c172p/Models/Human/pose-pilot.xml"' for including a file that
+    // resides in subdirectory 'Models/Human' in bundle 'c172p'
+    // So it is also the bundle name from where the aircraft is currently loaded.
+    // For "Aircraft/Generic/Human/Models/chute.xml" is currently fails however.
     private String aircraftdir = null;
+    // Maybe the 'basename' is different from the bundle name, eg. a 'c172p' loaded from bundle 'c172p.2025'.
+    private String customBundleName;
 
     public AircraftResourceProvider() {
         //TODO super     simgear::ResourceProvider(simgear::ResourceManager::PRIORITY_HIGH)
@@ -76,10 +85,13 @@ public class AircraftResourceProvider implements /*30.9.19ResourceProvider,*/ Bu
 
     /**
      * Resolving for bundle.
+     * <p>
+     * 8.9.25: No need for a 'current' for resolving relative references
+     * like in findPath() because 'Aircraft' references are never relative.
      *
      * @return
      */
-    public BundleResource resolve(String resource/*,Bundle currentbundle*/) {
+    public BundleResource resolve(String resource) {
 
         StringList pieces = StringList.sgPathBranchSplit(resource);
         if ((pieces.size() < 3) || (!pieces.front().equals("Aircraft"))) {
@@ -88,19 +100,18 @@ public class AircraftResourceProvider implements /*30.9.19ResourceProvider,*/ Bu
         }
 
         // test against the aircraft-dir property
-        // doppelt zu CurrentAircraftDirProvider, aber evlt. wegen Prio? Nicht ganz, hier wird ja mit Sonderpfad gesucht.
         String aircraftDir = aircraftdir;
         if (aircraftDir == null) {
             aircraftDir = FGProperties.fgGetString("/sim/aircraft-dir");
         }
         StringList aircraftDirPieces = StringList.sgPathBranchSplit(aircraftDir);
         if (!aircraftDirPieces.empty() && (aircraftDirPieces.back().equals(pieces.get(1)))) {
-            // current aircraft-dir matches resource aircraft
-            Bundle bundle = BundleRegistry.getBundle(aircraftDir);
+            // current aircraft-dir matches resource aircraft. Typically the bundle name equals the aircarft base name.
+            Bundle bundle = BundleRegistry.getBundle(customBundleName != null ? customBundleName : aircraftDir);
 
-            if (bundle==null){
-                // this isType an error. bundle isType expected to exist
-                logger.error("aircraftDir bundle "+aircraftDir+" does not exist");
+            if (bundle == null) {
+                // this is an error. bundle is expected to exist
+                logger.error("aircraftDir bundle " + aircraftDir + " does not exist");
                 return null;
             }
             SGPath r = new SGPath(pieces.get(2)/*aircraftDir*/);
@@ -110,7 +121,7 @@ public class AircraftResourceProvider implements /*30.9.19ResourceProvider,*/ Bu
 
             // 'r' is now the relative path inside the aircraft bundle (or other bundle?)
             if (bundle.exists(new BundleResource(r.str()))) {
-                logger.debug("after stripping 2 pieces found aircraft path "+r.str());
+                logger.debug("after stripping 2 pieces found aircraft path " + r.str());
                 return new BundleResource(bundle/*bundle.name*/, r.str());
             }
             //logger.debug(r.str()+" not exists in bundle "+bundle.name);
@@ -143,6 +154,14 @@ public class AircraftResourceProvider implements /*30.9.19ResourceProvider,*/ Bu
 
     public void setAircraftDir(String aircraftdir) {
         this.aircraftdir = aircraftdir;
+    }
+
+    /**
+     * Maybe the 'basename' is different from the bundle name, eg. a 'c172p' loaded from bundle 'c172p.2025'.
+     */
+    public void setAircraftDirAndBundle(String aircraftdir, String customBundleName) {
+        this.aircraftdir = aircraftdir;
+        this.customBundleName = customBundleName;
     }
 }
 

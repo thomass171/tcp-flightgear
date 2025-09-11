@@ -13,10 +13,7 @@ import de.yard.threed.trafficadvanced.apps.AdvancedSceneryScene;
 import de.yard.threed.trafficadvanced.apps.FlatAirportScene;
 import de.yard.threed.trafficadvanced.apps.HangarScene;
 import de.yard.threed.trafficadvanced.apps.TravelScene;
-import de.yard.threed.trafficfg.apps.FgGalleryScene;
-import de.yard.threed.trafficfg.apps.RailingScene;
-import de.yard.threed.trafficfg.apps.SceneryScene;
-import de.yard.threed.trafficfg.apps.TravelSceneBluebird;
+import de.yard.threed.trafficfg.apps.*;
 
 public class WebglExtMain extends de.yard.threed.platform.webgl.Main {
 
@@ -40,6 +37,8 @@ public class WebglExtMain extends de.yard.threed.platform.webgl.Main {
             return new AdvancedSceneryScene();
         if (name.equals("FgGalleryScene"))
             return new FgGalleryScene();
+        if (name.equals("FgModelPreviewScene"))
+            return new FgModelPreviewScene();
         logger.error("Scene " + name + " not found");
         return null;
     }
