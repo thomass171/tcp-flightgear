@@ -58,7 +58,7 @@ import java.util.List;
  * Not only for XML but also GLTF.
  */
 public class FgModelPreviewScene extends ModelPreviewScene {
-    public Log logger = Platform.getInstance().getLog(FgModelPreviewScene.class);
+    public static Log logger = Platform.getInstance().getLog(FgModelPreviewScene.class);
     // Animations of current model incl. all submodel.
     List<SGAnimation> animationList;
     private AircraftResourceProvider arp;
@@ -84,17 +84,17 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                 //windturbine should have two rotations (currently only one)
                 "H:Models/Power/windturbine.xml",
                 // optionals are not considered in 'A'!
-                "A:Models/777-200.xml;bundleUrl="+bundlePool+"/777",
+                "A:Models/777-200.xml;bundleUrl=" + bundlePool + "/777",
                 // 'garmin196' is contained in base project
                 "fgdatabasic:Aircraft/Instruments-3d/garmin196/garmin196.xml",
                 "",
                 //5
-                "fgdatabasicmodel:Models/Airport/Pushback/Douglas.xml;bundleUrl="+bundlePool+"/fgdatabasicmodel",
+                "fgdatabasicmodel:Models/Airport/Pushback/Douglas.xml;bundleUrl=" + bundlePool + "/fgdatabasicmodel",
                 //has a rotating and blinking head light
-                "fgdatabasicmodel:Models/Airport/Pushback/Goldhofert.xml;bundleUrl="+bundlePool+"/fgdatabasicmodel",
+                "fgdatabasicmodel:Models/Airport/Pushback/Goldhofert.xml;bundleUrl=" + bundlePool + "/fgdatabasicmodel",
                 // 7:AI Aircrafts have 'correct' rotation
-                "fgdatabasicmodel:AI/Aircraft/737/737-AirBerlin.xml;bundleUrl="+bundlePool+"/fgdatabasicmodel",
-                "fgdatabasicmodel:AI/Aircraft/747/744-KLM.xml;bundleUrl="+bundlePool+"/fgdatabasicmodel",
+                "fgdatabasicmodel:AI/Aircraft/737/737-AirBerlin.xml;bundleUrl=" + bundlePool + "/fgdatabasicmodel",
+                "fgdatabasicmodel:AI/Aircraft/747/744-KLM.xml;bundleUrl=" + bundlePool + "/fgdatabasicmodel",
                 "fgdatabasicmodel-Followmeausfgaddonkopiert/followme.xml",
                 "fgdatabasicmodel-Catering6620KopiertAusTerrasync/catruckmed-lsg1.xml",
                 "fgdatabasicmodel-Models/Airport/Pushback/Forklift.xml",
@@ -102,16 +102,17 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                 "fgdatabasicmodel-FuelTruck/Fuel_Truck_Short_VolvoFM.xml",
                 //
                 // the digital-clock model isn't origin based but somewhere at (-0.36431,0.07009,0.40234) in ac-space. Fix this via offset.
-                "bluebird:Models/Interior/Panel/Instruments/digital-clock/digital-clock.xml;offset=0.38,0.39,-0.08;scale=1.0",
+                // And contains 'Aircraft' references
+                "A:Models/Interior/Panel/Instruments/digital-clock/digital-clock.xml;offset=0.38,0.39,-0.08;scale=656.0;bundleUrl=bluebird",
                 //15: the mag-compass model isn't origin based but somewhere at (-0.4,0.25034,0.01142) in ac-space. Fix this via offset.
-                "bluebird:Models/Interior/Panel/Instruments/mag-compass/mag-compass.xml;offset=0.37,0.015,-0.23;scale=1.0",
+                "A:Models/Interior/Panel/Instruments/mag-compass/mag-compass.xml;offset=0.37,0.015,-0.23;scale=656.0;bundleUrl=bluebird",
                 "",
                 "",
                 // 18: Are c172 parts missing from FGROOT? There are gaps like missing wing and wheels
                 // 1.9.25 And it doesn't look nice (any more?). 'glass' is not correct. Was anything lost
                 // with new shader or JME? But in ThreeJS it is the same way strange. But lets focus on 2025 model.
-                "A:Models/c172p.xml;bundleUrl="+bundlePool+"/c172p.2018",
-                "A:Models/c172p.xml;bundleUrl="+bundlePool+"/c172p.2025",
+                "A:Models/c172p.xml;bundleUrl=" + bundlePool + "/c172p.2018",
+                "A:Models/c172p.xml;bundleUrl=" + bundlePool + "/c172p.2025",
                 "??777-Models/OHpanel.xml",
                 //21:nochmal aus data (als Testreferenz)
                 "??data-flusi/Overhead-777/OHpanel.xml",
@@ -174,7 +175,10 @@ public class FgModelPreviewScene extends ModelPreviewScene {
         SmartModelLoader.register("A", new SmartModelLoader() {
             @Override
             public void loadModelBySource(String prefix, String modelname, String bundleUrl, ModelBuildDelegate delegate) {
-                String bundleNameOfCurrentAircraft = StringUtils.substringAfterLast(bundleUrl,"/");
+                String bundleNameOfCurrentAircraft = bundleUrl;
+                if (StringUtils.contains(bundleNameOfCurrentAircraft, "/")) {
+                    bundleNameOfCurrentAircraft = StringUtils.substringAfterLast(bundleNameOfCurrentAircraft, "/");
+                }
                 // 'basename' is the name used in the XML files for referencing itself, eg."Aircraft/c172p/..."
                 String basename = "xx";
                 if (StringUtils.contains(modelname, "777")) {
@@ -182,6 +186,11 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                 }
                 if (StringUtils.contains(modelname, "c172p")) {
                     basename = "c172p";
+                }
+                if (StringUtils.contains(modelname, "bluebird") ||
+                        StringUtils.contains(modelname, "mag-compass") ||
+                        StringUtils.contains(modelname, "digital-clock")) {
+                    basename = "bluebird";
                 }
                 if (basename == null) {
                     throw new RuntimeException("unknown aircraft basename");
@@ -207,11 +216,13 @@ public class FgModelPreviewScene extends ModelPreviewScene {
 
         SmartModelLoader.register("T3072824", terrasyncSmartModelLoader);
         SmartModelLoader.register("T3072816", terrasyncSmartModelLoader);
-
         // replace existing default loader with a XML ready one including bundle loading
         SmartModelLoader.defaultSmartModelLoader = new SmartModelLoader() {
             @Override
             public void loadModelBySource(String bundlename, String modelname, String bundleUrl, ModelBuildDelegate delegate) {
+                if (bundlename == null) {
+                    logger.error("bundlename is null");
+                }
                 Bundle bundle = BundleRegistry.getBundle(bundlename);
                 BuildResult result;
                 if (bundle == null) {
@@ -252,103 +263,6 @@ public class FgModelPreviewScene extends ModelPreviewScene {
         FlightGearModuleBasic.init(null, null);
         return arp;
     }
-
-    //boolean isloadingterrysynmodel = false;
-
-    //@Override
-    /*public BuildResult loadModel(String bundlename, String modelname) {
-        String dir = null;
-        //String bundlename = null;
-        boolean resolved = true;
-        /*boolean resolved = false;
-        // Erst die spezifischen versuchen, dann die aus Superklasse
-        if (StringUtils.startsWith(modelname, "T")) {
-            // a TerraSync tile/bucket
-            String tname = StringUtils.substringBefore(modelname, ":");
-
-            String no = StringUtils.substring(tname, 1);
-            bundlename = FlightGear.getBucketBundleName(no);
-            modelname = StringUtils.substringAfter(modelname, ":");
-            resolved = true;
-        } else {
-            if (StringUtils.startsWith(modelname, "H")) {
-                //TerraSync Model
-                bundlename = FlightGear.getBucketBundleName("model");
-                Bundle bundle = BundleRegistry.getBundle(bundlename);
-                if (bundle == null) {
-                    if (!isloadingterrysynmodel) {
-                        AbstractSceneRunner.instance.loadBundle(bundlename, (r) -> {
-
-                        });
-                    }
-                    isloadingterrysynmodel = true;
-                    //9.1.22 ich glaube das geht nicht mehr richtig
-                    logger.warn("bundle not yet loaded. Cycle back and come back here.");
-                    return new BuildResult((NativeSceneNode) null);
-                }
-                //dir = Platform.getInstance().getSystemProperty("FG_HOME");
-                modelname = StringUtils.substring(modelname, 2);
-                resolved = true;
-            } else {
-                if (StringUtils.startsWith(modelname, "R")) {
-                    dir = ((Platform) Platform.getInstance()).getConfiguration().getString("FG_ROOT");
-                    modelname = StringUtils.substring(modelname, 2);
-                    resolved = true;
-                } else {
-                    if (StringUtils.startsWith(modelname, "A")) {
-                        int index = StringUtils.indexOf(modelname, "-");
-                        modelname = StringUtils.substring(modelname, index + 1);
-                        //29.12.18: FlightGearAircraft ist doch schon durch XML abgeloest
-                        //FlightGearAircraft aircraft = FlightGearAircraft.get(StringUtils.substring(modelname, index + 1));
-                        //aircraftdir, bundlename und modelname sind gluecklicherweise herleitbar.
-                        String basename = "xx";
-                        if (StringUtils.contains(modelname, "777")) {
-                            basename = "777";
-                        }
-                        if (StringUtils.contains(modelname, "c172p")) {
-                            basename = "c172p";
-                        }
-                        bundlename = basename;//aircraft.bundlename;
-                        //modelname = aircraft.modelname;
-                        arp.setAircraftDir(basename/*aircraft.aircraftdir* /);
-                        resolved = true;
-                    }
-                }
-            }
-        }
-
-        BuildResult result = null;
-
-        if (resolved) {
-            final String mname = modelname;
-            final String bname = bundlename;
-            //if (bundlename != null) {
-                Bundle bundle = BundleRegistry.getBundle(bundlename);
-                if (bundle == null) {
-                    final SceneNode destination = new SceneNode();
-                    result = new BuildResult(destination.nativescenenode);
-                    AbstractSceneRunner.instance.loadBundle(bundlename, (Bundle b_isnull) -> {
-                        Bundle b = BundleRegistry.getBundle(bname);
-                        BuildResult res = addModelFromBundle(b, mname);
-                        if (res.getNode() != null) {
-                            destination.attach(new SceneNode(res.getNode()));
-                        } else {
-                            /*destination.attach(redCube);
-                            redCube.getTransform().setPosition(new Vector3());* /
-                        }
-                    });
-                } else {
-                    result = addModelFromBundle(bundle, modelname);
-                }
-            /*} else {
-                /*result = new BuildResult(redCube.nativescenenode);
-                redCube.getTransform().setPosition(new Vector3());* /
-            }* /
-        } else {
-            result = super.loadModel(modelname);
-        }
-        return result;
-    }*/
 
     //@Override
     public static void addPossibleXmlModelFromBundle(Bundle bundle, String modelname, String bundleUrl, GeneralParameterHandler<List<SGAnimation>> animationHandler, ModelBuildDelegate delegate) {
