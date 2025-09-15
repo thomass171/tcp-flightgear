@@ -27,7 +27,7 @@ public class SGPropertyNode {
 
     //28.5.16 String value;
     //17.1.18: children erst bei Bedarf initialisieren
-    List<SGPropertyNode> children; 
+    List<SGPropertyNode> children;
     public String name;
     private int index;
     /*Type*/ int _type;
@@ -42,6 +42,8 @@ public class SGPropertyNode {
     ValueUnion _value;
     LocalValUnion _local_val;
     List<SGPropertyChangeListener> _listeners;
+    // label as log/debug helper
+    private String label;
 
     /**
      * Default constructor: always creates a root node.
@@ -79,8 +81,8 @@ public class SGPropertyNode {
     }
 
     public SGPropertyNode addChild(SGPropertyNode node) {
-        if (children==null){
-            children= new ArrayList<SGPropertyNode>();
+        if (children == null) {
+            children = new ArrayList<SGPropertyNode>();
         }
         children.add(node);
         node._parent = this;
@@ -90,6 +92,10 @@ public class SGPropertyNode {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public boolean hasChild(String childname) {
@@ -126,8 +132,8 @@ public class SGPropertyNode {
             if (create) {
                 SGPropertyNode node = new SGPropertyNode(name, index/*, this*/);
                 node._parent = this;
-                if (children==null){
-                    children= new ArrayList<SGPropertyNode>();
+                if (children == null) {
+                    children = new ArrayList<SGPropertyNode>();
                 }
                 children.add(node);
                 fireChildAdded(node);
@@ -149,7 +155,7 @@ public class SGPropertyNode {
      * Purpose of "Itr" isType unclear.
      */
     static int find_child(String name/*Itr begin, Itr end*/, int index, List<SGPropertyNode> nodes) {
-        if (nodes==null){
+        if (nodes == null) {
             return -1;
         }
         int nNodes = nodes.size();
@@ -174,10 +180,10 @@ public class SGPropertyNode {
         return name;
     }
 
-    public String getNameString ()  {
+    public String getNameString() {
         return name;
     }
-    
+
     /**
      * Alias to another node.
      */
@@ -295,7 +301,7 @@ public class SGPropertyNode {
         //using namespace boost;
         //typedef split_iterator<typename range_result_iterator<Range>::type>            PathSplitIterator;
         PathSplitIterator itr = new PathSplitIterator(path);/*make_split_iterator(path, first_finder("/", is_equal()));*/
-        if (StringUtils.startsWith(path,"/"))
+        if (StringUtils.startsWith(path, "/"))
             return find_node_aux(current.getRootNode(), itr, create, last_index);
         else
             return find_node_aux(current, itr, create, last_index);
@@ -439,7 +445,7 @@ public class SGPropertyNode {
         _attr = attr;
     }
 
-    //////////////////////
+    /// ///////////////////
 
     private int getInt() {
         if (_tied)
@@ -464,7 +470,7 @@ public class SGPropertyNode {
 
     public boolean getBool() {
         if (_tied)
-            return (boolean)((SGRawValue<Boolean>) _value.val).getValue();
+            return (boolean) ((SGRawValue<Boolean>) _value.val).getValue();
         else
             return _local_val.bool_val;
     }
@@ -497,8 +503,8 @@ public class SGPropertyNode {
         else
             return _local_val.color_val;
     }
-    
-    ////////////////////
+
+    /// /////////////////
 
     boolean setString(String val) {
         if (_tied) {
@@ -643,7 +649,7 @@ public class SGPropertyNode {
         }
     }
 
-    ///////////
+    /// ////////
 
     void clearValue() {
         if (_type == Props.ALIAS) {
@@ -751,7 +757,7 @@ public class SGPropertyNode {
         return (_type == Props.ALIAS);
     }
 
-    ///////////////
+    /// ////////////
     public boolean getBoolValue() {
         // Shortcut for common case
         if (_attr == (Props.READ | Props.WRITE) && _type == Props.BOOL)
@@ -945,7 +951,7 @@ public class SGPropertyNode {
         return getColor();
     }
 
-    //////////////////////////
+    /// ///////////////////////
     public boolean setBoolValue(boolean value) {
         // Shortcut for common case
         if (_attr == (Props.READ | Props.WRITE) && _type == Props.BOOL)
@@ -1629,8 +1635,8 @@ public class SGPropertyNode {
      */
     public PropertyList getChildren(String childname) {
         PropertyList childrenlist = new PropertyList();
-        if (children==null){
-           return childrenlist;
+        if (children == null) {
+            return childrenlist;
         }
         int max = children.size();
 
@@ -1650,10 +1656,13 @@ public class SGPropertyNode {
     }
 
     public String dodump(String level, String lineseparator) {
-        String s = level + "." + name;
+        String s = level + "." + ((name == null) ? "no-name" : name);
+        if (label != null) {
+            s += "(label=" + label + ")" + lineseparator;
+        }
         s += "(value=" + getStringValue() + ")" + lineseparator;
 
-        if (children!=null) {
+        if (children != null) {
             for (SGPropertyNode c : children) {
                 s += c.dodump(level + ((StringUtils.length(level) == 0) ? "" : ".") + name, lineseparator) + lineseparator;
             }
@@ -1759,10 +1768,10 @@ public class SGPropertyNode {
      * FG-DIFF Alternative to C++ type casting
      * TODO what about unconvertable types, eg. Color?
      */
-    public void fillSimpleValue(){
-        
+    public void fillSimpleValue() {
+
     }
-        
+
     /**
      * Assign a new underlying value.
      *
@@ -1800,15 +1809,16 @@ public class SGPropertyNode {
      * Get the number of child nodes.
      */
     public int nChildren() {
-        if (children==null){
+        if (children == null) {
             return 0;
         }
         return (int) children.size();
     }
 
     /**
-     * Ist eigentlich aus SGSharedPtr und prueft, ob eine Selbstreferenz existiert. Scheint mir 
+     * Ist eigentlich aus SGSharedPtr und prueft, ob eine Selbstreferenz existiert. Scheint mir
      * in Java zumindest so nicht erforderlich.
+     *
      * @return
      */
     public boolean valid() {
@@ -1821,7 +1831,7 @@ class PathSplitIterator implements Iterator<String> {
     int pos = 0;
 
     public PathSplitIterator(String path) {
-        if (StringUtils.startsWith(path,"/")) {
+        if (StringUtils.startsWith(path, "/")) {
             parts = StringUtils.split(StringUtils.substring(path, 1), "/");
         } else {
             parts = StringUtils.split(path, "/");

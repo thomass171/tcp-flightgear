@@ -31,4 +31,8 @@ public class EffectMaterialWrapper {
         counter++;
         material.setTransparency(enabled);
     }
+
+    public void setShaded(boolean enabled){
+        //TODO 13.9.25 material.setShaded()??
+    }
 }

@@ -95,6 +95,9 @@ public class Effect /*extends Effect osg::Object */ {
 
     }
 
+    /**
+     * Build a single pass of a single technique of the effect.
+     */
     void buildPass(Effect effect, Technique tniq, SGPropertyNode prop,
                    SGReaderWriterOptions options, EffectMaterialWrapper wrapper) {
         Pass pass = new Pass(wrapper);
@@ -102,11 +105,13 @@ public class Effect /*extends Effect osg::Object */ {
         // Loop through "lighting", "depth", "material", "blend", a.s.o.
         for (int i = 0; i < prop.nChildren(); ++i) {
             SGPropertyNode attrProp = prop.getChild(i);
+            // This only searches for a builder. The available builders are created by static inits in EffectBuilder.java.
             EffectBuilder.PassAttributeBuilder builder = EffectBuilder.PassAttributeBuilder.find(attrProp.getNameString());
             if (builder != null) {
                 builder.buildAttribute(effect, pass, attrProp, options);
             } else {
-                // too often logger.warn("skipping unknown pass attribute " + attrProp.getName());
+                // too often, but helpful
+                //logger.warn("Technique: No builder: skipping unknown pass attribute " + attrProp.getName());
             }
         }
     }
@@ -136,27 +141,28 @@ public class Effect /*extends Effect osg::Object */ {
                 result[3] = alphaProp ? alphaProp->getValue<float>() : 1.0f;
                 return result;
             }
-        }
+        }*/
 
-        struct LightingBuilder : public PassAttributeBuilder
-        {
-            void buildAttribute(Effect* effect, Pass* pass, const SGPropertyNode* prop,
-                            const SGReaderWriterOptions* options);
-        };
 
-        void LightingBuilder::buildAttribute(Effect* effect, Pass* pass,
-                                         const SGPropertyNode* prop,
-                                         const SGReaderWriterOptions* options)
-        {
-        const SGPropertyNode* realProp = getEffectPropertyNode(effect, prop);
-            if (!realProp)
+    class LightingBuilder extends EffectBuilder.PassAttributeBuilder {
+
+        @Override
+        void buildAttribute(Effect effect, Pass pass, SGPropertyNode prop,
+                            SGReaderWriterOptions options) {
+
+
+            SGPropertyNode realProp = EffectBuilder.getEffectPropertyNode(effect, prop);
+            if (realProp == null) {
                 return;
-            pass->setMode(GL_LIGHTING, (realProp->getValue<bool>() ? StateAttribute::ON
-                    : StateAttribute::OFF));
+            }
+            pass.setLighting(realProp.getBoolValue());
         }
+    }
 
-        InstallAttributeBuilder<LightingBuilder> installLighting("lighting");
+    //InstallAttributeBuilder<LightingBuilder> installLighting("lighting");
+    EffectBuilder.PassAttributeBuilder installLighting = EffectBuilder.PassAttributeBuilder.addBuilder("lighting", new LightingBuilder());
 
+/*
         struct ShadeModelBuilder : public PassAttributeBuilder
         {
             void buildAttribute(Effect* effect, Pass* pass, const SGPropertyNode* prop,
@@ -176,7 +182,7 @@ public class Effect /*extends Effect osg::Object */ {
                             "invalid shade model property " << propVal);
             }
         };
-
+/*
         InstallAttributeBuilder<ShadeModelBuilder> installShadeModel("shade-model");
 
         struct CullFaceBuilder : PassAttributeBuilder
@@ -416,7 +422,7 @@ public class Effect /*extends Effect osg::Object */ {
     }
 
     //InstallAttributeBuilder<BlendBuilder> installBlend("blend");
-    EffectBuilder.PassAttributeBuilder installBlend = EffectBuilder.PassAttributeBuilder.passAttrMap.put("blend", new BlendBuilder());
+    EffectBuilder.PassAttributeBuilder installBlend = EffectBuilder.PassAttributeBuilder.addBuilder("blend", new BlendBuilder());
 
 /*
     EffectNameValue<Stencil::Function> stencilFunctionInit[] =
@@ -1142,6 +1148,9 @@ public class Effect /*extends Effect osg::Object */ {
 
     // InstallAttributeBuilder<DepthBuilder> installDepth("depth");
 
+    /**
+     * Build a single technique of the effect.
+     */
     void buildTechnique(Effect effect, SGPropertyNode prop, SGReaderWriterOptions options, EffectMaterialWrapper wrapper) {
         Technique tniq = new Technique();
         effect.techniques.add(tniq);
@@ -1314,17 +1323,16 @@ public class Effect /*extends Effect osg::Object */ {
     /**
      * Walk the techniques property tree, building techniques and passes.
      * <p/>
-     * FG-DIFF Implementierung
-     * Hier wird mal das Material gebaut. SGMaterial.buildEffectProperties() hat die Materialwerte vorher in die PropertyNode geschrieben.
-     * Das ist aber auch reichlich Woodoo. Nicht erkennbar, welche Textur wofuer genutzt wird.
+     * FG-DIFF Implementierung?
+     *
      * <p>
-     * 11.11.24: This connects the effect to a specific material, to which the effect should apply (See README.md#Effects)
+     * 11.11.24: By the wrapper this connects the effect to a specific material, to which the effect should apply (See README.md#Effects)
      *
      * @param options
      */
-    public boolean realizeTechniques(SGReaderWriterOptions options) {
+    public boolean realizeTechniques(SGReaderWriterOptions options, String label) {
         //material
-        logger.debug("Effect:realizeTechniques " + getName());
+        logger.debug("Effect:realizeTechniques '" + getName() + "' with label " + label);
 
         //mergeSchemesFallbacks(this, options);
         if (_isRealized)
@@ -1347,6 +1355,7 @@ public class Effect /*extends Effect osg::Object */ {
             }
         }
         _isRealized = true;
+        logger.debug("Effect:realizeTechniques done");
         return true;
     }
 

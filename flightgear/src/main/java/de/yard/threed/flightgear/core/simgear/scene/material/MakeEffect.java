@@ -28,10 +28,11 @@ public class MakeEffect {
     public static List<String> errorList = new ArrayList<>();
 
     //typedef vector<const SGPropertyNode*> RawPropVector;
-    // Is the effectMap just a cache of effects? key apparently is an object node name.
+    // Is the effectMap just a cache of effects? key apparently is an object node name(really? seems to be effect file name).
     // But every MakeEffectVisitor has its own effectMap. So it might just be a map object->effect per
     // XML file effect block? But this here appears a global cache.
     // But apparently not for SGMaterial/scenery effects.
+    // 5.9.25: Again, not sure a global map is OK.
     //typedef map<const string, ref_ptr<Effect> > EffectMap;
     /*Cpp*/ public static HashMap<String, Effect> effectMap = new /*Cpp*/HashMap<String, Effect>(/*new Effect()*/);
     
@@ -155,6 +156,8 @@ public class MakeEffect {
             return null;
         }
         SGPropertyNode/*_ptr*/ effectProps = new SGPropertyNode();
+        effectProps.setLabel(label+"."+effectFileName);
+
         try {
             new PropsIO().readProperties(absFileName, effectProps/*.ptr()*/, 0, true);
         } catch (SGException e1) {
@@ -179,11 +182,9 @@ public class MakeEffect {
 
 
     /**
-     * 26.1.18: Der baut doch staendig Effects neu. Auch die Parents. Und macht dann den release()??. Alles unklar. Damit erzeugt er bequem 1,4Mio PropertyNodes.
-     * Das duerfte auch mit dem mergeNodes zu tun haben.
-     * Ich uebergehe mal den Parent. Die Effekte werden ja eh noch nicht so genutzt. Dann ergeben sich nur noch 31000 Nodes.
-     * Evtl. muss das ganze umgebaut werden.
-     * Wiki.
+     * Walk up the inheritence chain and build an Effect for each level by merging
+     * current and inherited properties into one node(?) and finally realize the effect.
+     *
      * <p>
      * Returns null if effect cannot be created (already logged).
      * 16.10.24: This seems to be THE method for building an effect. Called in FG via MakeEffectVisitor from model.cxx. Don't try
@@ -198,7 +199,7 @@ public class MakeEffect {
      *                          might be resolved via "use", like "<use>blend/active</use>".
      * @param realizeTechniques
      * @param options
-     * @return
+     * @return The final effect.
      */
     public static Effect makeEffect(SGPropertyNode prop, boolean realizeTechniques, SGReaderWriterOptions options, String label/*, SGMaterial mat*/, boolean forBtgConversion,
                                     EffectMaterialWrapper wrapper, BundleResource current) {
@@ -234,11 +235,13 @@ public class MakeEffect {
         Effect parent = null;
         //siehe Header
         if (inheritProp != null/*28.10.24 && false*/) {
-            getLog().debug("Building/Lookup inherited effect " + inheritProp.getStringValue() + " from path "+prop.getPath());
+            getLog().debug("Building/Lookup inherited effect " + inheritProp.getStringValue() + " from "+current);
             //also commented in FG prop.removeChild("inherits-from"); Maybe was intended to avoid a "inherits-from" property in the merged root tree of the effect.
+            //Why use hard coded 'false' for 'realizeTechniques'? Most likely because here we are collecting the inherit chain. The
+            //effect will not be realized until the chain is complete? or the top of chain is reached (below).
             parent = makeEffect(inheritProp.getStringValue(), false, options, label, forBtgConversion, wrapper, current);
             if (parent != null) {
-                // parent is the inherited effect now, eg "model-transparent"
+                // parent is the inherited effect now, eg. "model-transparent", "model-default"
                 /*TODO? Effect::Key key;
                 key.unmerged = prop;
                 if (options) {
@@ -256,16 +259,17 @@ public class MakeEffect {
                         effect.generator = parent.generator;  // Copy the generators
                     }
                 }*/
-                // die Bedeutung des if in FG ist unklar. Es gibt doch noch keinen Effect. Oder wo kommt der her?
-                if (true/*!effect.valid()*/) {
-                    // might create a model effect with "model-transparent" as parent.
+                // 15.9.25: Changed from "true" to null check
+                if (effect==null/*!effect.valid()*/) {
+                    // Merge current with parent effect.
+                    // Might create a model effect with "model-transparent" as parent.
                     effect = new Effect(nameProp.getStringValue(), prop, parent, label, forBtgConversion, wrapper);
                     /*21.10.24 moved to constructor effect.setName(nameProp.getStringValue());
                     effect.root = new SGPropertyNode();
                     mergePropertyTrees(effect.root, prop, parent.root);
                     effect.parametersProp = effect.root.getChild("parameters");*/
 
-                    // Generator erstmal weglassen
+                    // No generator for now
                     /*OpenThreads::ScopedLock < OpenThreads::ReentrantMutex >
                             lockEntity(effectMutex);
                     pair<Effect::Cache::iterator, bool > irslt
@@ -286,7 +290,10 @@ public class MakeEffect {
                 return null;
             }
         } else {
-            getLog().debug("Building non inheriting effect " + nameProp.getStringValue());
+            // This is reached after the n-th recursive call for 'inherits-from', so we are at the root of the inheritance.
+            // We build the effect class only for this level(prop). For each level of inheritance there is a 'prop'.
+            // Will be merged later by the caller in this recursion.
+            getLog().debug("Building non inheriting (possible top of inheritance) effect " + nameProp.getStringValue());
             effect = new Effect(nameProp.getStringValue(), prop, null, label, forBtgConversion, wrapper);
             /*21.10.24 moved to constructor effect.setName(nameProp.getStringValue());
             effect.root = prop;
@@ -310,7 +317,8 @@ public class MakeEffect {
         if (realizeTechniques) {
             try {
                 //OpenThreads::ScopedLock < OpenThreads::ReentrantMutex >                        lockEntity(effectMutex);
-                effect.realizeTechniques(options);
+                // Now that the complete effect property inherit chain was loaded into the effect prop, build the effect (eg. compiling and binding the final shader program)
+                effect.realizeTechniques(options, label);
             } catch (/*Builder*/java.lang.Exception e) {
                 getLog().error(/*SG_LOG(SG_INPUT, SG_ALERT,*/ "Error building technique: " + e.getMessage());
                 return null;

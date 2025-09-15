@@ -49,4 +49,16 @@ public class Pass /*extends EffectMaterialWrapper*/ { //: osg::StateSet
             wrapper.setBlending(enabled);
         }
     }
+
+    /**
+     * Replaces
+     * pass.setMode(GL_LIGHTING, (realProp->getValue<bool>() ? StateAttribute::ON : StateAttribute::OFF));
+     *
+     * What should this do? Just setting material (un)shaded? Apparently.
+     */
+    public void setLighting(boolean enabled) {
+        if (wrapper != null) {
+            wrapper.setShaded(enabled);
+        }
+    }
 }

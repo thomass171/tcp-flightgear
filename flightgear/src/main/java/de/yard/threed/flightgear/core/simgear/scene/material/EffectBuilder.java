@@ -1,6 +1,8 @@
 package de.yard.threed.flightgear.core.simgear.scene.material;
 
 import de.yard.threed.core.StringUtils;
+import de.yard.threed.core.platform.Log;
+import de.yard.threed.core.platform.Platform;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.scene.util.SGReaderWriterOptions;
 import de.yard.threed.flightgear.core.simgear.structure.SGException;
@@ -15,6 +17,8 @@ import java.util.Map;
  */
 //template<typename T>
 public class EffectBuilder { //  : public SGReferenced
+
+    static Log logger = Platform.getInstance().getLog(EffectBuilder.class);
 
     public EffectBuilder() {
     }
@@ -299,7 +303,13 @@ public class EffectBuilder { //  : public SGReferenced
         //struct PassAttrMapSingleton :public simgear::Singleton<PassAttrMapSingleton>
 
 
-        /*PassAttrMap*/ public static Map<String, PassAttributeBuilder> passAttrMap = new HashMap<>();
+        /*PassAttrMap*/ private static Map<String, PassAttributeBuilder> passAttrMap = new HashMap<>();
+
+        public static PassAttributeBuilder addBuilder(String tag, EffectBuilder.PassAttributeBuilder builder) {
+            logger.debug("Adding EffectBuilder " + builder);
+            passAttrMap.put(tag, builder);
+            return passAttrMap.get(tag);
+        }
 
         //public:
         //virtual ~PassAttributeBuilder(); // anchor into the compilation unit.

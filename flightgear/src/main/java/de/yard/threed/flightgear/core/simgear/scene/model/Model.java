@@ -14,6 +14,7 @@ import de.yard.threed.flightgear.core.simgear.scene.material.Effect;
 import de.yard.threed.flightgear.core.simgear.scene.material.MakeEffect;
 import de.yard.threed.flightgear.core.simgear.scene.util.SGReaderWriterOptions;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,8 @@ import java.util.Map;
  */
 public class Model {
     static Log logger = Platform.getInstance().getLog(Model.class);
+    // just for testing/logging. Reset for each model.
+    public static Map<String, List<Effect>> appliedEffects;
 
 /*
     osg::Texture2D*
@@ -336,6 +339,10 @@ public class Model {
     public static /*Node*/ Map<String, AbstractMaterialFactory> instantiateEffects(/*osg::*/Node modelGroup, PropertyList effectProps, SGReaderWriterOptions options, String label, BundleResource current) {
         SGPropertyNode/*_ptr*/ defaultEffectPropRoot = null;
         Map<String, AbstractMaterialFactory> factories = new HashMap<>();
+
+        appliedEffects = new HashMap<>();
+        logger.debug("instantiateEffects for modelGroup: " + modelGroup.dump("", 0));
+
         /*MakeEffectVisitor visitor(options);
         MakeEffectVisitor::EffectMap& emap = visitor.getEffectMap();*/
         //for (PropertyList::iterator itr = effectProps.begin(), end = effectProps.end(); itr != end; ++itr)
@@ -382,7 +389,7 @@ public class Model {
                     List<SceneNode> nlist = modelGroup.findNodeByName(objname);
                     if (nlist.size() == 0) {
                         // Kommt wohl schon mal vor. "Lettering_Btns" z.B. wird in boeing.xml auf transparent gesetzt gibt es aber nicht
-                        logger.warn("object not found: " + objname);
+                        logger.warn("object '" + objname + "' not found in modelGroup: " + modelGroup.dump("", 0));
                     }
                     boolean meshfound = false;
                     for (SceneNode n : nlist) {
@@ -391,7 +398,7 @@ public class Model {
                         if (mesh != null) {
                             Material mat = mesh.getMaterial();
                             // configNode points to one effect definition in the model.xml (or any other model xml file). 'objname' in label is more helpful than index.
-                            applyEffectToObject(configNode, mat, options, label + ".effect." + objname, current);
+                            applyEffectToObject(objname, configNode, mat, options, label + ".effect." + objname, current);
                             //mat.setTransparency(true);
                             //effect.apply();
                             meshfound = true;
@@ -422,7 +429,7 @@ public class Model {
     /**
      * Try to build effect here like MakeEffectVisitor does.
      */
-    static private void applyEffectToObject(SGPropertyNode configNode, Material material, SGReaderWriterOptions options, String label, BundleResource current) {
+    static private void applyEffectToObject(String objName, SGPropertyNode configNode, Material material, SGReaderWriterOptions options, String label, BundleResource current) {
         //
         SGPropertyNode ssRoot = new SGPropertyNode();
         Effect.makeParametersFromStateSet(ssRoot/*StateSet is from OSG, ss*/);
@@ -430,7 +437,14 @@ public class Model {
         // No idea if using configNode instead of _currentEffectParent is good here
         MakeEffect.mergePropertyTrees(effectRoot, ssRoot, configNode/* _currentEffectParent*/);
         Effect effect = MakeEffect.makeEffect(effectRoot, true, options, label, false, new EffectMaterialWrapper(material), current);
+        addAppliedEffect(objName, effect);
+    }
 
+    private static void addAppliedEffect(String objName, Effect effect) {
+        if (appliedEffects.get(objName) == null) {
+            appliedEffects.put(objName, new ArrayList<>());
+        }
+        appliedEffects.get(objName).add(effect);
     }
 }
 

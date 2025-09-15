@@ -667,7 +667,7 @@ public class SGMaterial extends BVHMaterial {
         if (!_status.get(i).effect_realized) {
             if (!_status.get(i).getEffect().valid())
                 return null;
-            _status.get(i).getEffect().realizeTechniques(_status.get(i).options/*.get()*/);
+            _status.get(i).getEffect().realizeTechniques(_status.get(i).options/*.get()*/, null);
             _status.get(i).effect_realized = true;
         }
         return _status.get(i).getEffect()/*.get()*/;

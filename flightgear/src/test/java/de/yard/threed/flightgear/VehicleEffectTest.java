@@ -14,6 +14,7 @@ import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.core.flightgear.main.AircraftResourceProvider;
 import de.yard.threed.flightgear.core.simgear.scene.material.MakeEffect;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
+import de.yard.threed.flightgear.core.simgear.scene.model.Model;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
@@ -69,11 +70,20 @@ public class VehicleEffectTest {
      */
     @ParameterizedTest
     @CsvSource(value = {
-            "Models/Interior/Panel/Instruments/digital-clock/digital-clock.xml",
-            "Models/Interior/Panel/Instruments/mag-compass/mag-compass.xml",
-            "Models/bluebird.xml"
-    })
-    public void testBluebirdAndComponents(String modelReference) {
+            // for "Case" inherits from
+            // -Aircraft:../../../../Effects/interior/lm-digitalclock.eff
+            // -Aircraft:Models/Effects/interior/c172p-interior.eff
+            // -fgdatabasic:Effects/model-interior.eff
+            // -Effects/model-default.eff
+            // for "DigitalClock" inherits from
+            // -?
+            // -?
+            // TODO What about the other objects?
+            "Models/Interior/Panel/Instruments/digital-clock/digital-clock.xml;true",
+            "Models/Interior/Panel/Instruments/mag-compass/mag-compass.xml;false",
+            "Models/bluebird.xml;false"
+    }, delimiter = ';')
+    public void testBluebirdAndComponents(String modelReference, boolean expectedDetailCheck) {
 
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
@@ -86,9 +96,9 @@ public class VehicleEffectTest {
 
         assertEquals(0, MakeEffect.effectMap.size());
 
-        SceneNode cube = ModelSamples.buildCube(1, Color.BLUE);
+        /*should be no need SceneNode cube = ModelSamples.buildCube(1, Color.BLUE);
         cube.setName("Case");
-        Scene.getCurrent().addToWorld(cube);
+        Scene.getCurrent().addToWorld(cube);*/
 
         AircraftResourceProvider arp = new AircraftResourceProvider();
         arp.setAircraftDir("bluebird");
@@ -104,6 +114,23 @@ public class VehicleEffectTest {
         TestHelper.processAsync();
         TestHelper.processAsync();
         assertEquals(0, MakeEffect.errorList.size());
+
+        boolean detailCheckDone = false;
+        if (modelReference.contains("digital-clock")) {
+            // digital-clock.xml has 6 objects with effects defined
+            assertEquals(6, Model.appliedEffects.size());
+            assertEquals(1, Model.appliedEffects.get("Case").size());
+            assertEquals(1, Model.appliedEffects.get("DigitalClock").size());
+            assertEquals(1, Model.appliedEffects.get("KnobLeft").size());
+            assertEquals(1, Model.appliedEffects.get("KnobCenter").size());
+            assertEquals(1, Model.appliedEffects.get("KnobRight").size());
+            assertEquals(1, Model.appliedEffects.get("glass_panel").size());
+
+            // effectMap also contains standalone inherited. Effects are currently reused via effectMap!
+            assertEquals(4 + 2, MakeEffect.effectMap.size());
+            detailCheckDone = true;
+        }
+        assertEquals(expectedDetailCheck, detailCheckDone);
     }
 
 }
