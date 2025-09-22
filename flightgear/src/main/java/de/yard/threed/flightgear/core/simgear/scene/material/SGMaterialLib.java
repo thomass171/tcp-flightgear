@@ -64,6 +64,8 @@ public class SGMaterialLib {
     /**
      * Load a library of material properties.
      * "mpath" eg. points to "Materials/regions/materials.xml".
+     * 02.09.25: Needs a bundle resolver for "fgdatabasic" since effects are no longer resolved
+     * from hardcoded "fgdatabasic".
      */
     public boolean load(/*String fg_root*/ String mpath, SGPropertyNode prop_root, boolean forBtgConversion) {
         SGPropertyNode materialblocks = new SGPropertyNode();

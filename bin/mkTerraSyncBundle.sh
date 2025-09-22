@@ -15,10 +15,12 @@
 #
 # Option -f for force overwriting existing destination files
 # Option -v for verbose
+# Option -s for strict material check, ie. conversion abort with missing material ('abort' currently is internal default in BTG loader however)
 #
 # For converting a TerraSync tree on an external disk the command
-#   sh bin/mkTerraSyncBundle.sh -o /Volumes/Flightgear/TerraSync-Full /Volumes/Flightgear/TerraSync
-# can be used. Be sure to use a full "sgmaterial" bundle instead of the subset. Conversion takes appx 8 hours for a 11GB TerraSync size.
+#   sh bin/mkTerraSyncBundle.sh -o /Volumes/Flightgear/TerraSync-Converted /Volumes/Flightgear/TerraSync
+# can be used. Be sure to set HOSTDIRFG to a bundle path where a full "sgmaterial" bundle
+# exits instead of just the subset. Conversion takes appx 8 hours for a 11GB TerraSync size.
 #	
 #
 
@@ -55,7 +57,7 @@ processTerraSyncFile() {
 		fi
 		DESTDIR=$TERRASYNCBUNDLEDIR/$DIRNAME
 		BASENAME=`basename $BASENAME .$SUFFIX`
-		export ADDITIONAL_LOADER=de.yard.threed.toolsfg.LoaderBTGBuilder
+		export ADDITIONAL_LOADER=de.yard.threed.toolsfg.LoaderBTGBuilder$STRICT
 		export DIRNAME SUFFIX DESTDIR BASENAME
 		echo processing $filename":" $BASENAME $SUFFIX
 		case $SUFFIX in
@@ -120,7 +122,8 @@ validateTERRASYNCDIR() {
 
 export TERRASYNCBUNDLEDIR=$HOSTDIRFG/bundles/TerraSync
 
-FORCE=0
+export FORCE=0
+export STRICT=
 if [ "$1" = "-f" ]
 then
 	FORCE=1
@@ -141,6 +144,11 @@ then
 	fi
 	shift
 fi
+if [ "$1" = "-s" ]
+then
+	STRICT=Strict
+	shift
+fi
 
 # convertSingleModelToGltf needs HOSTDIR for building a platform and loading other bundle (eg. sgmaterial)
 export HOSTDIR=$HOSTDIRFG
@@ -158,7 +166,7 @@ fi
 validateTERRASYNCDIR
 cd $TERRASYNCDIR && checkrc
 echo "CLASSPATH="$CLASSPATH
-echo "Ready to process files in:" `pwd` "to $TERRASYNCBUNDLEDIR. Hit CR"
+echo "Ready to process files in:" `pwd` "to $TERRASYNCBUNDLEDIR with HOSTDIRFG=$HOSTDIRFG. Hit CR"
 read
 
 # process files and directories

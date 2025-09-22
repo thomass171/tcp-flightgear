@@ -13,8 +13,6 @@ import java.util.List;
  */
 public class FgBundleHelper {
 
-    Log logger = Platform.getInstance().getLog(FgBundleHelper.class);
-
     //Locating relative resources across bundles.
     static private List<BundleResourceProvider> providerlist = new ArrayList<BundleResourceProvider>();
 
@@ -71,6 +69,7 @@ public class FgBundleHelper {
     }
 
     public static void addProvider(BundleResourceProvider provider) {
+        getLogger().debug("Adding provider " + provider);
         providerlist.add(provider);
     }
 
@@ -84,7 +83,6 @@ public class FgBundleHelper {
 
     /**
      * Only for testing
-     * @return
      */
     public static List<BundleResourceProvider> getProvider() {
         return providerlist;
@@ -94,6 +92,10 @@ public class FgBundleHelper {
         //30.9.19: Auch provider
         providerlist.clear();
         // logger.debug("Bundles cleared");
+    }
+
+    private static Log getLogger() {
+        return Platform.getInstance().getLog(FgBundleHelper.class);
     }
 
 }

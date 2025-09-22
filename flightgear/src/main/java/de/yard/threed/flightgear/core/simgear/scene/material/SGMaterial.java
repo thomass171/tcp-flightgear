@@ -201,9 +201,7 @@ public class SGMaterial extends BVHMaterial {
     }
 
     SGMaterial(Options options, SGPropertyNode props, SGPropertyNode prop_root, AreaList a, SGCondition c, boolean forBtgConversion) {
-        if (SGMaterialLib.materiallibdebuglog) {
-            logger.debug("Building SGMaterial with condition " + c);
-        }
+        logger.debug("Building SGMaterial with condition " + c);
         SGReaderWriterOptions opt;
         opt = SGReaderWriterOptions.copyOrCreate(options);
         areas = a;

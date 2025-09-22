@@ -9,7 +9,9 @@ import de.yard.threed.core.loader.InvalidDataException;
 import de.yard.threed.flightgear.LoaderBTG;
 import de.yard.threed.flightgear.LoaderOptions;
 
-
+/**
+ * Loader plugin for GLTF builder for btg files
+ */
 public class LoaderBTGBuilder implements AbstractLoaderBuilder {
 
     /**

@@ -204,7 +204,7 @@ public class LoaderBTG extends BinaryLoader {
         //25.9.24 loadedfile.objects.add(currentobject);
         loadedfile.object = currentobject;
         // zero out structures
-        ((LoadedBtgFile)loadedfile).gbs_center = null;// new SGVec3d(0, 0, 0);
+        ((LoadedBtgFile) loadedfile).gbs_center = null;// new SGVec3d(0, 0, 0);
         gbs_radius = (float) 0.0;
 
         //wgs84_nodes = new ArrayList();
@@ -340,7 +340,7 @@ public class LoaderBTG extends BinaryLoader {
                 for (j = 0; j < nelements; ++j) {
                     nbytes = buf.readUInt();//sgReadUInt(fp);
                     ByteArrayInputStream buf1 = buf.readSubbuffer(nbytes);//sgReadBytes(fp, nbytes/*, ptr*/);
-                    ((LoadedBtgFile)loadedfile).gbs_center = readVec3d(buf1);
+                    ((LoadedBtgFile) loadedfile).gbs_center = readVec3d(buf1);
                     gbs_radius = buf1.readFloat();
                 }
             } else if (obj_type == SG_VERTEX_LIST) {
@@ -505,7 +505,6 @@ public class LoaderBTG extends BinaryLoader {
     /**
      * BinaryLoader implementation for BTG. Convert BTG data to PML format. Moved from Obj.cxx/java to here.
      * This includes mapping of the BTG land classes to material known in matlib.
-     * @return
      */
     @Override
     public PortableModel buildPortableModel() {
@@ -546,7 +545,7 @@ public class LoaderBTG extends BinaryLoader {
 
         //TODO double
         /*SGVec3d*/
-        center = (/*tile.*/((LoadedBtgFile)loadedfile).gbs_center);
+        center = (/*tile.*/((LoadedBtgFile) loadedfile).gbs_center);
         SGGeod geodPos = SGGeod.fromCart(center);
         //SGQuatd hlOr = SGQuatd::fromLonLat(geodPos)*SGQuatd::fromEulerDeg(0, 0, 180);
 
@@ -589,7 +588,7 @@ public class LoaderBTG extends BinaryLoader {
 
         // 31.7.24: Since PortableModel no longer has a top level list, we need a synthetic root node like GLTF
         // uses? BTG content will end in 'kids' (with hierarchy from file). Maybe source is a path. Maybe better last part only which should be the bucket.
-        ppo.setName(BTG_ROOT+"-"+StringUtils.substringBeforeLast(StringUtils.substringAfterLast(source,"/"),".btg"));
+        ppo.setName(BTG_ROOT + "-" + StringUtils.substringBeforeLast(StringUtils.substringAfterLast(source, "/"), ".btg"));
 
         PortableModel ppfile = new PortableModel(ppo, null, (List<GeoMat>) null/*gml*/);
         ppfile.setName(source);
@@ -617,15 +616,21 @@ public class LoaderBTG extends BinaryLoader {
                     logger.error("No material for land class '" + gm.landclass + "'. Will lead to hole in tile!");
                     errorCnt++;
                 } else {
+                    // 22.9.25: BTG materials should always have a texture. So consider it an error when there is no.
+                    // Apparently this doesn't happen currently?
+                    if (gm.mat.getTexture() == null) {
+                        logger.error("No material texture for land class '" + gm.landclass + "'. Will lead to hole in tile!");
+                        errorCnt++;
+                    }
                     ppfile.addMaterial(gm.mat.duplicate(gm.landclass/*"" + index*/));
                 }
             }
             //27.12.17: textureindex gibt es nicht mehr? TODO: Doch, fuer landclasses schon. Setzen bzw. klären
             index++;
-            ppo.addChild(new PortableModelDefinition(gm.geo,gmMaterial ));
+            ppo.addChild(new PortableModelDefinition(gm.geo, gmMaterial));
         }
         //PreprocessedLoadedFile ppfile = new PreprocessedLoadedFile(gml);
-        if (errorCnt > 0 && shouldFailOnError){
+        if (errorCnt > 0 && shouldFailOnError) {
             throw new RuntimeException("" + errorCnt + " error found (check log output). Aborting");
         }
         return ppfile;
