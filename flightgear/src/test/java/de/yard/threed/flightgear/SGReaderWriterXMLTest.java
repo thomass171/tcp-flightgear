@@ -364,7 +364,7 @@ public class SGReaderWriterXMLTest {
         assertNotNull(bundle3072824);
 
         BuildResult result = SGReaderWriterXMLTest.loadModelAndWait(new BundleResource(bundle3072824, modelfile), animationList,
-                7, modelfile, modelfile);
+                9/*7*/, modelfile, modelfile);
         AnimationAssertions.assertEgkkTowerAnimations(new SceneNode(result.getNode()),animationList, false);
 
         // change properties and recheck animations

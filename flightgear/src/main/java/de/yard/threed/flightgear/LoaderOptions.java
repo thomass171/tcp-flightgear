@@ -17,6 +17,7 @@ public class LoaderOptions {
     public boolean usegltf = true;
     // 11.3.24 root of the property tree to be used for building animations and effects. (not the config node tree!)
     public SGPropertyNode propertyNode;
+    public EffectBuilderListener effectBuilderListener;
 
     public LoaderOptions() {
 

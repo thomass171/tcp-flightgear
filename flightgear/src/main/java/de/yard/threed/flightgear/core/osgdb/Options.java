@@ -1,6 +1,7 @@
 package de.yard.threed.flightgear.core.osgdb;
 
 import de.yard.threed.core.platform.Platform;
+import de.yard.threed.flightgear.EffectBuilderListener;
 import de.yard.threed.flightgear.core.simgear.scene.tgdb.DelayLoadReadFileCallback;
 
 import java.util.HashMap;
@@ -16,6 +17,7 @@ public class Options {
     public String databasePath;
     //8.6.17: FG-DIFF. das geht das anders, aber wohl mit gleichem Zweck.
     public Map<String, String> pluginstringdata = new HashMap<String, String>();
+    public EffectBuilderListener effectBuilderListener;
 
     public FilePathList getDatabasePathList() {
         return databasePathList;

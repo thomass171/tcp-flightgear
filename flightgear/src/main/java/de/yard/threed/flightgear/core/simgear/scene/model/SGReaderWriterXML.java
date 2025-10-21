@@ -28,15 +28,15 @@ import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.PropertyList;
 import de.yard.threed.flightgear.core.SGLoaderOptions;
 
+import de.yard.threed.flightgear.core.osg.*;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.engine.*;
-import de.yard.threed.flightgear.core.osg.Group;
-import de.yard.threed.flightgear.core.osg.Node;
 import de.yard.threed.flightgear.core.osgdb.ReadResult;
 
 import de.yard.threed.flightgear.core.osgdb.osgDB;
 import de.yard.threed.flightgear.core.simgear.misc.SGPath;
 import de.yard.threed.flightgear.core.simgear.props.PropsIO;
+import de.yard.threed.flightgear.core.simgear.props.SGCondition;
 import de.yard.threed.flightgear.core.simgear.scene.util.SGReaderWriterOptions;
 import de.yard.threed.flightgear.core.simgear.scene.util.SGTransientModelData;
 import de.yard.threed.flightgear.core.simgear.structure.SGException;
@@ -56,6 +56,7 @@ import java.util.Map;
 
 import static de.yard.threed.engine.platform.EngineHelper.LOADER_APPLYACPOLICY;
 import static de.yard.threed.flightgear.FgModelHelper.mapFilename;
+import static de.yard.threed.flightgear.core.simgear.props.SGCondition.sgReadCondition;
 
 
 /**
@@ -230,8 +231,12 @@ public class SGReaderWriterXML {
 
         /*osg::ref_ptr <*/
         // 4.1.18: das mit dem copy is doch Driss
+        // 13.10.25:Wow, options really need refactoring
         SGReaderWriterOptions options = SGReaderWriterOptions.copyOrCreate(dbOptions);
         SGLoaderOptions boptions = SGLoaderOptions.copyOrCreate(bdbOptions);
+        if (options.effectBuilderListener==null){
+            options.effectBuilderListener=boptions.effectBuilderListener;
+        }
 
         BundleResource bmodelpath = bpath;
         ResourcePath btexturepath = null;
@@ -453,7 +458,7 @@ public class SGReaderWriterXML {
             SGPath submodelpath;
             /*osg::ref_ptr < osg::*/
             /*Node*/
-            SceneNode submodel;
+            Node submodel;
 
             String subPathStr = sub_props.getStringValue("path");
             logger.debug("loading sub model " + subPathStr + " at " + i);
@@ -476,18 +481,18 @@ public class SGReaderWriterXML {
                 }
             }
 
-            SceneNode submodelresultNode = null;
+            Node submodelresultNode = null;
             // 12.2.24: No longer use same methode for XML and non XML. Decide here.
             if (bsubmodelpath.getExtension().equals("xml")) {
                 BuildResult submodelresult = sgLoad3DModel_internal(bsubmodelpath,/*MA23 submodelPath, options/*.get()* /,
                     sub_props.getNode("overlay"),*/ boptions, modeldelegate);
                 // 27.3.25 submodel load might fail, so check.
                 if (submodelresult.getNode() != null) {
-                    submodelresultNode = new SceneNode(submodelresult.getNode());
+                    submodelresultNode = new Node(submodelresult.getNode());
                 }
             } else {
                 BundleResource finalbsubmodelpath = bsubmodelpath;
-                SceneNode destinationNode = new SceneNode();
+                Node destinationNode = new Node();
                 destinationNode.setName(finalbsubmodelpath.getFullName());
                 submodelresultNode = destinationNode;
                 FgModelHelper.buildNativeModel(new ResourceLoaderFromBundle(finalbsubmodelpath), btexturepath, (BuildResult result) -> {
@@ -512,7 +517,7 @@ public class SGReaderWriterXML {
             }
 
             /*osg::ref_ptr < osg::*/
-            SceneNode submodel_final = submodel;
+            Node submodel_final = submodel;
             SGPropertyNode offs = sub_props.getNode("offsets", false);
             if (offs != null) {
                 /* osg::Matrix res_matrix;
@@ -548,11 +553,12 @@ public class SGReaderWriterXML {
 
             SGPropertyNode cond = sub_props.getNode("condition", false);
             if (cond != null) {
-               /*TODO osg::ref_ptr < osg::Switch > sw = new osg::Switch;
-                sw -> setUpdateCallback(new SGSwitchUpdateCallback(sgReadCondition(prop_root, cond)));
-                group.addChild(sw.get());
-                sw -> addChild(submodel_final.get());
-                sw -> setName("submodel condition switch");*/
+                /* osg::ref_ptr < osg::*/
+                Switch sw = new /*osg::*/Switch();
+                sw.setUpdateCallback(new SGSwitchUpdateCallback(sgReadCondition(prop_root, cond)));
+                group.addChild(sw/*.get()*/);
+                sw.addChild(submodel_final/*.get()*/);
+                sw.setName("submodel condition switch");
             } else {
                 group.attach/*addChild*/(submodel_final/*.get()*/);
             }
@@ -708,7 +714,7 @@ public class SGReaderWriterXML {
         SGTransientModelData modelData = new SGTransientModelData(group, prop_root, options, bpath.name/*local8BitStr()*/);
         for (int i = 0; i < animation_nodes.size(); ++i) {
             if (previewMode && animation_nodes.get(i).hasChild("nopreview")) {
-                /*TODOPropertyList names (animation_nodes.get(i).getChildren("object-name"));
+                /*TODO PropertyList names (animation_nodes.get(i).getChildren("object-name"));
                 for (unsigned int n = 0;
                 n<names.size (); ++n){
                     removeNamedNode(group, names[n]->getStringValue());
@@ -737,7 +743,7 @@ public class SGReaderWriterXML {
                 modelData.LoadAnimationValuesForElement(animation_nodes.get(i), i);
 
                 SGAnimation anim = SGAnimation.animate(modelData
-                        /*group, animation_nodes.get(i), prop_root, options, null, i*/, bpath.getName()+"."+i);
+                        /*group, animation_nodes.get(i), prop_root, options, null, i*/, bpath.getName() + "." + i);
                 if (anim != null) {
                     animationList.add(anim);
                 }
@@ -1284,4 +1290,29 @@ public class SGReaderWriterXML {
         failedList = new ArrayList<String>();
     }
 }
+
+class SGSwitchUpdateCallback extends /*: public osg::*/NodeCallback {
+    private SGCondition mCondition;
+
+    public SGSwitchUpdateCallback(SGCondition condition) {
+        mCondition = condition;
+    }
+
+    /*virtual*/ void operator/*()*/(/*osg::*/Node node, /*osg::*/ NodeVisitor nv) {
+        //assert(dynamic_cast<osg::Switch*>(node));
+        /*osg::*/
+        Switch s = (Switch) node;//static_cast<osg::Switch*>(node);
+
+        if (mCondition != null && mCondition.test()) {
+            s.setAllChildrenOn();
+            // note, callback is responsible for scenegraph traversal so
+            // should always include call traverse(node,nv) to ensure
+            // that the rest of cullbacks and the scene graph are traversed.
+            traverse(node, nv);
+        } else
+            s.setAllChildrenOff();
+    }
+}
+
+
 

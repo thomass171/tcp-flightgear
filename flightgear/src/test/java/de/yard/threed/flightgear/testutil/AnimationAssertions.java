@@ -100,7 +100,7 @@ public class AnimationAssertions {
     public static void assertEgkkTowerAnimations(SceneNode xmlNnode, List<SGAnimation> animationList, boolean atNight) {
         log.debug(xmlNnode.dump("  ", 1));
         // rotate+textransform+material+rotate+select+translate(2).
-        assertEquals(7, animationList.size(), "animations");
+        assertEquals(9/*7*/, animationList.size(), "animations");
 
         SGRotateAnimation elapsedSecRotateAnimation = (SGRotateAnimation) animationList.get(0);
         assertFalse(elapsedSecRotateAnimation.isSpin());

@@ -20,9 +20,10 @@ Originally 'bluebird' has no real effect
 file (with suffix 'eff'). So all 'eff' files were added for testing. These are
 (or should be) added to the cockpit of 'bluebird'.
 
-Added from c172p (the 2025 converted):
+Added from c172p (the 2024 converted):
   * .../mag-compass (uses Aircraft references)
   * .../digital-clock
+  * .../kx165
   * interior/procedural-light-dome.eff
   * Effects/interior/lm-mag.eff
   * Effects/interior/lm-magr.eff

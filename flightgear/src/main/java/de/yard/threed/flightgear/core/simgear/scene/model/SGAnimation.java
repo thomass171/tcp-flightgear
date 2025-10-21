@@ -103,8 +103,9 @@ public abstract class SGAnimation {
             //SGBlendAnimation animInst(modelData);
             //animInst.apply(node);
         } else if (type.equals("dist-scale")) {
-            //SGDistScaleAnimation animInst(modelData);
-            //animInst.apply(node);
+            SGDistScaleAnimation animInst = new SGDistScaleAnimation(modelData, label);
+            animInst.apply(modelData.getXmlNode());
+            animation = animInst;
         } else if (type.equals("flash")) {
             // SGFlashAnimation animInst(modelData);
             // animInst.apply(node);
@@ -184,6 +185,8 @@ public abstract class SGAnimation {
                 logger.warn("Building " + animation.getClass().getName() + " took " + took + " ms");
             }
         }
+        logger.debug("Animation created");
+
         return animation;
     }
 
@@ -421,6 +424,11 @@ public abstract class SGAnimation {
         if (nlist.size() > 0) {
             child = new SceneNode(nlist.get(0));
         }
+        logger.debug("installInGroup: "+name);
+        if (name.equals("CommKnobs")){
+            // debug hook
+            int h=9;
+        }
         if (child == null) {
             // 10.10.18: debug statt warn um es disablen zu können. Kommt sehr oft.
             if (Config.animationdebuglog) {
@@ -627,7 +635,9 @@ public abstract class SGAnimation {
              * First search the currently loaded cache map to see if this axis object has already been located.
              * If we find it, we use it.
              */
-            Util.notyet();
+            // Reached with c172p "knob-axis". 30.9.25: No longer abort but just log for now
+            //Util.notyet();
+            logger.error("animation not yet implemented:"+axis_object_name);
                 /*
         const SGLineSegment<double> *axisSegment = modelData.getAxisDefinition(axis_object_name);
                 if (!axisSegment)

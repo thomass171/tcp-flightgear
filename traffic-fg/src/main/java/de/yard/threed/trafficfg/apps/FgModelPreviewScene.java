@@ -107,13 +107,15 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                 //15: the mag-compass model isn't origin based but somewhere at (-0.4,0.25034,0.01142) in ac-space. Fix this via offset.
                 "A:Models/Interior/Panel/Instruments/mag-compass/mag-compass.xml;offset=0.37,0.015,-0.23;scale=656.0;bundleUrl=bluebird",
                 "",
-                "",
+                "A:Models/Interior/Panel/Instruments/kx165/kx165-1.xml;scale=500;bundleUrl=" + bundlePool + "/c172p.2024",
                 // 18: Are c172 parts missing from FGROOT? There are gaps like missing wing and wheels
                 // 1.9.25 And it doesn't look nice (any more?). 'glass' is not correct. Was anything lost
-                // with new shader or JME? But in ThreeJS it is the same way strange. But lets focus on 2025 model.
+                // with new shader or JME? But in ThreeJS it is the same way strange. But lets focus on 2024 model.
                 "A:Models/c172p.xml;bundleUrl=" + bundlePool + "/c172p.2018",
-                "A:Models/c172p.xml;bundleUrl=" + bundlePool + "/c172p.2025",
-                "??777-Models/OHpanel.xml",
+                // 19:
+                "A:Models/c172-common.xml;bundleUrl=" + bundlePool + "/c172p.2024",
+                "A:Models/Interior/Panel/Instruments/asi/asi.xml;scale=500;bundleUrl=" + bundlePool + "/c172p.2024",
+                //"??777-Models/OHpanel.xml",
                 //21:nochmal aus data (als Testreferenz)
                 "??data-flusi/Overhead-777/OHpanel.xml",
                 "??EDDK-eddk-latest.xml",
@@ -156,7 +158,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
             }
         });
 
-        major = 14;
+        major = 19;
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
     }
@@ -180,11 +182,12 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                     bundleNameOfCurrentAircraft = StringUtils.substringAfterLast(bundleNameOfCurrentAircraft, "/");
                 }
                 // 'basename' is the name used in the XML files for referencing itself, eg."Aircraft/c172p/..."
-                String basename = "xx";
+                String basename = null;//"xx";
                 if (StringUtils.contains(modelname, "777")) {
                     basename = "777";
                 }
-                if (StringUtils.contains(modelname, "c172p")) {
+                if ( StringUtils.contains(modelname, "asi") ||
+                        StringUtils.contains(modelname, "c172")) {
                     basename = "c172p";
                 }
                 if (StringUtils.contains(modelname, "bluebird") ||

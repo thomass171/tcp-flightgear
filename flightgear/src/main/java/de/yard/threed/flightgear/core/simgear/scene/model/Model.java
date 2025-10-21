@@ -1,11 +1,13 @@
 package de.yard.threed.flightgear.core.simgear.scene.model;
 
+import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.*;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.engine.Material;
 import de.yard.threed.engine.Mesh;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.AbstractMaterialFactory;
+import de.yard.threed.flightgear.EffectBuilderListener;
 import de.yard.threed.flightgear.EffectMaterialWrapper;
 import de.yard.threed.flightgear.core.PropertyList;
 import de.yard.threed.flightgear.core.osg.Node;
@@ -26,8 +28,10 @@ import java.util.Map;
  */
 public class Model {
     static Log logger = Platform.getInstance().getLog(Model.class);
-    // just for testing/logging. Reset for each model.
+    // just for testing/logging. Reset for each model. Deprecated in favor of EffectBuilderListener
+    @Deprecated
     public static Map<String, List<Effect>> appliedEffects;
+    public static List<String> ghostedObjects = new ArrayList<>();
 
 /*
     osg::Texture2D*
@@ -389,16 +393,15 @@ public class Model {
                     List<SceneNode> nlist = modelGroup.findNodeByName(objname);
                     if (nlist.size() == 0) {
                         // Kommt wohl schon mal vor. "Lettering_Btns" z.B. wird in boeing.xml auf transparent gesetzt gibt es aber nicht
-                        logger.warn("object '" + objname + "' not found in modelGroup: " + modelGroup.dump("", 0));
+                        logger.warn("object '" + objname + "' not found in modelGroup: " + modelGroup/*too often too much data.dump("", 0)*/);
                     }
                     boolean meshfound = false;
                     for (SceneNode n : nlist) {
                         //logger.debug("setting transparency for node " + n.getName());
                         Mesh mesh = n.getMesh();
                         if (mesh != null) {
-                            Material mat = mesh.getMaterial();
                             // configNode points to one effect definition in the model.xml (or any other model xml file). 'objname' in label is more helpful than index.
-                            applyEffectToObject(objname, configNode, mat, options, label + ".effect." + objname, current);
+                            applyEffectToObject(objname, configNode, n, options, label + ".effect." + objname, current, options.effectBuilderListener);
                             //mat.setTransparency(true);
                             //effect.apply();
                             meshfound = true;
@@ -429,15 +432,29 @@ public class Model {
     /**
      * Try to build effect here like MakeEffectVisitor does.
      */
-    static private void applyEffectToObject(String objName, SGPropertyNode configNode, Material material, SGReaderWriterOptions options, String label, BundleResource current) {
+    static private void applyEffectToObject(String objName, SGPropertyNode configNode, SceneNode n, SGReaderWriterOptions options, String label, BundleResource current, EffectBuilderListener effectBuilderListener) {
         //
         SGPropertyNode ssRoot = new SGPropertyNode();
         Effect.makeParametersFromStateSet(ssRoot/*StateSet is from OSG, ss*/);
         SGPropertyNode effectRoot = new SGPropertyNode();
         // No idea if using configNode instead of _currentEffectParent is good here
         MakeEffect.mergePropertyTrees(effectRoot, ssRoot, configNode/* _currentEffectParent*/);
-        Effect effect = MakeEffect.makeEffect(effectRoot, true, options, label, false, new EffectMaterialWrapper(material), current);
-        addAppliedEffect(objName, effect);
+        // 20.10.25: The effect needs to apply to the existing material. Creating a new material from scratch is no option as PortableMaterial is not available here
+        Effect effect = MakeEffect.makeEffect(effectRoot, true, options, label, false, new EffectMaterialWrapper(n.getMesh().getMaterial()), current);
+        if (effect != null && effect.getAppliedTechnique() != null) {
+            addAppliedEffect(objName, effect);
+        } else {
+            // If no effect/technique material could be built, make the object invisible by scaling down. Removing material or mesh currently isn't possible in tcp-22.
+            // Othwerwise we might see eg. annoying light cones like from "Models/Effects/lights/procedural_light_nav_right.xml"
+            // However, this might not be a good solution in general.
+            logger.warn("Making object "+objName+" invisible because of missing effect technique");
+            ghostedObjects.add(objName);
+            n.getTransform().setScale(new Vector3());
+        }
+        if (effectBuilderListener != null) {
+            // 'label' is the XML file name
+            effectBuilderListener.effectBuilt(effect, label, objName);
+        }
     }
 
     private static void addAppliedEffect(String objName, Effect effect) {

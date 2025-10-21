@@ -11,7 +11,7 @@ import java.util.Set;
  */
 //template<typename T>
 public abstract class SGNaryExpression extends SGExpression {
-    List<SGExpression> _expressions = new ArrayList<SGExpression>();
+    private List<SGExpression> _expressions = new ArrayList<SGExpression>();
 
     SGNaryExpression(SGExpression expr0, SGExpression expr1) {
         addOperand(expr0);
@@ -47,11 +47,12 @@ public abstract class SGNaryExpression extends SGExpression {
 
 
     //template<typename Iter>
-    /*void addOperands(Iter begin, Iter end) {
-        for (Iter iter = begin; iter != end; ++iter) {
-            addOperand(static_cast <::SGExpression < T >*>( * iter));
+    public void addOperands(List<SGExpression> exprs/*Iter begin, Iter end*/) {
+        //for (Iter iter = begin; iter != end; ++iter) {
+        for (SGExpression e:exprs){
+            addOperand(e/*static_cast <::SGExpression < T >*>( * iter)*/);
         }
-    }*/
+    }
 
     @Override
     public boolean isConst() {

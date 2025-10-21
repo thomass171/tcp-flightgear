@@ -1,5 +1,6 @@
 package de.yard.threed.flightgear.core.osg;
 
+import de.yard.threed.core.platform.NativeSceneNode;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.flightgear.core.simgear.scene.material.OsgTransform;
 
@@ -15,7 +16,15 @@ import de.yard.threed.flightgear.core.simgear.scene.material.OsgTransform;
  * Created by thomass on 07.12.15.
  */
 public class Node extends SceneNode {
-   // Model model;
+
+    public Node( ) {
+        super();
+    }
+
+    public Node(NativeSceneNode node) {
+        super(node);
+    }
+    // Model model;
 
     
     /**
@@ -47,9 +56,9 @@ public class Node extends SceneNode {
     //
     // 18.11.24 Implementation of OSG typicals methods for better readability of migrated code.
     //
-    /*needed?public void addChild(Node model) {
+    public void addChild(Node model) {
         model.getTransform().setParent(this.getTransform());
-    }*/
+    }
 
     /**
      * 18.11.24 A helper for adding OSG::Transform

@@ -81,7 +81,8 @@ public class VehicleEffectTest {
             // TODO What about the other objects?
             "Models/Interior/Panel/Instruments/digital-clock/digital-clock.xml;true",
             "Models/Interior/Panel/Instruments/mag-compass/mag-compass.xml;false",
-            "Models/bluebird.xml;false"
+            "Models/bluebird.xml;false",
+            "Models/Interior/Panel/Instruments/kx165/kx165-1.xml;false",
     }, delimiter = ';')
     public void testBluebirdAndComponents(String modelReference, boolean expectedDetailCheck) {
 

@@ -33,6 +33,7 @@ public class MakeEffect {
     // XML file effect block? But this here appears a global cache.
     // But apparently not for SGMaterial/scenery effects.
     // 5.9.25: Again, not sure a global map is OK.
+    // 13.10.25: See also README.md. This map does not contain the final Effect object with realized techniques!
     //typedef map<const string, ref_ptr<Effect> > EffectMap;
     /*Cpp*/ public static HashMap<String, Effect> effectMap = new /*Cpp*/HashMap<String, Effect>(/*new Effect()*/);
     
@@ -137,6 +138,10 @@ public class MakeEffect {
                     itr.getSecond.valid())
                 return itr.getSecond.get();
         }*/
+        if (name.equals("procedural-light-nav-right")) {
+            // debug hook
+            int h = 9;
+        }
         Effect e;
         if ((e = effectMap.get(name)) != null) {
             return e;
@@ -145,7 +150,7 @@ public class MakeEffect {
         String effectFileName = name;
         effectFileName += ".eff";
 
-        getLog().debug("makeEffect: effectFileName=" + effectFileName);
+        getLog().debug("makeEffect: not in cache yet, effectFileName=" + effectFileName);
 
         //28.6.17: Effects come from "fgdatabasic".
         //01.09.25: But might also be from aircraft itself, so needs bundle resolving instead of hard coded "fgdatabasic".
@@ -156,7 +161,7 @@ public class MakeEffect {
             return null;
         }
         SGPropertyNode/*_ptr*/ effectProps = new SGPropertyNode();
-        effectProps.setLabel(label+"."+effectFileName);
+        effectProps.setLabel(label + "." + effectFileName);
 
         try {
             new PropsIO().readProperties(absFileName, effectProps/*.ptr()*/, 0, true);
@@ -176,6 +181,7 @@ public class MakeEffect {
                 result = irslt.getFirst.getSecond;
             }*/
             effectMap.put(name, result);
+            getLog().debug("Added effect " + name + " to effectMap. size = " + effectMap.size());
         }
         return result/*.release()*/;
     }
@@ -235,7 +241,7 @@ public class MakeEffect {
         Effect parent = null;
         //siehe Header
         if (inheritProp != null/*28.10.24 && false*/) {
-            getLog().debug("Building/Lookup inherited effect " + inheritProp.getStringValue() + " from "+current);
+            getLog().debug("Building/Lookup inherited effect " + inheritProp.getStringValue() + " from " + current);
             //also commented in FG prop.removeChild("inherits-from"); Maybe was intended to avoid a "inherits-from" property in the merged root tree of the effect.
             //Why use hard coded 'false' for 'realizeTechniques'? Most likely because here we are collecting the inherit chain. The
             //effect will not be realized until the chain is complete? or the top of chain is reached (below).
@@ -260,7 +266,7 @@ public class MakeEffect {
                     }
                 }*/
                 // 15.9.25: Changed from "true" to null check
-                if (effect==null/*!effect.valid()*/) {
+                if (effect == null/*!effect.valid()*/) {
                     // Merge current with parent effect.
                     // Might create a model effect with "model-transparent" as parent.
                     effect = new Effect(nameProp.getStringValue(), prop, parent, label, forBtgConversion, wrapper);
@@ -320,6 +326,7 @@ public class MakeEffect {
                 // Now that the complete effect property inherit chain was loaded into the effect prop, build the effect (eg. compiling and binding the final shader program)
                 effect.realizeTechniques(options, label);
             } catch (/*Builder*/java.lang.Exception e) {
+                e.printStackTrace();
                 getLog().error(/*SG_LOG(SG_INPUT, SG_ALERT,*/ "Error building technique: " + e.getMessage());
                 return null;
             }

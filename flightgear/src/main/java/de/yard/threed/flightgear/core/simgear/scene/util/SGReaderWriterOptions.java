@@ -1,5 +1,6 @@
 package de.yard.threed.flightgear.core.simgear.scene.util;
 
+import de.yard.threed.flightgear.EffectBuilderListener;
 import de.yard.threed.flightgear.core.osgdb.FilePathList;
 import de.yard.threed.flightgear.core.osgdb.Options;
 import de.yard.threed.flightgear.core.osgdb.Registry;
@@ -29,6 +30,7 @@ public class SGReaderWriterOptions extends Options {
         for (String s: options.getDatabasePathList()){
             this.databasePathList.add(s);
         }
+        this.effectBuilderListener = options.effectBuilderListener;
     }
 
     public SGReaderWriterOptions(Options options) {
@@ -36,6 +38,7 @@ public class SGReaderWriterOptions extends Options {
         for (String s: options.getDatabasePathList()){
             this.databasePathList.add(s);
         }
+        this.effectBuilderListener = options.effectBuilderListener;
     }
 
     public SGReaderWriterOptions() {

@@ -231,6 +231,16 @@ Syd Adams, Justin Smithies for the 777 (TODO link).
 
 Stewart Andreason (http://seahorseCorral.org/flightgear_aircraft.html) for 'bluebird'
 
+# Releases
+This is the release list In terms of installations to the examples hosting
+server used from https://thomass171.github.io/tcp-flightgear/tcp-flightgear.html. Every release contains lots of bug fixes.
+Only major changes are listed here.
+
+## 2021-06(?)
+Initial release
+## 2025-09
+* FG 2024.1 upgrade
+
 # Flightgear data
 Flightgear needs data for
   * scenery
@@ -339,29 +349,42 @@ FG uses proxy nodes for model that are not loaded before the viewer steps onto t
 node (see SGModelLib).
 
 ## Effects
-See also https://wiki.flightgear.org/Effect_framework.
+See also https://wiki.flightgear.org/Effect_framework. From https://wiki.flightgear.org/Effects:
 
-In FG effects (eg. transparency) are defined in XML and applied at runtime 
+> An effect is a container for a series of techniques which are all the possible things you could do with some object. The <predicate> section inside each effect determines which of the techniques we actually run. Typically the predicate section contains conditionals on a) rendering framework properties b) OpenGL extension support and c) quality level properties. The renderer searches the effects from lowest to highest technique number and uses the first one that fits the bill (which is why high quality levels precede low quality levels). The rendering itself is specified as <pass> - each pass runs the renderer over the whole scene. We may sometimes make a quick first pass to fill the depth buffer or a stencil buffer, but usually we render with a single pass. Techniques may not involve a shader at all, for instance 12 in terrain-default is a pure fixed pipeline fallback technique, but all the rendering you're interested in use a shader, which means they have a <program> section which determines what actual code is supposed to run.
+
+Effects (eg. transparency) are defined in XML and applied at runtime 
 via an OSG node visitor (MakeEffectVisitor). When the visitor is reached the current OSG
 and/or OpenGL state is available via the super class osg::StateSet of class Pass and 
 provides the resources (eg. textures, buffer, uvs, shader) where effects should apply. Maybe
 this is done immediately before the draw command. It's unclear whether and how
-resources like textures and shader are shared.
+resources like textures and shader are shared. It's also unclear how and when FG decides
+which technique to use if multiple are available, and how and when the validness of
+a technique is used.
 
 An important step of migration is replacing OSG classes StateSet and Material with
 our classes Texture and Material. Instead of having a (global) current state we provide
-the material where effects should apply via material wrapper as super class of class Pass.
-So an effect will be connected to a specific material after realizeTechniques(). For texture
-sharing will still have the simple cache from tcp22.
+the material where effects/techniques should apply via material wrapper as super class of class Pass.
+Typically a model loader (eg. GLTF) already created a material (texture/color) to which the effect should
+apply (available by the material wrapper). It's probably no option to
+build a new material based on the base material for each valid technique
+because the base information (PortablMaterial) will not be available at
+the time when the effect is built.
+
+To avoid break the existing material, just the first valid technique of an effect 
+will be applied to the existing material after realizeTechniques(). 
+
+
+For texture sharing we still have the simple cache from tcp22.
 
 The effect property '<inherits-from>' probably just means 'copy property tree from parent'. The
 parent itself is never realized.
 
 We ignore schemes and compositor for now.
 
-Later versions (2024) of Flightgear apparently no longer prefer using
+Later versions (2024) of beacon.xml apparently no longer uses
 '<inherits-from>Effects/model-transparent</inherits-from>' for
-effects? At least beacon.xml no longer uses it. So this is no good use/test case for
+effects. So this is no good use/test case for
 understanding how it works. Maybe it never worked as intended in beacon? "model-transparent.eff" appears
 no longer popular at all. But c172p propeller and scenery models still use it.
 beacon.xml in fg-raw-data replaced with latest version, but we keep the pre2024 version for testing.
@@ -378,6 +401,14 @@ The property tree layout for effects looks like
 
 For terrain effects the material definitions are converted to the above layout
 in SGMaterial.buildEffectProperties(). Eg. global-summer.xml defines "<texture>Terrain/dry_pasture4.png</texture>" in a material.
+
+### Effect Caching
+FG apparently has two caches for effects, effectMap in makeEffect (local or global?) and 'Cache' in Effect.hxx.
+> Support for a cache of effects that inherit from this one, so
+> Effect objects with the same parameters and techniques can be
+> shared.
+
+And every MakeEffectVisitor has its own effectMap. This is confusing. When an Effect object is instanciated, caches need to be adjusted. But this is apparently not done for 'effectMap'.
 
 ## Scenery
 

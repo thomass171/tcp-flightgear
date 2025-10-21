@@ -72,7 +72,7 @@ public class FgVehicleLoaderTest {
 
         assertEquals(0, SGReaderWriterXML.errorCnt, "errorCnt ");
         //Wow, 609 animations counted. But only 393 effective. Hmm. now 587 due to garmin?. 20.11.24 now 762->838.2.2.25 ->839 8.9.25->857
-        assertEquals(857, loadedResults.get(0).animationList.size());
+        assertEquals(871/*857*/, loadedResults.get(0).animationList.size());
 
         // should load bluebird, yoke, pedals,display-screens, 6 spheres, 3 of garmin(?), compass+digital clock
         assertEquals(1 + 1 + 1 + 1 + 6 + 3 + 2, SGReaderWriterXML.loadedList.size(), "loadedList ");

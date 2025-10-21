@@ -13,10 +13,14 @@ import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.flightgear.EffectMaterialWrapper;
 import de.yard.threed.flightgear.core.PropertyList;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
+import de.yard.threed.flightgear.core.simgear.Simgear;
+import de.yard.threed.flightgear.core.simgear.props.DefaultSGPropertyChangeListener;
+import de.yard.threed.flightgear.core.simgear.props.SGPropertyChangeListener;
 import de.yard.threed.flightgear.core.simgear.scene.util.SGReaderWriterOptions;
 
 
 import de.yard.threed.core.platform.Log;
+import de.yard.threed.flightgear.core.simgear.structure.*;
 
 
 import java.util.ArrayList;
@@ -41,6 +45,7 @@ public class Effect /*extends Effect osg::Object */ {
     private PortableMaterial materialdefinitionForTerrainOnly = null;
     public Material material = null;
     EffectMaterialWrapper wrapper;
+    private Technique appliedTechnique;
 
     // made private with constructor.
     private String name;
@@ -55,7 +60,7 @@ public class Effect /*extends Effect osg::Object */ {
     //public EffectShader shader = null;
 
     //std::vector<osg::ref_ptr<Technique> > techniques;
-    List<Technique> techniques = new ArrayList<>();
+    private List<Technique> techniques = new ArrayList<>();
     private boolean forBtgConversion;
     public static List<Effect> effectListForTesting = null;
 
@@ -114,6 +119,10 @@ public class Effect /*extends Effect osg::Object */ {
                 //logger.warn("Technique: No builder: skipping unknown pass attribute " + attrProp.getName());
             }
         }
+    }
+
+    public Technique getAppliedTechnique() {
+        return appliedTechnique;
     }
 
     /*
@@ -1150,43 +1159,46 @@ public class Effect /*extends Effect osg::Object */ {
 
     /**
      * Build a single technique of the effect.
+     * FG-DIFF: While FG apparently applies the effect later via OSG and builds all effects/passes always, we apply a valid technique immediately and skip the remaining.
+     * Returns true when effect was applied.
      */
-    void buildTechnique(Effect effect, SGPropertyNode prop, SGReaderWriterOptions options, EffectMaterialWrapper wrapper) {
+    private boolean/*void*/ buildTechnique(Effect effect, SGPropertyNode prop, SGReaderWriterOptions options, EffectMaterialWrapper wrapper) {
         Technique tniq = new Technique();
         effect.techniques.add(tniq);
-        // we ignore schemes for now
+        // we ignore (compositor?) schemes for now.
         //tniq->setScheme(prop->getStringValue("scheme"));
         SGPropertyNode predProp = prop.getChild("predicate");
         if (predProp == null) {
             tniq.setAlwaysValid(true);
         } else {
-            /*TODO try {
-                TechniquePredParser parser;
+            try {
+                TechniquePredParser parser = new TechniquePredParser();
                 parser.setTechnique(tniq);
-                expression::BindingLayout& layout = parser.getBindingLayout();
-                layout.addBinding("__contextId", expression::INT);
-                SGExpressionb* validExp
-                        = dynamic_cast<SGExpressionb*>(parser.read(predProp
-                        ->getChild(0)));
-                if (validExp)
-                    tniq->setValidExpression(validExp, layout);
+                BindingLayout layout = parser.getBindingLayout();
+                layout.addBinding("__contextId", new ExpressionType(ExpressionType.INT));
+                SGExpression/*b* */ validExp = /*dynamic_cast<SGExpressionb*>(*/(SGExpression) parser.read(predProp.getChild(0));
+                if (validExp != null)
+                    tniq.setValidExpression(validExp, layout);
                 else
-                    throw expression::ParseError("technique predicate is not a boolean expression");
+                    throw new ParseError("technique predicate is not a boolean expression");
+            } catch (ParseError except) {
+                except.printStackTrace();
+                logger.error("parsing technique predicate " + except.getMessage());
+                tniq.setAlwaysValid(false);
             }
-            catch (expression::ParseError& except)
-            {
-                SG_LOG(SG_INPUT, SG_ALERT,
-                        "parsing technique predicate " << except.getMessage());
-                tniq->setAlwaysValid(false);
-            }*/
         }
-        PropertyList passProps = prop.getChildren("pass");
+        // FG-DIFF: Apply a technique immediately
+        if (tniq.valid()) {
+            PropertyList passProps = prop.getChildren("pass");
         /*for (PropertyList::iterator itr = passProps.begin(), e = passProps.end();
         itr != e;
         ++itr) {*/
-        for (SGPropertyNode/*_ptr*/ passProp : passProps) {
-            buildPass(effect, tniq, passProp, options, wrapper);
+            for (SGPropertyNode/*_ptr*/ passProp : passProps) {
+                buildPass(effect, tniq, passProp, options, wrapper);
+            }
+            return true;
         }
+        return false;
     }
 
     /**
@@ -1351,13 +1363,145 @@ public class Effect /*extends Effect osg::Object */ {
             PropertyList tniqList = root.getChildren("technique");
             //for (PropertyList::iterator itr = tniqList.begin(), e = tniqList.end();        itr != e;        ++itr)
             for (SGPropertyNode/*_ptr*/ tniq : tniqList) {
-                buildTechnique(this, tniq, options, wrapper == null ? new EffectMaterialWrapper(material) : wrapper);
+                if (buildTechnique(this, tniq, options, wrapper == null ? new EffectMaterialWrapper(material) : wrapper)) {
+                    appliedTechnique = techniques.get(techniques.size() - 1);
+                    break;
+                }
             }
+            logger.debug("Effect:realizeTechniques done with " + techniques.size() + " out of " + tniqList.size() + " techniques");
         }
         _isRealized = true;
-        logger.debug("Effect:realizeTechniques done");
         return true;
     }
+
+    /*void Effect::addDeferredPropertyListener(DeferredPropertyListener* listener)
+    {
+        UniformFactory::instance()->addListener(listener);
+    }
+
+    void Effect::InitializeCallback::doUpdate(osg::Node* node, osg::NodeVisitor* nv)
+    {
+        EffectGeode* eg = dynamic_cast<EffectGeode*>(node);
+        if (!eg)
+            return;
+        Effect* effect = eg->getEffect();
+        if (!effect)
+            return;
+        SGPropertyNode* root = getPropertyRoot();
+
+        // Initialize all queued listeners
+        UniformFactory::instance()->updateListeners(root);
+    }
+
+    bool Effect::Key::EqualTo::operator()(const Effect::Key& lhs,
+            const Effect::Key& rhs) const
+    {
+        if (lhs.paths.size() != rhs.paths.size()
+                || !equal(lhs.paths.begin(), lhs.paths.end(), rhs.paths.begin()))
+            return false;
+        if (lhs.unmerged.valid() && rhs.unmerged.valid())
+            return props::Compare()(lhs.unmerged, rhs.unmerged);
+    else
+        return lhs.unmerged == rhs.unmerged;
+    }
+
+    size_t hash_value(const Effect::Key& key)
+    {
+        size_t seed = 0;
+        if (key.unmerged.valid())
+            boost::hash_combine(seed, *key.unmerged);
+        boost::hash_range(seed, key.paths.begin(), key.paths.end());
+        return seed;
+    }
+
+    bool Effect_writeLocalData(const Object& obj, osgDB::Output& fw)
+    {
+    const Effect& effect = static_cast<const Effect&>(obj);
+
+        fw.indent() << "techniques " << effect.techniques.size() << "\n";
+        BOOST_FOREACH(const ref_ptr<Technique>& technique, effect.techniques) {
+        fw.writeObject(*technique);
+    }
+        return true;
+    }
+
+    namespace
+    {
+        osgDB::RegisterDotOsgWrapperProxy effectProxy
+            (
+                    new Effect,
+                    "simgear::Effect",
+                    "Object simgear::Effect",
+                    0,
+            &Effect_writeLocalData
+    );
+    }
+*/
+    // Property expressions for technique predicates
+    //template<typename T>
+
+    static class PropertyExpression extends SGExpression/*<T>*/ {
+        SGPropertyNode/*_ptr*/ _pnode;
+        SGPropertyChangeListener _listener;
+
+        public PropertyExpression(SGPropertyNode pnode) {
+            _pnode = pnode;
+            _listener = null;
+        }
+
+        /*~        PropertyExpression() {
+            delete _listener;
+        }*/
+
+        //void eval(T &value, const expression::Binding*) const
+        @Override
+        public PrimitiveValue eval(Binding b) {
+            // Hmm likely requires generic type
+            double value = _pnode.getDoubleValue /*< T >*/();
+            return new PrimitiveValue(value);
+        }
+
+        void setListener(SGPropertyChangeListener l) {
+            _listener = l;
+        }
+    }
+
+    static class EffectPropertyListener extends DefaultSGPropertyChangeListener {
+        /*osg::observer_ptr<*/ Technique _tniq;
+
+        public EffectPropertyListener(Technique tniq) {
+            _tniq = tniq;
+        }
+
+        public void valueChanged(SGPropertyNode node) {
+            if (_tniq.valid())
+                _tniq.refreshValidity();
+        }
+        //virtual ~EffectPropertyListener() { }
+    }
+
+    //template<typename T>
+    static class propertyExpressionParser implements exp_parser {
+        public SGExpression parse(SGPropertyNode exp, Parser parser) {
+
+            SGPropertyNode/*_ptr */pnode = Simgear.getPropertyRoot().getNode(exp.getStringValue(),
+                    true);
+            // FG has both 'SGPropertyExpression' and 'PropertyExpression'
+            PropertyExpression pexp = new PropertyExpression/*<T>*/(pnode);
+            TechniquePredParser predParser =/* dynamic_cast < */(TechniquePredParser) (parser);
+            if (predParser != null) {
+                EffectPropertyListener l = new EffectPropertyListener(predParser.getTechnique());
+                pexp.setListener(l);
+                pnode.addChangeListener(l);
+            }
+            return pexp;
+        }
+    }
+
+    ExpParserRegistrar propertyRegistrar = new ExpParserRegistrar("property", new propertyExpressionParser/* < bool >*/());
+
+    ExpParserRegistrar propvalueRegistrar = new ExpParserRegistrar("float-property", new propertyExpressionParser /*<    float>*/());
+
 
     /**
      * Build initial material. Might be modified by techniques later.
@@ -1436,6 +1580,13 @@ public class Effect /*extends Effect osg::Object */ {
 
     public boolean isRealized() {
         return _isRealized;
+    }
+
+    /**
+     * for testing
+     */
+    public List<Technique> getTechniques() {
+        return techniques;
     }
 }
 

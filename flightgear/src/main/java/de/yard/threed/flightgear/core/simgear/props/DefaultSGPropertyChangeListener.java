@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 
+ * Helper to relieve implementing classes to implement all methods.
+ * Not needed in FG C++?
+ *
  * Created by thomass on 30.05.16.
  */
 public class DefaultSGPropertyChangeListener implements SGPropertyChangeListener {

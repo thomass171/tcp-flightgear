@@ -75,6 +75,7 @@ Models/Effects/interior/lm-digitalclock.eff
 Models/Effects/interior/lm-mag.eff
 Models/Effects/interior/lm-magr.eff
 Models/Effects/interior/lm_mag.png
+Models/Effects/interior/lm-kx165-1.eff
 Models/Effects/interior/interior-glass-reflection-panel-front.eff
 Models/Effects/interior/reflection_nx.png
 Models/Effects/interior/reflection_ny.png
@@ -102,6 +103,9 @@ Models/Interior/Panel/Instruments/digital-clock/digital-clock.xml
 Models/Interior/Panel/Instruments/mag-compass/mag-compass.ac
 Models/Interior/Panel/Instruments/mag-compass/mag-compass.png
 Models/Interior/Panel/Instruments/mag-compass/mag-compass.xml
+Models/Interior/Panel/Instruments/kx165/kx165-1.xml
+Models/Interior/Panel/Instruments/kx165/kx165-1.ac
+Models/Interior/Panel/Instruments/kx165/kx165.png
 bluebird-base.xml
 thumbnail.jpg
 GPL

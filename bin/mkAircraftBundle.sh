@@ -15,7 +15,7 @@
 # For converting a c172p tree according to the definition in bundledefs/c172p.bundledef the command
 #   sh bin/mkAircraftBundle.sh -o /Volumes/Flightgear/bundletarget c172
 # can be used.
-#
+# 25.9.25 TODO merge with mkFgBundle.sh
 
 OWNDIR=`dirname $0`
 source $OWNDIR/common.sh || exit 1

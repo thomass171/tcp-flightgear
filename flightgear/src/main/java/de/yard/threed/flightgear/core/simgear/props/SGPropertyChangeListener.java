@@ -3,7 +3,7 @@ package de.yard.threed.flightgear.core.simgear.props;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 
 /**
- * Aus props.cxx
+ * From props.cxx
  * 
  * Created by thomass on 30.05.16.
  */

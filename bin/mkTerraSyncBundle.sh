@@ -16,11 +16,13 @@
 # Option -f for force overwriting existing destination files
 # Option -v for verbose
 # Option -s for strict material check, ie. conversion abort with missing material ('abort' currently is internal default in BTG loader however)
+# Option -F for full FG hostdir
 #
 # For converting a TerraSync tree on an external disk the command
-#   sh bin/mkTerraSyncBundle.sh -o /Volumes/Flightgear/TerraSync-Converted /Volumes/Flightgear/TerraSync
+#   sh bin/mkTerraSyncBundle.sh -o /Volumes/Flightgear/hostdirfullfg/bundles/TerraSync -F /Volumes/Flightgear/hostdirfullfg /Volumes/Flightgear/TerraSync
 # can be used. Be sure to set HOSTDIRFG to a bundle path where a full "sgmaterial" bundle
-# exits instead of just the subset. Conversion takes appx 8 hours for a 11GB TerraSync size.
+# exits instead of just the subset (Option -F).
+# Conversion takes appx 8 hours for a 11GB TerraSync size.
 #	
 #
 
@@ -148,6 +150,13 @@ if [ "$1" = "-s" ]
 then
 	STRICT=Strict
 	shift
+fi
+if [ "$1" = "-F" ]
+then
+  shift
+	export HOSTDIRFG=$1
+	shift
+	validateHOSTDIRFG
 fi
 
 # convertSingleModelToGltf needs HOSTDIR for building a platform and loading other bundle (eg. sgmaterial)

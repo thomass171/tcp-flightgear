@@ -1,0 +1,8 @@
+#
+# Parts from FGDATA that are needed by Aircraft model etc.
+# But no
+# - AI
+# - aircraft (c172p has extra bundle)
+Aircraft/Generic
+Aircraft/Instruments-3d
+Effects

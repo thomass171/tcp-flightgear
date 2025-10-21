@@ -1,20 +1,22 @@
 package de.yard.threed.flightgear.core.simgear.structure;
 
+import de.yard.threed.core.MathUtil2;
 import de.yard.threed.core.Util;
 import de.yard.threed.core.platform.Platform;
+import de.yard.threed.flightgear.core.CppStd;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.math.SGInterpTable;
 import de.yard.threed.flightgear.core.simgear.props.Props;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import static de.yard.threed.flightgear.core.simgear.structure.ExpressionType.BOOL;
 
 
 /**
- * aus SGExpression.hxx
+ * From SGExpression.hxx
  * <p>
  * wird anscheinend nicht fuer Nasal verwendet.
  * <p>
@@ -32,9 +34,16 @@ abstract public class SGExpression/*<T>*/ extends Expression {
 
     //typedef T    result_type;
     //typedef T    operand_type;
-    ExpressionType result_type;
+    //FG-DIFF FG has no default, but that might be set by 'T'. Until we have it generic, set double to avoid NPE.
+    //Many subclasses do not set it explicitly
+    ExpressionType result_type = new ExpressionType(ExpressionType.DOUBLE);
 
-    public abstract PrimitiveValue/*void*/ eval(/*T&,*/ Binding b);//   =0;
+    /**
+     * 17.10.25:Now we have this as base implementation to avoid abstract SGExpression sub classes. Does "return null" comply to C++ "=0"?
+     */
+    public PrimitiveValue/*void*/ eval(/*T&,*/ Binding b) {//   =0;
+        return null;
+    }
 
     public PrimitiveValue/*T*/ getValue(Binding binding/*=0*/) {
         //T value;
@@ -42,7 +51,8 @@ abstract public class SGExpression/*<T>*/ extends Expression {
         //return value;
     }
 
-    ExpressionType getType() {
+    @Override
+    public ExpressionType getType() {
         return result_type;
     }
 
@@ -189,34 +199,35 @@ abstract public class SGExpression/*<T>*/ extends Expression {
 
         if (name.equals("div")) {
             if (expression.nChildren() != 2) {
-                logger.error( "Cannot read \"" + name + "\" expression.");
+                logger.error("Cannot read \"" + name + "\" expression.");
                 return null;
             }
-            /*SGSharedPtr<SGExpression<T> >*/SGExpression inputExpressions[] = new SGExpression[]{
-                SGReadExpression(new ExpressionType(ExpressionType.DOUBLE), inputRoot, expression.getChild(0)),
-                SGReadExpression(new ExpressionType(ExpressionType.DOUBLE), inputRoot, expression.getChild(1))
+            /*SGSharedPtr<SGExpression<T> >*/
+            SGExpression inputExpressions[] = new SGExpression[]{
+                    SGReadExpression(new ExpressionType(ExpressionType.DOUBLE), inputRoot, expression.getChild(0)),
+                    SGReadExpression(new ExpressionType(ExpressionType.DOUBLE), inputRoot, expression.getChild(1))
             };
-            if (inputExpressions[0] ==null || inputExpressions[1]==null) {
-                logger.error( "Cannot read \"" + name + "\" expression.");
+            if (inputExpressions[0] == null || inputExpressions[1] == null) {
+                logger.error("Cannot read \"" + name + "\" expression.");
                 return null;
             }
             return new SGDivExpression(inputExpressions[0], inputExpressions[1]);
         }
         if (name.equals("mod")) {
-            Util.notyet();
-            /*if (expression->nChildren() != 2) {
-                logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
-                return 0;
+            if (expression.nChildren() != 2) {
+                logger.error("Cannot read \"" + name + "\" expression.");
+                return null;
             }
-            SGSharedPtr<SGExpression<T> > inputExpressions[2] = {
-                SGReadExpression<T>(inputRoot, expression->getChild(0)),
-                SGReadExpression<T>(inputRoot, expression->getChild(1))
+            /*SGSharedPtr<*/
+            SGExpression/*<T>*/ inputExpressions[] = new SGExpression[]{
+                    SGReadExpression/*<T>*/(new ExpressionType(ExpressionType.DOUBLE), inputRoot, expression.getChild(0)),
+                    SGReadExpression/*<T>*/(new ExpressionType(ExpressionType.DOUBLE), inputRoot, expression.getChild(1))
             };
-            if (!inputExpressions[0] || !inputExpressions[1]) {
-                logger.error(/*SG_IO, SG_ALERT, "Cannot read \"" << name << "\" expression.");
-                return 0;
+            if (inputExpressions[0] == null || inputExpressions[1] == null) {
+                logger.error("Cannot read \"" + name + "\" expression.");
+                return null;
             }
-            return new SGModExpression<T>(inputExpressions[0], inputExpressions[1]);*/
+            return new SGModExpression/*<T>*/(inputExpressions[0], inputExpressions[1]);
         }
 
         if (name.equals("sum")) {
@@ -227,7 +238,7 @@ abstract public class SGExpression/*<T>*/ extends Expression {
             SGSumExpression output = new SGSumExpression/*<T>*/();
             if (!SGReadNaryOperands(output, inputRoot, expression)) {
                 //delete output;
-                logger.error( "Cannot read \"" + name + "\" expression.");
+                logger.error("Cannot read \"" + name + "\" expression.");
                 return null;
             }
             return output;
@@ -292,14 +303,14 @@ abstract public class SGExpression/*<T>*/ extends Expression {
         if (name.equals("table")) {
             SGInterpTable tab = new SGInterpTable(expression);
             if (tab == null) {
-                logger.error( "Cannot read \"" + name + "\" expression: malformed table");
+                logger.error("Cannot read \"" + name + "\" expression: malformed table");
                 return null;
             }
 
             // find input expression - i.e a child not named 'entry'
             SGPropertyNode inputNode = null;
             for (int i = 0; (i < expression.nChildren()) && inputNode == null; ++i) {
-                if (/*strcmp*/(expression . getChild(i).getName().equals( "entry")/* == 0*/)) {
+                if (/*strcmp*/(expression.getChild(i).getName().equals("entry")/* == 0*/)) {
                     continue;
                 }
 
@@ -307,13 +318,13 @@ abstract public class SGExpression/*<T>*/ extends Expression {
             }
 
             if (inputNode == null) {
-                logger.error( "Cannot read \"" + name + "\" expression: no input found");
+                logger.error("Cannot read \"" + name + "\" expression: no input found");
                 return null;
             }
 
             /*SGSharedPtr<*/
             SGExpression/*<T>*/ inputExpression;
-            inputExpression =  SGReadExpression /*< T >*/(new ExpressionType(ExpressionType.DOUBLE), inputRoot, inputNode);
+            inputExpression = SGReadExpression /*< T >*/(new ExpressionType(ExpressionType.DOUBLE), inputRoot, inputNode);
             if (inputExpression == null) {
                 logger.error(/*SG_IO, SG_ALERT,*/ "Cannot read \"" + name + "\" expression.");
                 return null;
@@ -750,7 +761,6 @@ abstract class SGBinaryExpression extends SGExpression {
 }
 
 
-
 // template<typename T>
 
 /**
@@ -792,7 +802,7 @@ abstract class SGBinaryExpression extends SGExpression {
  * using SGUnaryExpression<T>::getOperand;
  * };
  * <p>
- * 
+ * <p>
  * template<typename T>
  * class SGCeilExpression extends SGUnaryExpression<T> {
  * public:
@@ -962,10 +972,10 @@ abstract class SGBinaryExpression extends SGExpression {
  * using SGUnaryExpression<T>::getOperand;
  * };
  * <p>
- 
- 
-
-
+ *
+ *
+ *
+ *
  * <p>
  * template<typename T>
  * class SGEnableExpression extends SGUnaryExpression<T> {
@@ -1021,25 +1031,36 @@ abstract class SGBinaryExpression extends SGExpression {
  * using SGBinaryExpression<T>::getOperand;
  * };
  * <p>
- * 
- * template<typename T>
- * class SGModExpression extends SGBinaryExpression<T> {
- * public:
- * SGModExpression(SGExpression<T>* expr0, SGExpression<T>* expr1)
- * : SGBinaryExpression<T>(expr0, expr1)
- * { }
- * void eval(T& value,   simgear::expression::Binding* b)
- * { value = mod(getOperand(0) .getValue(b), getOperand(1) .getValue(b)); }
- * using SGBinaryExpression<T>::getOperand;
- * private:
- * int mod(  int& v0,   int& v1)
- * { return v0 % v1; }
- * float mod(  float& v0,   float& v1)
- * { return fmod(v0, v1); }
- * double mod(  double& v0,   double& v1)
- * { return fmod(v0, v1); }
- * };
  * <p>
+ * template<typename T>
+ */
+
+/**
+ * TODO needs int overload
+ */
+class SGModExpression extends SGBinaryExpression/*<T>*/ {
+    public SGModExpression(SGExpression expr0, SGExpression expr1)  //: SGBinaryExpression<T>(expr0, expr1)
+    {
+        super(expr0, expr1);
+    }
+
+    /*void*/
+    public PrimitiveValue eval(/*T& value,   /*simgear::expression::*/Binding b) {
+        double value = mod(getOperand(0).getValue(b).doubleVal, getOperand(1).getValue(b).doubleVal);
+        return new PrimitiveValue(value);
+    }
+
+    /*using SGBinaryExpression<T>::getOperand;
+    private:
+    int mod(  int& v0,   int& v1)
+    { return v0 % v1; }
+    float mod(  float& v0,   float& v1)
+    { return fmod(v0, v1); }*/
+    double mod(double v0, double v1) {
+        return MathUtil2.fmod(v0, v1);
+    }
+};
+/* <p>
  * template<typename T>
  * class SGPowExpression extends SGBinaryExpression<T> {
  * public:
@@ -1053,7 +1074,7 @@ abstract class SGBinaryExpression extends SGExpression {
  * <p>
  *
  * <p>
- 
+ * <p>
  * template<typename T>
  * class SGProductExpression extends SGNaryExpression<T> {
  * public:
@@ -1232,11 +1253,6 @@ abstract class SGBinaryExpression extends SGExpression {
 //namespace simgear    {        namespace expression        {
 
 
-class ParseError extends SGException {
-    ParseError(String message) {
-        super(message);
-    }
-}
 
 
 /*
@@ -1279,232 +1295,6 @@ class VariableLengthBinding extends Binding {
         }* /
 }*/
 
-class VariableBinding {
-       /* VariableBinding() : type(expression::DOUBLE), location(-1) {}
-
-        VariableBinding(   String name_, expression::Type type_,
-        int location_)
-        : name(name_), type(type_), location(location_)
-        {
-        }
-        std::string name;
-        expression::Type type;
-        int location;*/
-}
-
-class BindingLayout {
-    public int addBinding(String name, ExpressionType type) {
-        //XXX error checkint
-       /* vector<VariableBinding>::iterator itr
-                = find_if(bindings.begin(), bindings.end(),
-                boost::bind(&VariableBinding::name, _1) == name);
-        if (itr != bindings.end())
-            return itr .location;
-        int result = bindings.size();
-        bindings.push_back(VariableBinding(name, type, bindings.size()));
-        return result;*/
-        Util.notyet();
-        return -1;
-    }
-
-    boolean findBinding(String name, VariableBinding/*&*/ result) {
-      /*  using namespace std;
-        using namespace boost;
-        vector<VariableBinding>::const_iterator itr
-                = find_if(bindings.begin(), bindings.end(),
-                boost::bind(&VariableBinding::name, _1) == name);
-        if (itr != bindings.end()) {
-            result = *itr;
-            return true;
-        } else {
-            return false;
-        }*/
-        Util.notyet();
-        return false;
-    }
-
-    List<VariableBinding> bindings;
-}
-
-interface exp_parser {
-    Expression parse(SGPropertyNode exp, Parser parser);
-}
-
-class ParserMap extends HashMap<String, exp_parser> {
-}
-
-abstract class Parser {
-    protected BindingLayout _bindingLayout;
-
-    //typedef Expression* (*exp_parser)(  SGPropertyNode exp,    Parser* parser);
-    public void addParser(String name, exp_parser parser) {
-        getParserMap().put(name, parser);///*insert(std::make_pair (name, parser));
-    }
-
-    Expression read(SGPropertyNode exp) throws ParseError {
-        ParserMap map = getParserMap();
-        //ParserMap::iterator itr = map.find(exp .getName());
-        exp_parser parser = map.get(exp.getName());
-        //if (itr == map.end())
-        if (parser == null)
-            throw new ParseError("unknown expression " + exp.getName());
-        //exp_parser parser = itr .getSecond;
-        return parser/*(*parser)*/.parse(exp, this);
-    }
-
-    // XXX vector of SGSharedPtr?
-    boolean readChildren(SGPropertyNode exp, List<Expression> result) throws ParseError {
-        for (int i = 0; i < exp.nChildren(); ++i)
-            result.add(read(exp.getChild(i)));
-        return true;
-    }
-
-    Expression valueParser(SGPropertyNode exp, Parser parser) {
-        switch (exp.getType()) {
-            case Props.BOOL:
-                return new SGConstExpression(new ExpressionType(ExpressionType.BOOL).getValueFromProperty(exp));
-            case Props.INT:
-                return new SGConstExpression(new ExpressionType(ExpressionType.INT).getValueFromProperty(exp));
-            case Props.FLOAT:
-                //return new SGConstExpression<float>(new ExpressionType(ExpressionType.BOOL).getValueFromProperty(exp));
-            case Props.DOUBLE:
-                return new SGConstExpression(new ExpressionType(ExpressionType.DOUBLE).getValueFromProperty(exp));
-            default:
-                return null;
-        }
-    }
-
-    /**
-     * Function that parses a property tree, producing an expression.
-     */
-    //typedef std::map<std::string,exp_parser>ParserMap;    ParserMap& getParserMap() =0;
-    abstract ParserMap getParserMap();
-
-    /**
-     * After an expression isType parsed, the binding layout may contain
-     * references that need to be bound during evaluation.
-     */
-    BindingLayout getBindingLayout() {
-        return _bindingLayout;
-    }
-
-}
-
-class ExpressionParser extends Parser {
-    @Override
-    public ParserMap getParserMap() {
-        return ParserMapSingleton/*::instance ()*/._parserTable;
-    }
-
-    void addExpParser(String token, exp_parser parsefn) {
-        ParserMapSingleton/*::instance()*/._parserTable.put(token, parsefn);//insert(std::make_pair(token, parsefn));
-    }
-    //protected:
-
-}
-
-class ParserMapSingleton /*extends simgear::Singleton<ParserMapSingleton>*/ {
-    static ParserMap _parserTable;
-}
-
-/**
- * Constructor for registering parser functions.
- */
-class ExpParserRegistrar {
-             /* ExpParserRegistrar(   String token, Parser::exp_parser parser)
-              {
-              ExpressionParser::addExpParser(token, parser);
-              }*/
-}
-
-
-/**
- * Access a variable definition. Use a location from a BindingLayout.
- */
-//template<typename T>
-/*class VariableExpression extends SGExpression {
-    int _location;
-
-    public VariableExpression(int location) {
-        _location = location;
-    }
-
-    //~VariableExpression() {}
-    void eval(T/*&* / value, Binding b) {
-        /* Value* values = b .getBindings();
-        value = *reinterpret_cast<  T *>(&values[_location].val);
-       * /
-    }
-
-}*/
-
-
-/**
- * An n-ary expression where the types of the argument aren't the
- * same as the return type.
- */
-//template<typename T, typename OpType>
-abstract class GeneralNaryExpression<T, OpType> extends SGExpression {
-    List</*SGSharedPtr<*/SGExpression/*<OpType>*/> _expressions;
-
-    GeneralNaryExpression() {
-    }
-
-    GeneralNaryExpression(SGExpression/*<OpType>*/ expr0, SGExpression/*<OpType>*/ expr1) {
-        addOperand(expr0);
-        addOperand(expr1);
-    }
-
-    //typedef OpType operand_type;
-    int getNumOperands() {
-        return _expressions.size();
-    }
-
-    SGExpression/*<OpType>*/ getOperand(int i) {
-        return _expressions.get(i);
-    }
-
-    /*SGExpression<OpType> getOperand(int i) {
-        return _expressions.get(i);
-    }*/
-
-    int addOperand(SGExpression/*<OpType>*/ expression) {
-        if (expression == null)
-            return -1;//~int(0);
-        _expressions.add(expression);
-        return _expressions.size() - 1;
-    }
-
-       /* template<typename Iter>
-    void addOperands(Iter begin, Iter end)
-            {
-            for (Iter iter = begin; iter != end; ++iter)
-            {
-            addOperand(static_cast< ::SGExpression<OpType>*>(*iter));
-        }
-        }*/
-
-
-    @Override
-    public boolean isConst() {
-        for (int i = 0; i < _expressions.size(); ++i)
-            if (!_expressions.get(i).isConst())
-                return false;
-        return true;
-    }
-
-   /* @Override
-    SGExpression simplify() {
-        for (int i = 0; i < _expressions.size(); ++i)
-            _expressions.get(i) = _expressions.get(i).simplify();
-        return SGExpression<T>::simplify ();
-    }*/
-
-        /*simgear::expression::Type getOperandType()  
-        {
-        return simgear::expression::TypeTraits<OpType>::typeTag;
-        }*/
-}
 
 /**
  * A predicate that wraps, for example the STL template predicate
@@ -1587,29 +1377,37 @@ class NotExpression extends SGUnaryExpression<Boolean> {
         }* /
 }
 */
-    
-/*class OrExpression extends SGNaryExpression<Boolean> {
-    public void eval(bool&value, expression::Binding*b) {
-        value = false;
+
+class OrExpression extends SGNaryExpression/*<Boolean>*/ {
+    //public void eval(bool&value, expression::Binding*b) {
+    @Override
+    public PrimitiveValue eval(Binding b) {
+        boolean value = false;
         for (int i = 0; i < (int) getNumOperands(); ++i) {
-            value = value || getOperand(i).getValue(b);
+            // TODO fix implementation by boolean
+            value = value || (getOperand(i).getValue(b) != null && getOperand(i).getValue(b).doubleVal != 0);
             if (value)
-                return;
+                return new PrimitiveValue(1);
         }
+        return new PrimitiveValue(0);
     }
-}*/
+}
 
 
-/*class AndExpression extends SGNaryExpression<Boolean> {
-    public void eval(bool&value, Binding b) {
-        value = true;
+class AndExpression extends SGNaryExpression/*<Boolean>*/ {
+    //public void eval(bool&value, Binding b) {
+    @Override
+    public PrimitiveValue eval(Binding b) {
+        boolean value = true;
         for (int i = 0; i < (int) getNumOperands(); ++i) {
-            value = value && getOperand(i).getValue(b);
-            if (!value)
-                return;
+            // TODO fix implementation by boolean
+            value = value && getOperand(i).getValue(b) != null && getOperand(i).getValue(b).doubleVal != 0;
+            //if (!value)
+            //  return;
         }
+        return new PrimitiveValue(0);
     }
-}*/
+}
 
 /**
  * Convert an operand from OpType to T.
@@ -1634,35 +1432,7 @@ class NotExpression extends SGUnaryExpression<Boolean> {
 // #endif // _SG_EXPRESSION_HXX
 
 
-class ExpressionType {
-    static final int BOOL = 1,
-            INT = 2,
-            FLOAT = 3,
-            DOUBLE = 4;
-    int type;
 
-    public ExpressionType(int type) {
-        this.type = type;
-    }
-
-    public PrimitiveValue getValueFromProperty(SGPropertyNode prop) {
-        switch (type) {
-            case DOUBLE:
-                return new PrimitiveValue(prop.getDoubleValue());
-        }
-        //TODO logger warn?
-        return null;
-    }
-
-    public PrimitiveValue buildDefaultValue() {
-        switch (type) {
-            case DOUBLE:
-                return new PrimitiveValue(0.0);
-        }
-        Util.notyet();
-        return null;
-    }
-}
 
 
 /*    template<typename T> struct TypeTraits;
@@ -1724,37 +1494,6 @@ class Value {
 }
 
 
-abstract class Expression /*: public SGReferenced*/ {
-    //public:
-    //~Expression() {}
-    //expression::Type getType() const = 0;
-    //};
-
-    //template<typename T>
-          /*Value<T> evalValue( Expression exp,Binding b)        {
-            T val;
-            static_cast<const SGExpression<T>*>(exp).eval(val, b);
-            return expression::Value(val);
-        }*/
-
-        /*Value eval(  Expression exp,          Binding binding /*= 0* /) {
-            //using namespace expression;
-            switch (exp.getType()) {
-                case ExpressionType.BOOL:
-                    return evalValue < bool > (exp,b);
-                case ExpressionType.INT:
-                    return evalValue <int>(exp, b);
-                case ExpressionType.FLOAT:
-                    return evalValue <float>(exp, b);
-                case ExpressionType.DOUBLE:
-                    return evalValue <double>(exp, b);
-                default:
-                    throw "invalid type.";
-            }
-
-        }*/
-}
-
 /**
  * Ersatz für die FG Typisierung/Template eines Wertes.
  */
@@ -1781,3 +1520,4 @@ class WertInt extends Wert{
     intVal=v;
     }
 }*/
+

@@ -13,9 +13,9 @@ public class Group extends Node {
 
     }
 
-    /*public void addChild(Node model) {
-        super.add(model);
-    }*/
+    public void addChild(Node model) {
+        super.addChild(model);
+    }
 
     /**
      * Wird mit Unity so nicht gehen. Brauchts die wirklich ? Irgendwie schon, darueber wird ermitelt,

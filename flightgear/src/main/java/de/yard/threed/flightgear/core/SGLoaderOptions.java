@@ -1,5 +1,6 @@
 package de.yard.threed.flightgear.core;
 
+import de.yard.threed.flightgear.EffectBuilderListener;
 import de.yard.threed.flightgear.LoaderOptions;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 
@@ -27,6 +28,7 @@ public class SGLoaderOptions extends LoaderOptions {
         }*/
         this.setDatabasePath(options.databasePath);
         this.usegltf=options.usegltf;
+        this.effectBuilderListener = options.effectBuilderListener;
     }
 
     public SGLoaderOptions(LoaderOptions options) {
@@ -45,6 +47,8 @@ public class SGLoaderOptions extends LoaderOptions {
         }*/
         this.setDatabasePath(options.databasePath);
         this.usegltf=options.usegltf;
+        this.effectBuilderListener = options.effectBuilderListener;
+
     }
 
     public SGLoaderOptions() {
