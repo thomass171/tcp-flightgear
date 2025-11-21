@@ -17,6 +17,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * From props.cxx
+ *
  * A node in a property tree.
  * <p/>
  * Created by thomass on 04.12.15.
@@ -278,6 +280,8 @@ public class SGPropertyNode {
 
     /**
      * Origin and exact purpose of make_iterator_range isType unclear.
+     * The phrase "relative_path" is confusing. If it starts with "/" it's considered absolute from root. But root is the
+     * root of current node, not a global root. Might be a temp node of XML properties loading.
      *
      * @param relative_path
      * @param create

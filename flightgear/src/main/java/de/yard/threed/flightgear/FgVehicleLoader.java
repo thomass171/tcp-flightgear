@@ -12,6 +12,7 @@ import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.flightgear.core.FlightGearModuleBasic;
 import de.yard.threed.flightgear.core.SGLoaderOptions;
 import de.yard.threed.flightgear.core.flightgear.main.AircraftResourceProvider;
+import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
 import de.yard.threed.flightgear.core.flightgear.main.FgInit;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
@@ -40,17 +41,15 @@ public class FgVehicleLoader implements VehicleLoader {
      * Loads a configured vehicle (eg. a FG Aircraft).
      * The bundle needed is loaded async if not yet available. Also model build and load is async, so use a delegate
      * instead of return value.
-     * Der Delegate wird fuer jedes submodel aufgerufen. 22.10.19: Wirklich?
      * <p>
      * Model laden ohne neu zu orientieren, Offsets aus XML beachten, zoffset dazu und kapseln.
      * irgendwie redundant zu FlightGear.loadFgModel()
      * <p>
-     * Der Avatar Teleporter wird nicht mehr um die Captain Position ergänzt. ist jetzt wegen coupling ausgelagert.
+     * Adding the captain position to the avatar teleporter was moved to ?? for decoupling.
      * <p>
-     * Erstellt noch keine Entity, das ist ein separater Schritt.
+     * No ECS entity is built here, that is done by the caller.
      * 9.11.21 Moved here from static FgVehicleLauncher
      * 5.2.24: Aren't Vehicle and VehicleDefinition somehow redundant?
-     *
      */
     @Override
     public void loadVehicle(Vehicle vehicle, VehicleDefinition config, VehicleLoadedDelegate loaddelegate) {
@@ -68,7 +67,9 @@ public class FgVehicleLoader implements VehicleLoader {
             if (bundle == null) {
                 logger.error("bundle not loaded. Not building vehicle " + config.getName());
             } else {
-                SGPropertyNode destinationProp = new SGPropertyNode(config.getName() + "-root");/*FGGlobals.getInstance().get_props()*/
+                //  13.11.25 For simplicity also vehicles will use the global tree (See also README.md)
+                //SGPropertyNode destinationProp = new SGPropertyNode(config.getName() + "-root");
+                SGPropertyNode destinationProp = FGGlobals.getInstance().get_props();
                 //arp.setAircraftDir(aircraft.aircraftdir);
                 FgBundleHelper.addProvider(new AircraftResourceProvider(config.getAircraftdir()));
                 //} else {
@@ -86,22 +87,24 @@ public class FgVehicleLoader implements VehicleLoader {
                     //30.9.19. Ich lass das lieber noch mal drin.
                     FgInit.fgInitAircraft(false, true/*loadaircraft*/, "777-200", config.getAircraftdir(), destinationProp);
                 }
-                // PropertyTree isType needed for animations. 3.4.18: Fuer jedes Vehicle einen eigenen PropertyTree anlegen.
+                // PropertyTree is needed for animations. 3.4.18: Each vehicle will have its own tree.
                 SGLoaderOptions opt = new SGLoaderOptions();
                 opt.setPropertyNode(destinationProp);
                 SceneNode currentaircraft;
-                //ModelFactory kann man hier wegen der optionals nicht so einfach nehmen.
 
-                // 9.11.21: Can also load pure GLTF, not only XML
+                // 9.11.21: Can also load pure GLTF, not only XML. ModelFactory will not do because of 'optionals'.
                 BuildResult buildresult = SGReaderWriterXML.buildModelFromBundleXML(br, opt, (bpath, destinationNode, alist) -> {
-                    // das wird evtl zu oft aufgerufen?? 2.3.18: laut Debugger schon. Ist die for schleife nicht OK?
-                    // vleiiehct ist das Model auch noch nicht ganz geladen. Hmmm, wer weiß.
-                    // 4.4.18: Der modeldelegate wird doch fuer jedes submodel aufgerufen!
+                    // 4.4.18: The delegate is called for each submodel, so very often!
                     for (String o : config.getOptionals()) {
                         SceneNode.removeSceneNodeByName(o);
                     }
                     if (alist != null) {
                         animationList.addAll(alist);//  xmlloaddelegate.modelComplete( animationList);
+                    }
+                    // Not really reliable. It might slip through for some reason, so stays after vehicle loading.
+                    // But is also checked when new is added.
+                    if (AbstractSceneRunner.getInstance().getPendingAsyncCount() == 0) {
+                        FgBundleHelper.removeAircraftSpecific();
                     }
                 });
                 currentaircraft = new SceneNode(buildresult.getNode());
@@ -120,10 +123,10 @@ public class FgVehicleLoader implements VehicleLoader {
                 SceneNode nn = SimpleVehicleLoader.buildVehicleNode(currentaircraft, config.getZoffset());
 
                 // Probably too early to inform delegates, because some asyncs still run
-                // 4.4.18. Darum jetzt oben fuer jedes submodel
+                // 4.4.18. The XML loader above also has a delegate that fires for each submodel
 
                 loaddelegate.vehicleLoaded(nn, new FgVehicleLoaderResult(animationList, opt.getPropertyNode()), lowresNode);
-                FgBundleHelper.removeAircraftSpecific();
+                //4.11.25 too early, many async might still be running FgBundleHelper.removeAircraftSpecific();
 
                 logger.debug("vehicle " + config.getName() + " loaded");
             }

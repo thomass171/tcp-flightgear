@@ -21,12 +21,12 @@ import de.yard.threed.core.BuildResult;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.engine.SceneNode;
-import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
-import de.yard.threed.flightgear.core.simgear.scene.model.SGRotateAnimation;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.NativeSceneNode;
 
 import de.yard.threed.engine.testutil.TestHelper;
+import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
+import de.yard.threed.flightgear.core.simgear.scene.model.SGRotateAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.util.SGReaderWriterOptions;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.javanative.FileReader;
@@ -116,11 +116,12 @@ public class EffectTest {
         logger.debug(Scene.getCurrent().getWorld().dump("  ", 1));
         List<NativeSceneNode> lettering = op.findSceneNodeByName("Lettering_Cdu");
         assertEquals(1, lettering.size(), "Lettering_Cdu");
-        NativeSceneNode mag = op.findSceneNodeByName("material animation group").get(0);
-        // eigentlich muessen es laut XML 5 sein, Lettering_Btns gibt es aber nicht im AC. Duerfte ein Fehler in der XML sein.
-        // 15.11.23: Value seems to vary. Sometimes its only 1 TODO check
+        NativeSceneNode mag = op.findSceneNodeByName("MaterialAnimationGroup-LLLLL").get(0);
+        // Should be 5 according to XML, but Lettering_Btns do not exist in AC. Bug in XML?
+        // 15.11.23: Value seems to vary. Sometimes its only 1
+        // 17.11.25: Fixed now by specific animation group names?
         int ccnt = mag.getTransform().getChildren().size();
-        assertTrue(ccnt == 1 || ccnt == 4, "material animation group.children " + ccnt);
+        assertTrue(ccnt == 4, "material animation group.children " + ccnt);
 
     }
 

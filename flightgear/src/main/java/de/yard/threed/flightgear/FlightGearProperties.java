@@ -1,6 +1,8 @@
 package de.yard.threed.flightgear;
 
 import de.yard.threed.core.StringUtils;
+import de.yard.threed.core.platform.Log;
+import de.yard.threed.core.platform.Platform;
 import de.yard.threed.engine.Scene;
 import de.yard.threed.engine.ecs.DefaultEcsSystem;
 import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
@@ -12,10 +14,10 @@ import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
  * The original FG single tree is split into several.
  * Does not contain aircraft trees?
  * 7.11.24: Splitting the original single tree only sounds good. It requires many/many changes. Eg.  SGCondition might access all parts of all trees
- * for evaluation. So better stay with FGGlobals.prop_root.
+ * for evaluation. So better stay with FGGlobals.prop_root. (See also README.md)
  */
 public class FlightGearProperties /*7.11.24 implements SGPropertyTreeResolver*/ {
-
+    static Log logger = Platform.getInstance().getLog(FlightGearProperties.class);
     // The original FG single tree is split into several. There might be multiple "/environment" trees
     // per location in future.
     /*SGPropertyNode environmentProperties;
@@ -52,6 +54,24 @@ public class FlightGearProperties /*7.11.24 implements SGPropertyTreeResolver*/ 
         // During the night, the sun is down under the horizon and has values ranging from Pi/2 to Pi.
         FGGlobals.getInstance().get_props().getNode("/sim/time/sun-angle-rad", true).setDoubleValue(DEFAULT_SUN_ANGLE_RAD);
         SGPropertyNode node = FGGlobals.getInstance().get_props();
+
+        // Other frequently used properties
+        // dome??
+        FGGlobals.getInstance().get_props().getNode("/sim/model/lightmap/dome/factor", true).setFloatValue(0);
+
+        // Apparently generic properties used/needed by c172p
+        // crash
+        FGGlobals.getInstance().get_props().getNode("/sim/multiplay/generic/int[15]", true).setIntValue(0);
+        // left/right wing damage
+        FGGlobals.getInstance().get_props().getNode("/sim/multiplay/generic/int[18]", true).setIntValue(0);
+        FGGlobals.getInstance().get_props().getNode("/sim/multiplay/generic/int[19]", true).setIntValue(0);
+        // not sure about value, needed eg. for deciding about magcompass. Nasal init to 0
+        FGGlobals.getInstance().get_props().getNode("/sim/model/variant", true).setIntValue(0/*3*/);
+        // for spiining propeller
+        FGGlobals.getInstance().get_props().getNode("/engines/engine[0]/rpm", true).setIntValue(1000);
+        FGGlobals.getInstance().get_props().getNode("/engines/engine[1]/rpm", true).setIntValue(1000);
+        FGGlobals.getInstance().get_props().getNode("/engines/engine[2]/rpm", true).setIntValue(1000);
+
     }
 
     /**
@@ -80,10 +100,17 @@ public class FlightGearProperties /*7.11.24 implements SGPropertyTreeResolver*/ 
     }
 
    /*7.11.24 split of global property tree is too much effort. But the vehicles have their own. @Override.
-   But we need a kind of lookup anyway.
+   But we need a kind of lookup anyway. 13.11.25 Now also vehicles will not have their own (See also README.md)
+   BTW: Is it really a good idea to create not existing nodes? These will neither have a value nor a type. So doing this
+    might just hide a more severe problem.
    */
     public static SGPropertyNode resolve(String inputPropertyName, SGPropertyNode defaultRoot) {
 
+        if (StringUtils.empty(inputPropertyName)){
+            // without any meaning. Might happen with unresolved alias like 'params/bushkit'.
+            logger.warn("resolve attempt for nameless property");
+            return null;
+        }
         if (StringUtils.startsWith(inputPropertyName, "/environment")) {
             return FGGlobals.getInstance().get_props().getNode(inputPropertyName, true);
             //return environmentProperties.getNode(inputPropertyName, true);

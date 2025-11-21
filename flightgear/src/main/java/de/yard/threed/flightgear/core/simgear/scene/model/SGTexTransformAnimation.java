@@ -38,6 +38,7 @@ import static de.yard.threed.flightgear.core.simgear.SGPropertyNode.setValue;
 public class SGTexTransformAnimation extends SGAnimation {
 
     public UpdateCallback updateCallback;
+    //TODO might be multiple?
     AnimationGroup animationGroup;
     // materials to which the animation applies
     public List<Material> materials;
@@ -222,7 +223,7 @@ public class SGTexTransformAnimation extends SGAnimation {
     public AnimationGroup createAnimationGroup(/*Group*/SceneNode parent) {
         /*osg::*/
         Group group = new Group();
-        group.setName("texture transform group");
+        group.setName("TextureTransformGroup-"+genId());
         /*osg::StateSet* stateSet = group->getOrCreateStateSet();
         stateSet->setDataVariance(osg::Object::STATIC/*osg::Object::DYNAMIC* /);
         osg::TexMat* texMat = new osg::TexMat;*/

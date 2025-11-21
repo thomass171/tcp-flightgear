@@ -70,15 +70,26 @@ public class FgBundleHelper {
 
     public static void addProvider(BundleResourceProvider provider) {
         getLogger().debug("Adding provider " + provider);
+        // 4.11.25: Once we removed the aircraft specific 'after' XML model loading, but that was too early for all the pending asyncs.
+        // Now make sure here we don't have duplicates
+        if (provider.isAircraftSpecific()) {
+            if (removeAircraftSpecific()) {
+                getLogger().warn("Replacing existing aircraft specific with new one. Risk of failing pending asyncs");
+            }
+        }
         providerlist.add(provider);
     }
 
-    public static void removeAircraftSpecific() {
+    public static boolean removeAircraftSpecific() {
+        boolean removed = false;
         for (int i = providerlist.size() - 1; i >= 0; i--) {
             if (providerlist.get(i).isAircraftSpecific()) {
                 providerlist.remove(i);
+                getLogger().debug("Removed aircraft specific provider");
+                removed = true;
             }
         }
+        return removed;
     }
 
     /**

@@ -345,7 +345,7 @@ public class Model {
         Map<String, AbstractMaterialFactory> factories = new HashMap<>();
 
         appliedEffects = new HashMap<>();
-        logger.debug("instantiateEffects for modelGroup: " + modelGroup.dump("", 0));
+        logger.debug("instantiateEffects for modelGroup: " + modelGroup.getName());//dump("", 0));
 
         /*MakeEffectVisitor visitor(options);
         MakeEffectVisitor::EffectMap& emap = visitor.getEffectMap();*/

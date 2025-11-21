@@ -68,7 +68,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         // TravelSceneBluebird needs initialVehicle
         //properties.put("scene", "de.yard.threed.trafficfg.apps.TravelSceneBluebird");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryViewerScene");
-        properties.put("scene", "de.yard.threed.trafficfg.apps.FgModelPreviewScene");
+        //properties.put("scene", "de.yard.threed.trafficfg.apps.FgModelPreviewScene");
         //properties.put("scene", "de.yard.threed.trafficfg.apps.FgGalleryScene");
         boolean demo = false;
         if (demo) {
@@ -83,7 +83,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.HangarScene");
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.AdvancedSceneryViewerScene");
-        properties.put("scene", "de.yard.threed.trafficadvanced.apps.AdvancedFgModelPreviewScene");
+        //properties.put("scene", "de.yard.threed.trafficadvanced.apps.AdvancedFgModelPreviewScene");
 
         boolean blogSample = false;
         if (blogSample) {

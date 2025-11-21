@@ -10,14 +10,18 @@ import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.apps.ModelSamples;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.testutil.EngineTestFactory;
+import de.yard.threed.engine.testutil.EngineTestUtils;
 import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.core.flightgear.main.AircraftResourceProvider;
+import de.yard.threed.flightgear.core.simgear.scene.material.Effect;
 import de.yard.threed.flightgear.core.simgear.scene.material.MakeEffect;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.Model;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
+import de.yard.threed.flightgear.testutil.EffectCollector;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
+import de.yard.threed.javacommon.SimpleHeadlessPlatform;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +30,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -132,6 +137,52 @@ public class VehicleEffectTest {
             detailCheckDone = true;
         }
         assertEquals(expectedDetailCheck, detailCheckDone);
+    }
+
+    @Test
+    public void testC172pBumpSpec() throws Exception {
+
+        // Kruecke zur Entkopplung des Modelload von AC policy.
+        ModelLoader.processPolicy = new ACProcessPolicy(null);
+
+        //assertEquals(0, MakeEffect.effectMap.size());
+        Model.ghostedObjects.clear();
+
+        AircraftResourceProvider arp = new AircraftResourceProvider();
+        arp.setAircraftDirAndBundle("c172p","test-resources");
+        FgBundleHelper.addProvider(arp);
+
+        BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "Models/bumpspec-test.xml");
+        LoaderOptions options = new LoaderOptions();
+        options.effectBuilderListener = new EffectCollector();
+        BuildResult result = SGReaderWriterXML.buildModelFromBundleXML(br, options, (bpath, destinationNode, alist) -> {
+        });
+
+        TestHelper.processAsync();
+        TestHelper.processAsync();
+        SceneNode modelRoot = new SceneNode(result.getNode());
+
+        assertEquals(0, MakeEffect.errorList.size());
+
+        Map<String, List<Effect>> caseEffects = ((EffectCollector) options.effectBuilderListener).effects.get("bumpspec-test.xml.effect.Case");
+        assertNotNull(caseEffects);
+        List<SceneNode> foundNodes = modelRoot.findNodeByName("Case");
+        assertEquals(1, foundNodes.size());
+        SceneNode caseNode = foundNodes.get(0);
+
+        List<Effect> wingRightEffects = Model.appliedEffects.get("wing_right");
+        // effect in map apperently overrwritten by damage effect with same name
+        Effect effectFromCache = MakeEffect.effectMap.get("Aircraft/c172p/Models/Effects/exterior/dirt-wing");
+
+        String hierarchy = EngineTestUtils.getHierarchy(caseNode, 6, false);
+        log.debug("Case up-hierarchy={}", hierarchy);
+        assertEquals("Models/bumpspec-test.xml->ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/digital-clock/digital-clock.gltf->gltfroot->Blender_exporter_v2.26__digital-clock.ac->Case", hierarchy);
+        SimpleHeadlessPlatform.DummyMaterial caseMaterial = (SimpleHeadlessPlatform.DummyMaterial) caseNode.getMesh().getMaterial().material;
+
+        assertEquals("src/test/resources/Models/digital-clock/clock-tex.png,clock-tex.png", caseMaterial.uniformValue.get("u_texture"));
+        assertEquals("true", caseMaterial.uniformValue.get("u_textured"));
+        assertEquals("true", caseMaterial.uniformValue.get("u_shaded"));
+
     }
 
 }

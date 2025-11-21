@@ -5,3 +5,5 @@ cube.gltf(and bin) is not really part of the bundle, so not in directory. Its us
 
 Renamed this directory to 'Models' (from 'models') and subdir 'Effects' added so that
 test-resources bundle complies to typical FG vehicle layout.
+
+21.10.25: 'digital-clock' (just a simple textured model) from c172 added for testing effects, eg. bumpspec effects.

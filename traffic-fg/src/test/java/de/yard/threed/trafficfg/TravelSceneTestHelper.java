@@ -84,11 +84,12 @@ public class TravelSceneTestHelper {
 
             TestUtils.waitUntil(() -> {
                 sceneRunner.runLimitedFrames(10);
-                return SceneNode.findByName("Aircraft/Instruments-3d/garmin196/garmin196.gltf").size() > 0;
+                //4.11.25 2024 c172 no longer has this 'garmin196' return SceneNode.findByName("Aircraft/Instruments-3d/garmin196/garmin196.gltf").size() > 0;
+                return SceneNode.findByName("Aircraft/Instruments-3d/garmin196/garmin196_map_symbols.gltf").size() > 0;
             }, 30000);
 
             // garmin has multiple components and names. just look for one
-            NativeSceneNode garmin196 = SceneNode.findByName("Aircraft/Instruments-3d/garmin196/garmin196.gltf").get(0);
+            NativeSceneNode garmin196 = SceneNode.findByName("Aircraft/Instruments-3d/garmin196/garmin196_map_symbols.gltf").get(0);
             //16.8.24 TODO assertTrue(Texture.hasTexture("screens.png"), "garmin.texture");
         } else if ("bluebird".equals(expectedVehicleAndBundleName)) {
             // nothing yet to check

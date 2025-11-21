@@ -12,17 +12,20 @@ import de.yard.threed.engine.ecs.DefaultEcsSystem;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsGroup;
 import de.yard.threed.engine.vr.VrInstance;
+import de.yard.threed.flightgear.core.osg.NodeCallback;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.platform.common.RequestHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
 /**
  * Process FG animations.
  * 4.11.24: Renamed from just AnimationUpdateSystem to FgAnimationUpdateSystem to make clear it's for FG animations.
+ * 19.11.25: Also for NodeCallbacks for now
  * <p>
  * Created by thomass on 28.12.16.
  */
@@ -36,6 +39,8 @@ public class FgAnimationUpdateSystem extends DefaultEcsSystem {
     public static String TAG = "FgAnimationUpdateSystem";
     // intersections are cached per frame
     private List<NativeCollision> intersections = null;
+    // just a prototype for now??
+    public static List<NodeCallback> nodeCallbacks = new ArrayList<>();
 
     @Override
     public void init(EcsGroup group) {
@@ -87,10 +92,21 @@ public class FgAnimationUpdateSystem extends DefaultEcsSystem {
             SGAnimation a = ac.animationList.get((i));
             a.process(intersections, new AUSRequestHandler());
         }
+        updateCallbacks();
+
         if (Platform.getInstance().currentTimeMillis() - startTime > 10) {
             logger.debug("update: total from start: " + (Platform.getInstance().currentTimeMillis() - startTime) + " ms");
         }
+    }
 
+    /**
+     * Aarg: Also used independently.
+     */
+    @Deprecated
+    public static void updateCallbacks(){
+        for (NodeCallback nodeCallback:nodeCallbacks){
+            nodeCallback.update();
+        }
     }
 
     @Override

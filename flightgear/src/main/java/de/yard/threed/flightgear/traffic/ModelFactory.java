@@ -37,12 +37,6 @@ public class ModelFactory {
      * die erste ist jetzt in SGReaderWriterXML.
      * @return
      */
-    
-    /*21.12.17 kann jetzt weg @Deprecated 
-    public static BuildResult buildModelFromBundle(BundleResource modelfile) {
-        return ModelLoader.buildModelFromBundle(modelfile,null);
-    }*/
-
     public static SceneNode buildModelFromBundleXml(BundleResource modelfile, SGPropertyNode rootnode, List<SGAnimation> animationList) {
         SGLoaderOptions opt = new SGLoaderOptions();
         opt.setPropertyNode(rootnode);

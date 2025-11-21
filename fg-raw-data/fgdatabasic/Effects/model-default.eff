@@ -57,6 +57,14 @@
 		<quality_level><use>/sim/rendering/shaders/landmass</use></quality_level>
 		<tquality_level><use>/sim/rendering/shaders/transition</use></tquality_level>
 		<!-- 		END fog include -->
+        <!-- BEGIN shadows include -->
+        <shadows_enabled>
+          <use>/sim/rendering/shadows/enabled</use>
+        </shadows_enabled>
+        <sun_atlas_size>
+          <use>/sim/rendering/shadows/sun-atlas-size</use>
+        </sun_atlas_size>
+        <!-- END shadows include -->
 	</parameters>
 
   <technique n="5">
@@ -95,10 +103,6 @@
       </blend>
       <shade-model><use>shade-model</use></shade-model>
       <cull-face><use>cull-face</use></cull-face>
-	<!--<render-bin>
-		<bin-number>1</bin-number>
-		<bin-name>RenderBin</bin-name>
-	</render-bin>-->
       <rendering-hint><use>rendering-hint</use></rendering-hint>
       <texture-unit>
         <!-- The texture unit is always active because the shaders expect
@@ -122,11 +126,14 @@
       </vertex-program-two-side>
       <program>
         <vertex-shader>Shaders/generic-ALS-base.vert</vertex-shader>
+        <vertex-shader>Shaders/shadows-include.vert</vertex-shader>
         <fragment-shader>Shaders/model-ALS-base.frag</fragment-shader>
         <fragment-shader>Shaders/hazes.frag</fragment-shader>
         <fragment-shader>Shaders/secondary_lights.frag</fragment-shader>
         <fragment-shader>Shaders/noise.frag</fragment-shader>
         <fragment-shader>Shaders/filters-ALS.frag</fragment-shader>
+        <fragment-shader>Shaders/shadows-include.frag</fragment-shader>
+        <fragment-shader>Shaders/clustered-include.frag</fragment-shader>
       </program>
       <uniform>
         <name>visibility</name>
@@ -342,7 +349,7 @@
         <name>display_ysize</name>
         <type>int</type>
         <value><use>display_ysize</use></value>
-      </uniform>  
+      </uniform>
       <uniform>
         <name>quality_level</name>
         <type>int</type>
@@ -353,86 +360,34 @@
         <type>int</type>
         <value><use>tquality_level</use></value>
       </uniform>
+      <!-- BEGIN shadows include -->
+      <uniform>
+        <name>shadow_tex</name>
+        <type>sampler-2d</type>
+        <value type="int">10</value>
+      </uniform>
+      <uniform>
+        <name>shadows_enabled</name>
+        <type>bool</type>
+        <value>
+          <use>shadows_enabled</use>
+        </value>
+      </uniform>
+      <uniform>
+        <name>sun_atlas_size</name>
+        <type>int</type>
+        <value>
+          <use>sun_atlas_size</use>
+        </value>
+      </uniform>
+      <!-- END shadows include -->
     </pass>
   </technique>
-
-<technique n="10">
-	<predicate>
-		<and>
-			<property>/sim/rendering/rembrandt/enabled</property>
-			<or>
-				<less-equal>
-					<value type="float">2.0</value>
-					<glversion/>
-				</less-equal>
-				<and>
-					<extension-supported>GL_ARB_shader_objects</extension-supported>
-					<extension-supported>GL_ARB_shading_language_100</extension-supported>
-					<extension-supported>GL_ARB_vertex_shader</extension-supported>
-					<extension-supported>GL_ARB_fragment_shader</extension-supported>
-				</and>
-			</or>
-		</and>
-	</predicate>
-	<pass>
-		<lighting>false</lighting>
-		<material>
-			<ambient><use>material/ambient</use></ambient>
-			<diffuse><use>material/diffuse</use></diffuse>
-			<specular><use>material/specular</use></specular>
-			<emissive><use>material/emissive</use></emissive>
-			<shininess><use>material/shininess</use></shininess>
-			<color-mode>ambient-and-diffuse</color-mode>
-		</material>
-		<blend>false</blend>
-		<alpha-test>true</alpha-test>
-		<shade-model>smooth</shade-model>
-		<cull-face><use>cull-face</use></cull-face>
-		<render-bin>
-			<bin-number>1</bin-number>
-			<bin-name>RenderBin</bin-name>
-		</render-bin>
-		<texture-unit>
-			<unit>0</unit>
-			<type><use>texture[0]/type</use></type>
-			<image><use>texture[0]/image</use></image>
-			<filter><use>texture[0]/filter</use></filter>
-			<wrap-s><use>texture[0]/wrap-s</use></wrap-s>
-			<wrap-t><use>texture[0]/wrap-t</use></wrap-t>
-			<internal-format>
-				<use>texture[0]/internal-format</use>
-			</internal-format>
-			<environment>
-				<mode>modulate</mode>
-			</environment>
-		</texture-unit>
-		<vertex-program-two-side>
-			<use>vertex-program-two-side</use>
-		</vertex-program-two-side>
-		<program n="0">
-			<vertex-shader n="0">Shaders/deferred-gbuffer.vert</vertex-shader>
-			<fragment-shader>Shaders/deferred-gbuffer.frag</fragment-shader>
-			<fragment-shader>Shaders/gbuffer-functions.frag</fragment-shader>
-			<fragment-shader>Shaders/gbuffer-encode.frag</fragment-shader>
-		</program>
-		<uniform>
-			<name>texture</name>
-			<type>sampler-2d</type>
-			<value type="int">0</value>
-		</uniform>
-		<!-- uniform>
-			<name>materialID</name>
-			<type>int</type>
-			<value><use>material-id</use></value>
-		</uniform -->
-	</pass>
-</technique>
 
 	<technique n="11">
 		<predicate>
 			<and>
-				<property>/sim/rendering/shaders/quality-level</property>
-				<property>/sim/rendering/shaders/generic</property>
+				<property>/sim/rendering/shaders/use-shaders</property>
 				<or>
 					<less-equal>
 						<value type="float">2.0</value>
@@ -489,9 +444,7 @@
 			<cull-face>
 				<use>cull-face</use>
 			</cull-face>
-			<rendering-hint>
-				<use>rendering-hint</use>
-			</rendering-hint>
+      <rendering-hint><use>rendering-hint</use></rendering-hint>
 			<texture-unit>
 				<!-- The texture unit is always active because the shaders expect
              that. -->
@@ -525,8 +478,11 @@
 			<program n="0">
 <!-- 				<vertex-shader n="0">Shaders/include_fog.vert</vertex-shader> -->			<!--fog include-->
 				<vertex-shader n="1">Shaders/default.vert</vertex-shader>
+				<vertex-shader n="2">Shaders/shadows-include.vert</vertex-shader>
 				<fragment-shader n="0">Shaders/include_fog.frag</fragment-shader>				<!--fog include-->
 				<fragment-shader n="1">Shaders/default.frag</fragment-shader>
+				<fragment-shader n="2">Shaders/shadows-include.frag</fragment-shader>
+				<fragment-shader n="3">Shaders/clustered-include.frag</fragment-shader>
 			</program>
 			<!-- 			BEGIN fog include -->
 			<uniform>
@@ -584,6 +540,27 @@
 					<use>material/color-mode-uniform</use>
 				</value>
 			</uniform>
+			<!-- BEGIN shadows include -->
+			<uniform>
+			  <name>shadow_tex</name>
+			  <type>sampler-2d</type>
+			  <value type="int">10</value>
+			</uniform>
+			<uniform>
+			  <name>shadows_enabled</name>
+			  <type>bool</type>
+			  <value>
+				<use>shadows_enabled</use>
+			  </value>
+			</uniform>
+			<uniform>
+			  <name>sun_atlas_size</name>
+			  <type>int</type>
+			  <value>
+				<use>sun_atlas_size</use>
+			  </value>
+			</uniform>
+			<!-- END shadows include -->
 		</pass>
 	</technique>
 	<technique n="13">
@@ -629,9 +606,7 @@
 			<cull-face>
 				<use>cull-face</use>
 			</cull-face>
-			<rendering-hint>
-				<use>rendering-hint</use>
-			</rendering-hint>
+      <rendering-hint><use>rendering-hint</use></rendering-hint>
 			<texture-unit>
 				<active>
 					<use>texture[0]/active</use>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<PropertyList>
+
+    <path>digital-clock/digital-clock.ac</path>
+
+    <!-- from c172-common.xml (used for "wing_right")-->
+    <!-- 'Case' has texture "clock-tex.png" -->
+    <effect>
+        <inherits-from>Effects/exterior/dirt-wing</inherits-from>
+        <object-name>Case</object-name>
+        <object-name>DigitalClock</object-name>
+        <object-name>KnobLeft</object-name>
+        <object-name>KnobCenter</object-name>
+        <object-name>KnobRight</object-name>
+    </effect>
+
+</PropertyList>

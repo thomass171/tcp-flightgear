@@ -18,23 +18,7 @@ import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.HttpBundleResolver;
-import de.yard.threed.engine.AmbientLight;
-import de.yard.threed.engine.Camera;
-import de.yard.threed.engine.DirectionalLight;
-import de.yard.threed.engine.FirstPersonController;
-import de.yard.threed.engine.Input;
-import de.yard.threed.engine.KeyCode;
-import de.yard.threed.engine.Light;
-import de.yard.threed.engine.Material;
-import de.yard.threed.engine.Mesh;
-import de.yard.threed.engine.Observer;
-import de.yard.threed.engine.ObserverSystem;
-import de.yard.threed.engine.Ray;
-import de.yard.threed.engine.Scene;
-import de.yard.threed.engine.SceneMode;
-import de.yard.threed.engine.SceneNode;
-import de.yard.threed.engine.Texture;
-import de.yard.threed.engine.Transform;
+import de.yard.threed.engine.*;
 import de.yard.threed.engine.avatar.AvatarSystem;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.GrabbingComponent;
@@ -46,23 +30,12 @@ import de.yard.threed.engine.ecs.TeleportComponent;
 import de.yard.threed.engine.ecs.TeleporterSystem;
 import de.yard.threed.engine.ecs.UserSystem;
 import de.yard.threed.engine.geometry.ShapeGeometry;
-import de.yard.threed.engine.gui.ButtonDelegate;
-import de.yard.threed.engine.gui.ControlPanel;
-import de.yard.threed.engine.gui.ControlPanelHelper;
-import de.yard.threed.engine.gui.DefaultMenuProvider;
-import de.yard.threed.engine.gui.GuiGrid;
-import de.yard.threed.engine.gui.Icon;
-import de.yard.threed.engine.gui.Menu;
-import de.yard.threed.engine.gui.MenuCycler;
-import de.yard.threed.engine.gui.MenuProvider;
-import de.yard.threed.engine.gui.NumericSpinnerHandler;
-import de.yard.threed.engine.gui.SelectSpinnerHandler;
-import de.yard.threed.engine.gui.SpinnerControlPanel;
-import de.yard.threed.engine.gui.Text;
+import de.yard.threed.engine.gui.*;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.platform.common.Settings;
+import de.yard.threed.engine.shading.ShaderDebugger;
 import de.yard.threed.engine.vr.VrInstance;
 import de.yard.threed.engine.vr.VrOffsetWrapper;
 import de.yard.threed.flightgear.FgBundleHelper;
@@ -73,9 +46,7 @@ import de.yard.threed.flightgear.core.SGLoaderOptions;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.ecs.FgAnimationComponent;
 import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
-import de.yard.threed.traffic.TrafficConfig;
-import de.yard.threed.traffic.VehicleLauncher;
-import de.yard.threed.traffic.VehicleLoaderResult;
+import de.yard.threed.traffic.*;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.trafficadvanced.AdvancedConfiguration;
 import de.yard.threed.trafficcore.model.Vehicle;
@@ -125,6 +96,9 @@ public class HangarScene extends Scene {
     VrInstance vrInstance;
     Map<String, ButtonDelegate> buttonDelegates = new HashMap<String, ButtonDelegate>();
     String initialVehicle = null;
+    public MessageBox msgBox = null;
+    ShaderDebugger shaderDebugger = null;
+    SceneNode mainVehicleNode;
 
     @Override
     public void init(SceneMode forServer) {
@@ -180,6 +154,12 @@ public class HangarScene extends Scene {
             // arp = new AircraftResourceProvider();
             // BundleRegistry.addProvider(arp);
         }
+
+        PickingRayObjectSelector objectSelector = new PickingRayObjectSelector(getMainCamera(), "mainVehicleNode");
+        shaderDebugger = new ShaderDebugger(objectSelector);
+        msgBox = new MessageBox(Color.ORANGE);
+        shaderDebugger.setMessageBox(msgBox);
+
         menuCycler = new MenuCycler(new MenuProvider[]{new CockpitMenuBuilder(this), new DefaultMenuProvider(this.getDefaultCamera(), (Camera camera) -> {
             //Versuchen, ca 3 m vor Avatar statt nearplane, damit es normal und in VR brauchbar ist.
             //ach, wie CDU 5m.
@@ -207,7 +187,10 @@ public class HangarScene extends Scene {
             menu.addButton(null, 3, 1, 1, Texture.buildBundleTexture("data-old", "images/Dangast.jpg"));
             menu.addButton(null, 2, 1, 1, Texture.buildBundleTexture("data-old", "images/Dangast.jpg"));
             return menu;
-        })});
+        }),
+                // distance < 0.8 leads to distorsion?
+                shaderDebugger.getMenuProvider(getDefaultCamera(), 1.2)
+        });
 
         InputToRequestSystem inputToRequestSystem = new InputToRequestSystem();
         SystemManager.addSystem(inputToRequestSystem, 0);
@@ -215,6 +198,9 @@ public class HangarScene extends Scene {
         GrabbingSystem grabbingSystem = GrabbingSystem.buildFromConfiguration();
         GrabbingSystem.addDefaultKeyBindings(inputToRequestSystem);
         SystemManager.addSystem(grabbingSystem);
+
+        // 4.11.25 Added for vehicle loading via request (but needs a sphere)
+        SystemManager.addSystem(new TrafficSystem());
 
         if (!isAR()) {
             //Die Plane ist schon in y=0 und muss nicht rotiert werden.
@@ -241,6 +227,10 @@ public class HangarScene extends Scene {
         }
 
         addLight();
+
+        mainVehicleNode = new SceneNode();
+        mainVehicleNode.setName("mainVehicleNode");
+        addToWorld(mainVehicleNode);
 
         // create avatar (via login)
         SystemManager.putRequest(UserSystem.buildLoginRequest("Freds account name", ""));
@@ -329,6 +319,9 @@ public class HangarScene extends Scene {
 
         menuCycler.update(mouselocation);
         Observer.getInstance().update();
+
+        msgBox.hideIfExpired();
+        shaderDebugger.update();
     }
 
     public void addNextVehicle() {
@@ -356,8 +349,11 @@ public class HangarScene extends Scene {
             TrafficConfig vehicleDefinitions = TrafficConfig.buildFromBundle(bnd, BundleResource.buildFromFullString("vehicle-definitions.xml"));
             config = vehicleDefinitions.findVehicleDefinitionsByName(newVehicle).get(0);
         }
-        // 18.10.19: TrafficHelper geht hier nicht, weil das Vehicle nicht auf einen Graph kommt. Naja, da koennte man ja null übergeben, oder ähnlich.
-        new FgVehicleLoader()/*FgVehicleLauncher*/.loadVehicle(new Vehicle(newVehicle), config, (SceneNode container, VehicleLoaderResult loaderResult/*List<SGAnimation> animationList, SGPropertyNode propertyNode,*/, SceneNode lowresNode) -> {
+        // 18.10.19: TrafficHelper will not do, because vehicle will not be on a graph. Well, we could pass null in that case.
+        // 4.11.25: Give ECS request a try, but first needs TrafficSystem and a sphere
+        //Request request = RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), newVehicle, null, null, null);
+        //SystemManager.putRequest(request);
+        new FgVehicleLoader().loadVehicle(new Vehicle(newVehicle), config, (SceneNode container, VehicleLoaderResult loaderResult, SceneNode lowresNode) -> {
             //SceneNode basenode=container;
             SceneNode basenode = VehicleLauncher.getModelNodeFromVehicleNode(container);
             SceneNode currentaircraft = container;
@@ -391,7 +387,7 @@ public class HangarScene extends Scene {
                 pc.addPosition("front", new LocalTransform(destination.add(new Vector3(-30, 4, 0)), Quaternion.buildRotationY(new Degree(-90))));
             }
             currentaircraft.getTransform().setPosition(destination);
-            addToWorld(currentaircraft);
+            currentaircraft.getTransform().setParent(mainVehicleNode.getTransform());
 
             // 1.2.24: Make it an entity to be grabable
             EcsEntity modelEntity = new EcsEntity(currentaircraft);

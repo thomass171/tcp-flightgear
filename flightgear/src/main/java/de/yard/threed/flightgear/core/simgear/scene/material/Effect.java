@@ -1347,6 +1347,7 @@ public class Effect /*extends Effect osg::Object */ {
         logger.debug("Effect:realizeTechniques '" + getName() + "' with label " + label);
 
         //mergeSchemesFallbacks(this, options);
+        // 23.10.25 probably we cannot do it the FG/OSG way, we need to realize the technique for each material to which it applies
         if (_isRealized)
             return true;
 

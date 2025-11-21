@@ -1,21 +1,14 @@
 package de.yard.threed.trafficfg.apps;
 
-import de.yard.threed.core.BuildResult;
-import de.yard.threed.core.GeneralParameterHandler;
-import de.yard.threed.core.ModelBuildDelegate;
-import de.yard.threed.core.Point;
-import de.yard.threed.core.StringUtils;
-import de.yard.threed.core.Vector3;
+import de.yard.threed.core.*;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.NativeCollision;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
-import de.yard.threed.engine.Camera;
-import de.yard.threed.engine.Input;
-import de.yard.threed.engine.Ray;
-import de.yard.threed.engine.SceneNode;
+import de.yard.threed.core.resource.ResourcePath;
+import de.yard.threed.engine.*;
 import de.yard.threed.engine.apps.ModelPreviewScene;
 import de.yard.threed.engine.apps.SmartModelLoader;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
@@ -33,6 +26,7 @@ import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
 import de.yard.threed.flightgear.FlightGearProperties;
+import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,13 +106,12 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                 // 1.9.25 And it doesn't look nice (any more?). 'glass' is not correct. Was anything lost
                 // with new shader or JME? But in ThreeJS it is the same way strange. But lets focus on 2024 model.
                 "A:Models/c172p.xml;bundleUrl=" + bundlePool + "/c172p.2018",
-                // 19:
+                // 19: Full c172p of 2024
                 "A:Models/c172-common.xml;bundleUrl=" + bundlePool + "/c172p.2024",
                 "A:Models/Interior/Panel/Instruments/asi/asi.xml;scale=500;bundleUrl=" + bundlePool + "/c172p.2024",
-                //"??777-Models/OHpanel.xml",
-                //21:nochmal aus data (als Testreferenz)
-                "??data-flusi/Overhead-777/OHpanel.xml",
-                "??EDDK-eddk-latest.xml",
+                "A:Models/Interior/Panel/c172p-panel/c172p-interior.gltf;scale=5;bundleUrl=" + bundlePool + "/c172p.2024;optTexturePath=/Models",
+                "A:Models/Interior/Panel/c172p-panel/c172p.xml;scale=5;bundleUrl=" + bundlePool + "/c172p.2024;optTexturePath=/Models",
+
                 //23: gltf geht wohl, hat aber keine ACPolicy. Darum xml. 29.12.18: EDDK-Terminal1 findet er nicht mehr. Das liegt nicht mehr in fgbasicmodel, sondern in ???
                 "??EDDK-final/EDDK-Terminal1.xml",
                 "??EDDK-EDDK-StarB.gltf",
@@ -166,17 +159,17 @@ public class FgModelPreviewScene extends ModelPreviewScene {
     public static void extendSmartModelLoaderForFG(AircraftResourceProvider arp, GeneralParameterHandler<List<SGAnimation>> animationHandler) {
         SmartModelLoader.register("H", new SmartModelLoader() {
             @Override
-            public void loadModelBySource(String prefix, String modelname, String bundleUrl, ModelBuildDelegate delegate) {
+            public void loadModelBySource(String prefix, String modelname, String bundleUrl, ResourcePath optTexturePath, ModelBuildDelegate delegate) {
                 //TerraSync Model
                 String bundlename = FlightGear.getBucketBundleName("model");
-                SmartModelLoader.defaultSmartModelLoader.loadModelBySource(bundlename, modelname, bundleUrl, delegate);
+                SmartModelLoader.defaultSmartModelLoader.loadModelBySource(bundlename, modelname, bundleUrl,optTexturePath, delegate);
             }
         });
 
         // 9.10.24 'A' is still needed for setting aircraftresourceprovider with aircraft bundle name
         SmartModelLoader.register("A", new SmartModelLoader() {
             @Override
-            public void loadModelBySource(String prefix, String modelname, String bundleUrl, ModelBuildDelegate delegate) {
+            public void loadModelBySource(String prefix, String modelname, String bundleUrl, ResourcePath optTexturePath, ModelBuildDelegate delegate) {
                 String bundleNameOfCurrentAircraft = bundleUrl;
                 if (StringUtils.contains(bundleNameOfCurrentAircraft, "/")) {
                     bundleNameOfCurrentAircraft = StringUtils.substringAfterLast(bundleNameOfCurrentAircraft, "/");
@@ -199,13 +192,13 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                     throw new RuntimeException("unknown aircraft basename");
                 }
                 arp.setAircraftDirAndBundle(basename, bundleNameOfCurrentAircraft);
-                SmartModelLoader.defaultSmartModelLoader.loadModelBySource(bundleNameOfCurrentAircraft, modelname, bundleUrl, delegate);
+                SmartModelLoader.defaultSmartModelLoader.loadModelBySource(bundleNameOfCurrentAircraft, modelname, bundleUrl, optTexturePath, delegate);
             }
         });
 
         terrasyncSmartModelLoader = new SmartModelLoader() {
             @Override
-            public void loadModelBySource(String prefix, String modelname, String bundleUrl, ModelBuildDelegate delegate) {
+            public void loadModelBySource(String prefix, String modelname, String bundleUrl, ResourcePath optTexturePath, ModelBuildDelegate delegate) {
                 // a TerraSync tile/bucket
                 String tname = prefix;//StringUtils.substringBefore(modelname, ":");
 
@@ -213,7 +206,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                 String bundlename = FlightGear.getBucketBundleName(no);
                 //modelname = StringUtils.substringAfter(modelname, ":");
                 Bundle bundle = BundleRegistry.getBundle(bundlename);
-                SmartModelLoader.defaultSmartModelLoader.loadModelBySource(bundlename, modelname, bundleUrl, delegate);
+                SmartModelLoader.defaultSmartModelLoader.loadModelBySource(bundlename, modelname, bundleUrl, optTexturePath, delegate);
             }
         };
 
@@ -222,7 +215,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
         // replace existing default loader with a XML ready one including bundle loading
         SmartModelLoader.defaultSmartModelLoader = new SmartModelLoader() {
             @Override
-            public void loadModelBySource(String bundlename, String modelname, String bundleUrl, ModelBuildDelegate delegate) {
+            public void loadModelBySource(String bundlename, String modelname, String bundleUrl, ResourcePath optTexturePath, ModelBuildDelegate delegate) {
                 if (bundlename == null) {
                     logger.error("bundlename is null");
                 }
@@ -233,7 +226,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                     result = new BuildResult(destination.nativescenenode);
                     AbstractSceneRunner.instance.loadBundle(bundleUrl != null ? bundleUrl : bundlename, (Bundle b_isnull) -> {
                         Bundle b = BundleRegistry.getBundle(bundlename);
-                        addPossibleXmlModelFromBundle(b, modelname, bundleUrl, animationHandler, delegate);
+                        addPossibleXmlModelFromBundle(b, modelname, bundleUrl, animationHandler, optTexturePath, delegate);
                         /*if (res.getNode() != null) {
                             destination.attach(new SceneNode(res.getNode()));
                         } else {
@@ -242,7 +235,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                         }*/
                     });
                 } else {
-                    addPossibleXmlModelFromBundle(bundle, modelname, bundleUrl, animationHandler, delegate);
+                    addPossibleXmlModelFromBundle(bundle, modelname, bundleUrl, animationHandler, optTexturePath, delegate);
                 }
 
             }
@@ -268,17 +261,15 @@ public class FgModelPreviewScene extends ModelPreviewScene {
     }
 
     //@Override
-    public static void addPossibleXmlModelFromBundle(Bundle bundle, String modelname, String bundleUrl, GeneralParameterHandler<List<SGAnimation>> animationHandler, ModelBuildDelegate delegate) {
+    public static void addPossibleXmlModelFromBundle(Bundle bundle, String modelname, String bundleUrl, GeneralParameterHandler<List<SGAnimation>> animationHandler, ResourcePath optTexturePath, ModelBuildDelegate delegate) {
         BundleResource br = BundleResource.buildFromFullString(modelname);
         br.bundle = bundle;
         String extension = br.getExtension();
         BuildResult result = null;
         if (extension.equals("xml")) {
             SGLoaderOptions opt = new SGLoaderOptions();
+            // Meanwhile we only use a single property tree (also FgVehicleLoader)
             opt.setPropertyNode(FGGlobals.getInstance().get_props());
-
-            // Das mit der animationlist duerfte durch das Ansammeln auch fuer geschachtelte Model gehen.
-            //animationList = new ArrayList<SGAnimation>();
 
             result = SGReaderWriterXML.buildModelFromBundleXML(br, opt, (bpath, destinationNode, alist) -> {
                 if (alist != null) {
@@ -291,13 +282,14 @@ public class FgModelPreviewScene extends ModelPreviewScene {
         } else {
             //9.1.22 result = new BuildResult(ModelFactory.asyncModelLoad(br, EngineHelper.LOADER_USEGLTF).nativescenenode);
             //result = super.addModelFromBundle(bundle, modelname);
-            SmartModelLoader.simpleSmartModelLoader.loadModelBySource(bundle.name, modelname, bundleUrl, delegate);
+            SmartModelLoader.simpleSmartModelLoader.loadModelBySource(bundle.name, modelname, bundleUrl, optTexturePath, delegate);
         }
     }
 
     @Override
     public void customUpdate() {
         updateAnimations(flightGearProperties, animationList, getDefaultCamera());
+        FgAnimationUpdateSystem.updateCallbacks();
     }
 
     public static void updateAnimations(FlightGearProperties flightGearProperties, List<SGAnimation> animationList, Camera camera) {

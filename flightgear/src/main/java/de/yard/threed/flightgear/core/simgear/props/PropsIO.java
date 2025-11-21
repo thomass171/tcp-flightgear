@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
+ * From props_io.cxx
+ *
  * 27.12.16: Fuer das Lesen der includes wird erst mal kein Event verwendet.
  * 27.12.16: Umgestellt von SGPath auf ResourcePath und String auf NativeResource.
  * 10.04.17: Jetzt fuer Bundles. readbyecs koennte damit obselet sein.
@@ -104,7 +106,7 @@ public class PropsIO {
         }
     }
 
-    private void readProperties(String xmlbuf, BundleResource bpath,/*String*/NativeResource file, SGPropertyNode startnode, int default_mode, boolean extended, boolean readbyecs) throws SGException {
+    public void readProperties(String xmlbuf, BundleResource bpath,/*String*/NativeResource file, SGPropertyNode startnode, int default_mode, boolean extended, boolean readbyecs) throws SGException {
         try {
             NativeDocument doc = Platform.getInstance().parseXml(xmlbuf);
             if (!doc.getNodeName().equals("PropertyList")) {
@@ -298,6 +300,10 @@ public class PropsIO {
 
                     // Check for an alias.
                 else if (att_name.equals("alias")) {
+                    if (val.contains("bushkit")){
+                        int h=9;
+                    }
+                    // Newer FG versions pass false for a possible listener
                     if (!node.alias(val))
                         logger.error(/* SG_LOG (SG_INPUT,  SG_ALERT,*/ "Failed to set alias to " + val + "\n at " + location);
                 }

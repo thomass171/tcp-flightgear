@@ -1,86 +1,112 @@
 package de.yard.threed.flightgear;
 
-import de.yard.threed.core.loader.LoadedObject;
-import de.yard.threed.core.loader.LoaderAC;
-import de.yard.threed.core.loader.PortableModelDefinition;
-import de.yard.threed.core.loader.PortableModel;
-import de.yard.threed.core.loader.StringReader;
+import de.yard.threed.core.BooleanHolder;
+import de.yard.threed.core.BuildResult;
+import de.yard.threed.core.ModelBuildDelegate;
+import de.yard.threed.core.loader.*;
 import de.yard.threed.core.platform.Platform;
+import de.yard.threed.core.platform.Uniform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.core.testutil.TestUtils;
+import de.yard.threed.engine.SceneNode;
+import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
+import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
+import de.yard.threed.javacommon.SimpleHeadlessPlatform;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test for AC loader with some FG models for which the native ac-file is available in test-resources.
  * Located in tcp-flightgear due to copyright issues.
+ * Also for GLTF
  */
 public class LoaderACTest {
-    static Platform platform = FgTestFactory.initPlatformForTest(true,false,false);
-
+    static Platform platform = FgTestFactory.initPlatformForTest(true, false, false);
 
     @Test
-    public void testFuelOilAmps() {
-        try {
-            BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "Models/FuelOilAmps.ac");
-            LoaderAC ac = new LoaderAC(new StringReader(br.bundle.getResource(br).getContentAsString()), br);
-            System.out.println(ac.loadedfile.dumpMaterial("\n"));
-            assertNotNull(ac.loadedfile.object);
-            LoadedObject world = ac.loadedfile.object;
-            Assertions.assertEquals( "FuelOilAmps", world.name,"world.name");
-            System.out.println(ac.loadedfile.dumpObject("", world, "\n"));
-            Assertions.assertEquals( 1, world.kids.size(),"world kids");
-            LoadedObject group = world.kids.get(0);
-            Assertions.assertEquals( 6, group.kids.size(),"group kids");
-            Assertions.assertEquals( "FuelOilAmps.png", group.kids.get(0).texture,"texture");
+    public void testFuelOilAmps() throws Exception {
+        BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "Models/FuelOilAmps.ac");
+        LoaderAC ac = new LoaderAC(new StringReader(br.bundle.getResource(br).getContentAsString()), br);
+        System.out.println(ac.loadedfile.dumpMaterial("\n"));
+        assertNotNull(ac.loadedfile.object);
+        LoadedObject world = ac.loadedfile.object;
+        Assertions.assertEquals("FuelOilAmps", world.name, "world.name");
+        System.out.println(ac.loadedfile.dumpObject("", world, "\n"));
+        Assertions.assertEquals(1, world.kids.size(), "world kids");
+        LoadedObject group = world.kids.get(0);
+        Assertions.assertEquals(6, group.kids.size(), "group kids");
+        Assertions.assertEquals("FuelOilAmps.png", group.kids.get(0).texture, "texture");
 
-            int[] flist = new int[]{5, 1, 1, 1, 1, 1};
-            for (int i = 0; i < 6; i++) {
-                LoadedObject kid = group.kids.get(i);
-                Assertions.assertEquals( 1, kid.getFaceLists().size(),"facelists");
-                Assertions.assertEquals( 1, kid.facelistmaterial.size());
-                Assertions.assertEquals( flist[i], group.kids.get(i).getFaceLists().get(0).faces.size(),"face4");
+        int[] flist = new int[]{5, 1, 1, 1, 1, 1};
+        for (int i = 0; i < 6; i++) {
+            LoadedObject kid = group.kids.get(i);
+            Assertions.assertEquals(1, kid.getFaceLists().size(), "facelists");
+            Assertions.assertEquals(1, kid.facelistmaterial.size());
+            Assertions.assertEquals(flist[i], group.kids.get(i).getFaceLists().get(0).faces.size(), "face4");
 
-                //TestUtil.assertFace4("face 0", new int[]{3, 2, 1, 0}, (Face4) ac.objects.get(0).kids.get(0).getFaceLists().get(0).get(0));
-            }
-            //22.12.17 auch PP testen
-            PortableModel ppfile = ac.buildPortableModel();
-            PortableModelDefinition ppworld = ppfile.getRoot().kids.get(0);
-            Assertions.assertEquals("FuelOilAmps", ppworld.name,"world.name");
-            //ist null TestUtil.assertEquals("source", "ss", ppfile.source.name);
-            PortableModelDefinition ppgroup = ppworld.kids.get(0);
-            //dein Material hat keine Textur
-            Assertions.assertEquals( "FuelOilAmps.png", ppfile.getMaterialByIndex(0).getTexture(),"texture");
-
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error opening or reading ac file", e);
+            //TestUtil.assertFace4("face 0", new int[]{3, 2, 1, 0}, (Face4) ac.objects.get(0).kids.get(0).getFaceLists().get(0).get(0));
         }
+        //22.12.17 auch PP testen
+        PortableModel ppfile = ac.buildPortableModel();
+        PortableModelDefinition ppworld = ppfile.getRoot().kids.get(0);
+        Assertions.assertEquals("FuelOilAmps", ppworld.name, "world.name");
+        //ist null TestUtil.assertEquals("source", "ss", ppfile.source.name);
+        PortableModelDefinition ppgroup = ppworld.kids.get(0);
+        //dein Material hat keine Textur
+        Assertions.assertEquals("FuelOilAmps.png", ppfile.getMaterialByIndex(0).getTexture(), "texture");
     }
 
     @Test
-    public void testControlLight() {
-        try {
-            BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "Models/ControlLight.ac");
-            LoaderAC ac = new LoaderAC(new StringReader(br.bundle.getResource(br).getContentAsString()), false);
+    public void testControlLight() throws Exception {
+        BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "Models/ControlLight.ac");
+        LoaderAC ac = new LoaderAC(new StringReader(br.bundle.getResource(br).getContentAsString()), false);
 
-            //LoaderAC ac = new LoaderAC(FileReader.getFileStream(new BundleResource("flusi/ControlLight.ac")), false);
-            System.out.println(ac.loadedfile.dumpMaterial("\n"));
-            assertNotNull(ac.loadedfile.object);
-            LoadedObject world = ac.loadedfile.object;
-            System.out.println(ac.loadedfile.dumpObject("", world, "\n"));
-            Assertions.assertEquals( 2, world.kids.size(),"world kids");
-            LoadedObject cylinder = world.kids.get(0);
-            Assertions.assertEquals( 0, cylinder.kids.size(),"group kids");
-            Assertions.assertEquals( 1, cylinder.getFaceLists().size(),"facelists");
-            Assertions.assertEquals( 24, cylinder.getFaceLists().get(0).faces.size(),"face4");
-        } catch (Exception e) {
-            throw new RuntimeException("Error opening or reading ac file", e);
-        }
+        //LoaderAC ac = new LoaderAC(FileReader.getFileStream(new BundleResource("flusi/ControlLight.ac")), false);
+        System.out.println(ac.loadedfile.dumpMaterial("\n"));
+        assertNotNull(ac.loadedfile.object);
+        LoadedObject world = ac.loadedfile.object;
+        System.out.println(ac.loadedfile.dumpObject("", world, "\n"));
+        Assertions.assertEquals(2, world.kids.size(), "world kids");
+        LoadedObject cylinder = world.kids.get(0);
+        Assertions.assertEquals(0, cylinder.kids.size(), "group kids");
+        Assertions.assertEquals(1, cylinder.getFaceLists().size(), "facelists");
+        Assertions.assertEquals(24, cylinder.getFaceLists().get(0).faces.size(), "face4");
+    }
+
+    @Test
+    public void testDigitalClock() throws Exception {
+        BundleResource br = new BundleResource(BundleRegistry.getBundle("test-resources"), "Models/digital-clock/digital-clock.gltf");
+
+        BooleanHolder loaded = new BooleanHolder(false);
+        int options = 0;
+        FgModelHelper.buildNativeModel(new ResourceLoaderFromBundle(br), null, new ModelBuildDelegate() {
+            @Override
+            public void modelBuilt(BuildResult result) {
+                List<SceneNode> foundNodes = new SceneNode(result.getNode()).findNodeByName("Case");
+                assertEquals(1, foundNodes.size());
+                SceneNode caseNode = foundNodes.get(0);
+                SimpleHeadlessPlatform.DummyMaterial caseMaterial = (SimpleHeadlessPlatform.DummyMaterial) caseNode.getMesh().getMaterial().material;
+                // uses CustomShaderMaterial as always meanwhile
+                //not sure what the file path indicates, just the path where it was loaded?
+                assertEquals("src/test/resources/Models/digital-clock/clock-tex.png,clock-tex.png", caseMaterial.uniformValue.get("u_texture"));
+                assertEquals("true", caseMaterial.uniformValue.get("u_textured"));
+                assertEquals("true", caseMaterial.uniformValue.get("u_shaded"));
+                loaded.setValue(true);
+
+            }
+        }, options);
+
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return loaded.getValue();
+        }, 10000);
+
     }
 
 }

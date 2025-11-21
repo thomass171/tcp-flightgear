@@ -1,5 +1,6 @@
 package de.yard.threed.flightgear.core.simgear.scene.model;
 
+import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.platform.NativeCollision;
 import de.yard.threed.engine.SceneNode;
@@ -9,6 +10,7 @@ import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.props.SGCondition;
 import de.yard.threed.flightgear.core.simgear.scene.util.SGTransientModelData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,7 +19,7 @@ import java.util.List;
 public class SGSelectAnimation extends SGAnimation {
     SGCondition _condition;
     // The node where the scale finally applies
-    public Group conditionNode;
+    public List<Group> conditionNodes = new ArrayList<>();
     private boolean selected = false;
 
     //SGSelectAnimation::SGSelectAnimation(simgear::SGTransientModelData &modelData) :
@@ -33,9 +35,11 @@ public class SGSelectAnimation extends SGAnimation {
         // SGCondition condition = getCondition();
         // trick, gets deleted with all its 'animated' children
         // when the animation installer returns
-        if (_condition == null) {
+
+        // Do we also need that trick? Well, the FG/OSG animation group way is magic enough. Lets ignore those tricks to keep it simple
+        /*if (_condition == null) {
             return new AnimationGroup(parent, null);
-        }
+        }*/
         /*ConditionNode cn = new simgear::ConditionNode;
         cn -> setName("select animation node");
         cn -> setCondition(condition.ptr());
@@ -44,20 +48,18 @@ public class SGSelectAnimation extends SGAnimation {
         parent.addChild(cn);
         return grp;
         */
-        conditionNode = new Group();
-        conditionNode.setName("selectAnimation");
+        Group conditionNode = new Group();
+        conditionNode.setName("SelectAnimation-" + genId());
         AnimationGroup ag = new AnimationGroup(parent, conditionNode);
-        // unselect is default
-        conditionNode.getTransform().setScale(new Vector3());
+        conditionNodes.add(conditionNode);
+        // unselect is default. 27.10.25 better not, leads to missing parts in c172p
+        selected = true;
         return ag;
     }
 
     @Override
     public void process(List<NativeCollision> pickingrayintersections, RequestHandler requestHandler) {
-        if (conditionNode == null) {
-            //logger.warn("No conditionNode in " + getConfigNode().getPath());
-            return;
-        }
+
         if (_condition == null) {
             return;
         }
@@ -66,12 +68,19 @@ public class SGSelectAnimation extends SGAnimation {
         // Try to replace by scale (which also affects children!)
         if (_condition.test()) {
             if (!selected) {
-                conditionNode.getTransform().setScale(new Vector3(1, 1, 1));
+                for (Group conditionNode : conditionNodes) {
+                    conditionNode.getTransform().setScale(new Vector3(1, 1, 1));
+                }
                 selected = true;
             }
         } else {
             if (selected) {
-                conditionNode.getTransform().setScale(new Vector3());
+                if (isOnObject("windowframeleftint")) {
+                    int h = 9;
+                }
+                for (Group conditionNode : conditionNodes) {
+                    conditionNode.getTransform().setScale(new Vector3());
+                }
                 selected = false;
             }
         }

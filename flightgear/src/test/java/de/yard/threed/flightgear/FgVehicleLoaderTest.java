@@ -10,6 +10,7 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.Texture;
+import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.test.testutil.TestUtil;
 import de.yard.threed.engine.testutil.EngineTestUtils;
 import de.yard.threed.engine.testutil.TestHelper;
@@ -36,10 +37,10 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @Slf4j
 public class FgVehicleLoaderTest {
-    static Platform platform = FgTestFactory.initPlatformForTest(true, true,true);
+    static Platform platform = FgTestFactory.initPlatformForTest(true, true, true);
 
     @Test
-    public void testBluebird() {
+    public void testBluebird() throws Exception {
 
         String configXML = "<vehicle name=\"bluebird\" type=\"aircraft\">\n" +
                 "            <bundlename>bluebird</bundlename>\n" +
@@ -102,7 +103,14 @@ public class FgVehicleLoaderTest {
         assertEquals(1, mainpedals.size(), "mainpedals.size");
 
 
-        //AircraftProvider must have been removed. Only "fgdatabasic" stays.
+        //AircraftProvider must have been removed. Only "fgdatabasic" stays. 4.11.25:Provider is removed later now, so wait
+        //until everything is done. But that isn't reliable. So, until we have a better solution, remove i there.
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return AbstractSceneRunner.getInstance().getPendingAsyncCount() == 0;
+        }, 10000);
+        FgBundleHelper.removeAircraftSpecific();
+
         assertEquals(1, FgBundleHelper.getProvider().size(), "provider.size");
         assertFalse(FgBundleHelper.getProvider().get(0).isAircraftSpecific(), "provider.isAircraftSpecific");
         assertTrue(FgBundleHelper.getProvider().get(0) instanceof SimpleBundleResourceProvider);

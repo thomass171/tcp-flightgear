@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<!-- -->
+
+<PropertyList>
+
+    <path>cube.ac</path>
+    <model>
+        <path>digital-clock/digital-clock.xml</path>
+        <condition>
+            <greater-than>
+                <property>/sim/model/lightmap/dome/factor</property>
+                <value>0</value>
+            </greater-than>
+        </condition>
+    </model>
+</PropertyList>

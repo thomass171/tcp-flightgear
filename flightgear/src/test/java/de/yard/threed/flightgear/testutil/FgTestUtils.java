@@ -8,8 +8,14 @@ import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleData;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.testutil.EngineTestUtils;
+import de.yard.threed.flightgear.core.osg.NodeCallback;
+import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
+import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
+import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
+import org.junit.jupiter.api.Assertions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,5 +49,24 @@ public class FgTestUtils {
         SceneNode stgNode =  new SceneNode(scenerynodes.get(0));
         EngineTestUtils.assertSceneNodeLevel(stgNode,"pagedObjectLOD" + index, new String[]{"terrain","STG-group-A"});
         return stgNode;
+    }
+
+    public static List<SGAnimation> findAnimationsByObjectName(List<SGAnimation> animationList, String name) {
+        List<SGAnimation> result = new ArrayList<>();
+        for (SGAnimation animation:animationList){
+            if (animation.isOnObject(name)){
+                result.add(animation);
+            }
+        }
+        return result;
+    }
+
+    public static NodeCallback findNodeCallback(String name){
+        for (NodeCallback nodeCallback: FgAnimationUpdateSystem.nodeCallbacks){
+            if (nodeCallback.getName().equals(name)) {
+                return nodeCallback;
+            }
+        }
+        return null;
     }
 }

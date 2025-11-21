@@ -12,6 +12,7 @@ import de.yard.threed.engine.platform.common.RequestHandler;
 import java.util.List;
 
 /**
+ * Not yet implemented
  * Created by thomass on 28.12.16.
  */
 public class SGMaterialAnimation extends SGAnimation {
@@ -28,17 +29,17 @@ public class SGMaterialAnimation extends SGAnimation {
      * The possible color properties supplied by a material animation.
      */
     //enum SuppliedColor {
-   static  int DIFFUSE = 1;
-    static    int AMBIENT = 2;
-    static    int SPECULAR = 4;
-    static   int EMISSION = 8;
-    static    int SHININESS = 16;
-    static    int TRANSPARENCY = 32;
-public Group group;
+    static int DIFFUSE = 1;
+    static int AMBIENT = 2;
+    static int SPECULAR = 4;
+    static int EMISSION = 8;
+    static int SHININESS = 16;
+    static int TRANSPARENCY = 32;
+    public Group group;
 
-    int  AMBIENT_DIFFUSE = AMBIENT | DIFFUSE;
+    int AMBIENT_DIFFUSE = AMBIENT | DIFFUSE;
     //const int allMaterialColors = (DIFFUSE | AMBIENT | SPECULAR | EMISSION        | SHININESS);
-    
+
     public SGMaterialAnimation(SGTransientModelData modelData, String label) {
         super(modelData, label);
 
@@ -53,7 +54,7 @@ public Group group;
 
     @Override
     public void process(List<NativeCollision> pickingrayintersections, RequestHandler requestHandler) {
-        //TODO unfertig, Z.B. condition
+        //TODO eg misses condition
         /*if (rotategroup != null) {
             double speed = _animationValue.getValue(null).doubleVal;
             //rotategroup.getTransform().rotateOnAxis(_axis, new Degree(3));
@@ -64,14 +65,15 @@ public Group group;
 
     /**
      * Eine eigene Group brauchts wohl nicht wirklich. Das gehört aber zum AnimationGroup Mechanismus.
-     * 
+     *
      * @param parent
      * @return
      */
     @Override
     public AnimationGroup/*SceneNode*/ createAnimationGroup(/*Group*/SceneNode parent) {
-        /*Group*/ group = new Group();
-        group.setName("material animation group");
+        /*Group*/
+        group = new Group();
+        group.setName("MaterialAnimationGroup-" + genId());
 
         SGPropertyNode inputRoot = getModelRoot();
         SGPropertyNode node = getConfig().getChild("property-base");
@@ -221,7 +223,7 @@ public Group group;
             parent.addChild(group);
             return group;
         }*/
-        AnimationGroup ag =  new AnimationGroup(parent,group);
+        AnimationGroup ag = new AnimationGroup(parent, group);
         return ag;
     }
 
@@ -642,3 +644,17 @@ private:
         } // namespace
 */
 
+/*
+
+wing_right:
+  77.48:instantiateEffects
+  77.48:instantiateEffects
+  77.48:instantiateEffects
+  77.91:MakeEffectVisitor::apply effect with label 'courtesyoff' to group wing_right
+die grosse MaterialAnimation(41 objects):
+  zigmal 77.92 [DBUG]:none       createAnimationGroup for SGMaterialAnimation with id LRLRbeeefffAffffhllrrrvwwwwwwwwSrrrrovafA
+  77.92 [DBUG]:none       animation.applymaterial for group=wing_right
+
+15-mal:
+createAnimationGroup for SGMaterialAnimation with id wwwwwwfrlwwcwrwwlwwwwlwwrw
+ */

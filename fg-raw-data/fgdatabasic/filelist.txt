@@ -40,3 +40,5 @@ Effects/water-inland.eff
 Effects/glass.eff
 Effects/model-default.eff
 Effects/model-interior.eff
+Effects/model-combined.eff
+Effects/model-combined-deferred.eff

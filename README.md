@@ -147,7 +147,17 @@ After applying animations it is (30.11.24 really? no rotate missing?)
 
 Like for effects it's really hard to comprehend how FG implements animations. Only the base idea
 (from https://wiki.flightgear.org/Howto:Animate_models) appears  
-clear.
+clear. 
+
+The animationGroup/installInGroup part is FG/OSG magic. The
+method installInGroup() is called many many many times. It seems that
+the full (sub)model tree is traversed again and agin for finding the
+node where to inject an animation group. The number of animation groups
+that needs to be created for an animation depends on the current tree.
+Only for animated nodes that have the same parent an animation group
+can be shared. And finally FG/OSG might end up with model nodes that have
+more than one parent (eg. HR.001 in didgital-clock). Strange, and not possible for us to do.
+
 One important issue in rotate animations is the 3D way to always rotate an object around its center. FG however
 provides an option to define a center for rotation. For doing this a sequence of three 3D operations is needed:
 "move center","rotate","move center back" (we call it the MCRMCB pattern). FG can apply these operations
@@ -240,6 +250,8 @@ Only major changes are listed here.
 Initial release
 ## 2025-09
 * FG 2024.1 upgrade
+## 2025-11
+* Switch to FGs 2024.1 c172p
 
 # Flightgear data
 Flightgear needs data for
@@ -320,6 +332,13 @@ externally hosted bundles, to which the phrase "bundlepool" refers.
 
 
 # Implementation Details
+
+## Global Property Tree
+Initially there was the idea for having a vehicle specific property tree
+to allow for multiple concurrent vehicles. But it might be hard/impossible
+to reliably resolve an ambicious property. So to keep it simple
+we give up that idea at least for the near future 
+(See also FlightGearProperties.java and FgVehicleLoader.java).
 
 ## Model
 The preferred model format in Flightgear is 'ac'. This is human readable for the
@@ -409,6 +428,18 @@ FG apparently has two caches for effects, effectMap in makeEffect (local or glob
 > shared.
 
 And every MakeEffectVisitor has its own effectMap. This is confusing. When an Effect object is instanciated, caches need to be adjusted. But this is apparently not done for 'effectMap'.
+
+### Effect overview
+
+| Effect                                                | Parent                                           | Remarks                                                                                |
+|-------------------------------------------------------|--------------------------------------------------|----------------------------------------------------------------------------------------|
+| Effects/model-default                                 | -                                                |                                                                                        |
+| Effects/model-combined                                | Effects/model-default                            | many effect textures, 3 techniques (4,7,9)                                             |
+| Effects/model-combined-deferred                       | Effects/model-combined                           | Legacy Effect for Project Rembrandt. Just inherit, no technique, no parameter; nothing |
+| Aircraft/c172p/Models/ Effects/exterior/bumpspec      | Effects/model-combined-deferred                  | 3 techniques (4,7,9) , replacing those of grandparent?                                 |
+| Aircraft/c172p/Models/ Effects/exterior/bumpspec-wing | Aircraft/c172p/Models/ Effects/exterior/bumpspec | only adds texture 'wing-normal.png'                                                    |
+
+
 
 ## Scenery
 

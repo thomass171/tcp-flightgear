@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 
-<!-- included from test-main.xml. Animations still are nonsens -->
+<!-- included from test-main.xml. Animations still are nonsens
+17.11.25: Does it really comply to FG having animations in an included file without model reference? Test assertion
+in validateXmlTestModel commented currently-->
 
 <PropertyList>
 

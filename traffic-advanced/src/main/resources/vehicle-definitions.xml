@@ -88,7 +88,8 @@ is now in bundlepool just because it is an easy to load lightweight model.
     <!-- Jetzt die mit Interior. Wobei das keine klare Abgrenzung ist. Followme hat auch Interior.-->
     <vehicledefinition name="c172p" type="aircraft">
         <bundlename>https://ubuntu-server.udehlavj1efjeuqv.myfritz.net/publicweb/bundlepool/c172p</bundlename>
-        <modelfile>Models/c172p.xml</modelfile>
+        <!--the 2024 replaces the 2018 <modelfile>Models/c172p.xml</modelfile>-->
+        <modelfile>Models/c172-common.xml</modelfile>
         <zoffset>1.2</zoffset>
         <unscheduledmoving>0</unscheduledmoving>
         <!-- 233 km/h, 125 kn -->

@@ -1,6 +1,7 @@
 package de.yard.threed.flightgear.testutil;
 
 import de.yard.threed.core.Matrix3;
+import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.Vector2;
 import de.yard.threed.core.Vector3;
 import de.yard.threed.core.testutil.TestUtils;
@@ -129,12 +130,13 @@ public class AnimationAssertions {
         SGInterpTableExpression expression = (SGInterpTableExpression) asiRotateAnimation.getAnimationValueExpression();
         //assertTrue(expression instanceof SGInterpTableExpression);
         SGPropertyExpression propertyExpression = (SGPropertyExpression) expression.getOperand();
-        assertEquals(propertyRootNodeName + "/fdm/jsbsim/velocities/vias-kts", propertyExpression.getPropertyNode().getPath(true));
+        // 17.1.25 locomotive-root removed since vehicle no longer have their own tree
+        assertEquals("/fdm/jsbsim/velocities/vias-kts", propertyExpression.getPropertyNode().getPath(true));
         SceneNode needle = xmlNnode.findNodeByName("Needle").get(0);
         assertNotNull(needle);
         String hierarchy = EngineTestUtils.getHierarchy(needle, 5, false);
         log.debug("needle hierarchy={}", hierarchy);
-        assertEquals("ac-world->material animation group->centerBackTranslate->rotateAnimation->centerTranslate->Needle", hierarchy);
+        assertEquals("ac-world->MaterialAnimationGroup-FN->centerBackTranslate->rotateAnimation->centerTranslate->Needle", hierarchy);
 
         if (currentSpeed == 0.0) {
             assertEquals(0.0, asiRotateAnimation.getAnimationValue().doubleVal);
@@ -236,7 +238,7 @@ public class AnimationAssertions {
         assertNotNull(whiteFlash1);
         String hierarchy = EngineTestUtils.getHierarchy(whiteFlash1, 5, false);
         log.debug("whiteFlash1 hierarchy={}", hierarchy);
-        assertEquals("ac-world->selectAnimation->centerBackTranslate->rotateAnimation->centerTranslate->WhiteFlash.1", hierarchy);
+        assertEquals("ac-world->SelectAnimation-GGWWGW->centerBackTranslate->rotateAnimation->centerTranslate->WhiteFlash.1", hierarchy);
         assertEquals(atNight, selectAnimation.isSelected(), "selectAnimation selected");
     }
 
@@ -277,5 +279,20 @@ public class AnimationAssertions {
     private static SceneNode getFirstRotateAnimationGroup(SceneNode node, int childIndex) {
         SceneNode firstRotateAnimationGroup = EngineTestUtils.getChild(node, childIndex, 0);
         return firstRotateAnimationGroup;
+    }
+
+    /**
+     * Top node in expectedHierarchy should be the "ac" node.
+     */
+    public static void assertAnimationGroupHierarchy(SceneNode node, String expectedHierarchy) {
+        String hierarchy = node.getName();
+        while (node.getParent()!=null){
+            node=node.getParent();
+            hierarchy = node.getName()+"->"+hierarchy;
+                    if (StringUtils.endsWith(node.getName(),".ac")){
+                        break;
+                    }
+        }
+        assertEquals(expectedHierarchy, hierarchy);
     }
 }

@@ -1,26 +1,15 @@
 package de.yard.threed.flightgear.core.simgear.scene.model;
 
-import de.yard.threed.core.CharsetException;
 import de.yard.threed.core.Degree;
 import de.yard.threed.core.Matrix4;
 import de.yard.threed.core.ModelBuildDelegate;
-import de.yard.threed.core.ModelPreparedDelegate;
 import de.yard.threed.core.Quaternion;
 import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector3;
-import de.yard.threed.core.loader.PreparedModel;
-import de.yard.threed.core.platform.AsyncHttpResponse;
-import de.yard.threed.core.platform.AsyncJobDelegate;
-import de.yard.threed.core.platform.NativeBundleResourceLoader;
 import de.yard.threed.core.platform.Platform;
-import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.ResourceLoader;
-import de.yard.threed.engine.loader.PortableModelBuilder;
 import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
-import de.yard.threed.engine.platform.ResourceLoaderFromDelayedBundle;
-import de.yard.threed.engine.platform.common.AbstractSceneRunner;
-import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.FgModelHelper;
 import de.yard.threed.flightgear.LoaderOptions;
@@ -45,17 +34,14 @@ import de.yard.threed.core.platform.Log;
 
 import de.yard.threed.engine.platform.EngineHelper;
 import de.yard.threed.core.BuildResult;
-import de.yard.threed.core.platform.Config;
 import de.yard.threed.core.MathUtil2;
 import de.yard.threed.core.resource.ResourcePath;
 import de.yard.threed.core.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static de.yard.threed.engine.platform.EngineHelper.LOADER_APPLYACPOLICY;
-import static de.yard.threed.flightgear.FgModelHelper.mapFilename;
 import static de.yard.threed.flightgear.core.simgear.props.SGCondition.sgReadCondition;
 
 
@@ -214,9 +200,8 @@ public class SGReaderWriterXML {
      * Returns null in case of an error (no exception is thrown), which already was logged. Its up
      * to the caller to create an empty BuildResult for avoiding NPEs (its hard to do that here).
      * <p>
-     * 27.12.16: Kann die gelesenen Properties jetzt auch uebergeben bekommen. Ginge zwar, durch die Rekursion in die submodel hilft das aber nur wenig.
-     * 10.04.17: Wenn es ein Bundle gibt, wird der "bpath" relativ in dieses Bundle betrachtet.
-     * 15.09.17: Jetzt async. Das ist ein kompletter Umbau des Ablaufs.
+     * 10.04.17: "bpath" is relative to bundle.
+     * 15.09.17: Now async. This is a complete change of flow.
      * xx.xx.?? bpath is considered to be not null and "(SG)path" no longer is an option!
      * 12.02.24: exclusive for XML? (not yet)
      * 25.08.24: Even though we have bundleless ResourceLoader meanwhile, we stay with bundle for easier handling of nested XMLs.
@@ -234,8 +219,8 @@ public class SGReaderWriterXML {
         // 13.10.25:Wow, options really need refactoring
         SGReaderWriterOptions options = SGReaderWriterOptions.copyOrCreate(dbOptions);
         SGLoaderOptions boptions = SGLoaderOptions.copyOrCreate(bdbOptions);
-        if (options.effectBuilderListener==null){
-            options.effectBuilderListener=boptions.effectBuilderListener;
+        if (options.effectBuilderListener == null) {
+            options.effectBuilderListener = boptions.effectBuilderListener;
         }
 
         BundleResource bmodelpath = bpath;
@@ -246,13 +231,13 @@ public class SGReaderWriterXML {
         boolean isxml = bpath.getExtension().equals("xml");
 
         /*SGSharedPtr<*/
-        // Ueber die Options kann DER PropertyTree reinkommen. Den brauchen z.B. die Animationen.
-        // 7.6.18: Mittlerweile ist das aber ein z.B. Vehicle spezifischer Tree. Aber nicht fuer "-set.xml", der
-        // nicht hier gelesen wird.
+        // Via options we can retrieve the main property tree, needed eg. for animations.
+        // 7.6.18: Meanwhile this could be a vehicle specific tree. But not for a "-set.xml" file, which isn't loaded here(??)
         SGPropertyNode/*>*/ prop_root = options.getPropertyNode();
         if (prop_root == null/*!prop_root.valid()*/) {
             prop_root = boptions.getPropertyNode();
             if (prop_root == null/*!prop_root.valid() */) {
+                logger.warn("Loading without prop_root. Creating a temp one");
                 prop_root = new SGPropertyNode();
             }
         }
@@ -267,8 +252,8 @@ public class SGReaderWriterXML {
         SceneNode model = null;
         //osg::ref_ptr < osg::Group > group;
 
-        // 7.6.18: Die Properties kommen erst in eine temp node? Weil vieles im Haupttree nicht relevant ist?
-        // Das "-set.xml" wird nicht hierueber geladen (sondern in fg_init), nur das model xml.
+        // 7.6.18: Apparently Properties are loaded into a temp node. Weil vieles im Haupttree nicht relevant ist?
+        // The "-set.xml" is not loaded here but in fg_init. Here only model.xml is loaded.
         SGPropertyNode/*_ptr*/ props = new SGPropertyNode();
         boolean previewMode = false;//dbOptions.getPluginStringData("SimGear::PREVIEW").equals("ON");
 
@@ -276,6 +261,48 @@ public class SGReaderWriterXML {
 
         if (isxml) {
             logger.debug("found nodelpath xml. modelpath=" + modelpath + ",modelDir=" + modelDir);
+
+/* not sure whether we should do this
+            if (bpath.name.equals("c172-common.xml") && bpath.bundle != null && bpath.bundle.name.equals("c172p.2024")) {
+                // From Nasal init block in 'c172-common.xml', converted to Java. Nasals cmdarg() returns the XML loading root node(??). Hmm, it is complex (See https://wiki.flightgear.org/Nasal_library#cmdarg())
+                // But what is this all about?? In FG the properties below finally exist in the global tree.
+                // The "sim/multiplay/generic" path also exists for other aircraft, so might be really generic and maintained by FG.
+                // "sim/model/c172p" however only exists with c172. But who creates it?
+                //var livery_update = aircraft.livery_update.new( "Aircraft/c172p/Models/Liveries", 10, func { print("c172p livery update") });
+                SGPropertyNode rplayer = props;//cmdarg();
+                //# Beacon and strobes lighting
+                String lighting_beacon_enabled = rplayer.getNode("sim/multiplay/generic/int[12]", true).getPath();
+                String lighting_strobes_enabled = rplayer.getNode("sim/multiplay/generic/int[13]", true).getPath();
+                String lighting_beacon_state = rplayer.getNode("sim/model/c172p/lighting/beacon", true).getPath();
+                String lighting_strobes_state = rplayer.getNode("sim/model/c172p/lighting/strobes", true).getPath();
+                //aircraft.light.new(lighting_beacon_state, [0.10, 0.90], lighting_beacon_enabled);
+                //aircraft.light.new(lighting_strobes_state, [0.015, 1.985], lighting_strobes_enabled);
+                //io.include("Aircraft/c172p/Nasal/registration_number.nas");
+                //# Registration number
+                String regnum_path = rplayer.getNode("sim/multiplay/generic/string[0]", true).getPath();
+                //setlistener(regnum_path, func (node) { set_registration_number(rplayer, node.getValue()); }, 1, 0);
+                //# Passengers var pax_state_path = rplayer.getNode("sim/multiplay/generic/int[16]").getPath();
+                var co_pilot = rplayer.getNode("pax/co-pilot/present", true).setBoolValue(false);
+                var left_passenger = rplayer.getNode("pax/left-passenger/present", true).setBoolValue(false);
+                var right_passenger = rplayer.getNode("pax/right-passenger/present", true).setBoolValue(false);
+                var pilot = rplayer.getNode("pax/pilot/present", true).setBoolValue(false);
+                //setlistener(pax_state_path, func (node) { var state = node.getValue(); co_pilot.setBoolValue(bits.test(state, 0)); left_passenger.setBoolValue(bits.test(state, 1)); right_passenger.setBoolValue(bits.test(state, 2)); pilot.setBoolValue(bits.test(state, 3)); }, 1, 0);
+                //# Securing attributes var securing_state_path = rplayer.getNode("sim/multiplay/generic/int[9]").getPath(); var pitot_cover = rplayer.initNode("sim/model/c172p/securing/pitot-cover-visible", 0, "BOOL"); var cowl_plugs = rplayer.initNode("sim/model/c172p/securing/cowl-plugs-visible", 0, "BOOL"); var wheel_chock = rplayer.initNode("sim/model/c172p/securing/chock-visible", 0, "BOOL"); var left_tiedown = rplayer.initNode("sim/model/c172p/securing/tiedownL-visible", 0, "BOOL"); var right_tiedown = rplayer.initNode("sim/model/c172p/securing/tiedownR-visible", 0, "BOOL"); var tail_tiedown = rplayer.initNode("sim/model/c172p/securing/tiedownT-visible", 0, "BOOL"); setlistener(securing_state_path, func (node) { var state = node.getValue(); pitot_cover.setBoolValue(bits.test(state, 0)); wheel_chock.setBoolValue(bits.test(state, 1)); left_tiedown.setBoolValue(bits.test(state, 2)); right_tiedown.setBoolValue(bits.test(state, 3)); tail_tiedown.setBoolValue(bits.test(state, 4)); cowl_plugs.setBoolValue(bits.test(state, 5)); }, 1, 0); # Make sure human occupants are always visible in remote aircraft rplayer.initNode("sim/model/occupants", 1, "BOOL"); # Disable ALS 3D shadow for remote aircraft because of issue #387 #rplayer.initNode("sim/rendering/shadow-volume", 0, "BOOL"); # Gear rplayer.initNode("sim/multiplay/generic/int[6]", 0, "BOOL"); rplayer.initNode("sim/multiplay/generic/int[7]", 0, "BOOL"); rplayer.initNode("sim/multiplay/generic/int[8]", 0, "BOOL"); # Bush kit rplayer.initNode("sim/model/variant", 0, "INT"); # Glass Cockpit rplayer.initNode("sim/multiplay/generic/bool[1]", 0, "BOOL"); # Damage var wings_collapsed = rplayer.initNode("sim/multiplay/generic/int[15]", 0, "INT");
+                /*String wing_left_state =
+                rplayer.getNode("sim/multiplay/generic/int[18]", true).setIntValue(0);
+                /*String wing_right_state =
+                rplayer.getNode("sim/multiplay/generic/int[19]", true).setIntValue(0);
+                /*String move_nav_light_left =
+                rplayer.getNode("sim/model/c172p/lighting/nav-lights/left-damaged", true).setBoolValue(false);
+                /*String move_nav_light_right =
+                rplayer.getNode("sim/model/c172p/lighting/nav-lights/right-damaged", true).setBoolValue(false);
+                //setlistener(wing_left_state.getPath(), func (node) { var move = node.getValue() == 2 and !wings_collapsed.getBoolValue(); move_nav_light_left.setBoolValue(move); }, 1, 0); setlistener(wing_right_state.getPath(), func (node) { var move = node.getValue() == 2 and !wings_collapsed.getBoolValue(); move_nav_light_right.setBoolValue(move); }, 1, 0); setlistener(wings_collapsed.getPath(), func (node) { var move = wing_left_state.getValue() == 2 and !node.getBoolValue(); move_nav_light_left.setBoolValue(move); var move = wing_right_state.getValue() == 2 and !node.getBoolValue(); move_nav_light_right.setBoolValue(move); }, 1, 0);
+
+                // a simple autostart
+                prop_root.getNode("/params/wing_right_damaged/property", true).setIntValue(0);
+                prop_root.getNode("/params/crash/property", true).setBoolValue(false);
+            }
+ */
 
             PropsIO propsIO = new PropsIO();
             try {
@@ -550,15 +577,22 @@ public class SGReaderWriterXML {
                 submodel_final = align;
             }
             submodel_final.setName(sub_props.getStringValue("name", ""));
-
+            if (StringUtils.empty(submodel_final.getName())){
+                // for now just the full path
+                submodel_final.setName(subPathStr);
+            }
             SGPropertyNode cond = sub_props.getNode("condition", false);
             if (cond != null) {
                 /* osg::ref_ptr < osg::*/
                 Switch sw = new /*osg::*/Switch();
-                sw.setUpdateCallback(new SGSwitchUpdateCallback(sgReadCondition(prop_root, cond)));
+                if (submodel_final.getName().startsWith("MagCompass")){
+                    int h=9;
+                }
+                sw.setUpdateCallback(new SGSwitchUpdateCallback(submodel_final.getName(), sw, sgReadCondition(prop_root, cond)));
                 group.addChild(sw/*.get()*/);
                 sw.addChild(submodel_final/*.get()*/);
-                sw.setName("submodel condition switch");
+                sw.setName("SubmodelConditionSwitch-"+submodel_final.getName());
+                sw.setInfo(subPathStr);
             } else {
                 group.attach/*addChild*/(submodel_final/*.get()*/);
             }
@@ -1289,28 +1323,36 @@ public class SGReaderWriterXML {
         loadedList = new ArrayList<String>();
         failedList = new ArrayList<String>();
     }
-}
 
-class SGSwitchUpdateCallback extends /*: public osg::*/NodeCallback {
-    private SGCondition mCondition;
+    public class SGSwitchUpdateCallback extends /*: public osg::*/NodeCallback {
+        public SGCondition mCondition;
 
-    public SGSwitchUpdateCallback(SGCondition condition) {
-        mCondition = condition;
-    }
+        public SGSwitchUpdateCallback(String name, Switch sw, SGCondition condition) {
+           super(sw,name);
+            mCondition = condition;
+        }
 
-    /*virtual*/ void operator/*()*/(/*osg::*/Node node, /*osg::*/ NodeVisitor nv) {
-        //assert(dynamic_cast<osg::Switch*>(node));
-        /*osg::*/
-        Switch s = (Switch) node;//static_cast<osg::Switch*>(node);
+        /*virtual*/ void operator/*()*/(/*osg::Node node, /*osg:: NodeVisitor nv*/) {
+            //assert(dynamic_cast<osg::Switch*>(node));
+            /*osg::*/
+            Switch s = (Switch) node;//static_cast<osg::Switch*>(node);
 
-        if (mCondition != null && mCondition.test()) {
-            s.setAllChildrenOn();
-            // note, callback is responsible for scenegraph traversal so
-            // should always include call traverse(node,nv) to ensure
-            // that the rest of cullbacks and the scene graph are traversed.
-            traverse(node, nv);
-        } else
-            s.setAllChildrenOff();
+            if (mCondition != null && mCondition.test()) {
+                s.setAllChildrenOn();
+                // FG:
+                // >note, callback is responsible for scenegraph traversal so
+                // >should always include call traverse(node,nv) to ensure
+                // >that the rest of cullbacks and the scene graph are traversed.
+                //we don't have a traverse.
+                // traverse(node, nv);
+            } else
+                s.setAllChildrenOff();
+        }
+
+        @Override
+        public void update() {
+            operator();
+        }
     }
 }
 

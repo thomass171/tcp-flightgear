@@ -23,19 +23,14 @@ import de.yard.threed.engine.testutil.SceneRunnerForTesting;
 import de.yard.threed.engine.testutil.TestHelper;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
 import de.yard.threed.flightgear.core.flightgear.scenery.FGTileMgr;
-import de.yard.threed.flightgear.core.flightgear.scenery.FGTileMgrScheduler;
 import de.yard.threed.flightgear.core.simgear.scene.tgdb.SGOceanTile;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.graph.GraphMovingComponent;
-import de.yard.threed.traffic.FgVehicleSpace;
-import de.yard.threed.traffic.GraphVisualizationSystem;
-import de.yard.threed.traffic.RequestRegistry;
-import de.yard.threed.traffic.SphereSystem;
-import de.yard.threed.traffic.TrafficHelper;
-import de.yard.threed.traffic.TrafficSystem;
+import de.yard.threed.traffic.*;
 import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.trafficadvanced.apps.TravelScene;
 import de.yard.threed.trafficadvanced.testutil.AdvancedBundleResolverSetup;
+import de.yard.threed.trafficadvanced.testutil.AdvancedTestUtils;
 import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.TravelSceneTestHelper;
 import de.yard.threed.trafficfg.flight.GroundServiceComponent;
@@ -228,22 +223,11 @@ public class TravelSceneTest {
         // load c172p
         Request request = RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null, null, null);
         SystemManager.putRequest(request);
-        TestUtils.waitUntil(() -> {
-            sceneRunner.runLimitedFrames(10);
-            sleepMs(100);
-            return BundleRegistry.getBundle("c172p") != null;
-        }, 30000);
-        assertNotNull(BundleRegistry.getBundle("c172p"));
-
-        // Optionals should not have been created. But testing that way is a false positive for unknwn reasons.
-        assertEquals(0, SceneNode.findByName("LandingLightCone").size());
+        AdvancedTestUtils.loadAndValidateNextVehicleSupposedToBeC172(sceneRunner);
 
         EcsEntity c172p = EcsHelper.findEntitiesByName("c172p").get(0);
         //log.debug(c172p.getSceneNode().dump(" ", 0));
 
-        // garmin has multiple components and names. just look for one
-        NativeSceneNode garmin196 = SceneNode.findByName("Aircraft/Instruments-3d/garmin196/garmin196.gltf").get(0);
-        //16.8.24 TODO assertTrue(Texture.hasTexture("screens.png"), "garmin.texture");
         GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(c172p);
         assertEquals("groundnet.EDDK", gmc.getGraph().getName());
         // has the graph attached where it is located (groundnet)

@@ -5,12 +5,7 @@
     <name>ASI</name>
     <path>asi.ac</path>
 
-    <effect>
-        <!-- 18.2.25 until now the unknow 'xxx' worked with just a warning/error log-->
-        <inherits-from>xxx</inherits-from>
-        <object-name>Face</object-name>
-        <object-name>Needle</object-name>
-    </effect>
+    <!-- 17.11.25 Meanwhile a missing/incomplete effect leads to invisble object. So 'xxx' removed-->
 
     <animation>
         <type>material</type>

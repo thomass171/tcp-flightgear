@@ -10,11 +10,13 @@ import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsHelper;
 import de.yard.threed.engine.ecs.VelocityComponent;
 import de.yard.threed.engine.testutil.SceneRunnerForTesting;
+import de.yard.threed.flightgear.core.simgear.scene.model.Model;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.graph.GraphMovingComponent;
 import de.yard.threed.traffic.VehicleComponent;
 import de.yard.threed.trafficadvanced.apps.HangarScene;
 import de.yard.threed.trafficadvanced.testutil.AdvancedBundleResolverSetup;
+import de.yard.threed.trafficadvanced.testutil.AdvancedTestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -83,6 +85,13 @@ public class HangarSceneTest {
         EcsEntity initial = EcsHelper.findEntitiesByName(initialVehicle == null ? "bluebird" : initialVehicle).get(0);
         assertNotNull(initial);
 
+        if (initialVehicle == null){
+            // was bluebird, load c172p now
+            Model.ghostedObjects.clear();
+            ((HangarScene)HangarScene.getCurrent()).addNextVehicle();
+            AdvancedTestUtils.loadAndValidateNextVehicleSupposedToBeC172(sceneRunner);
+
+        }
     }
 
     /**

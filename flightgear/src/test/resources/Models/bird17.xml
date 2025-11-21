@@ -25,10 +25,8 @@
     </model>
     <model>
         <name>strobe-light-left</name>
-        <path>
-            <!-- test will map 'c172p' to test-resources-->
-            Aircraft/c172p/Models/Effects/lights/procedural_light_left_strobe.xml
-        </path>
+        <!-- test will map 'c172p' to test-resources-->
+        <path>Aircraft/c172p/Models/Effects/lights/procedural_light_left_strobe.xml</path>
         <offsets>
             <x-m>0.15</x-m>
             <y-m>-5.66</y-m>

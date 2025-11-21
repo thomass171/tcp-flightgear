@@ -406,6 +406,7 @@ class SGOrCondition extends SGCondition {
     void setLeftProperty(SGPropertyNode prop_root, String propname) {
         // prop_root might be a vehicle tree. So like in SGExpression we need a property lookup
         //FG-DIFF _left_property = prop_root.getNode(propname, true);
+        // 19.11.25: For now vehicle will now longer have their own tree
         _left_property = FlightGearProperties.resolve(propname, prop_root);
     }
 

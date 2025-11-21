@@ -34,7 +34,7 @@ public class SGRotateAnimation extends SGAnimation {
     Vector3 _center;
     double _initialValue;
     boolean _isSpin;
-    // The node where the rotation finally applies
+    // The node where the rotation finally applies. TODO might be multiple like in SelectAnimation
     public Group rotategroup;
 
     // used when condition is false. Not for spin rotations, public for testing

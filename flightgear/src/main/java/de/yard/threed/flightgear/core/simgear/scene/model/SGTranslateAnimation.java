@@ -29,7 +29,7 @@ public class SGTranslateAnimation extends SGAnimation {
     SGCondition _condition;
     Vector3 _axis;
     double _initialValue;
-    // The node where the translate finally applies
+    // The node where the translate finally applies. TODO might be multiple like in SelectAnimation
     public Group translateGroup;
     boolean noTranslateGroupLogged = false;
 

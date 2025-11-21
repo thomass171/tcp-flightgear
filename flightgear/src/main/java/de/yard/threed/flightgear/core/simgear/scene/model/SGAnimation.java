@@ -32,7 +32,9 @@ import de.yard.threed.core.StringUtils;
 import de.yard.threed.engine.platform.common.RequestHandler;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * animation.[ch]xx
@@ -86,7 +88,7 @@ public abstract class SGAnimation {
      * Build animation from XML content?
      * FG meanwhile passes {@link SGTransientModelData}"&modelData" here, which contains most of the single parameter
      */
-    static SGAnimation/*boolean*/ animate(SGTransientModelData modelData/*Node xmlNodeOfCurrentModel, SGPropertyNode configNode,
+    public static SGAnimation/*boolean*/ animate(SGTransientModelData modelData/*Node xmlNodeOfCurrentModel, SGPropertyNode configNode,
                                           SGPropertyNode modelRoot,
                                           Options options,
                                           String path, int i*/, String label) {
@@ -191,9 +193,9 @@ public abstract class SGAnimation {
     }
 
     /**
-     * Statt SGTranslateTransform.
+     * Instead of NodeVisitor?
      * Replaces OSG NodeCallbacks that are used by FG(?) (see README.md).
-     * 4.10.19: Das ist aber nicht sehr generisch. Darum pack ich erstmal noch Parameter ein, wie es gebraucht wird. Alles zur für PickAnimation
+     * 4.10.19: Not very generic. Needs more parameter.
      * 13.3.24: No longer pass pickingray but the objects hit for better efficiency.
      * 18.11.24:
      * <p>
@@ -202,11 +204,8 @@ public abstract class SGAnimation {
     public abstract void process(List<NativeCollision> pickingrayintersections, RequestHandler requestHandler);
 
     /**
-     * Ob es die pro Animation geben muesste und hier abstract ist unklar. Eigentlich ist apply der Callback des NodeVisitors.
-     * FG-DIFF Nicht wie bei OSG in den Scenegraph mit Visitor. Hmmm, auf jeden Fall wohl ueberschreibbar durch z.B. BlendAnimation
-     * 4.10.19: Das ist doch sehr spezifisch für Animationen, die neue Nodes (AnimationGroup) brauchen.
-     *
-     * @param
+     * The FG/OSG way is quite magic (see also README.md). In FG the apply() is the callback of NodeVisitor and this method is called many many times.
+     * FG-DIFF We use a more straightforward approach than FG without a travers() but with a node finder.
      */
     protected void apply(Node xmlNodeOfCurrentModel) {
 
@@ -215,24 +214,23 @@ public abstract class SGAnimation {
         // Else we end up in a recursive loop where we infinitly insert new
         // groups in between
 
-        // Der reverse rueckt group wohl weiter nach unten im Tree, damit...warum auch immer. Auf jeden Fall koennte damit die
-        // ACtransform in der Hierarchie bleiben.
-        //TODO traverse(group);
+        // traverse(group);
 
         // Note that this algorithm preserves the order of the child objects
         // like they appear in the object-name tags.
         // The timed animations require this
         //osg::ref_ptr < osg::Group > animationGroup;
-        AnimationGroup animationGroup = null;
+        // Depending on the location of the object in the scene graph we might have multiple animationsgroups per parent.
+        Map<String, AnimationGroup> animationGroupMap = new HashMap<>();
         //std::list<std::string>::const_iterator nameIt;
         //for (nameIt = _objectNames.begin(); nameIt != _objectNames.end(); ++nameIt)
         for (String nameIt : _objectNames) {
-            // ob der Cast so ideal ist?
-            animationGroup = installInGroup(nameIt, (Group) xmlNodeOfCurrentModel, animationGroup);
+            // is the Cast a good idea?
+            installInGroup(nameIt, (Group) xmlNodeOfCurrentModel, animationGroupMap);
         }
     }
 
-    // 5.10.17: install (wegen Visitor) nicht erforderlich? Der wird doch fuer die Einrichtung sorgen?
+    // 5.10.17: Don't we need this install (or is it only for Visitor)?
     //  virtual void install(osg::Node& node);
     
   /*  Group createAnimationGroup(Group parent){
@@ -393,28 +391,20 @@ public abstract class SGAnimation {
     }
 
     /**
-     * The purpose/idea/intention of this method is unclear. Apparently:
+     * The purpose/idea/intention of this method is unclear. The FG/OSG way is quite magic (see also README.md). Apparently:
      * <p>
      * Move an animated object from the current location in the object tree to an AnimationGroup.
-     * This might be required to apply subsequent animations like in windsock.
-     * FG moves objects to the top XML group(?), but we cannot do this because we'll loose ACPolicy.
-     * The AnimationGroup is created if it not yet exists.
+     * This is required to apply subsequent animations like in windsock.
+     * An AnimationGroup is created if it not yet exists. We might get multiple animationgroups for a single animation
+     * when the objects have different parents, which might happen when already other animations were applied (eg. c172 "wing_right").
      * <p>
-     * Das mit der AnimationGroup koennte fuer mehrere Animations auf EINER Node sein. Dann kann
-     * man das evtl. in einer abbilden. Scheint aber zu frickelig.
-     * Ist dafuer auch _installedAnimations?
-     * 4.10.19: Was passiert hier eigentlich? Es geht wohl darum, verschiedene SceneGraph Nodes zu bauen, über die dann
-     * die Animation (z.B. Rotation) erfolgt. Aber das kann doch eigentlich nicht generisch sein.
-     * <p>
-     * Kann (bei Fehlern) auch null liefern.
-     *
-     * @param name
-     * @param xmlNodeOfCurrentModel
+     * Since we use a different way than FG/OSG, we probably don't need vector "_installedAnimations".
      */
-    AnimationGroup installInGroup(String name, Group xmlNodeOfCurrentModel, AnimationGroup animationGroup) {
+    void/* AnimationGroup*/ installInGroup(String name, Group xmlNodeOfCurrentModel, Map<String, AnimationGroup> animationGroupMap/*AnimationGroup animationGroup*/) {
         // 17.8.24: The original implementation used NodeVisitor/traverse for finding a child (children might be deeper inside tree?). Because we
-        // don't have this, we use recursive findNodeByName(). Maybe its not really the same. And there might be duplicate names. Hmm.
-        // But more severe, findNodeByName() is a performance killer (~40ms) at least in JME. Better use platform finder.
+        // don't have this, we use recursive findNodeByName(). Likely its not really the same, but the FG/OSG way is magic anyway (see also README.md).
+        // And there might be duplicate names? Hmm. However, until now we didn't realize duplicate names.
+        // More severe, findNodeByName() is a performance killer (~40ms) at least in JME. Better use platform finder.
         //int i = group.getTransform().getChildCount() - 1;
         //for (; 0 <= i; --i) {
         long startTime = Platform.getInstance().currentTimeMillis();
@@ -424,17 +414,17 @@ public abstract class SGAnimation {
         if (nlist.size() > 0) {
             child = new SceneNode(nlist.get(0));
         }
-        logger.debug("installInGroup: "+name);
-        if (name.equals("CommKnobs")){
+        logger.debug("installInGroup: " + name);
+        if (name.equals("wing_right")) {
             // debug hook
-            int h=9;
+            int h = 9;
         }
         if (child == null) {
             // 10.10.18: debug statt warn um es disablen zu können. Kommt sehr oft.
             if (Config.animationdebuglog) {
                 logger.debug("installInGroup:child not found: " + name);
             }
-            return null;
+            return/* null*/;
         }
         //logger.debug("installInGroup took " + (Platform.getInstance().currentTimeMillis() - startTime) + " ms");
 
@@ -457,16 +447,19 @@ public abstract class SGAnimation {
             // create a group node on demand
             //TODO ? if (!animationGroup.valid()) {
             /*Group*/
-            if (animationGroup == null) {
-                Transform parent = child.getTransform().getParent();
-                if (parent == null) {
-                    logger.error("no parent for " + child.getName());
-                } else {
+            Transform parent = child.getTransform().getParent();
+            if (parent == null) {
+                logger.error("no parent for " + child.getName());
+                return;
+            } else {
+                if (animationGroupMap.get(parent.getSceneNode().getPath()) == null) {
+
                     // we cannot attach to xmlNode like FG(?) because this bypasses ACPolicy. Also FG doesn't.
-                    animationGroup = createAnimationGroup(/*group*/ parent.getSceneNode());
+                    animationGroupMap.put(parent.getSceneNode().getPath(), createAnimationGroup(/*group*/ parent.getSceneNode()));
 
                 }
             }
+            AnimationGroup animationGroup = animationGroupMap.get(parent.getSceneNode().getPath());
 
             //SceneNode animationGroup = createAnimationGroup(group);
             // Animation type that does not require a new group,
@@ -490,7 +483,6 @@ public abstract class SGAnimation {
             // part of a subtree twice
             //TODO ? _installedAnimations.add(child);
         }
-        return animationGroup;
     }
 
 /*
@@ -637,7 +629,7 @@ public abstract class SGAnimation {
              */
             // Reached with c172p "knob-axis". 30.9.25: No longer abort but just log for now
             //Util.notyet();
-            logger.error("animation not yet implemented:"+axis_object_name);
+            logger.error("animation not yet implemented:" + axis_object_name);
                 /*
         const SGLineSegment<double> *axisSegment = modelData.getAxisDefinition(axis_object_name);
                 if (!axisSegment)
@@ -727,9 +719,17 @@ public abstract class SGAnimation {
     }
 
     /**
-     * helper zum testen
+     * helper for testing
      */
     public boolean isOnObject(String objname) {
         return _objectNames.contains(objname);
+    }
+
+    protected String genId() {
+        String id = "";
+        for (String s : _objectNames) {
+            id += StringUtils.substring(s, 0, 1);
+        }
+        return id;
     }
 }
