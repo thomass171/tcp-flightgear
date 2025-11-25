@@ -46,23 +46,40 @@ public class FgTestUtils {
     public static SceneNode findAndAssertStgNode(int index) {
         List<NativeSceneNode> scenerynodes = Platform.getInstance().findSceneNodeByName("pagedObjectLOD" + index);
         assertEquals(1, scenerynodes.size());
-        SceneNode stgNode =  new SceneNode(scenerynodes.get(0));
-        EngineTestUtils.assertSceneNodeLevel(stgNode,"pagedObjectLOD" + index, new String[]{"terrain","STG-group-A"});
+        SceneNode stgNode = new SceneNode(scenerynodes.get(0));
+        EngineTestUtils.assertSceneNodeLevel(stgNode, "pagedObjectLOD" + index, new String[]{"terrain", "STG-group-A"});
         return stgNode;
     }
 
-    public static List<SGAnimation> findAnimationsByObjectName(List<SGAnimation> animationList, String name) {
+    public static List<SGAnimation> findAnimationsByObjectName(List<SGAnimation> animationList, String objName) {
+        return findAnimationsByObjectNameAndLabelAndId(animationList, objName, null, null);
+    }
+
+    public static List<SGAnimation> findAnimationsByObjectNameAndLabelAndId(List<SGAnimation> animationList, String objName, String animationId, String label) {
         List<SGAnimation> result = new ArrayList<>();
-        for (SGAnimation animation:animationList){
-            if (animation.isOnObject(name)){
-                result.add(animation);
+        for (SGAnimation animation : animationList) {
+            if (animation.isOnObject(objName)) {
+                boolean matches = true;
+                if (animationId != null) {
+                    if (!animation.genId().equals(animationId)) {
+                        matches = false;
+                    }
+                }
+                if (label != null) {
+                    if (!animation.label.equals(label)) {
+                        matches = false;
+                    }
+                }
+                if (matches) {
+                    result.add(animation);
+                }
             }
         }
         return result;
     }
 
-    public static NodeCallback findNodeCallback(String name){
-        for (NodeCallback nodeCallback: FgAnimationUpdateSystem.nodeCallbacks){
+    public static NodeCallback findNodeCallback(String name) {
+        for (NodeCallback nodeCallback : FgAnimationUpdateSystem.nodeCallbacks) {
             if (nodeCallback.getName().equals(name)) {
                 return nodeCallback;
             }

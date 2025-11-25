@@ -69,16 +69,19 @@ public class RailingSceneTest {
         VelocityComponent vc = VelocityComponent.getVelocityComponent(locEntity);
         assertNotNull(vc);
         // No entity is created for 'ASI'. The animations are contained in the vehicle entity
+        // loc uses an asi.xml without center!
         FgAnimationComponent fgAnimationComponent = FgAnimationComponent.getFgAnimationComponent(locEntity);
         assertNotNull(fgAnimationComponent);
-        AnimationAssertions.assertAsiAnimations(locEntity.getSceneNode(), fgAnimationComponent.animationList, vehiclePropertyRootNodeName, 0.0);
+        AnimationAssertions.assertAsiAnimations(locEntity.getSceneNode(), fgAnimationComponent.animationList, 0.0,
+                new Vector3());
 
         // start moving
         gmc.setAutomove(true);
         vc.setMovementSpeed(15.0);
         sceneRunner.runLimitedFrames(5);
 
-        AnimationAssertions.assertAsiAnimations(locEntity.getSceneNode(), fgAnimationComponent.animationList, vehiclePropertyRootNodeName, 15.0);
+        AnimationAssertions.assertAsiAnimations(locEntity.getSceneNode(), fgAnimationComponent.animationList, 15.0,
+                new Vector3());
 
     }
 

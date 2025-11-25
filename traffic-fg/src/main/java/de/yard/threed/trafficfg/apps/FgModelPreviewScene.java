@@ -11,6 +11,9 @@ import de.yard.threed.core.resource.ResourcePath;
 import de.yard.threed.engine.*;
 import de.yard.threed.engine.apps.ModelPreviewScene;
 import de.yard.threed.engine.apps.SmartModelLoader;
+import de.yard.threed.engine.gui.ControlPanel;
+import de.yard.threed.engine.gui.ControlPanelMenu;
+import de.yard.threed.engine.gui.DefaultMenuProvider;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.platform.common.Request;
@@ -27,6 +30,7 @@ import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
 import de.yard.threed.flightgear.FlightGearProperties;
 import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
+import de.yard.threed.trafficfg.AnimationControlPanel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -133,7 +137,11 @@ public class FgModelPreviewScene extends ModelPreviewScene {
     public String[] getPreInitBundle() {
         // manche Aircraftteile (z.B. CDU) verwenden FG_ROOT/Aircraft(liegt in fgdatabasic). Braucht auch den Provider im init()
         // "fgdatabasicmodel"?
-        return new String[]{"engine", "data", FlightGear.getBucketBundleName("model"), "sgmaterial", "fgdatabasic", "traffic-fg"};
+        return new String[]{"engine", "data",
+                //21.11.25: Make these two optional (simply by comment) for speeding up.
+                //FlightGear.getBucketBundleName("model"),
+                //"sgmaterial",
+                "fgdatabasic", "traffic-fg"};
     }
 
     @Override
@@ -154,6 +162,13 @@ public class FgModelPreviewScene extends ModelPreviewScene {
         major = 19;
         // Kruecke zur Entkopplung des Modelload von AC policy.
         ModelLoader.processPolicy = new ACProcessPolicy(null);
+
+        menuCycler.add(new DefaultMenuProvider(getDefaultCamera(), (Camera camera) -> {
+            ControlPanel m = AnimationControlPanel.buildAnimationControlPanel();
+            m.getTransform().setPosition(new Vector3(-0, 0, -1.5));
+            ControlPanelMenu menu = new ControlPanelMenu(m);
+            return menu;
+        }));
     }
 
     public static void extendSmartModelLoaderForFG(AircraftResourceProvider arp, GeneralParameterHandler<List<SGAnimation>> animationHandler) {
@@ -162,7 +177,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
             public void loadModelBySource(String prefix, String modelname, String bundleUrl, ResourcePath optTexturePath, ModelBuildDelegate delegate) {
                 //TerraSync Model
                 String bundlename = FlightGear.getBucketBundleName("model");
-                SmartModelLoader.defaultSmartModelLoader.loadModelBySource(bundlename, modelname, bundleUrl,optTexturePath, delegate);
+                SmartModelLoader.defaultSmartModelLoader.loadModelBySource(bundlename, modelname, bundleUrl, optTexturePath, delegate);
             }
         });
 
@@ -179,7 +194,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                 if (StringUtils.contains(modelname, "777")) {
                     basename = "777";
                 }
-                if ( StringUtils.contains(modelname, "asi") ||
+                if (StringUtils.contains(modelname, "asi") ||
                         StringUtils.contains(modelname, "c172")) {
                     basename = "c172p";
                 }

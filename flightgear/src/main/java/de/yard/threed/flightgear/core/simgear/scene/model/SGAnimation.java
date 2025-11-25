@@ -326,6 +326,7 @@ public abstract class SGAnimation {
 
         //if (setCenterAndAxisFromObject(_rootNode, center, axis, modelData))
         if (setCenterAndAxisFromObject(_rootNode, centerAndAxis, modelData)) {
+            // some special handling of ???
             if (8 * SGLimitsd.min < /*norm(axis)*/centerAndAxis.getSecond().norm()) {
                 //axis = normalize(axis);
                 centerAndAxis.setSecond(centerAndAxis.getSecond().normalize());
@@ -349,15 +350,7 @@ public abstract class SGAnimation {
         }
 
         centerAndAxis.setFirst(readVec3("center", "-m", centerAndAxis.getFirst()));
-        //FG-DIFF Unklar, wie der AC Transform erhalten bleibt bzw. wieso die Animation mit FG Achsen beschrieben werden koennen.
-        // Bei mir geht es nur mit vertauschten yz-Axen .
-        Vector3 axis = centerAndAxis.getSecond();
-        axis = new Vector3(axis.getX(), axis.getZ(), axis.getY());
-        //center auch? fuer windturbine ja
-        Vector3 center = centerAndAxis.getFirst();
-        center = new Vector3(center.getX(), center.getZ(), center.getY());
-        centerAndAxis.setFirst(center);
-        centerAndAxis.setSecond(axis);
+        // 25.11.25: Keep FG coordinates like FG does. Conversion to AC is done before usage.
     }
 
 
@@ -415,7 +408,7 @@ public abstract class SGAnimation {
             child = new SceneNode(nlist.get(0));
         }
         logger.debug("installInGroup: " + name);
-        if (name.equals("wing_right")) {
+        if (name.equals("Needle")) {
             // debug hook
             int h = 9;
         }
@@ -707,7 +700,8 @@ public abstract class SGAnimation {
             axis = axis.normalize();//normalize(axis);
         }
         // FG animations think in FG coordinates.
-        return ACProcessPolicy.switchYZ(axis);
+        // 24.11.25 We keep center in FG space now, so why transform axis?
+        return axis;//ACProcessPolicy.fg2ac(axis);
     }
 
     SGPropertyNode getConfig() {
@@ -725,7 +719,7 @@ public abstract class SGAnimation {
         return _objectNames.contains(objname);
     }
 
-    protected String genId() {
+    public String genId() {
         String id = "";
         for (String s : _objectNames) {
             id += StringUtils.substring(s, 0, 1);

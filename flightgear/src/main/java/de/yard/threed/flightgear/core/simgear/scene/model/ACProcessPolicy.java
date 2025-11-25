@@ -73,8 +73,21 @@ public class ACProcessPolicy implements ProcessPolicy {
 
     /**
      * A simple intuitive method
+     * 24.11.25: y negation added
      */
-    public static Vector3 switchYZ(Vector3 v) {
-        return new Vector3(v.getX(), v.getZ(), v.getY());
+    public static Vector3 fg2ac(Vector3 v) {
+        return new Vector3(v.getX(), v.getZ(), -v.getY());
+    }
+
+    public static Vector3 ac2fg(Vector3 v) {
+        return new Vector3(v.getX(), -v.getZ(), v.getY());
+    }
+
+    /**
+     * Not sure whether to negate 'y', but mathematically it appears correct.
+     * And it seems to have a meaning, some XMLs explicitly use negative axes.
+     */
+    public static Vector3 fg2acForAxis(Vector3 v) {
+        return new Vector3(v.getX(), v.getZ(), -v.getY());
     }
 }

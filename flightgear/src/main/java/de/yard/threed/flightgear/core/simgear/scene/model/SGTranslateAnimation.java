@@ -27,6 +27,8 @@ public class SGTranslateAnimation extends SGAnimation {
   double _initialValue;*/
     SGExpression _animationValue;
     SGCondition _condition;
+    // 25.11.25: axis are now the original values from XML in FG space. Conversion to ac space
+    // in done during applying
     Vector3 _axis;
     double _initialValue;
     // The node where the translate finally applies. TODO might be multiple like in SelectAnimation
@@ -82,7 +84,7 @@ public class SGTranslateAnimation extends SGAnimation {
 
             //logger.debug("process: translation(" + _animationValue + ")=" + value);
 
-            translateGroup.getTransform().setPosition(_axis.multiply(value));
+            translateGroup.getTransform().setPosition(ACProcessPolicy.fg2acForAxis(_axis).multiply(value));
         }
     }
 

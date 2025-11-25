@@ -5,7 +5,15 @@
     <name>ASI</name>
     <path>asi.ac</path>
 
-    <!-- 17.11.25 Meanwhile a missing/incomplete effect leads to invisble object. So 'xxx' removed-->
+    <!-- This is the 2018 (or earlier) c172p asi.xml which has NO center. Later have one! But with same interpolations.
+     BTW FGDATA asi.xml never has a center but different interpolations -->
+
+    <!-- 17.11.25 Meanwhile a missing/incomplete effect leads to invisble object. So removed
+    <effect>
+        <inherits-from>../../../../Effects/interior/c172p-interior-radiance</inherits-from>
+        <object-name>Face</object-name>
+        <object-name>Needle</object-name>
+    </effect>-->
 
     <animation>
         <type>material</type>

@@ -58,6 +58,8 @@ public class FlightGearProperties /*7.11.24 implements SGPropertyTreeResolver*/ 
         // Other frequently used properties
         // dome??
         FGGlobals.getInstance().get_props().getNode("/sim/model/lightmap/dome/factor", true).setFloatValue(0);
+        // used by ASI
+        FGGlobals.getInstance().get_props().getNode("/fdm/jsbsim/velocities/vias-kts", true).setFloatValue(0);
 
         // Apparently generic properties used/needed by c172p
         // crash

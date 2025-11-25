@@ -32,6 +32,7 @@ import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.scene.model.OpenGlProcessPolicy;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.flightgear.FlightGearProperties;
+import de.yard.threed.trafficfg.AnimationControlPanel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,13 +96,7 @@ public class FgGalleryScene extends GalleryScene {
     @Override
     public void customInit() {
 
-        FgModelPreviewScene.extendSmartModelLoaderForFG(arp, new GeneralParameterHandler<List<SGAnimation>>() {
-            @Override
-            public void handle(List<SGAnimation> animationsOfLoadedModel) {
-                //just add?? animationList = new ArrayList<SGAnimation>();
-                animationList.addAll(animationsOfLoadedModel);
-            }
-        });
+        FgModelPreviewScene.extendSmartModelLoaderForFG(arp, animationsOfLoadedModel -> animationList.addAll(animationsOfLoadedModel));
 
         arp = initFG();
         // ACpolicy doesn't help here because coordinate system is OpenGL instead of FG.
@@ -109,12 +104,11 @@ public class FgGalleryScene extends GalleryScene {
         //ModelLoader.processPolicy = new ACProcessPolicy(null);
         ModelLoader.processPolicy = new OpenGlProcessPolicy(true);
 
-
         // super class probably does VR standards??
         InputToRequestSystem inputToRequestSystem = (InputToRequestSystem) SystemManager.findSystem(InputToRequestSystem.TAG);
         if (vrInstance != null) {
 
-            ControlPanel leftControllerPanel = buildVrControlPanel(/*buttonDelegates*/);
+            ControlPanel leftControllerPanel = AnimationControlPanel.buildAnimationControlPanel();
             // position and rotation of VR controlpanel is controlled by property ...
             inputToRequestSystem.addControlPanel(leftControllerPanel);
             vrInstance.attachControlPanelToController(vrInstance.getController(0), leftControllerPanel);
@@ -122,8 +116,7 @@ public class FgGalleryScene extends GalleryScene {
         } else {
             inputToRequestSystem.addKeyMapping(KeyCode.M, InputToRequestSystem.USER_REQUEST_MENU);
             inputToRequestSystem.setMenuProvider(new DefaultMenuProvider(getDefaultCamera(), (Camera camera) -> {
-                //ControlPanel m = ControlPanelHelper.buildSingleColumnFromMenuitems(new DimensionF(1.3, 0.7), -3, 0.01, menuitems, Color.LIGHTBLUE);
-                ControlPanel m = buildVrControlPanel();
+                ControlPanel m = AnimationControlPanel.buildAnimationControlPanel();
                 m.getTransform().setPosition(new Vector3(-0, 0, -1.5));
 
                 ControlPanelMenu menu = new ControlPanelMenu(m);
@@ -166,56 +159,5 @@ public class FgGalleryScene extends GalleryScene {
         // Cannot update animations via ECS because models are no entities in this scene (see header)
         FgModelPreviewScene.updateAnimations(flightGearProperties, animationList, getDefaultCamera());
 
-    }
-
-    /**
-     * A control panel permanently attached to the left controller. Consists of
-     * <p>
-     * <p>
-     * top line: vr y offset spinner
-     * medium: spinner for teleport toggle
-     */
-    private ControlPanel buildVrControlPanel(/*Map<String, ButtonDelegate> buttonDelegates*/) {
-        Color backGround = Color.RED;//controlPanelBackground;
-        Material mat = Material.buildBasicMaterial(backGround, null);
-
-        double ControlPanelWidth = 0.6;
-        double ControlPanelRowHeight = 0.1;
-        double ControlPanelMargin = 0.005;
-
-        int rows = 3;
-        DimensionF rowsize = new DimensionF(ControlPanelWidth, ControlPanelRowHeight);
-        Color textColor = Color.RED;
-
-        ControlPanel cp = new ControlPanel(new DimensionF(ControlPanelWidth, rows * ControlPanelRowHeight), mat, 0.01);
-
-        SGPropertyNode windFromHeadingDeg = FGGlobals.getInstance().get_props().getNode("/environment/wind-from-heading-deg", false);
-        cp.add(new Vector2(0,
-                        ControlPanelHelper.calcYoffsetForRow(2, rows, ControlPanelRowHeight)),
-                new LabeledSpinnerControlPanel("wnd hdg", rowsize, 0, mat,
-                        new NumericSpinnerHandler(15, value -> {
-                            if (value != null) {
-                                windFromHeadingDeg.setDoubleValue(value);
-                            }
-                            return windFromHeadingDeg.getDoubleValue();
-                        }, 360, new NumericDisplayFormatter(0)), textColor));
-
-        addDoublePropertyRow(cp, 1, "/environment/wind-speed-kt", "wnd spd", rows, ControlPanelRowHeight, rowsize, mat, textColor, 5.0, 0);
-        addDoublePropertyRow(cp, 0, "/sim/time/sun-angle-rad", "sun angle", rows, ControlPanelRowHeight, rowsize, mat, textColor, 0.7, 0);
-        return cp;
-    }
-
-    private static void addDoublePropertyRow(ControlPanel cp, int row, String inputProperty, String label, int rows, double controlPanelRowHeight, DimensionF rowsize,
-                                             Material mat, Color textColor, double step, int precision) {
-        SGPropertyNode propertyNode = FGGlobals.getInstance().get_props().getNode(inputProperty, false);
-        cp.add(new Vector2(0,
-                        ControlPanelHelper.calcYoffsetForRow(row, rows, controlPanelRowHeight)),
-                new LabeledSpinnerControlPanel(label, rowsize, 0, mat,
-                        new NumericSpinnerHandler(step, value -> {
-                            if (value != null) {
-                                propertyNode.setDoubleValue(value);
-                            }
-                            return propertyNode.getDoubleValue();
-                        }, null, new NumericDisplayFormatter(precision)), textColor));
     }
 }

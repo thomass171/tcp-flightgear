@@ -1,6 +1,7 @@
 package de.yard.threed.trafficadvanced;
 
 import de.yard.threed.core.BuildResult;
+import de.yard.threed.core.Vector3;
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
@@ -22,6 +23,7 @@ import de.yard.threed.flightgear.core.simgear.scene.material.MakeEffect;
 import de.yard.threed.flightgear.core.simgear.scene.material.Technique;
 import de.yard.threed.flightgear.core.simgear.scene.model.*;
 import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
+import de.yard.threed.flightgear.testutil.AnimationAssertions;
 import de.yard.threed.flightgear.testutil.EffectCollector;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
 import de.yard.threed.flightgear.testutil.FgTestUtils;
@@ -135,7 +137,7 @@ public class BundlepoolTest {
 
         validatePropertyTree(destinationProp);
         validateWingRight(modelRoot, animationList);
-        validateAsi(modelRoot);
+        validateAsi(modelRoot, animationList);
         validatePropeller(modelRoot);
         validateWindowframeleftint(modelRoot, animationList);
         validateMagCompass(modelRoot, animationList);
@@ -188,14 +190,23 @@ public class BundlepoolTest {
         assertEquals("true", caseMaterial.uniformValue.get("u_shaded"));
     }
 
-    private void validateAsi(SceneNode modelRoot) {
-        // pure "asi" exists twice
-        List<SceneNode> foundNodes = modelRoot.findNodeByName("Models/Interior/Panel/Instruments/asi/asi.gltf");
-        assertEquals(1, foundNodes.size());
-        SceneNode asi = foundNodes.get(0);
+    /**
+     * c172p asi.xml differs from FGdata and earlier one
+     */
+    private void validateAsi(SceneNode modelRoot, List<SGAnimation> animationList) {
+        // pure "asi" exists twice...
+        SceneNode asi  = EngineTestUtils.findSingleNodeByName(modelRoot, "Models/Interior/Panel/Instruments/asi/asi.gltf");
+        assertNotNull(asi);
+
+        // ...and needle 4 times
+        //SceneNode asiNeedle  = EngineTestUtils.findSingleNodeByName(modelRoot, "Needle");
+        //assertNotNull(asiNeedle);
+
 
         String hierarchy = EngineTestUtils.getHierarchy(asi, 6, false);
         log.debug("asi up-hierarchy={}", hierarchy);
+        Vector3 expectedCenter = new Vector3(-0.37733,-0.31149,0.10065);
+        AnimationAssertions.assertAsiAnimations(modelRoot, animationList, 0.0,                expectedCenter);
 
     }
 

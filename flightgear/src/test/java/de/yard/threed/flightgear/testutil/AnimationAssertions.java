@@ -35,8 +35,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Slf4j
 public class AnimationAssertions {
 
-    final static String MCRMCBnodes = "centerBackTranslate->rotateAnimation->centerTranslate";
-    final static String MCRMCBnodesSpin = "centerBackTranslate->spinRotateAnimation->centerTranslate";
+    final static String MCRMCBnodes = "centerBackTranslate->rotateAnimation-GSHBBB->centerTranslate";
+    final static String MCRMCBnodesSpin = "centerBackTranslate->spinRotateAnimation-SHBBB->centerTranslate";
 
     /**
      * See also README.md
@@ -46,6 +46,8 @@ public class AnimationAssertions {
         assertEquals(2, animationList.size(), "animations");
         assertNotNull(((SGRotateAnimation) animationList.get(0)).rotategroup, "rotategroup");
         assertNotNull(((SGRotateAnimation) animationList.get(1)).rotategroup, "rotategroup");
+        SGRotateAnimation rotateAnimation = (SGRotateAnimation) animationList.get(0);
+        SGRotateAnimation spinAnimation = (SGRotateAnimation) animationList.get(1);
 
         SceneNode tower = xmlNnode.findNodeByName("Tower").get(0);
         SceneNode acWorld = xmlNnode.findNodeByName("ac-world").get(0);
@@ -54,11 +56,11 @@ public class AnimationAssertions {
         // skip intermediate node
 
         SceneNode firstRotateAnimationGroup = getFirstRotateAnimationGroup(acWorld, 1);
-        validateAnimationGroupForRotation(firstRotateAnimationGroup, "rotateAnimation",
-                new String[]{"Generator", "centerBackTranslate"}, new Vector3(0, 0, 0));
+        validateAnimationGroupForRotation(rotateAnimation, "rotateAnimation-GSHBBB",
+                new String[]{"Generator", "centerBackTranslate"}, new Vector3(0, 0, 0), new Vector3(0,0,1));
         SceneNode firstSpinRotateGroup = EngineTestUtils.getChild(firstRotateAnimationGroup, 0, 1, 0);
-        validateAnimationGroupForRotation(firstSpinRotateGroup, "spinRotateAnimation",
-                new String[]{"Shaft", "Hub", "Blade1", "Blade2", "Blade3"}, ACProcessPolicy.switchYZ(new Vector3(0, 0, 81)));
+        validateAnimationGroupForRotation(spinAnimation, "spinRotateAnimation-SHBBB",
+                new String[]{"Shaft", "Hub", "Blade1", "Blade2", "Blade3"}, new Vector3(0, 0, 81), new Vector3(0,1,0));
 
         String hierarchy = EngineTestUtils.getHierarchy(blade1, 7, false);
         log.debug("blade1 hierarchy={}", hierarchy);
@@ -74,14 +76,14 @@ public class AnimationAssertions {
         // not sure calc is correct. 8.12.24 Apparently it is: value 290, factor -1, offset-deg(bias) is -90,
         assertEquals(-1 * FlightGearProperties.DEFAULT_WIND_FROM_HEADING_DEG + -90, windHeadingRotateAnimation.getAnimationValue().doubleVal);
         assertFalse(windHeadingRotateAnimation.isSpin());
-        assertVector3(ACProcessPolicy.switchYZ(new Vector3(0, 0, 1)), windHeadingRotateAnimation.getAxis());
+        assertVector3((new Vector3(0, 0, 1)), windHeadingRotateAnimation.getAxis());
 
         SGRotateAnimation windSpeedSpinAnimation = (SGRotateAnimation) animationList.get(1);
         // animation has a random between 0.4 and 0.6, so the effective value might vary
         double value = windSpeedSpinAnimation.getAnimationValue().doubleVal;
         assertTrue(value >= 0.4 * FlightGearProperties.DEFAULT_WIND_SPEED_KT && value <= 0.6 * FlightGearProperties.DEFAULT_WIND_SPEED_KT, "" + value);
         assertTrue(windSpeedSpinAnimation.isSpin());
-        assertVector3(ACProcessPolicy.switchYZ(new Vector3(0, 1, 0)), windSpeedSpinAnimation.getAxis());
+        assertVector3((new Vector3(0, 1, 0)), windSpeedSpinAnimation.getAxis());
 
         // change properties and recheck animations
         assertFgWindHeadingRotateAnimation(windHeadingRotateAnimation);
@@ -105,10 +107,10 @@ public class AnimationAssertions {
 
         SGRotateAnimation elapsedSecRotateAnimation = (SGRotateAnimation) animationList.get(0);
         assertFalse(elapsedSecRotateAnimation.isSpin());
-        assertVector3(ACProcessPolicy.switchYZ(new Vector3(0, 0, 1)), elapsedSecRotateAnimation.getAxis());
-        assertVector3(ACProcessPolicy.switchYZ(new Vector3(0, 0, 38.5)), elapsedSecRotateAnimation.getCenter());
-        validateAnimationGroupForRotation(elapsedSecRotateAnimation.rotategroup, "rotateAnimation",
-                new String[]{"radar"}, ACProcessPolicy.switchYZ(new Vector3(0, 0, 38.5)));
+        assertVector3((new Vector3(0, 0, 1)), elapsedSecRotateAnimation.getAxis());
+        assertVector3((new Vector3(0, 0, 38.5)), elapsedSecRotateAnimation.getCenter());
+        validateAnimationGroupForRotation(elapsedSecRotateAnimation, "rotateAnimation-r",
+                new String[]{"radar"}, new Vector3(0, 0, 38.5), new Vector3(0,0,1));
 
         SGTexTransformAnimation texTransformAnimation = (SGTexTransformAnimation) animationList.get(1);
         Matrix3 expectedTexMatrix = new Matrix3();
@@ -120,31 +122,40 @@ public class AnimationAssertions {
         assertMatrix3("", expectedTexMatrix, texTransformAnimation.getTransformMatrix());
     }
 
-    public static void assertAsiAnimations(SceneNode xmlNnode, List<SGAnimation> animationList, String propertyRootNodeName, double currentSpeed) {
-        log.debug(xmlNnode.dump("  ", 0));
-        // one Material and one RotateAnimation (ASI needle)
-        assertEquals(2, animationList.size());
+    /**
+     * 22.11.25: More generic to be used in several tests. But there are different asi.xml out there:
+     * The 2018 (or earlier) c172p asi.xml has NO center. Later have one! But with same interpolations.
+     * FGDATA asi.xml never has a center but different interpolations.
+     * And one has material animation for FNC while the other only FN
+     */
+    public static void assertAsiAnimations(SceneNode someTopLevelNode, List<SGAnimation> animationList,
+                                           double currentSpeed, Vector3 expectedCenter) {
+        log.debug(someTopLevelNode.dump("  ", 0));
 
-        SGMaterialAnimation xx = (SGMaterialAnimation) animationList.get(0);
-        SGRotateAnimation asiRotateAnimation = (SGRotateAnimation) animationList.get(1);
+        List<SGAnimation> needleRotateAnimation = FgTestUtils.findAnimationsByObjectNameAndLabelAndId(animationList, "Needle", null, "asi.xml.1");
+        // one Material and one RotateAnimation (ASI needle)
+        assertEquals(1, needleRotateAnimation.size());
+
+        //SGMaterialAnimation xx = (SGMaterialAnimation) needleAnimations.get(0);
+        SGRotateAnimation asiRotateAnimation = (SGRotateAnimation) needleRotateAnimation.get(0);
         SGInterpTableExpression expression = (SGInterpTableExpression) asiRotateAnimation.getAnimationValueExpression();
         //assertTrue(expression instanceof SGInterpTableExpression);
         SGPropertyExpression propertyExpression = (SGPropertyExpression) expression.getOperand();
         // 17.1.25 locomotive-root removed since vehicle no longer have their own tree
         assertEquals("/fdm/jsbsim/velocities/vias-kts", propertyExpression.getPropertyNode().getPath(true));
-        SceneNode needle = xmlNnode.findNodeByName("Needle").get(0);
+        SceneNode needle = someTopLevelNode.findNodeByName("Needle").get(0);
         assertNotNull(needle);
-        String hierarchy = EngineTestUtils.getHierarchy(needle, 5, false);
-        log.debug("needle hierarchy={}", hierarchy);
-        assertEquals("ac-world->MaterialAnimationGroup-FN->centerBackTranslate->rotateAnimation->centerTranslate->Needle", hierarchy);
+        //SceneNode needleRotationGroup = xmlNnode.findNodeByName("Needle").get(0);
+        // needle uses interpolation, but no idea whether and how it works. So for now just assume 13.875 is correct.
+        // 16.12.24 with implemented interpolation 10.703571 appears also correct
 
-        if (currentSpeed == 0.0) {
-            assertEquals(0.0, asiRotateAnimation.getAnimationValue().doubleVal);
-        } else {
-            // needle uses interpolation, but no idea whether and how it works. So for now just assume 13.875 is correct.
-            // 16.12.24 with implemented interpolation 10.703571 appears also correct
-            assertEquals(10.703571, asiRotateAnimation.getAnimationValue().doubleVal, 0.00001);
-        }
+
+        assertRotateAnimationValues(asiRotateAnimation, needle, currentSpeed == 0.0 ? 0.0 : 10.703571, expectedCenter);
+
+        String hierarchy = EngineTestUtils.getHierarchy(needle, 4, false);
+        log.debug("needle hierarchy={}", hierarchy);
+
+        //assertEquals("MaterialAnimationGroup-FN->centerBackTranslate->rotateAnimation-N->centerTranslate->Needle", hierarchy);
 
     }
 
@@ -163,7 +174,7 @@ public class AnimationAssertions {
         assertNotNull(node2dot5kt);
         String hierarchy = EngineTestUtils.getHierarchy(node2dot5kt, 5, false);
         log.debug("2.5kt hierarchy={}", hierarchy);
-        assertEquals("ac-world->centerBackTranslate->rotateAnimation->centerTranslate->windsock->2.5kt", hierarchy);
+        assertEquals("ac-world->centerBackTranslate->rotateAnimation-wf->centerTranslate->windsock->2.5kt", hierarchy);
 
         SceneNode node5kt = acWorld.findNodeByName("5kt").get(0);
         assertNotNull(node5kt);
@@ -175,16 +186,16 @@ public class AnimationAssertions {
         hierarchy = EngineTestUtils.getHierarchy(node15kt, 22, false);
         log.debug("15kt hierarchy={}", hierarchy);
         assertEquals("ac-world->" +
-                "centerBackTranslate->rotateAnimation->centerTranslate->" +
+                "centerBackTranslate->rotateAnimation-wf->centerTranslate->" +
                 "windsock->" +
                 "scaleAnimation->" +
                 "translateAnimation->" +
                 // compared to FG we have 5 rotations. Maybe a FG logging problem
-                "centerBackTranslate->rotateAnimation->centerTranslate->" +
-                "centerBackTranslate->rotateAnimation->centerTranslate->" +
-                "centerBackTranslate->rotateAnimation->centerTranslate->" +
-                "centerBackTranslate->rotateAnimation->centerTranslate->" +
-                "centerBackTranslate->rotateAnimation->centerTranslate->" +
+                "centerBackTranslate->rotateAnimation-57111->centerTranslate->" +
+                "centerBackTranslate->rotateAnimation-7111->centerTranslate->" +
+                "centerBackTranslate->rotateAnimation-111->centerTranslate->" +
+                "centerBackTranslate->rotateAnimation-11->centerTranslate->" +
+                "centerBackTranslate->rotateAnimation-1->centerTranslate->" +
                 "15kt", hierarchy);
 
         SGRotateAnimation windHeadingRotateAnimation = (SGRotateAnimation) animationList.get(0);
@@ -196,10 +207,10 @@ public class AnimationAssertions {
         SGRotateAnimation windSpeedRotateAnimation3 = (SGRotateAnimation) animationList.get(6);
         SGRotateAnimation windSpeedRotateAnimation4 = (SGRotateAnimation) animationList.get(7);
         // FG animations think in FG coordinates. So AC axes need switch.
-        validateAnimationGroupForRotation(windSpeedRotateAnimation0.rotategroup, "rotateAnimation",
-                new String[]{"5kt", "centerBackTranslate"}, ACProcessPolicy.switchYZ(new Vector3(0, 1.17, 6.07)));
-        assertVector3(ACProcessPolicy.switchYZ(new Vector3(-1, 0, 0)), windSpeedRotateAnimation0.getAxis());
-        assertVector3(ACProcessPolicy.switchYZ(new Vector3(0, 1.17, 6.07)), windSpeedRotateAnimation0.getCenter());
+        validateAnimationGroupForRotation(windSpeedRotateAnimation0, "rotateAnimation-57111",
+                new String[]{"5kt", "centerBackTranslate"}, new Vector3(0, 1.17, 6.07),new Vector3(-1,0,0));
+        assertVector3((new Vector3(-1, 0, 0)), windSpeedRotateAnimation0.getAxis());
+        assertVector3((new Vector3(0, 1.17, 6.07)), windSpeedRotateAnimation0.getCenter());
 
 
         SGInterpTableExpression interpTableExpression = (SGInterpTableExpression) translateAnimation.getAnimationValueExpression();
@@ -211,12 +222,12 @@ public class AnimationAssertions {
 
         // 26.0  > 15 ==> 0.0
         assertEquals(0.0, interpTableExpression.getValue(null).doubleVal);
-        assertVector3(ACProcessPolicy.switchYZ(new Vector3(0, 1, 0)), translateAnimation.getAxis());
+        assertVector3((new Vector3(0, 1, 0)), translateAnimation.getAxis());
 
-        validateAnimationGroupForRotation(windSpeedRotateAnimation4.rotategroup, "rotateAnimation",
-                new String[]{"15kt"}, ACProcessPolicy.switchYZ(new Vector3(0, 3.28, 5.87)));
-        assertVector3(ACProcessPolicy.switchYZ(new Vector3(-1, 0, 0)), windSpeedRotateAnimation4.getAxis());
-        assertVector3(ACProcessPolicy.switchYZ(new Vector3(0, 3.28, 5.87)), windSpeedRotateAnimation4.getCenter());
+        validateAnimationGroupForRotation(windSpeedRotateAnimation4, "rotateAnimation-1",
+                new String[]{"15kt"}, new Vector3(0, 3.28, 5.87),new Vector3(-1,0,0));
+        assertVector3((new Vector3(-1, 0, 0)), windSpeedRotateAnimation4.getAxis());
+        assertVector3((new Vector3(0, 3.28, 5.87)), windSpeedRotateAnimation4.getCenter());
 
         // change properties and recheck animations
         assertFgWindHeadingRotateAnimation(windHeadingRotateAnimation);
@@ -238,32 +249,38 @@ public class AnimationAssertions {
         assertNotNull(whiteFlash1);
         String hierarchy = EngineTestUtils.getHierarchy(whiteFlash1, 5, false);
         log.debug("whiteFlash1 hierarchy={}", hierarchy);
-        assertEquals("ac-world->SelectAnimation-GGWWGW->centerBackTranslate->rotateAnimation->centerTranslate->WhiteFlash.1", hierarchy);
+        assertEquals("ac-world->SelectAnimation-GGWWGW->centerBackTranslate->rotateAnimation-W->centerTranslate->WhiteFlash.1", hierarchy);
         assertEquals(atNight, selectAnimation.isSelected(), "selectAnimation selected");
     }
 
     /**
-     * Validates an {@link AnimationGroup}
+     * Validates an {@link AnimationGroup}. For checking values we have assertRotateAnimationValues.
      *
-     * @param animationNode         for example the "rotateAnimation"
+     * @param rotateAnimation
      * @param expectedName
      * @param expectedGrandChildren The intermediate "centerTranslate" node is skipped.
      */
-    private static void validateAnimationGroupForRotation(SceneNode animationNode, String expectedName, String[] expectedGrandChildren, Vector3 unnegatedCenter) {
+    public static void validateAnimationGroupForRotation(SGRotateAnimation rotateAnimation, String expectedName, String[] expectedGrandChildren, Vector3 expectedCenter, Vector3 expectedAxis) {
+
+        SceneNode animationNode = rotateAnimation.rotategroup;
+        //assertEquals("rotateAnimation-N", rotateAnimationNode.getName());
         assertEquals(expectedName, animationNode.getName());
         assertVector3(new Vector3(), animationNode.getTransform().getPosition());
+
+        assertVector3(expectedCenter, rotateAnimation.getCenter(), 0.00001);
+        assertVector3(expectedAxis, rotateAnimation.getAxis(), 0.00001);
 
         // validate intermediate "centerBackTranslate" node
         SceneNode centerBackTranslate = animationNode.getTransform().getParent().getSceneNode();
         assertEquals(1, centerBackTranslate.getTransform().getChildCount());
         assertEquals("centerBackTranslate", centerBackTranslate.getName());
-        assertVector3(unnegatedCenter, centerBackTranslate.getTransform().getPosition());
+        assertVector3(ACProcessPolicy.fg2ac(expectedCenter), centerBackTranslate.getTransform().getPosition());
 
         // validate intermediate "centerTranslate" node
         assertEquals(1, animationNode.getTransform().getChildCount());
         SceneNode centerTranslate = animationNode.getTransform().getChild(0).getSceneNode();
         assertEquals("centerTranslate", centerTranslate.getName());
-        assertVector3(unnegatedCenter.negate(), centerTranslate.getTransform().getPosition());
+        assertVector3(ACProcessPolicy.fg2ac(expectedCenter).negate(), centerTranslate.getTransform().getPosition());
 
         assertEquals(expectedGrandChildren.length, centerTranslate.getTransform().getChildCount());
         for (int i = 0; i < expectedGrandChildren.length; i++) {
@@ -271,6 +288,21 @@ public class AnimationAssertions {
             // 11.12. not sure the assumption is correct:translate should be done in centerTranslate nodes
             //??assertVector3(new Vector3(), centerTranslate.getTransform().getChild(i).getSceneNode().getTransform().getPosition());
         }
+    }
+
+    /**
+     * Additional to validateAnimationGroupForRotation() for checking values
+     */
+    static void assertRotateAnimationValues(SGRotateAnimation rotateAnimation, SceneNode animatedNode, double expectedValue, Vector3 expectedCenter) {
+
+        assertEquals(expectedValue, rotateAnimation.getAnimationValue().doubleVal, 0.00001);
+        //TO DO ?? assertQuternon(expectedValue,needleRotationGroup.getTransform().getRotation());
+
+
+      /*  String hierarchy = EngineTestUtils.getHierarchy(animatedNode, 3, false);
+        log.debug("animatedNode hierarchy={}", hierarchy);
+        assertEquals("centerBackTranslate->rotateAnimation-N->centerTranslate->" + animatedNode.getName(), hierarchy);*/
+
     }
 
     /**
@@ -286,12 +318,12 @@ public class AnimationAssertions {
      */
     public static void assertAnimationGroupHierarchy(SceneNode node, String expectedHierarchy) {
         String hierarchy = node.getName();
-        while (node.getParent()!=null){
-            node=node.getParent();
-            hierarchy = node.getName()+"->"+hierarchy;
-                    if (StringUtils.endsWith(node.getName(),".ac")){
-                        break;
-                    }
+        while (node.getParent() != null) {
+            node = node.getParent();
+            hierarchy = node.getName() + "->" + hierarchy;
+            if (StringUtils.endsWith(node.getName(), ".ac")) {
+                break;
+            }
         }
         assertEquals(expectedHierarchy, hierarchy);
     }

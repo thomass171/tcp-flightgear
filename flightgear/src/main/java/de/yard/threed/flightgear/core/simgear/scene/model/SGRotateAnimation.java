@@ -30,6 +30,8 @@ import java.util.List;
 public class SGRotateAnimation extends SGAnimation {
     SGCondition _condition;
     SGExpression/*d*/ _animationValue;
+    // 25.11.25: center and axis are now the original values from XML in FG space. Conversion to ac space
+    // in done during applying
     Vector3 _axis;
     Vector3 _center;
     double _initialValue;
@@ -117,7 +119,7 @@ public class SGRotateAnimation extends SGAnimation {
                 // FG seems to apply the diff of rotation somehow (4.12.24 really? What is refval._rotation?). Also add the angle to existing rotation.
                 // 5.12.24: But abs values seem to work better. And are better for testing.
                 //rotation = rotategroup.getTransform().getRotation().multiply(Quaternion.buildQuaternionFromAngleAxis(angle, _axis));
-                rotation = Quaternion.buildQuaternionFromAngleAxis(refval.angle, _axis);
+                rotation = Quaternion.buildQuaternionFromAngleAxis(refval.angle, ACProcessPolicy.fg2acForAxis(_axis));
                 rotategroup.getTransform().setRotation(rotation);
 
 //windturbine.xml.2:Spinning by diff
@@ -143,7 +145,7 @@ public class SGRotateAnimation extends SGAnimation {
                         angle = new Degree(30);
                     }
                     logger.debug("process rotation,angle=" + angle);
-                    rotation = Quaternion.buildQuaternionFromAngleAxis(angle, _axis);
+                    rotation = Quaternion.buildQuaternionFromAngleAxis(angle, ACProcessPolicy.fg2acForAxis(_axis));
                     rotategroup.getTransform().setRotation(rotation);
                 /*staticdeg+=5;
                 if (staticdeg > 0){
@@ -151,7 +153,7 @@ public class SGRotateAnimation extends SGAnimation {
                 }*/
                 }
             } else {
-                rotation = Quaternion.buildQuaternionFromAngleAxis(angle, _axis);
+                rotation = Quaternion.buildQuaternionFromAngleAxis(angle, ACProcessPolicy.fg2acForAxis(_axis));
                 rotategroup.getTransform().setRotation(rotation);
             }
         }
@@ -215,7 +217,7 @@ public class SGRotateAnimation extends SGAnimation {
     @Override
     public AnimationGroup/*SceneNode*/ createAnimationGroup(/*Group*/SceneNode parent) {
         if (_isSpin) {
-            AnimationGroup translategroupo = buildAnimationGroupForRotation(parent, _center, "spinRotateAnimation");
+            AnimationGroup translategroupo = buildAnimationGroupForRotation(parent, ACProcessPolicy.fg2ac(_center), "spinRotateAnimation");
             //5.10.17 wegen Abstraktion 
             rotategroup = translategroupo.rotategroup;
            /* translategroupo.getTransform().setPosition(_center.negate());
@@ -246,8 +248,9 @@ public class SGRotateAnimation extends SGAnimation {
             transform -> setAxis(_axis);
             parent.addChild(transform);
             return transform;*/
-            // Ob in SGRotAnimTransform bzw. SGRotateTransform Achsen getauscht werden?? Spooky!
-            AnimationGroup translategroupo = buildAnimationGroupForRotation(parent, _center, "rotateAnimation");
+            // Are axes swapped in SGRotAnimTransform or. SGRotateTransform??
+            // Yes, we need axis trans...
+            AnimationGroup translategroupo = buildAnimationGroupForRotation(parent, ACProcessPolicy.fg2ac(_center), "rotateAnimation");
             rotategroup = translategroupo.rotategroup;
 
 /*            rotategroup = new Group();
@@ -282,24 +285,24 @@ public class SGRotateAnimation extends SGAnimation {
      * Aufbau: parent->translategroup->rotategroup->childtarget
      *
      * @param parent
-     * @param c
+     * @param centerCompensation in AC coordinates
      * @return
      */
-    private AnimationGroup buildAnimationGroupForRotation(SceneNode parent, Vector3 c, String rotateGroupNameLikeFG) {
+    private AnimationGroup buildAnimationGroupForRotation(SceneNode parent, Vector3 centerCompensation, String rotateGroupNameLikeFG) {
 
         Group translategroupo = new Group();
         translategroupo.setName("centerBackTranslate");
-        translategroupo.getTransform().setPosition(c);
+        translategroupo.getTransform().setPosition(centerCompensation);
 
         AnimationGroup ag = new AnimationGroup(parent, translategroupo);
 
         ag.childtarget = new SceneNode();
         ag.childtarget.setName("centerTranslate");
         // negate center like FG does(to move element to origin?)
-        ag.childtarget.getTransform().setPosition(c.negate());
+        ag.childtarget.getTransform().setPosition(centerCompensation.negate());
 
         ag.rotategroup = new Group();
-        ag.rotategroup.setName(rotateGroupNameLikeFG);
+        ag.rotategroup.setName(rotateGroupNameLikeFG + "-" + genId());
         ag.rotategroup.attach/*addChild*/(ag.childtarget);
         translategroupo.attach/*addChild*/(ag.rotategroup);
         return ag;

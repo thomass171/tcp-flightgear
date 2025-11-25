@@ -21,7 +21,16 @@ public class ACProcessPolicyTest {
 
         Vector3 ac = new Vector3(2, 3, 4);
         Vector3 v = processPolicy.ac2fg.transform(ac);
-        // y and z change. Negation is unclear
+        // y and z change with y negated.
         TestUtil.assertVector3(new Vector3(2, -4, 3), v);
+    }
+
+    @Test
+    public void testAC2FGplain() {
+
+        Vector3 ac = new Vector3(2, 3, 4);
+        TestUtil.assertVector3(new Vector3(2, -4, 3), ACProcessPolicy.ac2fg(ac));
+
+        TestUtil.assertVector3(ac, ACProcessPolicy.fg2ac(new Vector3(2, -4, 3)));
     }
 }
