@@ -58,7 +58,7 @@ import java.util.List;
 public class FgModelPreviewScene extends ModelPreviewScene {
     public static Log logger = Platform.getInstance().getLog(FgModelPreviewScene.class);
     // Animations of current model incl. all submodel.
-    List<SGAnimation> animationList;
+    List<SGAnimation> animationList = new ArrayList<>();
     private AircraftResourceProvider arp;
     FlightGearProperties flightGearProperties = new FlightGearProperties();
     public static SmartModelLoader terrasyncSmartModelLoader;
@@ -153,11 +153,10 @@ public class FgModelPreviewScene extends ModelPreviewScene {
         extendSmartModelLoaderForFG(arp, new GeneralParameterHandler<List<SGAnimation>>() {
             @Override
             public void handle(List<SGAnimation> animationsOfLoadedModel) {
-                // like it was always done in the pass. Replace current list.
-                animationList = new ArrayList<SGAnimation>();
+                // 25.11.25 no longer replace current list. This will override existing list submodel by submodel
                 animationList.addAll(animationsOfLoadedModel);
             }
-        });
+        }, animationList);
 
         major = 19;
         // Kruecke zur Entkopplung des Modelload von AC policy.
@@ -171,11 +170,12 @@ public class FgModelPreviewScene extends ModelPreviewScene {
         }));
     }
 
-    public static void extendSmartModelLoaderForFG(AircraftResourceProvider arp, GeneralParameterHandler<List<SGAnimation>> animationHandler) {
+    public static void extendSmartModelLoaderForFG(AircraftResourceProvider arp, GeneralParameterHandler<List<SGAnimation>> animationHandler, List<SGAnimation> currentAnimationList) {
         SmartModelLoader.register("H", new SmartModelLoader() {
             @Override
             public void loadModelBySource(String prefix, String modelname, String bundleUrl, ResourcePath optTexturePath, ModelBuildDelegate delegate) {
                 //TerraSync Model
+                currentAnimationList.clear();
                 String bundlename = FlightGear.getBucketBundleName("model");
                 SmartModelLoader.defaultSmartModelLoader.loadModelBySource(bundlename, modelname, bundleUrl, optTexturePath, delegate);
             }
@@ -185,6 +185,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
         SmartModelLoader.register("A", new SmartModelLoader() {
             @Override
             public void loadModelBySource(String prefix, String modelname, String bundleUrl, ResourcePath optTexturePath, ModelBuildDelegate delegate) {
+                currentAnimationList.clear();
                 String bundleNameOfCurrentAircraft = bundleUrl;
                 if (StringUtils.contains(bundleNameOfCurrentAircraft, "/")) {
                     bundleNameOfCurrentAircraft = StringUtils.substringAfterLast(bundleNameOfCurrentAircraft, "/");
@@ -215,6 +216,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
             @Override
             public void loadModelBySource(String prefix, String modelname, String bundleUrl, ResourcePath optTexturePath, ModelBuildDelegate delegate) {
                 // a TerraSync tile/bucket
+                currentAnimationList.clear();
                 String tname = prefix;//StringUtils.substringBefore(modelname, ":");
 
                 String no = StringUtils.substring(tname, 1);
@@ -234,6 +236,7 @@ public class FgModelPreviewScene extends ModelPreviewScene {
                 if (bundlename == null) {
                     logger.error("bundlename is null");
                 }
+                currentAnimationList.clear();
                 Bundle bundle = BundleRegistry.getBundle(bundlename);
                 BuildResult result;
                 if (bundle == null) {

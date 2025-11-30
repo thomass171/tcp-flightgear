@@ -96,7 +96,7 @@ public class FgGalleryScene extends GalleryScene {
     @Override
     public void customInit() {
 
-        FgModelPreviewScene.extendSmartModelLoaderForFG(arp, animationsOfLoadedModel -> animationList.addAll(animationsOfLoadedModel));
+        FgModelPreviewScene.extendSmartModelLoaderForFG(arp, animationsOfLoadedModel -> animationList.addAll(animationsOfLoadedModel), animationList);
 
         arp = initFG();
         // ACpolicy doesn't help here because coordinate system is OpenGL instead of FG.
