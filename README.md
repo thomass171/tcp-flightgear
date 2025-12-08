@@ -209,12 +209,18 @@ are collected in the vehicle entity.
 
 #### Nasal
 
+Using bison or antlr4 for parser generating appears risky because it is unclear
+whether the Nasal language can be parsed by these (especially bison). And there are some
+very special features, eg. "compile()".
+
 compile() is used in 
   * canvas/Mapstructure
   * FG1000
   * GTX328 of ec130
 
 but not in 777, bluebird, ec135, SpaceShuttle. c172p only for "SelectableInterfaces".
+
+So it's probably more efficient to migrate the C implementation of the parser.
 
 ### tools-fg
 
@@ -445,3 +451,19 @@ And every MakeEffectVisitor has its own effectMap. This is confusing. When an Ef
 
 FG apparently does nothing when a tile is not found and will just have 'water'. Not sure how that is
 implemented. For now we just create a green plane as dummy tile when a tile is not found.
+
+## Flight Dynamics Model (FDM) 
+The FDM is the base for simulating flying in FG (https://wiki.flightgear.org/Flight_Dynamics_Model). Roughly it calculates
+resulting properties like speed from base properties like thrust. So the chain is like
+
+throttle->rpm->speed
+
+Since we do not have a flight simulator but want to integrate the FG vehicles
+into the idea of 'traffic', where the user just controls the speed of
+a vehicle the control chain for properties is inverted like
+
+speed->rpm
+
+For the same reason we don't have an 'autostart' like FG. Just speeding up
+suffices for making a vehicle 'alive' by updating the related properties (in class FgAnimationComponent)
+according to current speed.

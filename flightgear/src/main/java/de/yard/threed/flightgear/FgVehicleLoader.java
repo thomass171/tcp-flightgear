@@ -122,13 +122,13 @@ public class FgVehicleLoader implements VehicleLoader {
                 // und wird gekapselt.
                 SceneNode nn = SimpleVehicleLoader.buildVehicleNode(currentaircraft, config.getZoffset());
 
-                // Probably too early to inform delegates, because some asyncs still run
+                // Probably too early to inform delegates, because some asyncs still run. So the animationlist might still be empty here!
                 // 4.4.18. The XML loader above also has a delegate that fires for each submodel
 
                 loaddelegate.vehicleLoaded(nn, new FgVehicleLoaderResult(animationList, opt.getPropertyNode()), lowresNode);
                 //4.11.25 too early, many async might still be running FgBundleHelper.removeAircraftSpecific();
 
-                logger.debug("vehicle " + config.getName() + " loaded");
+                logger.debug("vehicle " + config.getName() + " load launched");
             }
         });
     }

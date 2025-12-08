@@ -69,10 +69,10 @@ public class FlightGearProperties /*7.11.24 implements SGPropertyTreeResolver*/ 
         FGGlobals.getInstance().get_props().getNode("/sim/multiplay/generic/int[19]", true).setIntValue(0);
         // not sure about value, needed eg. for deciding about magcompass. Nasal init to 0
         FGGlobals.getInstance().get_props().getNode("/sim/model/variant", true).setIntValue(0/*3*/);
-        // for spiining propeller
-        FGGlobals.getInstance().get_props().getNode("/engines/engine[0]/rpm", true).setIntValue(1000);
-        FGGlobals.getInstance().get_props().getNode("/engines/engine[1]/rpm", true).setIntValue(1000);
-        FGGlobals.getInstance().get_props().getNode("/engines/engine[2]/rpm", true).setIntValue(1000);
+
+        FGGlobals.getInstance().get_props().getNode("/engines/engine[0]/rpm", true).setIntValue(0);
+        // c172p also uses engine[2]
+        FGGlobals.getInstance().get_props().getNode("/engines/engine[2]/rpm", true).setIntValue(0);
 
     }
 

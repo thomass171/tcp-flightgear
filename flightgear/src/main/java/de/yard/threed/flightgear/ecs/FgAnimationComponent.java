@@ -40,6 +40,10 @@ public class FgAnimationComponent extends EcsComponent /*4.11.24 AnimationCompon
     private Map<String,GeneralFunction<Double, Void>> valueProviders = new HashMap();
 
     public static String C172P_SPD="fdm/jsbsim/velocities/vias-kts";
+    public static String PROP_ENGINE0="/engines/engine[0]/rpm";
+    //c172p also uses engine[2].rpm
+    public static String PROP_ENGINE2="/engines/engine[2]/rpm";
+    public static String PROP_ENGINE_RUNNING="/engines/engine/running";
 
     public FgAnimationComponent(SceneNode coreNode, List<SGAnimation> animationList, SGPropertyNode rootnode) {
         //super(coreNode);

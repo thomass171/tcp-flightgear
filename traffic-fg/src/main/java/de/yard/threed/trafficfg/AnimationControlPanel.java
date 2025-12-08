@@ -11,7 +11,10 @@ import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 
 /**
- * Extracted from FgGalleryScene
+ * For modifying single properties in the property tree via menu.
+ * We also have ... in HangarScene.
+ *
+ * Extracted from FgGalleryScene.
  */
 public class AnimationControlPanel {
     public static Log logger = Platform.getInstance().getLog(AnimationControlPanel.class);

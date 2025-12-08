@@ -20,15 +20,7 @@ import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.HttpBundleResolver;
 import de.yard.threed.engine.*;
 import de.yard.threed.engine.avatar.AvatarSystem;
-import de.yard.threed.engine.ecs.EcsEntity;
-import de.yard.threed.engine.ecs.GrabbingComponent;
-import de.yard.threed.engine.ecs.GrabbingSystem;
-import de.yard.threed.engine.ecs.InputToRequestSystem;
-import de.yard.threed.engine.ecs.SystemManager;
-import de.yard.threed.engine.ecs.SystemState;
-import de.yard.threed.engine.ecs.TeleportComponent;
-import de.yard.threed.engine.ecs.TeleporterSystem;
-import de.yard.threed.engine.ecs.UserSystem;
+import de.yard.threed.engine.ecs.*;
 import de.yard.threed.engine.geometry.ShapeGeometry;
 import de.yard.threed.engine.gui.*;
 import de.yard.threed.engine.platform.common.AbstractSceneRunner;
@@ -43,6 +35,7 @@ import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.SimpleBundleResourceProvider;
 import de.yard.threed.flightgear.core.SGLoaderOptions;
+import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
 import de.yard.threed.flightgear.core.simgear.scene.model.ACProcessPolicy;
 import de.yard.threed.flightgear.ecs.FgAnimationComponent;
 import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
@@ -60,12 +53,12 @@ import java.util.Map;
  * Scene for viewing vehicles from outside and cockpit, but without vehicle movement.
  * Also in AR mode. 777 CDU is used for menu.
  * <p>
- * Different from FgModelPreviewScene which
- * is more an model inspector and allows rotating and scaling.
+ * Different from FgModelPreviewScene which is more a model inspector and allows rotating and scaling.
  * <p>
  * Uses ECS (eg. TeleporterSystem) but no graphs.
  * <p>
- * What about Animations?
+ * While (Fg)ModelPreviewScene and (Fg)GalleryScene have the AnimationControlPanel for modifying properties in the property tree via menu,
+ * we here have just the option to control a pseudo speed (the vehicle still will not move). That should adjust all related properties.
  * <p>
  * 18.10.19: x/y/z calibration has wrong orientation?
  * Uses y=0 plane different from FlatTravelScene?
@@ -79,6 +72,7 @@ import java.util.Map;
  * 4.12.23: Migration from TrafficWorldConfig to TrafficConfig (without sceneconfig).
  * 30.1.24: f.k.a. CockpitScene
  * 1.2.24: Prepared for AR and a new loaded vehicle no longer replaces the current but is located behind.
+ * 03.12.25: (pseudo) speedup/down added for seeing related animations
  */
 public class HangarScene extends Scene {
     Log logger = Platform.getInstance().getLog(HangarScene.class);
@@ -113,7 +107,7 @@ public class HangarScene extends Scene {
 
         List<Vehicle> vlist = FlightTravelScene.getVehicleListByName("VehiclesWithCockpit");
 
-        // 8.8.24: hardcoded bluebird added
+        // 8.8.24: hardcoded bluebird added (because it isn't in the vehiclelist)
         vehiclelist.add("bluebird");
         for (int i = 0; i < vlist.size(); i++) {
             vehiclelist.add(vlist.get(i).getName());
@@ -143,7 +137,7 @@ public class HangarScene extends Scene {
         ObserverSystem viewingsystem = new ObserverSystem(true);
         SystemManager.addSystem(viewingsystem, 0);
 
-        //z.B. for click in CDU menu
+        // for click in CDU menu. 3.12.25 Now also for seeing speed dependent animations
         FgAnimationUpdateSystem animationUpdateSystem = new FgAnimationUpdateSystem();
         SystemManager.addSystem(animationUpdateSystem, 0);
 
@@ -161,18 +155,17 @@ public class HangarScene extends Scene {
         shaderDebugger.setMessageBox(msgBox);
 
         menuCycler = new MenuCycler(new MenuProvider[]{new CockpitMenuBuilder(this), new DefaultMenuProvider(this.getDefaultCamera(), (Camera camera) -> {
-            //Versuchen, ca 3 m vor Avatar statt nearplane, damit es normal und in VR brauchbar ist.
-            //ach, wie CDU 5m.
+            // zpos -5 should also work good in VR
             double width = 5.5;
 
             GuiGrid menu = new GuiGrid(new DimensionF(width, width * 0.7), -5, -4.9, 1, 6, 3, GuiGrid.GREEN_SEMITRANSPARENT);
-            // In der Mitte rechts ein Button mit Image
+            // Mid right a button with image
             menu.addButton(4, 1, 1, Icon.ICON_CLOSE, () -> {
                 menuCycler.close();
             });
-            // und unten in der Mitte ein breiter Button mit Text
+            // Mid bottom a wide button with text
             menu.addButton(2, 0, 2, new Text("Load", Color.BLUE, Color.LIGHTBLUE), () -> {
-                //unpraktisch weil man vielleicht weiter möchte rs.menuCycler.close();
+                //No rs.menuCycler.close() here becasue we might do any more?
                 addNextVehicle();
             });
 
@@ -203,7 +196,7 @@ public class HangarScene extends Scene {
         SystemManager.addSystem(new TrafficSystem());
 
         if (!isAR()) {
-            //Die Plane ist schon in y=0 und muss nicht rotiert werden.
+            // Plane already is y=0 so needs no rotation
             Material goundmat = Material.buildLambertMaterial(Color.GRAY);
             SceneNode ground = new SceneNode(new Mesh(ShapeGeometry.buildPlane(500, 500, 1, 1), goundmat, true, true));
             ground.getTransform().setPosition(new Vector3(0, 0, 0));
@@ -315,6 +308,9 @@ public class HangarScene extends Scene {
         if (Input.getKeyDown(KeyCode.L)) {
             addNextVehicle();
         }
+        if (Input.getKeyDown(KeyCode.P)) {
+            logger.debug("Property tree:\n" + FGGlobals.getInstance().get_props().dump("\n"));
+        }
         Point mouselocation = Input.getMouseDown();
 
         menuCycler.update(mouselocation);
@@ -349,7 +345,7 @@ public class HangarScene extends Scene {
             TrafficConfig vehicleDefinitions = TrafficConfig.buildFromBundle(bnd, BundleResource.buildFromFullString("vehicle-definitions.xml"));
             config = vehicleDefinitions.findVehicleDefinitionsByName(newVehicle).get(0);
         }
-        // 18.10.19: TrafficHelper will not do, because vehicle will not be on a graph. Well, we could pass null in that case.
+        // 18.10.19: TrafficHelper (VehicleLauncher?) will not do, because vehicle will not be on a graph. Well, we could pass null in that case.
         // 4.11.25: Give ECS request a try, but first needs TrafficSystem and a sphere
         //Request request = RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), newVehicle, null, null, null);
         //SystemManager.putRequest(request);
@@ -399,6 +395,15 @@ public class HangarScene extends Scene {
                 logger.debug("teleport position:" + pc.getPointLabel(i));
             }
             logger.debug("vehicle entity added for " + modelEntity.getName());
+
+            // 2.3.25 Make it a vehicle and honor animations to use speed and related animations.
+            // All this is typically done in VehicleLauncher in regular traffic scenes.
+            VelocityComponent vc = new VelocityComponent();
+            vc.setMaximumSpeed(config.getMaximumSpeed());
+            vc.setAcceleration(config.getAcceleration());
+            modelEntity.addComponent(vc);
+            loaderResult.applyResultsToEntity(modelEntity);
+
         });
     }
 
@@ -441,6 +446,7 @@ public class HangarScene extends Scene {
                 new DimensionF(ControlPanelWidth / 3, ControlPanelRowHeight), () -> {
                     logger.debug("load clicked");
                     addNextVehicle();
+                    // 11='L'
                 }).setIcon(Icon.IconCharacter(11));
         return cp;
     }
@@ -451,26 +457,46 @@ public class HangarScene extends Scene {
      */
     public GuiGrid buildControlMenuForScene(Camera camera) {
 
-        GuiGrid controlmenu = GuiGrid.buildForCamera(camera, 2, 4, 1, Color.BLACK_FULLTRANSPARENT, true);
+        GuiGrid controlmenu = GuiGrid.buildForCamera(camera, 2, 6, 1, Color.BLACK_FULLTRANSPARENT, true);
 
         controlmenu.addButton(0, 0, 1, Icon.ICON_POSITION, () -> {
             InputToRequestSystem.sendRequestWithId(new Request(UserSystem.USER_REQUEST_TELEPORT, new Payload(new Object[]{new IntHolder(0)})));
         });
-        controlmenu.addButton(1, 0, 1, Icon.ICON_PLUS, () -> {
+        controlmenu.addButton(1, 0, 1, Icon.IconCharacter(11), () -> {
             // load next not yet loaded vehicle.
             //not working TODO but should SystemManager.putRequest(RequestRegistry.buildLoadVehicle(UserSystem.getInitialUser().getId(), null, null));
             addNextVehicle();
         });
-        controlmenu.addButton(2, 0, 1, Icon.ICON_MENU, () -> {
+        // control speed not via TrafficSystem because it is no real speed. Or is it possible via TrafficSystem?
+        controlmenu.addButton(2, 0, 1, Icon.ICON_HORIZONTALLINE, () -> {
+            adjustSpeed(-10);
+        });
+        controlmenu.addButton(3, 0, 1, Icon.ICON_PLUS, () -> {
+            adjustSpeed(10);
+        });
+
+        controlmenu.addButton(4, 0, 1, Icon.ICON_MENU, () -> {
             // TODO link to menucycler
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_MENU));
         });
-        controlmenu.addButton(3, 0, 1, Icon.ICON_CLOSE, () -> {
+        controlmenu.addButton(5, 0, 1, Icon.ICON_CLOSE, () -> {
             InputToRequestSystem.sendRequestWithId(new Request(InputToRequestSystem.USER_REQUEST_CONTROLMENU));
         });
         return controlmenu;
     }
 
+    /**
+     * A 'pseudo speed'.
+     */
+    private void adjustSpeed(int inc) {
+        for (EcsEntity entity : SystemManager.findEntities(e ->
+                FgAnimationComponent.getFgAnimationComponent(e) != null &&
+                        VelocityComponent.getVelocityComponent(e) != null
+        )) {
+            logger.debug("adjustSpeed for vehicle " + entity.getName());
+            VelocityComponent.getVelocityComponent(entity).incMovementSpeed(inc);
+        }
+    }
 }
 
 class CockpitMenuBuilder implements MenuProvider {

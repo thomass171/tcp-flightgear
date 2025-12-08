@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * From props.cxx
- *
+ * <p>
  * A node in a property tree.
  * <p/>
  * Created by thomass on 04.12.15.
@@ -31,7 +31,7 @@ public class SGPropertyNode {
     //17.1.18: children erst bei Bedarf initialisieren
     List<SGPropertyNode> children;
     public String name;
-    private int index;
+    //5.12.25 why should we have this in addition to _index? private int index;
     /*Type*/ int _type;
     private String str;
     int _attr;
@@ -79,7 +79,7 @@ public class SGPropertyNode {
     public SGPropertyNode(String name, int index) {
         this();
         this.name = name;
-        this.index = index;
+        this._index = index;
     }
 
     public SGPropertyNode addChild(SGPropertyNode node) {
@@ -175,7 +175,8 @@ public class SGPropertyNode {
     }
 
     public int getIndex() {
-        return index;
+        // 5.12.25 Returns "_index" in FG
+        return _index;
     }
 
     public String getName() {
@@ -279,7 +280,7 @@ public class SGPropertyNode {
     }
 
     /**
-     * Origin and exact purpose of make_iterator_range isType unclear.
+     * Origin and exact purpose of make_iterator_range is unclear.
      * The phrase "relative_path" is confusing. If it starts with "/" it's considered absolute from root. But root is the
      * root of current node, not a global root. Might be a temp node of XML properties loading.
      *
@@ -349,7 +350,7 @@ public class SGPropertyNode {
         }
         int index = -1;
         if (last_index >= 0) {
-            // If we are at the last token and last_index isType valid, use
+            // If we are at the last token and last_index is valid, use
             // last_index as the index value
             boolean lastTok = true;
             //while (!(++itr).eof()) {
@@ -393,7 +394,7 @@ public class SGPropertyNode {
             if (li != -1) {
                 int ri = StringUtils.indexOf(name, ']');
                 if (ri == -1) {
-                    //TODO verbessern?
+                    //TODO improve?
                     throw new RuntimeException("unterminated index (looking for ']')");
                 }
                 index = Util.atoi(StringUtils.substring(name, li + 1, ri));
@@ -1659,8 +1660,20 @@ public class SGPropertyNode {
         return dodump("", lineseparator);
     }
 
+    /**
+     * 4.12.25: Layout more consistent and without redundant line separator
+     */
     public String dodump(String level, String lineseparator) {
-        String s = level + "." + ((name == null) ? "no-name" : name);
+        String s = "";
+        if (StringUtils.length(level) > 0) {
+            s += level + ".";
+        }
+
+        /*s += ((name == null) ? "no-name" : name);
+        if (_index > 0) {
+            s += "[" + _index + "]";
+        }*/
+        s += getDisplayName(true);
         if (label != null) {
             s += "(label=" + label + ")" + lineseparator;
         }
@@ -1668,7 +1681,7 @@ public class SGPropertyNode {
 
         if (children != null) {
             for (SGPropertyNode c : children) {
-                s += c.dodump(level + ((StringUtils.length(level) == 0) ? "" : ".") + name, lineseparator) + lineseparator;
+                s += c.dodump(level + ((StringUtils.length(level) == 0) ? "" : ".") + getDisplayName(true), lineseparator)/* 4.12.25 + lineseparator*/;
             }
         }
         return s;
