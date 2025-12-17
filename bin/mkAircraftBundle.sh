@@ -13,7 +13,7 @@
 # No need for an '-f' option. An existing destination file won't be (or shouldn't be) overwritten anyway.
 #
 # For converting a c172p tree according to the definition in bundledefs/c172p.bundledef the command
-#   sh bin/mkAircraftBundle.sh -o /Volumes/Flightgear/bundletarget c172
+#   sh bin/mkAircraftBundle.sh -o /Volumes/Flightgear/hostdirfullfg/bundles c172p
 # can be used.
 # 25.9.25 TODO merge with mkFgBundle.sh
 

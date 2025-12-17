@@ -14,8 +14,13 @@ import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.test.testutil.TestUtil;
 import de.yard.threed.engine.testutil.EngineTestUtils;
 import de.yard.threed.engine.testutil.TestHelper;
+import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
+import de.yard.threed.flightgear.core.flightgear.main.FGProperties;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
+import de.yard.threed.flightgear.core.simgear.sound.SGSoundSample;
+import de.yard.threed.flightgear.ecs.FgAnimationUpdateSystem;
 import de.yard.threed.flightgear.testutil.FgTestFactory;
+import de.yard.threed.flightgear.testutil.SoundAssertions;
 import de.yard.threed.traffic.VehicleLauncher;
 import de.yard.threed.traffic.VehicleLoaderResult;
 import de.yard.threed.traffic.config.VehicleDefinition;
@@ -120,6 +125,35 @@ public class FgVehicleLoaderTest {
         // full hierarchy is too large, so only check some
         String hierarchy = EngineTestUtils.getHierarchy(bluebirdNode, 10, true);
         assertTrue(hierarchy.contains("ACProcessPolicy.root node->ACProcessPolicy.transform node->Models/bluebird.gltf->gltfroot->ac-world->[Layer_Last->[centerBackTranslate"), hierarchy);
+
+        // Check engine sound is loaded but not yet playing.
+        SoundAssertions.validateBasicSound(/*no path 'Sound' incuded here?*/"bluebird-sound.xml");
+        SoundAssertions.validateBluebirdSound(false,0);
+
+        // Even with multiple updates.
+        for (int i = 0; i < 5; i++) {
+            FgAnimationUpdateSystem.updateSound(0.1);
+        }
+        SoundAssertions.validateBluebirdSound(false,0);
+
+        // Start playing. Just low speed should be sufficient for 'rumble'
+        FGGlobals.getInstance().get_props().getNode("/velocities/airspeed-kt", false).setDoubleValue(1);
+        // update several times and be sure that audio play is triggered once only.
+        for (int i = 0; i < 5; i++) {
+            FgAnimationUpdateSystem.updateSound(0.1);
+        }
+        SoundAssertions.validateBluebirdSound(true,1);
+
+        // Stop again.
+        FGGlobals.getInstance().get_props().getNode("/velocities/airspeed-kt", false).setDoubleValue(0.0);
+        // update several times and be sure that audio play is triggered once only.
+        for (int i = 0; i < 5; i++) {
+            FgAnimationUpdateSystem.updateSound(0.1);
+        }
+        SoundAssertions.validateBluebirdSound(false,1);
+
+
+
     }
 
     /**

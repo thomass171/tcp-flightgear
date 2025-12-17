@@ -9,6 +9,7 @@ import de.yard.threed.flightgear.FlightGearMain;
 import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.SimpleBundleResourceProvider;
 import de.yard.threed.flightgear.core.StringList;
+import de.yard.threed.flightgear.core.flightgear.sound.FGFX;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.misc.SGDir;
@@ -17,6 +18,7 @@ import de.yard.threed.flightgear.core.simgear.props.PropertyObjectBase;
 
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.resource.Bundle;
+import de.yard.threed.flightgear.core.simgear.sound.SGSoundMgr;
 
 /**
  * Aus globals.cxx
@@ -30,7 +32,7 @@ import de.yard.threed.core.resource.Bundle;
  * Created by thomass on 30.05.16.
  */
 public class FGGlobals {
-    static Log logger = Platform.getInstance().getLog(FGGlobals.class);
+    Log logger = Platform.getInstance().getLog(FGGlobals.class);
 
     // properties, destroy last
     // the root of the global property tree.
@@ -120,6 +122,10 @@ public class FGGlobals {
 
     SGSharedPtr<simgear::pkg::Root>_packageRoot;
 */
+    // 10.12.25: Will there be a better location? And to we need both? On same level? Both have update().
+   public SGSoundMgr sgSoundMgr;
+    public FGFX fgfx;
+
     // global global :-)
     // Singleton als Ersatz fuer global Variable   
     public static FGGlobals globals = null;
@@ -160,6 +166,9 @@ public class FGGlobals {
         //30.9.19 es gibt doch noch kein Aircraft BundleRegistry.addProvider(new AircraftResourceProvider());
         //30.9.19BundleRegistry.addProvider(new CurrentAircraftDirProvider());
         initProperties();
+
+       sgSoundMgr= new SGSoundMgr();
+       sgSoundMgr.activate();
     }
 
     /**

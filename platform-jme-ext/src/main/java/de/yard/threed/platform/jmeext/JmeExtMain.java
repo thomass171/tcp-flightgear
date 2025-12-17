@@ -9,6 +9,7 @@ import de.yard.threed.flightgear.TerraSyncBundleResolver;
 import de.yard.threed.javacommon.DefaultResourceReader;
 import de.yard.threed.outofbrowser.SimpleBundleResolver;
 import de.yard.threed.platform.jme.JmePlatformFactory;
+import de.yard.threed.platform.jme.JmeSceneRunner;
 import de.yard.threed.platform.jme.PlatformJme;
 import de.yard.threed.trafficfg.SceneSetup;
 import de.yard.threed.trafficfg.apps.TravelSceneBluebird;
@@ -121,6 +122,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
                 Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver(configuration.getString("HOSTDIRFG") + "/bundles"));
                 // PlatformJme has built in SimpleBundleResolver for "tcp-22/bundles", so need here for adding any further
                 Platform.getInstance().addBundleResolver(new SimpleBundleResolver(configuration.getString("HOSTDIRFG") + "/bundles", new DefaultResourceReader()));
+                JmeSceneRunner.init(platformInternals);
                 return platformInternals;
             }
         };

@@ -305,9 +305,10 @@ public class FgModelPreviewScene extends ModelPreviewScene {
     }
 
     @Override
-    public void customUpdate() {
+    public void customUpdate(double tpf) {
         updateAnimations(flightGearProperties, animationList, getDefaultCamera());
         FgAnimationUpdateSystem.updateCallbacks();
+        FgAnimationUpdateSystem.updateSound(tpf);
     }
 
     public static void updateAnimations(FlightGearProperties flightGearProperties, List<SGAnimation> animationList, Camera camera) {

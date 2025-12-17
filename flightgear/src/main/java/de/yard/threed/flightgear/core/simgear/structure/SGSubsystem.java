@@ -154,6 +154,8 @@ public abstract class SGSubsystem /*: public SGReferenced*/ {
      * <p>FlightGear invokes this method every time the subsystem should
      * update its state.</p>
      *
+     * 9.12.25: What is our idea for update()? Probably not consistent?
+     *
      * @param delta_time_sec The delta time, in seconds, since the last
      *                       update.  On getFirst update, delta time will be 0.
      */

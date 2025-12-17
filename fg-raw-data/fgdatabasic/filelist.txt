@@ -42,3 +42,5 @@ Effects/model-default.eff
 Effects/model-interior.eff
 Effects/model-combined.eff
 Effects/model-combined-deferred.eff
+# jet.wav is used by bluebird
+Sounds/jet.wav

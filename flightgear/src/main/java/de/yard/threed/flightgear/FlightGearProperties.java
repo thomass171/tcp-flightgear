@@ -32,6 +32,9 @@ public class FlightGearProperties /*7.11.24 implements SGPropertyTreeResolver*/ 
     // noon as default
     public static double DEFAULT_SUN_ANGLE_RAD = 0.0;
 
+    /**
+     * We also have the FG defaults that are set in Options.fgSetDefaults() during FgInit.
+     */
     public static void setOurDefaults() {
         //root = new SGPropertyNode(rootName);
         /*/*7.11.24 split is too much effort

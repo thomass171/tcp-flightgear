@@ -18,6 +18,7 @@ import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.TerraSyncBundleResolver;
 import de.yard.threed.flightgear.core.FlightGearModuleBasic;
 import de.yard.threed.flightgear.core.FlightGearModuleScenery;
+import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
 import de.yard.threed.flightgear.core.simgear.scene.material.Effect;
 import de.yard.threed.flightgear.core.simgear.scene.material.MakeEffect;
 import de.yard.threed.flightgear.core.simgear.scene.material.SGMaterialLib;
@@ -84,6 +85,7 @@ public class FgTestFactory {
         MakeEffect.errorList.clear();
         Effect.effectListForTesting = new ArrayList<>();
         SGOceanTile.created.clear();
+        FGGlobals.globals = null;
 
         // 29.12.21: Some bundles need to be loaded after init()
         // 12.9.23: FlightGearSettings.FGROOTCOREBUNDLE might be needed in future for aircraft loading (apparently not needed for bluebird)

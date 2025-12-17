@@ -14,6 +14,7 @@ import de.yard.threed.flightgear.core.SGLoaderOptions;
 import de.yard.threed.flightgear.core.flightgear.main.AircraftResourceProvider;
 import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
 import de.yard.threed.flightgear.core.flightgear.main.FgInit;
+import de.yard.threed.flightgear.core.flightgear.sound.FGFX;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGAnimation;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGReaderWriterXML;
@@ -107,6 +108,54 @@ public class FgVehicleLoader implements VehicleLoader {
                         FgBundleHelper.removeAircraftSpecific();
                     }
                 });
+
+                // load sound while async model loading is still ongoing
+                // 2.12.25 Start hardcoded sound. Typically it is referenced from "-set" file (maybe included), eg.
+                // <sound>
+                //        <path archive="y">c172-sound.xml</path>
+                //        </sound>
+                // Or generic from https://wiki.flightgear.org/Howto:Add_sound_effects_to_aircraft#Sound_configuration_files?
+                if (config.getName().equals("bluebird")) {
+                    // As defined in bluebird-base.xml
+                    BundleResource soundfile = FgBundleHelper.findPath("Sound/bluebird-sound.xml", br);
+                    if (soundfile == null) {
+                        logger.warn("bluebird sound file not found");
+                    } else {
+                        // In FG the property "sim/sound/path" has value 'c172-sound.xml' when c172 was loaded, due
+                        // to entry
+                        // <sound>
+                        //<path archive="y">c172-sound.xml</path>
+                        //</sound>
+                        // in c172p-main.xml.
+                        FGGlobals.getInstance().get_props().getNode("sim/sound/path", true).setStringValue(
+                                //soundfile.getName()
+                                "Aircraft/bluebird/Sound/bluebird-sound.xml"
+                        );
+                        // FGFX is self registering. Should pass null prop to be no AI??
+                        if (FGGlobals.getInstance().fgfx == null) {
+                            FGGlobals.getInstance().fgfx = new FGFX(soundfile.getName(), null/*destinationProp*/);
+                            FGGlobals.getInstance().fgfx.init();
+                            FGGlobals.getInstance().fgfx._enabled.setBoolValue(true);
+                        }
+                    }
+                }
+                if (config.getName().equals("c172p")) {
+                    BundleResource soundfile = FgBundleHelper.findPath("c172-sound.xml", br);
+                    if (soundfile == null) {
+                        logger.warn("c172p sound file not found");
+                    } else {
+                        FGGlobals.getInstance().get_props().getNode("sim/sound/path", true).setStringValue(
+                                "Aircraft/c172p/c172-sound.xml"
+                        );
+                        // FGFX is self registering. Should pass null prop to be no AI??
+                        if (FGGlobals.getInstance().fgfx == null) {
+                            FGGlobals.getInstance().fgfx = new FGFX(soundfile.getName(), null/*destinationProp*/);
+                            FGGlobals.getInstance().fgfx.init();
+                            FGGlobals.getInstance().fgfx._enabled.setBoolValue(true);
+                        }
+                    }
+                }
+
                 currentaircraft = new SceneNode(buildresult.getNode());
 
                 SceneNode lowresNode = null;

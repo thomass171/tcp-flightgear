@@ -32,6 +32,7 @@ public class FgVehicleLoaderResult implements VehicleLoaderResult {
     public void applyResultsToEntity(EcsEntity vehicleEntity) {
         // animationlist is filled step by step async. So might not be complete yet.
         if (animationList != null) {
+            // sync properties. Also happens in ReverseFDM.
             FgAnimationComponent fgAnimationComponent = new FgAnimationComponent(vehicleEntity.getSceneNode(), animationList, propertyNodeFromOpt);
             //14.5.25: PropertyComponent merged into FgAnimationComponent
             fgAnimationComponent.addPropertySync(
