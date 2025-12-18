@@ -401,17 +401,14 @@ public class SGXmlSound {
         // - otherwise just check the property
         //
         boolean condition = false;
-        if (_condition != null)
+        if (_condition != null) {
             condition = _condition.test();
-        else if (_property != null) {
+        } else if (_property != null) {
             if (_mode == MODE_IN_TRANSIT) {
                 double curr_value = _property.getDoubleValue();
                 condition = (curr_value != _prev_value);
                 _prev_value = curr_value;
             } else {
-                if ("rumble".equals(_name)) {
-                    int h = 9;
-                }
 
                 condition = _property.getBoolValue();
             }
@@ -486,8 +483,7 @@ public class SGXmlSound {
                 else
                     _sample.play_looped();
 
-                logger.debug("Playing audio after " + _dt_stop + " sec: " + _name);
-                logger.debug("Playing " + ((_mode == MODE_ONCE) ? "once" : "looped"));
+                logger.debug("Playing audio "+ ((_mode == MODE_ONCE) ? "once" : "looped") +" after " + _dt_stop + " sec: " + _name);
             }
 
             _active = true;

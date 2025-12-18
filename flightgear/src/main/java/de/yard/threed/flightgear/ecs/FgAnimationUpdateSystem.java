@@ -97,7 +97,7 @@ public class FgAnimationUpdateSystem extends DefaultEcsSystem {
         // 12.12.25: Also for our "Reverse FDM". Only useful until there is only one FG vehicle.
         VelocityComponent vc = VelocityComponent.getVelocityComponent(entity);
         if (vc != null) {
-            ReverseFDM.syncGlobalPropertiesByVehicleSpeed(vc.getMovementSpeed(), 0, 0, 0);
+            ReverseFDM.syncGlobalPropertiesByVehicleSpeed(entity.getName(), vc.getMovementSpeed(), 0, 0, 0);
         }
 
         for (int i = 0; i < ac.animationList.size(); i++) {

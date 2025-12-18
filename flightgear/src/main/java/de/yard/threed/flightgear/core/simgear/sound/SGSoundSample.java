@@ -256,9 +256,10 @@ public class SGSoundSample extends SGSoundSampleInfo/*, public SGReferenced*/ {
     /**
      * Set the source id of this source
      * FG-DIFF no need to init an audio (done by platform)
+     *
      * @param sid source-id
      */
-    /*virtual*/  void set_source( int sid) {
+    /*virtual*/  void set_source(int sid) {
         //_source = sid;
         _valid_source = true;
         _changed = true;
@@ -276,9 +277,11 @@ public class SGSoundSample extends SGSoundSampleInfo/*, public SGReferenced*/ {
     /**
      * Test if the source-id of this audio sample is usable.
      * FG-DIFF no need to maintain an audio source(done by platform)
+     *
      * @return true if the source-id is valid
      */
-    /*virtual */public boolean is_valid_source() {
+    /*virtual */
+    public boolean is_valid_source() {
         return _valid_source;
     }
 
@@ -364,6 +367,7 @@ public class SGSoundSample extends SGSoundSampleInfo/*, public SGReferenced*/ {
         if (v > 1.0) v = 1.0f;
         else if (v < 0.0) v = 0.0f;
         _volume = v;
+        //logger.debug("set_volume " + v + " of " + _refname);
         _changed = true;
     }
 
@@ -589,14 +593,15 @@ public class SGSoundSample extends SGSoundSampleInfo/*, public SGReferenced*/ {
 
     /**
      * Not about flag "_playing" but effectivyly playing.
+     *
      * @return
      */
-    public boolean isEffectivelyPlaying(){
-     if (audio!=null){
-         boolean b= audio.isPlaying();
-         return b;
-     }
-     return false;
+    public boolean isEffectivelyPlaying() {
+        if (audio != null) {
+            boolean b = audio.isPlaying();
+            return b;
+        }
+        return false;
     }
 }
 

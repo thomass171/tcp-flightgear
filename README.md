@@ -259,7 +259,7 @@ Initial release
 ## 2025-11
 * Switch to FGs 2024.1 c172p
 ## 2025-12
-* bluebird and c172p sound added (but broken in TravelScene)
+* bluebird and c172p sound added
 
 # Flightgear data
 Flightgear needs data for

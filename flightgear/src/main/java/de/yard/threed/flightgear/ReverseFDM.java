@@ -1,5 +1,7 @@
 package de.yard.threed.flightgear;
 
+import de.yard.threed.core.platform.Log;
+import de.yard.threed.core.platform.Platform;
 import de.yard.threed.engine.ecs.VelocityComponent;
 import de.yard.threed.flightgear.core.flightgear.main.FGGlobals;
 import de.yard.threed.flightgear.core.flightgear.main.FGProperties;
@@ -11,14 +13,23 @@ import de.yard.threed.flightgear.ecs.FgAnimationComponent;
  * Might be used in FgVehicleLoaderResult
  */
 public class ReverseFDM {
+    static Log logger = Platform.getInstance().getLog(ReverseFDM.class);
 
     /**
      * For general properties (eg. those from Options.java). Aircraft specific properties are synced in FgVehicleLoaderResult
      * Only useful until there is only one FG vehicle.
      */
-    public static void syncGlobalPropertiesByVehicleSpeed(double speedms, double heading, double pitch, double yaw) {
+    public static void syncGlobalPropertiesByVehicleSpeed(String entityName, double speedms, double heading, double pitch, double yaw) {
 
-        double rpm = speedms * 40;
+        if (!"c172p".equals(entityName) && !"bluebird".equals(entityName)) {
+            // avoid speed ping pong by all the vehicles in the scenes and focus on 'main'
+
+            return;
+        }
+
+
+            double rpm = speedms * 40;
+        //logger.debug("Syncing FDM from '" + entityName + "'s speed " + speedms);
 
         SGPropertyNode root = FGGlobals.globals.get_props();
 
