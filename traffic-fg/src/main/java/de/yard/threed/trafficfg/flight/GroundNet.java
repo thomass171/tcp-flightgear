@@ -1,13 +1,7 @@
 package de.yard.threed.trafficfg.flight;
 
 
-import de.yard.threed.core.Degree;
-import de.yard.threed.core.LatLon;
-import de.yard.threed.core.MathUtil2;
-import de.yard.threed.core.Quaternion;
-import de.yard.threed.core.StringUtils;
-import de.yard.threed.core.Vector2;
-import de.yard.threed.core.Vector3;
+import de.yard.threed.core.*;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.NativeAttributeList;
 import de.yard.threed.core.platform.NativeNode;
@@ -36,7 +30,6 @@ import de.yard.threed.traffic.SphereProjections;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficHelper;
 import de.yard.threed.trafficcore.ElevationProvider;
-import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.trafficcore.geodesy.MapProjection;
 import de.yard.threed.trafficcore.model.Runway;
 
@@ -234,7 +227,12 @@ public class GroundNet {
         NativeAttributeList attrs = node.getAttributes();
         // name muss der index sein, denn darueber wird gesucht.
         String name = attrs.getNamedItem("index").getValue();
-        GeoCoordinate coor = new GeoCoordinate(Degree.parseDegree(attrs.getNamedItem("lat").getValue()), Degree.parseDegree(attrs.getNamedItem("lon").getValue()), 0);
+        GeoCoordinate coor = null;
+        try {
+            coor = new GeoCoordinate(Degree.parseDegree(attrs.getNamedItem("lat").getValue()), Degree.parseDegree(attrs.getNamedItem("lon").getValue()), 0);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         return addNodeByProjecting(name, coor);
     }
 

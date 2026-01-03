@@ -42,5 +42,6 @@ public class FlightGearModuleBasic extends FlightGearModule {
         // 11.12.25: Not sure whether it is the best location here for activating
         //already in FGGlobals FGGlobals.getInstance().sgSoundMgr.activate();
         inited = true;
+        logger.info("inited");
     }
 }

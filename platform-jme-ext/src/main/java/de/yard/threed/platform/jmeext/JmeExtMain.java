@@ -4,15 +4,13 @@ import de.yard.threed.core.configuration.Configuration;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.platform.PlatformFactory;
 import de.yard.threed.core.platform.PlatformInternals;
-import de.yard.threed.core.resource.BundleResolver;
+import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.TerraSyncBundleResolver;
 import de.yard.threed.javacommon.DefaultResourceReader;
 import de.yard.threed.outofbrowser.SimpleBundleResolver;
-import de.yard.threed.platform.jme.JmePlatformFactory;
 import de.yard.threed.platform.jme.JmeSceneRunner;
 import de.yard.threed.platform.jme.PlatformJme;
 import de.yard.threed.trafficfg.SceneSetup;
-import de.yard.threed.trafficfg.apps.TravelSceneBluebird;
 
 import java.util.HashMap;
 
@@ -110,6 +108,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         //SceneSetup.setupAdvancedScenerySceneForEHAM(properties);
         //SceneSetup.setupBluebirdForRouteFromEDDKtoEHAM(properties, 2233.0);
         //SceneSetup.setupTravelSceneForC172pFreeFlightFromEDDK14L(properties);
+        //SceneSetup.setupBluebirdForRouteFromEGPHtoEGPF(properties, 1033.0);
         return properties;
     }
 
@@ -118,6 +117,8 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         return new PlatformFactory() {
             @Override
             public PlatformInternals createPlatform(Configuration configuration) {
+                // register before bundle preload
+                FgBundleHelper.registerFgBundleSuffices();
                 PlatformInternals platformInternals = PlatformJme.init(configuration);
                 Platform.getInstance().addBundleResolver(new TerraSyncBundleResolver(configuration.getString("HOSTDIRFG") + "/bundles"));
                 // PlatformJme has built in SimpleBundleResolver for "tcp-22/bundles", so need here for adding any further

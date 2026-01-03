@@ -11,7 +11,7 @@ public class StringList extends CppVector<String> {
     public static StringList sgPathBranchSplit(String path) {
         StringList sl = new StringList();
         // TODO: Platformunabhaebgig 
-        String[] parts = StringUtils.split(path, "/");
+        String[] parts = StringUtils.splitByWholeSeparator(path, "/");
         for (String s : parts){
             sl.add(s);
         }
@@ -20,8 +20,8 @@ public class StringList extends CppVector<String> {
 
     public static StringList sgPathSplit(String searchpath) {
         StringList sl = new StringList();
-        // TODO: Platformunabhaebgig 
-        String[] parts = StringUtils.split(searchpath, ":");
+        // TODO: Platform independent
+        String[] parts = StringUtils.splitByWholeSeparator(searchpath, ":");
         for (String s : parts){
             sl.add(s);
         }

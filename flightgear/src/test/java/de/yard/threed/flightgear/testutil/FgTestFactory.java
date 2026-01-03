@@ -97,6 +97,9 @@ public class FgTestFactory {
         // "data" is needed for textures for loc sometimes.
         String[] bundlelist = new String[]{"data", "engine", "fgdatabasic", "traffic-fg"};
 
+        // register before bundle preload
+        FgBundleHelper.registerFgBundleSuffices();
+
         Configuration configuration = ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties);
 
         boolean forScene = configuration.getString("scene") != null;
@@ -137,7 +140,11 @@ public class FgTestFactory {
             }
 
             if (addTestResourcesBundle) {
-                EngineTestFactory.addTestResourcesBundle();
+                try {
+                    EngineTestFactory.addTestResourcesBundle();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
         //not generic FgTestFactory.assertPlatform();

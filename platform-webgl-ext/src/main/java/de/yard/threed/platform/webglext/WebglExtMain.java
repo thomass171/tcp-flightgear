@@ -7,6 +7,7 @@ import de.yard.threed.core.platform.PlatformFactory;
 import de.yard.threed.core.platform.PlatformInternals;
 import de.yard.threed.core.resource.BundleResolver;
 import de.yard.threed.engine.Scene;
+import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.TerraSyncBundleResolver;
 import de.yard.threed.platform.webgl.PlatformWebGl;
 import de.yard.threed.trafficadvanced.apps.AdvancedSceneryScene;
@@ -48,6 +49,8 @@ public class WebglExtMain extends de.yard.threed.platform.webgl.Main {
         return new PlatformFactory() {
             @Override
             public PlatformInternals createPlatform(Configuration conf) {
+                // register before bundle preload
+                FgBundleHelper.registerFgBundleSuffices();
                 PlatformInternals platformInternals = PlatformWebGl.init(conf);
                 // "/TerraySync" is added inside resolver. TerraSyncBundleResolver needs to be before default resolver, which resolves everything.
                 // And no leading "/". That is added later.

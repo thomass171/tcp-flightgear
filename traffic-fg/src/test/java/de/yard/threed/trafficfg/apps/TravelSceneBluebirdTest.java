@@ -1,11 +1,7 @@
 package de.yard.threed.trafficfg.apps;
 
 
-import de.yard.threed.core.Event;
-import de.yard.threed.core.LocalTransform;
-import de.yard.threed.core.Quaternion;
-import de.yard.threed.core.Util;
-import de.yard.threed.core.Vector3;
+import de.yard.threed.core.*;
 import de.yard.threed.core.platform.NativeSceneNode;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.testutil.TestUtils;
@@ -23,7 +19,6 @@ import de.yard.threed.graph.GraphMovingSystem;
 import de.yard.threed.traffic.*;
 import de.yard.threed.trafficcore.EllipsoidCalculations;
 import de.yard.threed.traffic.config.VehicleDefinition;
-import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.traffic.testutils.TrafficTestUtils;
 import de.yard.threed.trafficcore.model.SmartLocation;
 import de.yard.threed.trafficcore.model.Vehicle;
@@ -262,7 +257,13 @@ public class TravelSceneBluebirdTest {
 
         List<Event> completeEvents = EcsTestHelper.getEventsFromHistory(TrafficEventRegistry.TRAFFIC_EVENT_SPHERE_LOADED);
         assertEquals(1, completeEvents.size(), "completeEvents.size");
-        GeoCoordinate initialPosition = completeEvents.get(0).getPayload().get("initialPosition", s -> GeoCoordinate.parse(s));
+        GeoCoordinate initialPosition = completeEvents.get(0).getPayload().get("initialPosition", s -> {
+            try {
+                return GeoCoordinate.parse(s);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        });
         assertNotNull(initialPosition);
         if (basename != null) {
             Util.nomore();

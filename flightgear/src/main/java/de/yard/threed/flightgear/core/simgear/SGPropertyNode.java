@@ -1,7 +1,6 @@
 package de.yard.threed.flightgear.core.simgear;
 
-import de.yard.threed.core.Util;
-import de.yard.threed.core.Vector3;
+import de.yard.threed.core.*;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.flightgear.core.PropertyList;
 import de.yard.threed.flightgear.core.simgear.props.Props;
@@ -9,8 +8,6 @@ import de.yard.threed.flightgear.core.simgear.props.SGPropertyChangeListener;
 import de.yard.threed.flightgear.core.simgear.props.SGRaw;
 import de.yard.threed.flightgear.core.simgear.props.SGRawValue;
 import de.yard.threed.core.platform.Log;
-import de.yard.threed.core.Color;
-import de.yard.threed.core.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -1032,7 +1029,11 @@ public class SGPropertyNode {
                 result = setFloat(Util.parseFloat(value));
                 break;
             case Props.DOUBLE:
-                result = setDouble(Util.parseDouble(value/*, 0*/));
+                try {
+                    result = setDouble(Util.parseDouble(value/*, 0*/));
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
                 break;
             case Props.STRING:
             case Props.UNSPECIFIED:
@@ -1360,7 +1361,11 @@ public class SGPropertyNode {
                 result = setFloat(Util.parseFloat(value));
                 break;
             case Props.DOUBLE:
-                result = setDouble(Util.parseDouble(value/*, 0*/));
+                try {
+                    result = setDouble(Util.parseDouble(value/*, 0*/));
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
                 break;
             case Props.STRING:
             case Props.UNSPECIFIED:
@@ -1849,9 +1854,9 @@ class PathSplitIterator implements Iterator<String> {
 
     public PathSplitIterator(String path) {
         if (StringUtils.startsWith(path, "/")) {
-            parts = StringUtils.split(StringUtils.substring(path, 1), "/");
+            parts = StringUtils.splitByWholeSeparator(StringUtils.substring(path, 1), "/");
         } else {
-            parts = StringUtils.split(path, "/");
+            parts = StringUtils.splitByWholeSeparator(path, "/");
         }
     }
 

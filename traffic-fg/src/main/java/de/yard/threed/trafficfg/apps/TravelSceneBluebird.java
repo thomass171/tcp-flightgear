@@ -1,16 +1,7 @@
 package de.yard.threed.trafficfg.apps;
 
 
-import de.yard.threed.core.Color;
-import de.yard.threed.core.Degree;
-import de.yard.threed.core.Dimension;
-import de.yard.threed.core.Event;
-import de.yard.threed.core.IntHolder;
-import de.yard.threed.core.LocalTransform;
-import de.yard.threed.core.Payload;
-import de.yard.threed.core.Quaternion;
-import de.yard.threed.core.SpinnerHandler;
-import de.yard.threed.core.Vector3;
+import de.yard.threed.core.*;
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
@@ -72,7 +63,6 @@ import de.yard.threed.traffic.config.VehicleDefinition;
 import de.yard.threed.traffic.config.XmlVehicleDefinition;
 import de.yard.threed.traffic.flight.FlightLocation;
 import de.yard.threed.traffic.flight.FlightRouteGraph;
-import de.yard.threed.core.GeoCoordinate;
 import de.yard.threed.traffic.osm.OsmRunway;
 import de.yard.threed.trafficcore.config.AirportDefinition;
 import de.yard.threed.trafficcore.model.Runway;
@@ -226,7 +216,11 @@ public class TravelSceneBluebird extends BasicTravelScene {
         // 'basename' needs to be set aditionally.
         String ir = Platform.getInstance().getConfiguration().getString("initialRoute");
         if (ir != null) {
-            initialRoute = GeoRoute.parse(ir);
+            try {
+                initialRoute = GeoRoute.parse(ir);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

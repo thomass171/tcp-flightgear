@@ -49,11 +49,9 @@ public class Obj {
 
     /**
      * Resource muss Bundle mit path der resource enthalten.
-     * Bundle muss schon geladen sein. Suffix ".gz" darf nicht mit angegeben werden.
-     * 14.12.17: Wegen preprocess zerlegt in alten SGLoadBTG und neuen SGbuildBTG.
+     * Bundle must have been loaded already. No suffix ".gz".
+     * 14.12.17: Split into old SGLoadBTG and new SGbuildBTG.
      * 15.2.24: Now async
-     *
-     * @return
      */
     public void/*Node*/ SGLoadBTG(BundleResource bpath, SGReaderWriterOptions options, LoaderOptions boptions, GeneralParameterHandler<Node> delegate) {
         SGLoadBTG(bpath, options, boptions, 222, new GeneralParameterHandler<PortableModel>() {
@@ -96,15 +94,13 @@ public class Obj {
             }
 
             if (boptions != null && boptions.usegltf) {
-                BundleData ins = null;
                 String basename = StringUtils.substringBeforeLast(bpath.getFullName(), ".btg");
                 bpath = new BundleResource(bpath.bundle, basename + ".gltf");
-                ins = bpath.bundle.getResource(bpath);
-                if (ins == null) {
+                // 19.12.25: GLTF might be delayed meanwhile, so only check for existing, but not loaded
+                if (!bpath.bundle.exists(bpath)) {
                     logger.error(bpath.getName() + " not found in bundle " + bpath);
-                    return /*null*/;
+                    return;
                 }
-
                 LoaderGLTF.load(new ResourceLoaderFromBundle(bpath), delegate);
 
             } else {

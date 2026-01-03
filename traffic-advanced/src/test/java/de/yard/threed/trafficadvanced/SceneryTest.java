@@ -3,7 +3,6 @@ package de.yard.threed.trafficadvanced;
 import de.yard.threed.core.StringUtils;
 import de.yard.threed.core.Util;
 import de.yard.threed.core.Vector3;
-import de.yard.threed.core.platform.NativeBundleResourceLoader;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleRegistry;

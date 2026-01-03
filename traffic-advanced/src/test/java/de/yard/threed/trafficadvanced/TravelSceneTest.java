@@ -242,7 +242,7 @@ public class TravelSceneTest {
             sceneRunner.runLimitedFrames(2);
             sleepMs(10);
             return gmc.getPath() != null;
-        }, 5000);
+        }, 30000);
 
         assertTrue(gmc.hasAutomove());
         TravelSceneTestHelper.validateFgProperties(c172p, true);

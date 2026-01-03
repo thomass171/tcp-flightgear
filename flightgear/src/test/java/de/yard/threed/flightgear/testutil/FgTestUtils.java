@@ -26,15 +26,15 @@ public class FgTestUtils {
      * Dummy Bundle bauen
      */
     public static Bundle buildDummyBundleModel777() {
-        Bundle my777 = new Bundle("My-777", false, new String[]{"Models/777-200.ac"}, "??");
-        my777.addResource("Models/777-200.ac", new BundleData(new SimpleByteBuffer(new byte[]{}), true));
+        Bundle my777 = new Bundle("My-777", false, new String[]{"Models/777-200.ac"}, "??", null);
+        my777.addResource("Models/777-200.ac", new BundleData(new SimpleByteBuffer(new byte[]{}), true), false);
         return my777;
     }
 
     public static Bundle buildDummyBundleModelbasic() {
-        Bundle fgdatabasicmodel = new Bundle("fgdatabasicmodel", false, new String[]{"AI/Aircraft/737/Models/B737-300.ac", "AI/Aircraft/737/737-AirBerlin.xml"}, "??");
-        fgdatabasicmodel.addResource("AI/Aircraft/737/Models/B737-300.ac", new BundleData(new SimpleByteBuffer(new byte[]{}), true));
-        fgdatabasicmodel.addResource("AI/Aircraft/737/737-AirBerlin.xml", new BundleData(new SimpleByteBuffer(new byte[]{}), true));
+        Bundle fgdatabasicmodel = new Bundle("fgdatabasicmodel", false, new String[]{"AI/Aircraft/737/Models/B737-300.ac", "AI/Aircraft/737/737-AirBerlin.xml"}, "??", null);
+        fgdatabasicmodel.addResource("AI/Aircraft/737/Models/B737-300.ac", new BundleData(new SimpleByteBuffer(new byte[]{}), true), false);
+        fgdatabasicmodel.addResource("AI/Aircraft/737/737-AirBerlin.xml", new BundleData(new SimpleByteBuffer(new byte[]{}), true), false);
         return fgdatabasicmodel;
     }
 

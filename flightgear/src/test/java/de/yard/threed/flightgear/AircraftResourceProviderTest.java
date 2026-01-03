@@ -37,7 +37,7 @@ public class AircraftResourceProviderTest {
         assertNull(found);
 
         // now add bundle. gltf should resolve as 'ac'.
-        TestBundle bundle777 = new TestBundle("777", new String[]{}, "");
+        TestBundle bundle777 = new TestBundle("777", new String[]{}, "", null);
         bundle777.addAdditionalResource("Models/777-200.gltf",bundleTestResources.getResource("Models/cube.gltf"));
         bundle777.addAdditionalResource("Models/777-200.bin",bundleTestResources.getResource("Models/cube.bin"));
         bundle777.complete();

@@ -1,17 +1,6 @@
 package de.yard.threed.trafficfg.apps;
 
-import de.yard.threed.core.Color;
-import de.yard.threed.core.Degree;
-import de.yard.threed.core.Dimension;
-import de.yard.threed.core.GeneralParameterHandler;
-import de.yard.threed.core.GeoCoordinate;
-import de.yard.threed.core.LocalTransform;
-import de.yard.threed.core.Point;
-import de.yard.threed.core.Quaternion;
-import de.yard.threed.core.SmartArrayList;
-import de.yard.threed.core.Util;
-import de.yard.threed.core.Vector2;
-import de.yard.threed.core.Vector3;
+import de.yard.threed.core.*;
 import de.yard.threed.core.geometry.Face3;
 import de.yard.threed.core.geometry.FaceList;
 import de.yard.threed.core.geometry.GeometryHelper;
@@ -426,8 +415,13 @@ public class SceneryViewerScene extends Scene {
         }
         if (Input.getKeyDown(KeyCode.V)) {
             // ray will always hit blue cube
-            Double elevation = FlightGearModuleScenery.getInstance().get_scenery().get_elevation_m(
-                    SGGeod.fromLatLon(Util.parseLatLon(SceneSetup.EHAM06)), new Vector3());
+            Double elevation = null;
+            try {
+                elevation = FlightGearModuleScenery.getInstance().get_scenery().get_elevation_m(
+                        SGGeod.fromLatLon(Util.parseLatLon(SceneSetup.EHAM06)), new Vector3());
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             logger.debug("EHAM06 elevation="+ elevation);
 
             //28.6.25 unclear test case conditions: FlightGearMain.runFlightgearTests(new Vector3());

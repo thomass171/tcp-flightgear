@@ -2,6 +2,7 @@ package de.yard.threed.flightgear;
 
 import de.yard.threed.core.platform.Log;
 import de.yard.threed.core.platform.Platform;
+import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 
@@ -109,4 +110,11 @@ public class FgBundleHelper {
         return Platform.getInstance().getLog(FgBundleHelper.class);
     }
 
+    /**
+     * 18.12.2025: Bundle loader no more loads all files, so register additional.
+     */
+    public static void registerFgBundleSuffices(){
+        Bundle.registerSuffix("eff");
+        Bundle.registerSuffix("stg");
+    }
 }

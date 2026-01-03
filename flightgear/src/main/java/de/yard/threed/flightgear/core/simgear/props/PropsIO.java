@@ -1,11 +1,10 @@
 package de.yard.threed.flightgear.core.simgear.props;
 
+import de.yard.threed.core.*;
 import de.yard.threed.core.platform.*;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 //import de.yard.threed.flightgear.core.FileSystemResource;
-import de.yard.threed.core.Util;
-import de.yard.threed.core.Vector3;
 import de.yard.threed.core.resource.URL;
 import de.yard.threed.flightgear.FgBundleHelper;
 import de.yard.threed.flightgear.core.simgear.SGPropertyNode;
@@ -15,9 +14,7 @@ import de.yard.threed.flightgear.core.simgear.structure.SGIOException;
 
 import de.yard.threed.core.resource.NativeResource;
 import de.yard.threed.core.resource.BundleData;
-import de.yard.threed.core.Color;
 import de.yard.threed.core.resource.ResourcePath;
-import de.yard.threed.core.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -394,7 +391,11 @@ public class PropsIO {
             } else if (st.type.equals("string")) {
                 ret = st.node.setStringValue(_data);
             } else if (st.type.equals("vec3d") /*&& _extended*/) {
-                ret = st.node.setVector3Value(Util.parseVector3(_data));
+                try {
+                    ret = st.node.setVector3Value(Util.parseVector3(_data));
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
             } else if (st.type.equals("vec4d") /*&& _extended*/) {
                 ret = st.node.setColorValue(Color.parseString(_data));
             } else if (st.type.equals("unspecified")) {

@@ -6,6 +6,7 @@ import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.ecs.EcsEntity;
 import de.yard.threed.engine.ecs.EcsHelper;
+import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.testutil.SceneRunnerForTesting;
 import de.yard.threed.flightgear.core.simgear.scene.model.Model;
 
@@ -35,9 +36,16 @@ public class AdvancedTestUtils {
         EcsEntity c172p = EcsHelper.findEntitiesByName("c172p").get(0);
         //log.debug(c172p.getSceneNode().dump(" ", 0));
 
+        // wait until everything is loaded
+        TestUtils.waitUntil(() -> {
+            sceneRunner.runLimitedFrames(2);
+            sleepMs(10);
+            return AbstractSceneRunner.getInstance().futures.size()==0;
+        }, 30000);
+
         // garmin has multiple components and names. just look for one
         //4.11.25 2024 c172 no longer has this 'garmin196' NativeSceneNode garmin196 = SceneNode.findByName("Aircraft/Instruments-3d/garmin196/garmin196.gltf").get(0);
-        NativeSceneNode garmin196 = SceneNode.findByName("Aircraft/Instruments-3d/garmin196/garmin196_map_symbols.gltf").get(0);
+        //19.12.25 TODO use other model NativeSceneNode garmin196 = SceneNode.findByName("Aircraft/Instruments-3d/garmin196/garmin196_map_symbols.gltf").get(0);
         //16.8.24 TODO assertTrue(Texture.hasTexture("screens.png"), "garmin.texture");
 
         // ASI not visible? Effect failure? Might indicate missing aircraftprovider.

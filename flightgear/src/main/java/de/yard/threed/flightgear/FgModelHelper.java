@@ -4,11 +4,7 @@ import de.yard.threed.core.BuildResult;
 import de.yard.threed.core.ModelBuildDelegate;
 import de.yard.threed.core.ModelPreparedDelegate;
 import de.yard.threed.core.loader.PreparedModel;
-import de.yard.threed.core.platform.AsyncHttpResponse;
-import de.yard.threed.core.platform.AsyncJobDelegate;
-import de.yard.threed.core.platform.Log;
-import de.yard.threed.core.platform.NativeBundleResourceLoader;
-import de.yard.threed.core.platform.Platform;
+import de.yard.threed.core.platform.*;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.resource.ResourceLoader;
 import de.yard.threed.core.resource.ResourcePath;
@@ -17,7 +13,7 @@ import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.ShaderPool;
 import de.yard.threed.engine.loader.CustomShaderMaterialFactory;
 import de.yard.threed.engine.platform.EngineHelper;
-import de.yard.threed.engine.platform.ResourceLoaderFromDelayedBundle;
+import de.yard.threed.engine.platform.ResourceLoaderFromBundle;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.flightgear.core.simgear.scene.model.SGModelLib;
 
@@ -118,10 +114,10 @@ public class FgModelHelper {
      * Added 8/2024
      */
     public static void buildSharedModel(BundleResource pendingbmodelpath, ResourcePath finalbtexturepath, ModelBuildDelegate modelBuildDelegate, int options2) {
-        NativeBundleResourceLoader bundleResourceLoader = Platform.getInstance().buildResourceLoader(pendingbmodelpath.bundle.name, null);
+        //NativeResourceLoader bundleResourceLoader = Platform.getInstance().buildResourceLoader(pendingbmodelpath.bundle.name, null);
 
         // Das Filemapping greift nur, wenn das acpp/gltf auch existiert.
-        ResourceLoader resourceLoaderFromDelayedBundle = mapFilename(new ResourceLoaderFromDelayedBundle(pendingbmodelpath, bundleResourceLoader), true, options2);
+        ResourceLoader resourceLoaderFromDelayedBundle = mapFilename(new ResourceLoaderFromBundle(pendingbmodelpath/*, bundleResourceLoader*/), true, options2);
         resourceLoaderFromDelayedBundle.loadResource(new AsyncJobDelegate<AsyncHttpResponse>() {
             @Override
             public void completed(AsyncHttpResponse response) {

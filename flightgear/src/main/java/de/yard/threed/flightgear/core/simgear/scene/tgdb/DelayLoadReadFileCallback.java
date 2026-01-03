@@ -6,7 +6,7 @@ import de.yard.threed.core.Degree;
 import de.yard.threed.core.buffer.SimpleByteBuffer;
 import de.yard.threed.core.platform.AsyncHttpResponse;
 import de.yard.threed.core.platform.AsyncJobDelegate;
-import de.yard.threed.core.platform.NativeBundleResourceLoader;
+import de.yard.threed.core.platform.NativeResourceLoader;
 import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleData;
@@ -102,7 +102,7 @@ public class DelayLoadReadFileCallback /*extends OptionsReadFileCallback*/ {
                             // prepare a destination node
                             node = new SceneNode();
                             final SceneNode destinationNode = node;
-                            NativeBundleResourceLoader resourceLoader = Platform.getInstance().buildResourceLoader(bundle.name, null);
+                            NativeResourceLoader resourceLoader = Platform.getInstance().buildResourceLoader(bundle.name, null);
                             resourceLoader.loadFile(i.resource.getFullName(), new AsyncJobDelegate<AsyncHttpResponse>() {
                                 @Override
                                 public void completed(AsyncHttpResponse response) {
@@ -111,7 +111,7 @@ public class DelayLoadReadFileCallback /*extends OptionsReadFileCallback*/ {
                                             String xmlContent = response.getContentAsString();
                                             // Cannot use dummy name because we need/use/call bundle resolver later
                                             //Bundle dummyBundle =null;// new Bundle(BundleRegistry.TERRAYSYNCPREFIX + "model", new String[]{fullName},"");
-                                            bundle.addResource(i.resource.getFullName(), new BundleData(response.getContent(), true));
+                                            bundle.addResource(i.resource.getFullName(), new BundleData(response.getContent(), true), true);
                                             //BundleResource xmlResource = new BundleResource(dummyBundle,fullName);
                                             SceneNode newNode = loadXmlModel(i.resource);
 

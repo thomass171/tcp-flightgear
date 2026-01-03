@@ -322,6 +322,10 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
                     return false;
                 }
                 BundleData bd = bpath.bundle.getResource(bpath);
+                if (bd == null){
+                    logger.error("No content for STG file " + bpath);
+                    return false;//or true??
+                }
                 try {
                     stream = new StringReader(bd.getContentAsString());
                 } catch (CharsetException e) {
@@ -351,7 +355,7 @@ public class ReaderWriterSTG /*8.6.17 extends ReaderWriter /*8.6.17implements Mo
                 }
 
                 // and process further
-                String[] parts = StringUtils.split(line, " ");
+                String[] parts = StringUtils.splitByWholeSeparator(line, " ");
 
                 // No comment
                 if (parts.length == 0)

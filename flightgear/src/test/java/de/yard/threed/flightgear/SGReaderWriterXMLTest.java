@@ -161,7 +161,7 @@ assertEquals("xmltestmodel/test-main.xml->" +
 //        TestBundle bundleTestResources = (TestBundle) BundleRegistry.getBundle("test-resources");
 
         // Needs a bundle with name "777" for resolving "Aircraft/777/Models/777-200.ac".
-        TestBundle bundle777 = new TestBundle("777", new String[]{}, "");
+        TestBundle bundle777 = new TestBundle("777", new String[]{}, "", null);
         // different case of 'models'!
         bundle777.addAdditionalResource("Models/777-200.xml", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("Models/777-200.xml")), true));
         bundle777.addAdditionalResource("Models/777-200.gltf", new BundleData(new SimpleByteBuffer(loadFileFromTestResources("Models/cube.gltf")), true));

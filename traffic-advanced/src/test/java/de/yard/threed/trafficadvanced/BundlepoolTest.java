@@ -5,6 +5,7 @@ import de.yard.threed.core.Vector3;
 import de.yard.threed.core.resource.Bundle;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
+import de.yard.threed.core.testutil.TestUtils;
 import de.yard.threed.engine.SceneNode;
 import de.yard.threed.engine.platform.common.ModelLoader;
 import de.yard.threed.engine.testutil.EngineTestFactory;
@@ -127,8 +128,11 @@ public class BundlepoolTest {
         assertEquals("CoPilotPedals", commonNode.getTransform().getChild(24).getSceneNode().getName());*/
         //assertEquals("OAT-object", commonNode.getTransform().getChild(43).getSceneNode().getName());
 
-        foundNodes = modelRoot.findNodeByName("elevatorright");
-        assertEquals(1, foundNodes.size());
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return modelRoot.findNodeByName("elevatorright").size() == 1;
+        }, 10000);
+
 
         // don't care too much about effectMap assertEquals(117, MakeEffect.effectMap.size());
 
@@ -192,7 +196,7 @@ public class BundlepoolTest {
      */
     private void validateAsi(SceneNode modelRoot, List<SGAnimation> animationList) {
         // pure "asi" exists twice...
-        SceneNode asi  = EngineTestUtils.findSingleNodeByName(modelRoot, "Models/Interior/Panel/Instruments/asi/asi.gltf");
+        SceneNode asi = EngineTestUtils.findSingleNodeByName(modelRoot, "Models/Interior/Panel/Instruments/asi/asi.gltf");
         assertNotNull(asi);
 
         // ...and needle 4 times
@@ -202,8 +206,8 @@ public class BundlepoolTest {
 
         String hierarchy = EngineTestUtils.getHierarchy(asi, 6, false);
         log.debug("asi up-hierarchy={}", hierarchy);
-        Vector3 expectedCenter = new Vector3(-0.37733,-0.31149,0.10065);
-        AnimationAssertions.assertAsiAnimations(modelRoot, animationList, 0.0,                expectedCenter);
+        Vector3 expectedCenter = new Vector3(-0.37733, -0.31149, 0.10065);
+        AnimationAssertions.assertAsiAnimations(modelRoot, animationList, 0.0, expectedCenter);
 
     }
 
@@ -288,8 +292,11 @@ public class BundlepoolTest {
             }
         });
 
-        TestHelper.processAsync();
-        TestHelper.processAsync();
+        TestUtils.waitUntil(() -> {
+            TestHelper.processAsync();
+            return animationList.size() == 2;
+        }, 10000);
+
         assertEquals(0, MakeEffect.errorList.size());
         assertEquals(2, animationList.size());
 
