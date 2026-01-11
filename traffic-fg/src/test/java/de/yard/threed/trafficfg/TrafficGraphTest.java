@@ -145,7 +145,7 @@ public class TrafficGraphTest {
         float exlen = 10;
         Assertions.assertEquals(exlen, path.getSegment(0).edge.getLength());
         GraphMovingComponent gmc = new GraphMovingComponent(null);
-        gmc.setGraph(osm, null, null);
+        gmc.setGraph(osm, null);
         gmc.setPath(path, true);
         gmc.moveForward(8);
         //position immer noch auf back arc. plausiblen Wert übernommen
@@ -185,7 +185,7 @@ public class TrafficGraphTest {
 
         //jetzt mit Relocation
         GraphMovingComponent gmc = new GraphMovingComponent(null);
-        gmc.setGraph(osm, start, null);
+        gmc.setGraph(osm, start);
         path = GraphUtils.createPathFromGraphPosition(osm, start, succ.getTo(), null, graphPathConstraintProvider, layer, true, true, null);
         Assertions.assertNotNull(path.startposition, "startposition");
         Assertions.assertEquals(3, path.getSegmentCount(), "segments");

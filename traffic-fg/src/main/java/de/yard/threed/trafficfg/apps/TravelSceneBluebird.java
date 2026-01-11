@@ -502,7 +502,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
         GraphMovingComponent gmc = GraphMovingComponent.getGraphMovingComponent(currentvehicle/*(mitnavigator) ? vm[0] : GroundServicesScene.findc172p()*/);
         GraphEdge startedge = route.getPath().getSegment(0).edge;
         route.getPath().startposition = new GraphPosition(startedge);
-        gmc.setGraph(route.getGraph(), route.getPath().startposition, null);
+        gmc.setGraph(route.getGraph(), route.getPath().startposition);
 
         gmc.setPath(route.getPath(), true);
         logger.debug("starting route ");

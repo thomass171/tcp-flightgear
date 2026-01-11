@@ -288,7 +288,7 @@ public class FlightSystem extends DefaultEcsSystem {
         //hier wechselt der Graph. Fuer Flight darf es keine Projection geben. Bei GroundService schon, oder?
         // Nee, ich glaub nicht. Der Graph ist dann ja schon projected
 
-        gmc.setGraph(graph, null, null);
+        gmc.setGraph(graph, null);
 
         gmc.setPath(smoothedflightpath, true);
 
@@ -315,7 +315,7 @@ public class FlightSystem extends DefaultEcsSystem {
         Vector3 starte1 = rbcp.toCart(localOrbitEntry.equatorentry, null, null);
         Graph graph = SolarSystem.buildLocalOrbitGraph(starte1);
         GraphPosition position = new GraphPosition(graph.getEdge(0));
-        gmc.setGraph(graph, position, null);
+        gmc.setGraph(graph, position);
 
         //if (v
         // und dann soll mal ein anderer das Orbit wechseln.

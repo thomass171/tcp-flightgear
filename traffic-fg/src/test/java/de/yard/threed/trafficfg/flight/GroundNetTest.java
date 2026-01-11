@@ -172,7 +172,7 @@ public class GroundNetTest {
         Assertions.assertEquals("133:e1->turnloop.smootharc(131)->e2(20)->smoothbegin.103(87)->smootharc(2)->smoothbegin.207(21)->smootharc(3)->smoothend.207(48)", path.toString(), "path");
         Assertions.assertEquals("nodes:0:269;233:13;", gr.getStatistic(), "statistics");
         GraphMovingComponent gmc = new GraphMovingComponent();
-        gmc.setGraph(null, startposition, null);
+        gmc.setGraph(null, startposition);
         gmc.setPath(path, true);
         gmc.moveForward(100000);
         GraphEdge edge7_207 = gr.findEdgeByName("7-207"/*"smoothend.207"*/);
@@ -193,7 +193,7 @@ public class GroundNetTest {
         Assertions.assertEquals("1:e1->turnloop.smootharc(7)->e2(20)->smoothbegin.63(28)->smootharc(0)->smoothbegin.69(52)->smootharc(12)->smoothbegin.68(14)->smootharc(0)->smoothbegin.129(83)->smootharc(14)->smoothbegin.130(160)->smootharc(0)->smoothbegin.131(27)->smootharc(0)->smoothbegin.132(107)->smootharc(0)->smoothbegin.134(62)->smootharc(0)->smoothbegin.125(81)->smootharc(19)->smoothbegin.206(102)->smootharc(2)->smoothend.206(49)", path.toString(), "path");
         Assertions.assertEquals("nodes:0:269;1:56;", gr.getStatistic(), "statistics");
         gmc = new GraphMovingComponent();
-        gmc.setGraph(groundnet.groundnetgraph.getBaseGraph(), a20position, null);
+        gmc.setGraph(groundnet.groundnetgraph.getBaseGraph(), a20position);
         gmc.setPath(path, true);
         gmc.moveForward(100000);
         GraphEdge edge6_206 = gr.findEdgeByName("6-206");
@@ -211,7 +211,7 @@ public class GroundNetTest {
         Assertions.assertNotNull(center);
         Assertions.assertEquals(17.89897f, Vector3.getDistance(center, groundnet.groundnetgraph.getBaseGraph().findNodeByName("125").getLocation()), 0.0001, "arccenter distance to 125");
         gmc = new GraphMovingComponent();
-        gmc.setGraph(groundnet.groundnetgraph.getBaseGraph(), c_4position, null);
+        gmc.setGraph(groundnet.groundnetgraph.getBaseGraph(), c_4position);
         gmc.setPath(path, true);
         gmc.moveForward(100000);
         gr.removeLayer(path.layer);
@@ -412,7 +412,7 @@ public class GroundNetTest {
         Assertions.assertEquals("131:smoothbegin.132->smootharc(0)->smoothbegin.133(35)->smootharc(18)->smoothbegin.103(74)->smootharc(2)->smoothbegin.207(21)->smootharc(3)->smoothend.207(48)", path.toString(), "path");
         // path komplett abfahren.
         GraphMovingComponent gmc = new GraphMovingComponent();
-        gmc.setGraph(null, start, null);
+        gmc.setGraph(null, start);
         gmc.setPath(path, true);
         GraphPath completed = gmc.moveForward(100000);
         Assertions.assertNotNull(completed, "completed.path");
@@ -449,7 +449,7 @@ public class GroundNetTest {
         Assertions.assertEquals("131:smoothbegin.132->smootharc(0)->smoothbegin.134(62)->smootharc(0)->smoothbegin.125(81)->smootharc(19)->smoothbegin.206(102)->smootharc(2)->smoothend.206(49)", path.toString(), "path");
         // path komplett abfahren.
         GraphMovingComponent gmc = new GraphMovingComponent();
-        gmc.setGraph(null, start, null);
+        gmc.setGraph(null, start);
         gmc.setPath(path, true);
         GraphPath completed = gmc.moveForward(100000);
         Assertions.assertNotNull(completed, "completed.path");
@@ -470,7 +470,7 @@ public class GroundNetTest {
 
         // und jetzt "von aussen"
         gmc = new GraphMovingComponent();
-        gmc.setGraph(null, c_4position, null);
+        gmc.setGraph(null, c_4position);
         Vector3 upVector = new Vector3(0, 0, 1);
         /*TODO 17.12.21: GraphProjectionFlight3D needs FgMath.
         LocalTransform posrot = GraphMovingSystem.getPosRot(gmc, new GraphProjectionFlight3D(groundnet.projection));
