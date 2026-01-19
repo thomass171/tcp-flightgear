@@ -146,7 +146,7 @@ public class TravelSceneTest {
         // 20.5.24 elevation 68.8 is the result of limited EDDK elevation provider (default elevation). But runway should have
         // correct elevation. Value differs slightly to TravelSceneBluebird!?
         // 20.7.24 And due to scenery origin Granada/Full? Was 70.60974991063463, now 71.31074
-        TravelSceneTestHelper.validatePlatzrunde(((TravelScene) sceneRunner.ascene).platzrundeForVisualizationOnly, 71.31074, 1.0, true);
+        TravelSceneTestHelper.validateTrafficCircuit(((TravelScene) sceneRunner.ascene).trafficCircuitForVisualizationOnly, 71.31074, 1.0, true);
 
         TravelSceneTestHelper.validateGroundnet();
 
@@ -234,7 +234,7 @@ public class TravelSceneTest {
         assertNotNull(gmc.getGraph());
         assertFalse(gmc.hasAutomove());
         assertNull(gmc.getPath());
-        assertQuaternion(FgVehicleSpace.getFgVehicleForwardRotation(), gmc.customModelRotation);
+        assertQuaternion(FgVehicleSpace.getFgVehicleForwardRotation(), gmc.getModelRotation());
 
         // start c172p and wait until it has a flight route (first will be move to runway)
         TravelSceneTestHelper.startAndValidateDefaultTrip(sceneRunner, c172p, true);

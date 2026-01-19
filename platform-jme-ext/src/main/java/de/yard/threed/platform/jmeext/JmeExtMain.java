@@ -60,6 +60,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         properties.put("enableNavigator", "true");
 
         //properties.put("argv.vehiclelist","GenericRoad");
+        properties.put("enableDebugGraphStep","500");
 
         // traffic-fg
         properties.put("scene", "de.yard.threed.trafficfg.apps.SceneryScene");
@@ -79,7 +80,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
 
         // traffic-advanced
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.FlatAirportScene");
-        //properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
+        properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.HangarScene");
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.AdvancedSceneryViewerScene");
         //properties.put("scene", "de.yard.threed.trafficadvanced.apps.AdvancedFgModelPreviewScene");
@@ -109,6 +110,7 @@ public class JmeExtMain extends de.yard.threed.platform.jme.Main {
         //SceneSetup.setupBluebirdForRouteFromEDDKtoEHAM(properties, 2233.0);
         //SceneSetup.setupTravelSceneForC172pFreeFlightFromEDDK14L(properties);
         //SceneSetup.setupBluebirdForRouteFromEGPHtoEGPF(properties, 1033.0);
+        //SceneSetup.setupC172PForRouteFromEGPHtoEGPF(properties);
         return properties;
     }
 

@@ -161,7 +161,7 @@ public class RailingScene extends Scene {
 
         SystemManager.addSystem(new ObserverSystem(true), 0);
 
-        SystemManager.addSystem(new GraphMovingSystem(), 0);
+        SystemManager.addSystem(GraphMovingSystem.buildFromConfiguration(), 0);
 
         // We use 'ASI' from FG, so need the system for updating animations
         SystemManager.addSystem(new FgAnimationUpdateSystem());

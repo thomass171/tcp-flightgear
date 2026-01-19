@@ -126,13 +126,16 @@ public class TravelSceneTestHelper {
 
     }
 
-    public static void validatePlatzrunde(FlightRouteGraph platzrunde, double expectedElevation, double elevationTolerance, boolean expectGeoCartGraphCoordinates) {
+    /**
+     * Validate a standard traffic circuit ('Platzrunde' in german)
+     */
+    public static void validateTrafficCircuit(FlightRouteGraph graph, double expectedElevation, double elevationTolerance, boolean expectGeoCartGraphCoordinates) {
         EllipsoidCalculations rbcp = TrafficHelper.getEllipsoidConversionsProviderByDataprovider();
         assertNotNull(rbcp);
 
-        validateGraphCoordinates(platzrunde.getGraph(), expectGeoCartGraphCoordinates);
+        validateGraphCoordinates(graph.getGraph(), expectGeoCartGraphCoordinates);
 
-        Vector3 firstLocation = platzrunde.getGraph().getNode(0).getLocation();
+        Vector3 firstLocation = graph.getGraph().getNode(0).getLocation();
         if (expectGeoCartGraphCoordinates) {
             GeoCoordinate coord = rbcp.fromCart(firstLocation);
             if (coord.getElevationM() < 70) {

@@ -18,7 +18,6 @@ import de.yard.threed.core.platform.Platform;
 import de.yard.threed.core.resource.BundleRegistry;
 import de.yard.threed.core.resource.BundleResource;
 import de.yard.threed.core.testutil.RuntimeTestUtil;
-import de.yard.threed.engine.Camera;
 import de.yard.threed.engine.FirstPersonController;
 import de.yard.threed.engine.GenericGeometry;
 import de.yard.threed.engine.Input;
@@ -38,8 +37,6 @@ import de.yard.threed.engine.ecs.TeleporterSystem;
 import de.yard.threed.engine.ecs.UserSystem;
 import de.yard.threed.engine.gui.ControlPanel;
 import de.yard.threed.engine.gui.ControlPanelArea;
-import de.yard.threed.engine.gui.GuiGrid;
-import de.yard.threed.engine.gui.Icon;
 import de.yard.threed.engine.gui.MenuItem;
 import de.yard.threed.engine.gui.Text;
 import de.yard.threed.engine.gui.TextTexture;
@@ -55,7 +52,6 @@ import de.yard.threed.traffic.config.VehicleConfigDataProvider;
 import de.yard.threed.trafficadvanced.AdvancedConfiguration;
 import de.yard.threed.flightgear.FgVehicleLoader;
 import de.yard.threed.flightgear.FlightGearMain;
-import de.yard.threed.flightgear.FlightGearSettings;
 import de.yard.threed.flightgear.SimpleBundleResourceProvider;
 import de.yard.threed.flightgear.core.FlightGear;
 import de.yard.threed.flightgear.core.simgear.geodesy.SGGeod;
@@ -74,12 +70,9 @@ import de.yard.threed.trafficcore.EllipsoidCalculations;
 import de.yard.threed.traffic.GraphBackProjectionProvider;
 import de.yard.threed.traffic.GraphTerrainSystem;
 import de.yard.threed.traffic.GraphVisualizationSystem;
-import de.yard.threed.traffic.LightDefinition;
-import de.yard.threed.traffic.RequestRegistry;
 import de.yard.threed.traffic.TrafficConfig;
 import de.yard.threed.traffic.TrafficGraph;
 import de.yard.threed.traffic.TrafficHelper;
-import de.yard.threed.traffic.TrafficSystem;
 import de.yard.threed.traffic.VehicleBuiltDelegate;
 import de.yard.threed.traffic.VehicleLauncher;
 import de.yard.threed.traffic.WorldGlobal;
@@ -171,7 +164,8 @@ public class TravelScene extends FlightTravelScene {
     //TrafficWorld3D gsw;
     Graph orbit;
     //22.10.21 boolean useteleport = true; public for testing
-    public FlightRouteGraph platzrundeForVisualizationOnly/*, orbittour*/;
+    // 'Platzrunde' in german
+    public FlightRouteGraph trafficCircuitForVisualizationOnly;
     private EcsEntity orbitingvehicle = null;
     private boolean avatarInited = false;
     private boolean enableDoormarker = false;
@@ -727,13 +721,13 @@ public class TravelScene extends FlightTravelScene {
 
         // Platzrunde erst anlegen, wenn das Terrain da ist und worldadjustment durch ist.
         // 20.5.24: Also wait for elevation provider? But that doesn't really solve the 68.8 problem(takeoff too low)
-        if (platzrundeForVisualizationOnly == null && terrainavailable) {
+        if (trafficCircuitForVisualizationOnly == null && terrainavailable) {
             logger.info("Building Platzrunde");
             // Zum Test direkt mal den Rundflug einblenden
             Runway runway14l = OsmRunway.eddk14L();
-            platzrundeForVisualizationOnly = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRouteGraph(runway14l, null, 0);
+            trafficCircuitForVisualizationOnly = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildFlightRouteGraph(runway14l, null, 0);
             // trigger visualization for visual validation
-            SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_PATHCREATED, new Payload(platzrundeForVisualizationOnly.getGraph(), platzrundeForVisualizationOnly.getPath())));
+            SystemManager.sendEvent(new Event(GraphEventRegistry.GRAPH_EVENT_PATHCREATED, new Payload(trafficCircuitForVisualizationOnly.getGraph(), trafficCircuitForVisualizationOnly.getPath())));
         }
         /*18.10.19: Warum soll die denn schon vcorab angelegt werden?
         if (orbittour == null) {
@@ -912,10 +906,10 @@ public class TravelScene extends FlightTravelScene {
     protected void runTests() {
         logger.info("Running tests");
         FlightGearMain.runFlightgearTests(TravelSceneHelper.getSphereWorld().getTransform().getPosition());
-        RuntimeTestUtil.assertNotNull("platzrunde", platzrundeForVisualizationOnly);
+        RuntimeTestUtil.assertNotNull("platzrunde", trafficCircuitForVisualizationOnly);
         //altitude kann eh nicht auf den Zentimmeter exakt sein.
-        RuntimeTestUtil.assertFloat("holding.altitude", 71, SGGeod.fromCart(platzrundeForVisualizationOnly.getPath().getSegment(0).getEnterNode().getLocation()).getElevationM(), 1);
-        RuntimeTestUtil.assertFloat("landing.altitude", 71, SGGeod.fromCart(platzrundeForVisualizationOnly.getPath().getSegment(platzrundeForVisualizationOnly.getPath().getSegmentCount() - 1).getEnterNode().getLocation()).getElevationM(), 1);
+        RuntimeTestUtil.assertFloat("holding.altitude", 71, SGGeod.fromCart(trafficCircuitForVisualizationOnly.getPath().getSegment(0).getEnterNode().getLocation()).getElevationM(), 1);
+        RuntimeTestUtil.assertFloat("landing.altitude", 71, SGGeod.fromCart(trafficCircuitForVisualizationOnly.getPath().getSegment(trafficCircuitForVisualizationOnly.getPath().getSegmentCount() - 1).getEnterNode().getLocation()).getElevationM(), 1);
 
         logger.info("Tests completed");
     }

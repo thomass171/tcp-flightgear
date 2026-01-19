@@ -319,7 +319,7 @@ public class TravelSceneBluebirdTest {
 
         // 20.5.24 elevation 68.8 is the result of limited EDDK elevation provider (default elevation). But runway should have
         // correct elevation. Value differs slightly to TravelScene!?
-        TravelSceneTestHelper.validatePlatzrunde(((TravelSceneBluebird) sceneRunner.ascene).platzrundeForVisualizationOnly, 71.31, 0.5, true);
+        TravelSceneTestHelper.validateTrafficCircuit(((TravelSceneBluebird) sceneRunner.ascene).platzrundeForVisualizationOnly, 71.31, 0.5, true);
         TravelSceneTestHelper.validateGroundnet();
 
     }

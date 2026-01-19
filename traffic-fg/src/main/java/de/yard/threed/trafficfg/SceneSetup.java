@@ -123,4 +123,11 @@ public class SceneSetup {
         properties.put("initialVehicle", "bluebird");
         properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
     }
+
+    public static void setupC172PForRouteFromEGPHtoEGPF(HashMap<String, String> properties) {
+
+        properties.put("initialRoute", EGPH06toEGPF05);
+        properties.put("initialVehicle", "c172p");
+        properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
+    }
 }
