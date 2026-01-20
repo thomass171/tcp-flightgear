@@ -51,15 +51,6 @@ public class FlightTravelScene extends BasicTravelScene {
         return null;
     }*/
 
-    /**
-     * 20.11.23: Was in TrafficWorlConfig. Now here a temp wrapper.
-     */
-    public static  List<Vehicle> getVehicleListByName(String vehiclelistname) {
-
-        TrafficConfig vdefs = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), new BundleResource("vehicle-definitions.xml"));
-        return vdefs.getVehicleListByName(vehiclelistname);
-
-    }
 
 
 }

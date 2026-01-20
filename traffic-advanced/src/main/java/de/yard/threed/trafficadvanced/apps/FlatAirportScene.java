@@ -348,8 +348,8 @@ public class FlatAirportScene extends FlightTravelScene {
     }
 
     @Override
-    public List<Vehicle> getVehicleList() {
-        return getVehicleListByName(vehiclelistname);
+    public String getVehicleListName() {
+        return vehiclelistname;/*20.1.26getVehicleListByName(vehiclelistname);*/
     }
 
     @Override

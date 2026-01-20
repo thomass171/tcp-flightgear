@@ -160,7 +160,7 @@ public class TrafficScene extends BasicTravelScene {
     }
 
     @Override
-    public List<Vehicle> getVehicleList() {
+    public String getVehicleListName() {
         return null;//20.11.23 "NOT-YET"tw.getVehicleListByName(vehiclelistname);
     }
 

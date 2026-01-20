@@ -317,8 +317,8 @@ public class TravelScene extends FlightTravelScene {
     }
 
     @Override
-    public List<Vehicle> getVehicleList() {
-        return /*20.11.23 tw*/FlightTravelScene.getVehicleListByName(vehiclelistname);
+    public String getVehicleListName() {
+        return vehiclelistname/*20.11.23 tw*//*20.1.26FlightTravelScene.getVehicleListByName(vehiclelistname)*/;
     }
 
     @Override

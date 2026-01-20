@@ -252,7 +252,12 @@ public class RailingScene extends Scene {
 
         List<String> vehicleList = new ArrayList<>();
         vehicleList.add("loc");
-        SystemManager.putRequest(new Request(SphereSystem.USER_REQUEST_SPHERE, new Payload("traffic-fg:railing/Railing.xml", vehicleList)));
+        // 20.1.26: After refactoring USER_REQUEST_SPHERE we can no longer pass an inmemory vehicle list any more.
+        // But apparently it is not needed here.
+        SystemManager.putRequest(new Request(SphereSystem.USER_REQUEST_SPHERE,//new Payload(, vehicleList)));
+                new Payload()
+                        .add("tilename", "traffic-fg:railing/Railing.xml")
+                        .add("vehiclelistname", (String)null)));
 
     }
 

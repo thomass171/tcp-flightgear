@@ -105,7 +105,7 @@ public class HangarScene extends Scene {
 
         tw = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-advanced"), BundleResource.buildFromFullString("Hangar.xml"));
 
-        List<Vehicle> vlist = FlightTravelScene.getVehicleListByName("VehiclesWithCockpit");
+        List<Vehicle> vlist = TrafficHelper.getVehicleListByName("VehiclesWithCockpit");
 
         // 8.8.24: hardcoded bluebird added (because it isn't in the vehiclelist)
         vehiclelist.add("bluebird");
