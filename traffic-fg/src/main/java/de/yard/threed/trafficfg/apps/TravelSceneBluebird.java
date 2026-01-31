@@ -116,6 +116,7 @@ public class TravelSceneBluebird extends BasicTravelScene {
     // TrafficConfig worldPois;
     TrafficConfig vdefs;
     // 18.3.24 From former hard coded EDDK setup. Isn't this the overview position?
+    // 21.1.26:Slightly differs from initial/projection position in AirportScene(?)
     public static GeoCoordinate formerInitialPositionEDDK = new GeoCoordinate(new Degree(50.843675), new Degree(7.109709), 1150);
     GeoRoute initialRoute = null;
 

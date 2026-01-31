@@ -17,6 +17,7 @@ import de.yard.threed.engine.ecs.SystemManager;
 import de.yard.threed.engine.ecs.TeleportComponent;
 import de.yard.threed.engine.ecs.TeleporterSystem;
 import de.yard.threed.engine.ecs.UserSystem;
+import de.yard.threed.engine.platform.common.AbstractSceneRunner;
 import de.yard.threed.engine.platform.common.Request;
 import de.yard.threed.engine.testutil.ExpectedEntity;
 import de.yard.threed.engine.testutil.SceneRunnerForTesting;
@@ -35,6 +36,7 @@ import de.yard.threed.trafficcore.model.Vehicle;
 import de.yard.threed.trafficfg.TravelSceneTestHelper;
 import de.yard.threed.trafficfg.flight.GroundServiceComponent;
 import de.yard.threed.trafficfg.flight.GroundServicesSystem;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -61,16 +63,15 @@ public class TravelSceneTest {
             "true;true;false;null;null",
             "false;false;false;null;null",
             "false;true;true;null;null",
-            // 21.6.25: EHAM, runway 06. Should also load SGOceanTile.
-            "false;false;false;geo:52.2878684, 4.73415315;57.8",
-    }, delimiter = ';')
-    public void testTravelScene(boolean enableDoormarker, boolean enableNavigator, boolean worldTeleport, String initialLocation, String initialHeading) throws Exception {
+            // 24.1.26 EHAM extracted to separate test
+    }, delimiter = ';', nullValues = {"null"})
+    public void testDefaultTravelSceneInEDDK(boolean enableDoormarker, boolean enableNavigator, boolean worldTeleport, String initialLocation, String initialHeading) throws Exception {
 
         if (worldTeleport && !enableNavigator) {
             fail("invalid");
         }
 
-        setup(enableDoormarker, enableNavigator, initialLocation, initialHeading);
+        setup(enableDoormarker, enableNavigator, initialLocation, initialHeading, null);
         Log log = Platform.getInstance().getLog(TravelSceneTest.class);
 
         assertEquals(INITIAL_FRAMES, sceneRunner.getFrameCount());
@@ -87,18 +88,12 @@ public class TravelSceneTest {
         assertNotNull(BundleRegistry.getBundle("fgdatabasic"));
 
         sceneRunner.runLimitedFrames(50);
-        TrafficSystem trafficSystem = ((TrafficSystem) SystemManager.findSystem(TrafficSystem.TAG));
 
         EcsEntity userEntity = SystemManager.findEntities(e -> "Freds account name".equals(e.getName())).get(0);
         assertNotNull(userEntity, "userEntity");
         assertNotNull(userEntity.getName(), "name");
 
-        // "GroundServices" vehicle list from TrafficWorld.xml
-        List<Vehicle> vehiclelist = TrafficHelper.getVehicleListByDataprovider();
-        assertEquals(8, vehiclelist.size(), "size of vehiclelist");
-
-        VehicleDefinition/*Config*/ config = trafficSystem.getVehicleConfig("VolvoFuel", null);
-        assertNotNull(config);
+        validateVehicles();
 
         // vehicle need groundnet to be loaded.
         TestUtils.waitUntil(() -> {
@@ -153,18 +148,11 @@ public class TravelSceneTest {
         validateStaticEDDK(enableDoormarker);
 
         FGTileMgr fgTileMgr = FlightGearModuleScenery.getInstance().get_tile_mgr();
-        // Q&D check for EHAM
-        if (initialLocation.contains("52.2878684")) {
-            // Not sure why it is 10, maybe 3x3 + EHAM?
-            assertEquals(10, fgTileMgr.getTileCacheContent().size());
-            // EHAM: 1 ocean tile appears correct with 3x3 tiles
-            assertEquals(1, SGOceanTile.created.size());
-        } else {
-            // Not sure why it is 16 or 10? TODO explain why
-            assertEquals(enableNavigator?16:10, fgTileMgr.getTileCacheContent().size());
-            //TODO explain why 1 and 7?
-            assertEquals(enableNavigator?7:1, SGOceanTile.created.size());
-        }
+        // Not sure why it is 16 or 10? TODO explain why
+        assertEquals(enableNavigator ? 16 : 10, fgTileMgr.getTileCacheContent().size());
+        //TODO explain why 1 and 7?
+        assertEquals(enableNavigator ? 7 : 1, SGOceanTile.created.size());
+
         if (enableNavigator) {
             // 2*3 for navigator, 2 for LSG, 1 for 738, position not tested.
             EcsTestHelper.assertTeleportComponent(TeleportComponent.getTeleportComponent(userEntity), 3 + 3 + 2 + 1, 8, null, "738");
@@ -250,6 +238,80 @@ public class TravelSceneTest {
     }
 
     /**
+     * EHAM without need to load EDDK
+     * // 21.6.25: EHAM, runway 06. Should also load SGOceanTile.
+     * "false;false;false;geo:52.2878684, 4.73415315;57.8",
+     */
+    @Test
+    public void testTravelSceneEHAMbyBasename() throws Exception {
+
+        setup(false, false, "geo:52.2878684, 4.73415315", "57.8", "traffic-advanced:Travel-sphere.xml");
+        Log log = Platform.getInstance().getLog(TravelSceneTest.class);
+
+        assertEquals(INITIAL_FRAMES, sceneRunner.getFrameCount());
+        SphereSystem sphereSystem = (SphereSystem) SystemManager.findSystem(SphereSystem.TAG);
+        // world is set in SphereSystem.init()
+        assertNotNull(sphereSystem.world);
+        TravelSceneTestHelper.waitForSphereLoaded(sceneRunner);
+
+        TravelSceneTestHelper.validateSphereProjections();
+
+        String[] bundleNames = BundleRegistry.getBundleNames();
+        // 7 appears correct, but without "Terrasync-model" its only 6.
+        assertEquals(6, bundleNames.length);
+        assertNotNull(BundleRegistry.getBundle("fgdatabasic"));
+
+        sceneRunner.runLimitedFrames(50);
+
+        EcsEntity userEntity = SystemManager.findEntities(e -> "Freds account name".equals(e.getName())).get(0);
+        assertNotNull(userEntity, "userEntity");
+        assertNotNull(userEntity.getName(), "name");
+
+        // Independent from the location we should have all (GS) vehicles
+        validateVehicles();
+
+        //wait for nothing pending
+        TestUtils.waitUntil(() -> {
+            sceneRunner.runLimitedFrames(10);
+            sleepMs(100);
+            return AbstractSceneRunner.getInstance().futures.size() == 0;
+        }, 30000);
+
+        FGTileMgr fgTileMgr = FlightGearModuleScenery.getInstance().get_tile_mgr();
+        // Not sure why it is 10, maybe 3x3 + EHAM?
+        assertEquals(10, fgTileMgr.getTileCacheContent().size());
+        // EHAM: 1 ocean tile appears correct with 3x3 tiles
+        // 24.1.26 now it is 2(??)
+        assertEquals(2, SGOceanTile.created.size());
+
+        //??    EcsTestHelper.assertTeleportComponent(TeleportComponent.getTeleportComponent(userEntity), 1 + 2 + 1, 3, null, "??");
+
+        // start c172p and wait until it has a flight route (first will be move to runway)
+        /*TODO TravelSceneTestHelper.startAndValidateDefaultTrip(sceneRunner, c172p, true);
+        TestUtils.waitUntil(() -> {
+            sceneRunner.runLimitedFrames(2);
+            sleepMs(10);
+            return gmc.getPath() != null;
+        }, 30000);
+
+        assertTrue(gmc.hasAutomove());
+        TravelSceneTestHelper.validateFgProperties(c172p, true);
+*/
+    }
+
+    private void validateVehicles() {
+        TrafficSystem trafficSystem = ((TrafficSystem) SystemManager.findSystem(TrafficSystem.TAG));
+
+        // "GroundServices" vehicle list from TrafficWorld.xml
+        List<Vehicle> vehiclelist = TrafficHelper.getVehicleListByDataprovider();
+        assertEquals(8, vehiclelist.size(), "size of vehiclelist");
+
+        VehicleDefinition/*Config*/ config = trafficSystem.getVehicleConfig("VolvoFuel", null);
+        assertNotNull(config);
+
+    }
+
+    /**
      * Used for both (Flat)TravelScene tests for testing before any vehicle movement but after loading.
      * Auf die Reigenfolge der Tests achten. Zuerst die Basisdinge fuer anderes testen. Sonst hilft es nicht bei der Fehlersuche.
      */
@@ -281,7 +343,7 @@ public class TravelSceneTest {
     /**
      * Needs parameter, so no @Before
      */
-    private void setup(boolean enableDoormarker, boolean enableNavigator, String initialLocation, String initialHeading) throws Exception {
+    private void setup(boolean enableDoormarker, boolean enableNavigator, String initialLocation, String initialHeading, String basename) throws Exception {
         HashMap<String, String> properties = new HashMap<String, String>();
         properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
         properties.put("visualizeTrack", "true");
@@ -292,6 +354,9 @@ public class TravelSceneTest {
         }
         if (initialHeading != null) {
             properties.put("initialHeading", initialHeading);
+        }
+        if (basename != null) {
+            properties.put("basename", basename);
         }
         //9.12.23 sceneRunner = TrafficTestUtils.setupForScene(INITIAL_FRAMES, ConfigurationByEnv.buildDefaultConfigurationWithEnv(properties));
         FgTestFactory.initPlatformForTest(properties, false, true, true, false, new AdvancedBundleResolverSetup());

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- 14.5.24 Tile Definition for any FG TravelScene. Derived from "Travel-EDDK.xml"
-with trafficgraph(groundnet) removed. Best choice when initialRoute/Location is used to
-avoid avoid unneeded scenery load.-->
+<!-- 14.5.24 Tile Definition for traditional EDDK 3D FG TravelScene. Not really limited to EDDK,
+but EDDK groundnet loading makes it specific.-->
 
 <c:config xmlns:c="http://www.example.org/tcp-22">
 
@@ -20,7 +19,9 @@ avoid avoid unneeded scenery load.-->
     <light color="0.3 0.3 0.3 1.0"/>
 
     <!-- 21.1.26 initialPosition (formerInitialPositionEDDK) is no longer hard coded in SphereSystem
-    -->
+    no idea where it is used or where comes from-->
+
+    <trafficgraph groundnet="EDDK"/>
 
 </c:config>
 

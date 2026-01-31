@@ -128,6 +128,7 @@ public class SceneSetup {
 
         properties.put("initialRoute", EGPH06toEGPF05);
         properties.put("initialVehicle", "c172p");
+        properties.put("basename", "traffic-advanced:Travel-sphere.xml");
         properties.put("scene", "de.yard.threed.trafficadvanced.apps.TravelScene");
     }
 }

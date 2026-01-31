@@ -299,6 +299,9 @@ public class TravelScene extends FlightTravelScene {
             // cameraForMenu already set by super class
         }
 
+        // 21.1.26: Moved here from getDefaultTilename(), which is only called when the default is really used
+        TravelSceneHelper.registerFgTerrainBuilder();
+
     }
 
     @Override
@@ -408,7 +411,7 @@ public class TravelScene extends FlightTravelScene {
         //4.12.23 VehicleDefinition vehicleConfig = /*DefaultTrafficWorld.getInstance().getConfiguration()*/ConfigHelper.getVehicleConfig(tw.tw, "Navigator");
         // "Navigator" resides in traffic-fg
         TrafficConfig trafficConfig = TrafficConfig.buildFromBundle(BundleRegistry.getBundle("traffic-fg"), new BundleResource("flight/vehicle-definitions.xml"));
-        VehicleDefinition vehicleConfig = VehicleConfigDataProvider.findVehicleDefinitionsByName( XmlVehicleDefinition.convertVehicleDefinitions(trafficConfig.getVehicleDefinitions()), "Navigator").get(0);
+        VehicleDefinition vehicleConfig = VehicleConfigDataProvider.findVehicleDefinitionsByName(XmlVehicleDefinition.convertVehicleDefinitions(trafficConfig.getVehicleDefinitions()), "Navigator").get(0);
 
         // 'navigator' will be positioned by teleport later.
         VehicleLauncher.launchVehicle(new Vehicle("Navigator"), vehicleConfig, new SimpleVehiclePositioner(null),/*, null,*/ avatarpc, /*22.3.25 getWorld(),*/
@@ -624,8 +627,9 @@ public class TravelScene extends FlightTravelScene {
                 if (enableNavigator) {
                     buildNavigator(avatartc);
                 } else {
+                    FgCalculations fgc = new FgCalculations();
                     // without navigator we have to set overview viewpoint ourselfs
-                    LocalTransform loc = WorldGlobal.eddkoverview.location.toPosRot(new FgCalculations());
+                    LocalTransform loc = getInitialTeleportPosition(WorldGlobal.eddkoverview.location).toPosRot(fgc);
                     loc.rotation = loc.rotation.multiply(new OpenGlProcessPolicy(null).opengl2fg.extractQuaternion());
                     avatartc.addPosition(loc);
                     avatartc.stepTo(0);
@@ -670,7 +674,7 @@ public class TravelScene extends FlightTravelScene {
                 TrafficGraph trafficgraph = new RouteBuilder(TrafficHelper.getEllipsoidConversionsProviderByDataprovider()).buildSimpleTestRouteB8toC4(/*gsw.*/groundnet);
                 VehicleLauncher.launchVehicle(new Vehicle("c172p"), configc172p, new GraphVehiclePositioner(trafficgraph, new GraphPosition(trafficgraph.getBaseGraph().getEdge(0))),
                         TeleportComponent.getTeleportComponent(UserSystem.getInitialUser()), /*22.3.25TravelSceneHelper.getSphereWorld(),*/ null,
-                         null, new ArrayList<VehicleBuiltDelegate>(), new FgVehicleLoader(), null);
+                        null, new ArrayList<VehicleBuiltDelegate>(), new FgVehicleLoader(), null);
             }
 
             //gsw.graphloaded = null;
@@ -925,7 +929,6 @@ public class TravelScene extends FlightTravelScene {
     }*/
 
 
-
     /**
      * 19.3.24: Now needed
      */
@@ -933,8 +936,8 @@ public class TravelScene extends FlightTravelScene {
         // from former hardcoded
         //return TravelSceneBluebird.formerInitialPositionEDDK.toString();
         // 14.5.24: now use config file
-        TravelSceneHelper.registerFgTerrainBuilder();
-        return "traffic-advanced:Travel-sphere.xml";
+        // 21.1.26: Keep the traditional EDDK scene as default
+        return "traffic-advanced:Travel-EDDK.xml";
     }
 }
 

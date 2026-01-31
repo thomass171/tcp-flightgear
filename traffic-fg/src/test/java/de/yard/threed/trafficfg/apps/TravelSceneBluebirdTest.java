@@ -257,20 +257,9 @@ public class TravelSceneBluebirdTest {
 
         List<Event> completeEvents = EcsTestHelper.getEventsFromHistory(TrafficEventRegistry.TRAFFIC_EVENT_SPHERE_LOADED);
         assertEquals(1, completeEvents.size(), "completeEvents.size");
-        GeoCoordinate initialPosition = completeEvents.get(0).getPayload().get("initialPosition", s -> {
-            try {
-                return GeoCoordinate.parse(s);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        assertNotNull(initialPosition);
-        if (basename != null) {
-            Util.nomore();
-            TestUtils.assertGeoCoordinate(GeoCoordinate.parse(basename), initialPosition, "initialPosition");
-        } else {
-            TestUtils.assertGeoCoordinate(TravelSceneBluebird.formerInitialPositionEDDK, initialPosition, "initialPosition");
-        }
+        // 'initialPosition' no longer
+        String tilename = completeEvents.get(0).getPayload().get("tilename", s -> s);
+        assertNotNull(tilename);
 
         assertFalse(((GraphTerrainSystem) SystemManager.findSystem(GraphTerrainSystem.TAG)).enabled);
         ellipsoidCalculations = TrafficHelper.getEllipsoidConversionsProviderByDataprovider();
